@@ -1,0 +1,3 @@
+clear
+./COST/cxx VaquitaSimulation.cc
+g++ -Wall -Werror -g -o VaquitaSimulation VaquitaSimulation.cxx

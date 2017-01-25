@@ -1,0 +1,445 @@
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 0
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 0
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 0
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 4
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 2
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 2
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 2
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 2
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_vaquita = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 2
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!

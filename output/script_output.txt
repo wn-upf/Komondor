@@ -1,0 +1,44 @@
+------------------------------------
+- Total number of packets sent = 2478
+------------------------------------
+- Total number of packets sent = 2478
+------------------------------------
+- Total number of packets sent = 2478
+------------------------------------
+- Total number of packets sent = 2478
+------------------------------------
+- Total number of packets sent = 27
+------------------------------------
+- Total number of packets sent = 23
+------------------------------------
+- Total number of packets sent = 21
+------------------------------------
+- Total number of packets sent = 3015
+------------------------------------
+- Total number of packets sent = 29914
+------------------------------------
+- Total number of packets sent = 29914
+------------------------------------
+- Total number of packets sent = 29231
+------------------------------------
+- Total number of packets sent = 31026
+------------------------------------
+- Total number of packets sent = 27
+------------------------------------
+- Total number of packets sent = 27
+------------------------------------
+- Total number of packets sent = 27
+------------------------------------
+- Total number of packets sent = 3135
+------------------------------------
+- Total number of packets sent = 314
+------------------------------------
+- Total number of packets sent = 299
+------------------------------------
+- Total number of packets sent = 136
+------------------------------------
+- Total number of packets sent = 1615
+------------------------------------
+- Total number of packets sent = 136
+------------------------------------
+- Total number of packets sent = 136

@@ -1,0 +1,3 @@
+node_id;primary_channel;min_channel_allowed;max_channel_allowed;tpc_default(dBm);cca_default(dBm);x(m);y(m);z(m);tx_antenna_gain;rx_antenna_gain;channel_bonding_model;destination_id
+0;0;0;0;15;-82;0;0;0;0;0;4;1
+1;0;0;0;15;-82;50000;0;0;0;0;4;0

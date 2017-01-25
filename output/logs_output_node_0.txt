@@ -1,0 +1,2172 @@
+0.000000;N0;B00; Node Start()
+0.000000;N0;E09;       - resuming backoff at 0.000054
+0.000054;N0;F00; endBackoff()
+0.000054:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.000054:N0;F03 - Transmission is possible
+0.000054:N0;F04    + Selected transmission range: 0 - 0
+0.000054;N0;G00; inportNackReceived() from 1
+0.000054;N0;G02; Packet 0 has been LOST!
+0.000054;N0;G02; - I am implied in the NACK
+0.000054;N0;G03;    + Interference sensed in destination 1 is greater than its CCA!
+0.000054;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.000054;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.000064;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.000064;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.000064;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.000064;N0;D04; - Distance to N1 = 50000.000000 m
+0.000064;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.000064;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.000064;N0;D07; - I am in TRANSMITTING state
+0.000064;N0;D07; - I am the TX destination (N0)
+0.000064;N0;D14;    + I am transmitting, packet cannot be received
+0.008661;N0;G00; myTXFinished()
+0.008661;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.008661;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.008661;N0;G02; - New BO generated of 0.000054 s
+0.008661;N0;E09;       - resuming backoff at 0.000003
+0.008663;N0;F00; endBackoff()
+0.008663:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.008663:N0;F03 - Transmission is possible
+0.008663:N0;F04    + Selected transmission range: 0 - 0
+0.008663;N0;G00; inportNackReceived() from 1
+0.008663;N0;G02; Packet 1 has been LOST!
+0.008663;N0;G02; - I am implied in the NACK
+0.008663;N0;G03;    + Destination 1 was transmitting!s
+0.008663;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.008663;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.031408;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.031408;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.031408;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.031408;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.031408;N0;D04; - Distance to N1 = 50000.000000 m
+0.031408;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.031408;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.031408;N0;E09; - I am TRANSMITTING ---> do nothing
+0.031462;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.031462;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.031462;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.031462;N0;D04; - Distance to N1 = 50000.000000 m
+0.031462;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.031462;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.031462;N0;D07; - I am in TRANSMITTING state
+0.031462;N0;D07; - I am the TX destination (N0)
+0.031462;N0;D14;    + I am transmitting, packet cannot be received
+0.035914;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.035914;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.035914;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.035914;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.035914;N0;D04; - Distance to N1 = 50000.000000 m
+0.035914;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.035914;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.035914;N0;E09; - I am TRANSMITTING ---> do nothing
+0.035967;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.035967;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.035967;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.035967;N0;D04; - Distance to N1 = 50000.000000 m
+0.035967;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.035967;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.035967;N0;D07; - I am in TRANSMITTING state
+0.035967;N0;D07; - I am the TX destination (N0)
+0.035967;N0;D14;    + I am transmitting, packet cannot be received
+0.059267;N0;G00; myTXFinished()
+0.059267;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.059267;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.059267;N0;G02; - New BO generated of 0.000003 s
+0.059267;N0;E09;       - resuming backoff at 0.000045
+0.059312;N0;F00; endBackoff()
+0.059312:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.059312:N0;F03 - Transmission is possible
+0.059312:N0;F04    + Selected transmission range: 0 - 0
+0.059312;N0;G00; inportNackReceived() from 1
+0.059312;N0;G02; Packet 2 has been LOST!
+0.059312;N0;G02; - I am implied in the NACK
+0.059312;N0;G03;    + Destination 1 was transmitting!s
+0.059312;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.059312;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.062455;N0;G00; myTXFinished()
+0.062455;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.062455;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.062455;N0;G02; - New BO generated of 0.000045 s
+0.062455;N0;E09;       - resuming backoff at 0.000042
+0.062497;N0;F00; endBackoff()
+0.062497:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.062497:N0;F03 - Transmission is possible
+0.062497:N0;F04    + Selected transmission range: 0 - 0
+0.062497;N0;G00; inportNackReceived() from 1
+0.062497;N0;G02; Packet 3 has been LOST!
+0.062497;N0;G02; - I am implied in the NACK
+0.062497;N0;G03;    + Destination 1 was transmitting!s
+0.062497;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.062497;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.073613;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.073613;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.073613;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.073613;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.073613;N0;D04; - Distance to N1 = 50000.000000 m
+0.073613;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.073613;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.073613;N0;E09; - I am TRANSMITTING ---> do nothing
+0.073687;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.073687;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.073687;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.073687;N0;D04; - Distance to N1 = 50000.000000 m
+0.073687;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.073687;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.073687;N0;D07; - I am in TRANSMITTING state
+0.073687;N0;D07; - I am the TX destination (N0)
+0.073687;N0;D14;    + I am transmitting, packet cannot be received
+0.085914;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.085914;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.085914;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.085914;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.085914;N0;D04; - Distance to N1 = 50000.000000 m
+0.085914;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.085914;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.085914;N0;E09; - I am TRANSMITTING ---> do nothing
+0.085994;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.085994;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.085994;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.085994;N0;D04; - Distance to N1 = 50000.000000 m
+0.085994;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.085994;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.085994;N0;D07; - I am in TRANSMITTING state
+0.085994;N0;D07; - I am the TX destination (N0)
+0.085994;N0;D14;    + I am transmitting, packet cannot be received
+0.087321;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.087321;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.087321;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.087321;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.087321;N0;D04; - Distance to N1 = 50000.000000 m
+0.087321;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.087321;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.087321;N0;E09; - I am TRANSMITTING ---> do nothing
+0.087376;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.087376;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.087376;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.087376;N0;D04; - Distance to N1 = 50000.000000 m
+0.087376;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.087376;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.087376;N0;D07; - I am in TRANSMITTING state
+0.087376;N0;D07; - I am the TX destination (N0)
+0.087376;N0;D14;    + I am transmitting, packet cannot be received
+0.095943;N0;G00; myTXFinished()
+0.095943;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.095943;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.095943;N0;G02; - New BO generated of 0.000042 s
+0.095943;N0;E09;       - resuming backoff at 0.000155
+0.096098;N0;F00; endBackoff()
+0.096098:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.096098:N0;F03 - Transmission is possible
+0.096098:N0;F04    + Selected transmission range: 0 - 0
+0.096098;N0;G00; inportNackReceived() from 1
+0.096098;N0;G02; Packet 4 has been LOST!
+0.096098;N0;G02; - I am implied in the NACK
+0.096098;N0;G03;    + Destination 1 was transmitting!s
+0.096098;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.096098;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.108652;N0;G00; myTXFinished()
+0.108652;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.108652;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.108652;N0;G02; - New BO generated of 0.000155 s
+0.108652;N0;E09;       - resuming backoff at 0.000042
+0.108694;N0;F00; endBackoff()
+0.108694:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.108694:N0;F03 - Transmission is possible
+0.108694:N0;F04    + Selected transmission range: 0 - 0
+0.108694;N0;G00; inportNackReceived() from 1
+0.108694;N0;G02; Packet 5 has been LOST!
+0.108694;N0;G02; - I am implied in the NACK
+0.108694;N0;G03;    + Destination 1 was transmitting!s
+0.108694;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.108694;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.110171;N0;G00; myTXFinished()
+0.110171;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.110171;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.110171;N0;G02; - New BO generated of 0.000042 s
+0.110171;N0;E09;       - resuming backoff at 0.000047
+0.110218;N0;F00; endBackoff()
+0.110218:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.110218:N0;F03 - Transmission is possible
+0.110218:N0;F04    + Selected transmission range: 0 - 0
+0.110218;N0;G00; inportNackReceived() from 1
+0.110218;N0;G02; Packet 6 has been LOST!
+0.110218;N0;G02; - I am implied in the NACK
+0.110218;N0;G03;    + Destination 1 was transmitting!s
+0.110218;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.110218;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.113192;N0;G00; myTXFinished()
+0.113192;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.113192;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.113192;N0;G02; - New BO generated of 0.000047 s
+0.113192;N0;E09;       - resuming backoff at 0.000168
+0.113360;N0;F00; endBackoff()
+0.113360:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.113360:N0;F03 - Transmission is possible
+0.113360:N0;F04    + Selected transmission range: 0 - 0
+0.113360;N0;G00; inportNackReceived() from 1
+0.113360;N0;G02; Packet 7 has been LOST!
+0.113360;N0;G02; - I am implied in the NACK
+0.113360;N0;G03;    + Destination 1 was transmitting!s
+0.113360;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.113360;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.119736;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.119736;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.119736;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.119736;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.119736;N0;D04; - Distance to N1 = 50000.000000 m
+0.119736;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.119736;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.119736;N0;E09; - I am TRANSMITTING ---> do nothing
+0.119802;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.119802;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.119802;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.119802;N0;D04; - Distance to N1 = 50000.000000 m
+0.119802;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.119802;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.119802;N0;D07; - I am in TRANSMITTING state
+0.119802;N0;D07; - I am the TX destination (N0)
+0.119802;N0;D14;    + I am transmitting, packet cannot be received
+0.120496;N0;G00; myTXFinished()
+0.120496;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.120496;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.120496;N0;G02; - New BO generated of 0.000168 s
+0.120496;N0;E09;       - resuming backoff at 0.000305
+0.120802;N0;F00; endBackoff()
+0.120802:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.120802:N0;F03 - Transmission is possible
+0.120802:N0;F04    + Selected transmission range: 0 - 0
+0.120802;N0;G00; inportNackReceived() from 1
+0.120802;N0;G02; Packet 8 has been LOST!
+0.120802;N0;G02; - I am implied in the NACK
+0.120802;N0;G03;    + Destination 1 was transmitting!s
+0.120802;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.120802;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.125983;N0;G00; myTXFinished()
+0.125983;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.125983;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.125983;N0;G02; - New BO generated of 0.000305 s
+0.125983;N0;E09;       - resuming backoff at 0.000016
+0.126000;N0;F00; endBackoff()
+0.126000:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.126000:N0;F03 - Transmission is possible
+0.126000:N0;F04    + Selected transmission range: 0 - 0
+0.126000;N0;G00; inportNackReceived() from 1
+0.126000;N0;G02; Packet 9 has been LOST!
+0.126000;N0;G02; - I am implied in the NACK
+0.126000;N0;G03;    + Destination 1 was transmitting!s
+0.126000;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.126000;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.128637;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.128637;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.128637;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.128637;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.128637;N0;D04; - Distance to N1 = 50000.000000 m
+0.128637;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.128637;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.128637;N0;E09; - I am TRANSMITTING ---> do nothing
+0.128674;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.128674;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.128674;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.128674;N0;D04; - Distance to N1 = 50000.000000 m
+0.128674;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.128674;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.128674;N0;D07; - I am in TRANSMITTING state
+0.128674;N0;D07; - I am the TX destination (N0)
+0.128674;N0;D14;    + I am transmitting, packet cannot be received
+0.152164;N0;G00; myTXFinished()
+0.152164;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.152164;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.152164;N0;G02; - New BO generated of 0.000016 s
+0.152164;N0;E09;       - resuming backoff at 0.000018
+0.152182;N0;F00; endBackoff()
+0.152182:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.152182:N0;F03 - Transmission is possible
+0.152182:N0;F04    + Selected transmission range: 0 - 0
+0.152182;N0;G00; inportNackReceived() from 1
+0.152182;N0;G02; Packet 10 has been LOST!
+0.152182;N0;G02; - I am implied in the NACK
+0.152182;N0;G03;    + Destination 1 was transmitting!s
+0.152182;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.152182;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.172986;N0;G00; myTXFinished()
+0.172986;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.172986;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.172986;N0;G02; - New BO generated of 0.000018 s
+0.172986;N0;E09;       - resuming backoff at 0.000004
+0.172990;N0;F00; endBackoff()
+0.172990:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.172990:N0;F03 - Transmission is possible
+0.172990:N0;F04    + Selected transmission range: 0 - 0
+0.172990;N0;G00; inportNackReceived() from 1
+0.172990;N0;G02; Packet 11 has been LOST!
+0.172990;N0;G02; - I am implied in the NACK
+0.172990;N0;G03;    + Destination 1 was transmitting!s
+0.172990;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.172990;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.176741;N0;G00; myTXFinished()
+0.176741;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.176741;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.176741;N0;G02; - New BO generated of 0.000004 s
+0.176741;N0;E09;       - resuming backoff at 0.000113
+0.176854;N0;F00; endBackoff()
+0.176854:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.176854:N0;F03 - Transmission is possible
+0.176854:N0;F04    + Selected transmission range: 0 - 0
+0.176854;N0;G00; inportNackReceived() from 1
+0.176854;N0;G02; Packet 12 has been LOST!
+0.176854;N0;G02; - I am implied in the NACK
+0.176854;N0;G03;    + Destination 1 was transmitting!s
+0.176854;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.176854;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.190458;N0;G00; myTXFinished()
+0.190458;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.190458;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.190458;N0;G02; - New BO generated of 0.000113 s
+0.190458;N0;E09;       - resuming backoff at 0.000062
+0.190520;N0;F00; endBackoff()
+0.190520:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.190520:N0;F03 - Transmission is possible
+0.190520:N0;F04    + Selected transmission range: 0 - 0
+0.190520;N0;G00; inportNackReceived() from 1
+0.190520;N0;G02; Packet 13 has been LOST!
+0.190520;N0;G02; - I am implied in the NACK
+0.190520;N0;G03;    + Destination 1 was transmitting!s
+0.190520;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.190520;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.207341;N0;G00; myTXFinished()
+0.207341;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.207341;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.207341;N0;G02; - New BO generated of 0.000062 s
+0.207341;N0;E09;       - resuming backoff at 0.000075
+0.207417;N0;F00; endBackoff()
+0.207417:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.207417:N0;F03 - Transmission is possible
+0.207417:N0;F04    + Selected transmission range: 0 - 0
+0.207417;N0;G00; inportNackReceived() from 1
+0.207417;N0;G02; Packet 14 has been LOST!
+0.207417;N0;G02; - I am implied in the NACK
+0.207417;N0;G03;    + Destination 1 was transmitting!s
+0.207417;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.207417;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.224039;N0;G00; myTXFinished()
+0.224039;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.224039;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.224039;N0;G02; - New BO generated of 0.000075 s
+0.224039;N0;E09;       - resuming backoff at 0.000014
+0.224053;N0;F00; endBackoff()
+0.224053:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.224053:N0;F03 - Transmission is possible
+0.224053:N0;F04    + Selected transmission range: 0 - 0
+0.224053;N0;G00; inportNackReceived() from 1
+0.224053;N0;G02; Packet 15 has been LOST!
+0.224053;N0;G02; - I am implied in the NACK
+0.224053;N0;G03;    + Destination 1 was transmitting!s
+0.224053;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.224053;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.224468;N0;G00; myTXFinished()
+0.224468;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.224468;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.224468;N0;G02; - New BO generated of 0.000014 s
+0.224468;N0;E09;       - resuming backoff at 0.000027
+0.224496;N0;F00; endBackoff()
+0.224496:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.224496:N0;F03 - Transmission is possible
+0.224496:N0;F04    + Selected transmission range: 0 - 0
+0.224496;N0;G00; inportNackReceived() from 1
+0.224496;N0;G02; Packet 16 has been LOST!
+0.224496;N0;G02; - I am implied in the NACK
+0.224496;N0;G03;    + Destination 1 was transmitting!s
+0.224496;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.224496;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.225381;N0;G00; myTXFinished()
+0.225381;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.225381;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.225381;N0;G02; - New BO generated of 0.000027 s
+0.225381;N0;E09;       - resuming backoff at 0.000048
+0.225429;N0;F00; endBackoff()
+0.225429:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.225429:N0;F03 - Transmission is possible
+0.225429:N0;F04    + Selected transmission range: 0 - 0
+0.225429;N0;G00; inportNackReceived() from 1
+0.225429;N0;G02; Packet 17 has been LOST!
+0.225429;N0;G02; - I am implied in the NACK
+0.225429;N0;G03;    + Destination 1 was transmitting!s
+0.225429;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.225429;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.227373;N0;G00; myTXFinished()
+0.227373;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.227373;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.227373;N0;G02; - New BO generated of 0.000048 s
+0.227373;N0;E09;       - resuming backoff at 0.000052
+0.227425;N0;F00; endBackoff()
+0.227425:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.227425:N0;F03 - Transmission is possible
+0.227425:N0;F04    + Selected transmission range: 0 - 0
+0.227425;N0;G00; inportNackReceived() from 1
+0.227425;N0;G02; Packet 18 has been LOST!
+0.227425;N0;G02; - I am implied in the NACK
+0.227425;N0;G03;    + Destination 1 was transmitting!s
+0.227425;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.227425;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.229188;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.229188;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.229188;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.229188;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.229188;N0;D04; - Distance to N1 = 50000.000000 m
+0.229188;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.229188;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.229188;N0;E09; - I am TRANSMITTING ---> do nothing
+0.229188;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.229188;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.229188;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.229188;N0;D04; - Distance to N1 = 50000.000000 m
+0.229188;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.229188;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.229188;N0;D07; - I am in TRANSMITTING state
+0.229188;N0;D07; - I am the TX destination (N0)
+0.229188;N0;D14;    + I am transmitting, packet cannot be received
+0.230105;N0;G00; myTXFinished()
+0.230105;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.230105;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.230105;N0;G02; - New BO generated of 0.000052 s
+0.230105;N0;E09;       - resuming backoff at 0.000053
+0.230157;N0;F00; endBackoff()
+0.230157:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.230157:N0;F03 - Transmission is possible
+0.230157:N0;F04    + Selected transmission range: 0 - 0
+0.230157;N0;G00; inportNackReceived() from 1
+0.230157;N0;G02; Packet 19 has been LOST!
+0.230157;N0;G02; - I am implied in the NACK
+0.230157;N0;G03;    + Destination 1 was transmitting!s
+0.230157;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.230157;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.243469;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.243469;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.243469;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.243469;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.243469;N0;D04; - Distance to N1 = 50000.000000 m
+0.243469;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.243469;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.243469;N0;E09; - I am TRANSMITTING ---> do nothing
+0.243524;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.243524;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.243524;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.243524;N0;D04; - Distance to N1 = 50000.000000 m
+0.243524;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.243524;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.243524;N0;D07; - I am in TRANSMITTING state
+0.243524;N0;D07; - I am the TX destination (N0)
+0.243524;N0;D14;    + I am transmitting, packet cannot be received
+0.253730;N0;G00; myTXFinished()
+0.253730;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.253730;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.253730;N0;G02; - New BO generated of 0.000053 s
+0.253730;N0;E09;       - resuming backoff at 0.000053
+0.253783;N0;F00; endBackoff()
+0.253783:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.253783:N0;F03 - Transmission is possible
+0.253783:N0;F04    + Selected transmission range: 0 - 0
+0.253783;N0;G00; inportNackReceived() from 1
+0.253783;N0;G02; Packet 20 has been LOST!
+0.253783;N0;G02; - I am implied in the NACK
+0.253783;N0;G03;    + Destination 1 was transmitting!s
+0.253783;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.253783;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.262806;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.262806;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.262806;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.262806;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.262806;N0;D04; - Distance to N1 = 50000.000000 m
+0.262806;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.262806;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.262806;N0;E09; - I am TRANSMITTING ---> do nothing
+0.262844;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.262844;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.262844;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.262844;N0;D04; - Distance to N1 = 50000.000000 m
+0.262844;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.262844;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.262844;N0;D07; - I am in TRANSMITTING state
+0.262844;N0;D07; - I am the TX destination (N0)
+0.262844;N0;D14;    + I am transmitting, packet cannot be received
+0.263845;N0;G00; myTXFinished()
+0.263845;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.263845;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.263845;N0;G02; - New BO generated of 0.000053 s
+0.263845;N0;E09;       - resuming backoff at 0.000106
+0.263951;N0;F00; endBackoff()
+0.263951:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.263951:N0;F03 - Transmission is possible
+0.263951:N0;F04    + Selected transmission range: 0 - 0
+0.263951;N0;G00; inportNackReceived() from 1
+0.263951;N0;G02; Packet 21 has been LOST!
+0.263951;N0;G02; - I am implied in the NACK
+0.263951;N0;G03;    + Destination 1 was transmitting!s
+0.263951;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.263951;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.266307;N0;G00; myTXFinished()
+0.266307;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.266307;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.266307;N0;G02; - New BO generated of 0.000106 s
+0.266307;N0;E09;       - resuming backoff at 0.000200
+0.266507;N0;F00; endBackoff()
+0.266507:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.266507:N0;F03 - Transmission is possible
+0.266507:N0;F04    + Selected transmission range: 0 - 0
+0.266507;N0;G00; inportNackReceived() from 1
+0.266507;N0;G02; Packet 22 has been LOST!
+0.266507;N0;G02; - I am implied in the NACK
+0.266507;N0;G03;    + Destination 1 was transmitting!s
+0.266507;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.266507;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.271376;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.271376;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.271376;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.271376;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.271376;N0;D04; - Distance to N1 = 50000.000000 m
+0.271376;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.271376;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.271376;N0;E09; - I am TRANSMITTING ---> do nothing
+0.271470;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.271470;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.271470;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.271470;N0;D04; - Distance to N1 = 50000.000000 m
+0.271470;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.271470;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.271470;N0;D07; - I am in TRANSMITTING state
+0.271470;N0;D07; - I am the TX destination (N0)
+0.271470;N0;D14;    + I am transmitting, packet cannot be received
+0.278499;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.278499;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.278499;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.278499;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.278499;N0;D04; - Distance to N1 = 50000.000000 m
+0.278499;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.278499;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.278499;N0;E09; - I am TRANSMITTING ---> do nothing
+0.278560;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.278560;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.278560;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.278560;N0;D04; - Distance to N1 = 50000.000000 m
+0.278560;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.278560;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.278560;N0;D07; - I am in TRANSMITTING state
+0.278560;N0;D07; - I am the TX destination (N0)
+0.278560;N0;D14;    + I am transmitting, packet cannot be received
+0.280950;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.280950;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.280950;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.280950;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.280950;N0;D04; - Distance to N1 = 50000.000000 m
+0.280950;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.280950;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.280950;N0;E09; - I am TRANSMITTING ---> do nothing
+0.281008;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.281008;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.281008;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.281008;N0;D04; - Distance to N1 = 50000.000000 m
+0.281008;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.281008;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.281008;N0;D07; - I am in TRANSMITTING state
+0.281008;N0;D07; - I am the TX destination (N0)
+0.281008;N0;D14;    + I am transmitting, packet cannot be received
+0.294249;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.294249;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.294249;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.294249;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.294249;N0;D04; - Distance to N1 = 50000.000000 m
+0.294249;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.294249;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.294249;N0;E09; - I am TRANSMITTING ---> do nothing
+0.294419;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.294419;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.294419;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.294419;N0;D04; - Distance to N1 = 50000.000000 m
+0.294419;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.294419;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.294419;N0;D07; - I am in TRANSMITTING state
+0.294419;N0;D07; - I am the TX destination (N0)
+0.294419;N0;D14;    + I am transmitting, packet cannot be received
+0.300841;N0;G00; myTXFinished()
+0.300841;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.300841;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.300841;N0;G02; - New BO generated of 0.000200 s
+0.300841;N0;E09;       - resuming backoff at 0.000016
+0.300857;N0;F00; endBackoff()
+0.300857:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.300857:N0;F03 - Transmission is possible
+0.300857:N0;F04    + Selected transmission range: 0 - 0
+0.300857;N0;G00; inportNackReceived() from 1
+0.300857;N0;G02; Packet 23 has been LOST!
+0.300857;N0;G02; - I am implied in the NACK
+0.300857;N0;G03;    + Destination 1 was transmitting!s
+0.300857;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.300857;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.306440;N0;G00; myTXFinished()
+0.306440;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.306440;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.306440;N0;G02; - New BO generated of 0.000016 s
+0.306440;N0;E09;       - resuming backoff at 0.000000
+0.306440;N0;F00; endBackoff()
+0.306440:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.306440:N0;F03 - Transmission is possible
+0.306440:N0;F04    + Selected transmission range: 0 - 0
+0.306440;N0;G00; inportNackReceived() from 1
+0.306440;N0;G02; Packet 24 has been LOST!
+0.306440;N0;G02; - I am implied in the NACK
+0.306440;N0;G03;    + Destination 1 was transmitting!s
+0.306440;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.306440;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.307453;N0;G00; myTXFinished()
+0.307453;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.307453;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.307453;N0;G02; - New BO generated of 0.000000 s
+0.307453;N0;E09;       - resuming backoff at 0.000032
+0.307484;N0;F00; endBackoff()
+0.307484:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.307484:N0;F03 - Transmission is possible
+0.307484:N0;F04    + Selected transmission range: 0 - 0
+0.307484;N0;G00; inportNackReceived() from 1
+0.307484;N0;G02; Packet 25 has been LOST!
+0.307484;N0;G02; - I am implied in the NACK
+0.307484;N0;G03;    + Destination 1 was transmitting!s
+0.307484;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.307484;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.316023;N0;G00; myTXFinished()
+0.316023;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.316023;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.316023;N0;G02; - New BO generated of 0.000032 s
+0.316023;N0;E09;       - resuming backoff at 0.000010
+0.316033;N0;F00; endBackoff()
+0.316033:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.316033:N0;F03 - Transmission is possible
+0.316033:N0;F04    + Selected transmission range: 0 - 0
+0.316033;N0;G00; inportNackReceived() from 1
+0.316033;N0;G02; Packet 26 has been LOST!
+0.316033;N0;G02; - I am implied in the NACK
+0.316033;N0;G03;    + Destination 1 was transmitting!s
+0.316033;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.316033;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.319783;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.319783;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.319783;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.319783;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.319783;N0;D04; - Distance to N1 = 50000.000000 m
+0.319783;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.319783;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.319783;N0;E09; - I am TRANSMITTING ---> do nothing
+0.319902;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.319902;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.319902;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.319902;N0;D04; - Distance to N1 = 50000.000000 m
+0.319902;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.319902;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.319902;N0;D07; - I am in TRANSMITTING state
+0.319902;N0;D07; - I am the TX destination (N0)
+0.319902;N0;D14;    + I am transmitting, packet cannot be received
+0.323193;N0;G00; myTXFinished()
+0.323193;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.323193;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.323193;N0;G02; - New BO generated of 0.000010 s
+0.323193;N0;E09;       - resuming backoff at 0.000035
+0.323228;N0;F00; endBackoff()
+0.323228:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.323228:N0;F03 - Transmission is possible
+0.323228:N0;F04    + Selected transmission range: 0 - 0
+0.323228;N0;G00; inportNackReceived() from 1
+0.323228;N0;G02; Packet 27 has been LOST!
+0.323228;N0;G02; - I am implied in the NACK
+0.323228;N0;G03;    + Destination 1 was transmitting!s
+0.323228;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.323228;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.333611;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.333611;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.333611;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.333611;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.333611;N0;D04; - Distance to N1 = 50000.000000 m
+0.333611;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.333611;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.333611;N0;E09; - I am TRANSMITTING ---> do nothing
+0.333624;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.333624;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.333624;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.333624;N0;D04; - Distance to N1 = 50000.000000 m
+0.333624;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.333624;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.333624;N0;D07; - I am in TRANSMITTING state
+0.333624;N0;D07; - I am the TX destination (N0)
+0.333624;N0;D14;    + I am transmitting, packet cannot be received
+0.343274;N0;G00; myTXFinished()
+0.343274;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.343274;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.343274;N0;G02; - New BO generated of 0.000035 s
+0.343274;N0;E09;       - resuming backoff at 0.000143
+0.343417;N0;F00; endBackoff()
+0.343417:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.343417:N0;F03 - Transmission is possible
+0.343417:N0;F04    + Selected transmission range: 0 - 0
+0.343417;N0;G00; inportNackReceived() from 1
+0.343417;N0;G02; Packet 28 has been LOST!
+0.343417;N0;G02; - I am implied in the NACK
+0.343417;N0;G03;    + Destination 1 was transmitting!s
+0.343417;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.343417;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.360814;N0;G00; myTXFinished()
+0.360814;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.360814;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.360814;N0;G02; - New BO generated of 0.000143 s
+0.360814;N0;E09;       - resuming backoff at 0.000029
+0.360844;N0;F00; endBackoff()
+0.360844:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.360844:N0;F03 - Transmission is possible
+0.360844:N0;F04    + Selected transmission range: 0 - 0
+0.360844;N0;G00; inportNackReceived() from 1
+0.360844;N0;G02; Packet 29 has been LOST!
+0.360844;N0;G02; - I am implied in the NACK
+0.360844;N0;G03;    + Destination 1 was transmitting!s
+0.360844;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.360844;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.361116;N0;G00; myTXFinished()
+0.361116;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.361116;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.361116;N0;G02; - New BO generated of 0.000029 s
+0.361116;N0;E09;       - resuming backoff at 0.000082
+0.361198;N0;F00; endBackoff()
+0.361198:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.361198:N0;F03 - Transmission is possible
+0.361198:N0;F04    + Selected transmission range: 0 - 0
+0.361198;N0;G00; inportNackReceived() from 1
+0.361198;N0;G02; Packet 30 has been LOST!
+0.361198;N0;G02; - I am implied in the NACK
+0.361198;N0;G03;    + Destination 1 was transmitting!s
+0.361198;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.361198;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.367257;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.367257;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.367257;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.367257;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.367257;N0;D04; - Distance to N1 = 50000.000000 m
+0.367257;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.367257;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.367257;N0;E09; - I am TRANSMITTING ---> do nothing
+0.367306;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.367306;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.367306;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.367306;N0;D04; - Distance to N1 = 50000.000000 m
+0.367306;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.367306;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.367306;N0;D07; - I am in TRANSMITTING state
+0.367306;N0;D07; - I am the TX destination (N0)
+0.367306;N0;D14;    + I am transmitting, packet cannot be received
+0.368645;N0;G00; myTXFinished()
+0.368645;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.368645;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.368645;N0;G02; - New BO generated of 0.000082 s
+0.368645;N0;E09;       - resuming backoff at 0.000034
+0.368679;N0;F00; endBackoff()
+0.368679:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.368679:N0;F03 - Transmission is possible
+0.368679:N0;F04    + Selected transmission range: 0 - 0
+0.368679;N0;G00; inportNackReceived() from 1
+0.368679;N0;G02; Packet 31 has been LOST!
+0.368679;N0;G02; - I am implied in the NACK
+0.368679;N0;G03;    + Destination 1 was transmitting!s
+0.368679;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.368679;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.372528;N0;G00; myTXFinished()
+0.372528;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.372528;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.372528;N0;G02; - New BO generated of 0.000034 s
+0.372528;N0;E09;       - resuming backoff at 0.000077
+0.372605;N0;F00; endBackoff()
+0.372605:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.372605:N0;F03 - Transmission is possible
+0.372605:N0;F04    + Selected transmission range: 0 - 0
+0.372605;N0;G00; inportNackReceived() from 1
+0.372605;N0;G02; Packet 32 has been LOST!
+0.372605;N0;G02; - I am implied in the NACK
+0.372605;N0;G03;    + Destination 1 was transmitting!s
+0.372605;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.372605;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.380756;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.380756;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.380756;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.380756;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.380756;N0;D04; - Distance to N1 = 50000.000000 m
+0.380756;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.380756;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.380756;N0;E09; - I am TRANSMITTING ---> do nothing
+0.380802;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.380802;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.380802;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.380802;N0;D04; - Distance to N1 = 50000.000000 m
+0.380802;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.380802;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.380802;N0;D07; - I am in TRANSMITTING state
+0.380802;N0;D07; - I am the TX destination (N0)
+0.380802;N0;D14;    + I am transmitting, packet cannot be received
+0.397620;N0;G00; myTXFinished()
+0.397620;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.397620;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.397620;N0;G02; - New BO generated of 0.000077 s
+0.397620;N0;E09;       - resuming backoff at 0.000058
+0.397677;N0;F00; endBackoff()
+0.397677:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.397677:N0;F03 - Transmission is possible
+0.397677:N0;F04    + Selected transmission range: 0 - 0
+0.397677;N0;G00; inportNackReceived() from 1
+0.397677;N0;G02; Packet 33 has been LOST!
+0.397677;N0;G02; - I am implied in the NACK
+0.397677;N0;G03;    + Destination 1 was transmitting!s
+0.397677;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.397677;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.409735;N0;G00; myTXFinished()
+0.409735;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.409735;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.409735;N0;G02; - New BO generated of 0.000058 s
+0.409735;N0;E09;       - resuming backoff at 0.000188
+0.409922;N0;F00; endBackoff()
+0.409922:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.409922:N0;F03 - Transmission is possible
+0.409922:N0;F04    + Selected transmission range: 0 - 0
+0.409922;N0;G00; inportNackReceived() from 1
+0.409922;N0;G02; Packet 34 has been LOST!
+0.409922;N0;G02; - I am implied in the NACK
+0.409922;N0;G03;    + Destination 1 was transmitting!s
+0.409922;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.409922;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.410033;N0;G00; myTXFinished()
+0.410033;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.410033;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.410033;N0;G02; - New BO generated of 0.000188 s
+0.410033;N0;E09;       - resuming backoff at 0.000007
+0.410040;N0;F00; endBackoff()
+0.410040:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.410040:N0;F03 - Transmission is possible
+0.410040:N0;F04    + Selected transmission range: 0 - 0
+0.410040;N0;G00; inportNackReceived() from 1
+0.410040;N0;G02; Packet 35 has been LOST!
+0.410040;N0;G02; - I am implied in the NACK
+0.410040;N0;G03;    + Destination 1 was transmitting!s
+0.410040;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.410040;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.429122;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.429122;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.429122;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.429122;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.429122;N0;D04; - Distance to N1 = 50000.000000 m
+0.429122;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.429122;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.429122;N0;E09; - I am TRANSMITTING ---> do nothing
+0.429141;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.429141;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.429141;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.429141;N0;D04; - Distance to N1 = 50000.000000 m
+0.429141;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.429141;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.429141;N0;D07; - I am in TRANSMITTING state
+0.429141;N0;D07; - I am the TX destination (N0)
+0.429141;N0;D14;    + I am transmitting, packet cannot be received
+0.434635;N0;G00; myTXFinished()
+0.434635;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.434635;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.434635;N0;G02; - New BO generated of 0.000007 s
+0.434635;N0;E09;       - resuming backoff at 0.000093
+0.434728;N0;F00; endBackoff()
+0.434728:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.434728:N0;F03 - Transmission is possible
+0.434728:N0;F04    + Selected transmission range: 0 - 0
+0.434728;N0;G00; inportNackReceived() from 1
+0.434728;N0;G02; Packet 36 has been LOST!
+0.434728;N0;G02; - I am implied in the NACK
+0.434728;N0;G03;    + Destination 1 was transmitting!s
+0.434728;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.434728;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.435482;N0;G00; myTXFinished()
+0.435482;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.435482;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.435482;N0;G02; - New BO generated of 0.000093 s
+0.435482;N0;E09;       - resuming backoff at 0.000021
+0.435503;N0;F00; endBackoff()
+0.435503:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.435503:N0;F03 - Transmission is possible
+0.435503:N0;F04    + Selected transmission range: 0 - 0
+0.435503;N0;G00; inportNackReceived() from 1
+0.435503;N0;G02; Packet 37 has been LOST!
+0.435503;N0;G02; - I am implied in the NACK
+0.435503;N0;G03;    + Destination 1 was transmitting!s
+0.435503;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.435503;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.469049;N0;G00; myTXFinished()
+0.469049;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.469049;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.469049;N0;G02; - New BO generated of 0.000021 s
+0.469049;N0;E09;       - resuming backoff at 0.000046
+0.469095;N0;F00; endBackoff()
+0.469095:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.469095:N0;F03 - Transmission is possible
+0.469095:N0;F04    + Selected transmission range: 0 - 0
+0.469095;N0;G00; inportNackReceived() from 1
+0.469095;N0;G02; Packet 38 has been LOST!
+0.469095;N0;G02; - I am implied in the NACK
+0.469095;N0;G03;    + Destination 1 was transmitting!s
+0.469095;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.469095;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.473184;N0;G00; myTXFinished()
+0.473184;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.473184;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.473184;N0;G02; - New BO generated of 0.000046 s
+0.473184;N0;E09;       - resuming backoff at 0.000046
+0.473229;N0;F00; endBackoff()
+0.473229:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.473229:N0;F03 - Transmission is possible
+0.473229:N0;F04    + Selected transmission range: 0 - 0
+0.473229;N0;G00; inportNackReceived() from 1
+0.473229;N0;G02; Packet 39 has been LOST!
+0.473229;N0;G02; - I am implied in the NACK
+0.473229;N0;G03;    + Destination 1 was transmitting!s
+0.473229;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.473229;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.474131;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.474131;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.474131;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.474131;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.474131;N0;D04; - Distance to N1 = 50000.000000 m
+0.474131;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.474131;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.474131;N0;E09; - I am TRANSMITTING ---> do nothing
+0.474302;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.474302;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.474302;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.474302;N0;D04; - Distance to N1 = 50000.000000 m
+0.474302;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.474302;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.474302;N0;D07; - I am in TRANSMITTING state
+0.474302;N0;D07; - I am the TX destination (N0)
+0.474302;N0;D14;    + I am transmitting, packet cannot be received
+0.476616;N0;G00; myTXFinished()
+0.476616;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.476616;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.476616;N0;G02; - New BO generated of 0.000046 s
+0.476616;N0;E09;       - resuming backoff at 0.000027
+0.476643;N0;F00; endBackoff()
+0.476643:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.476643:N0;F03 - Transmission is possible
+0.476643:N0;F04    + Selected transmission range: 0 - 0
+0.476643;N0;G00; inportNackReceived() from 1
+0.476643;N0;G02; Packet 40 has been LOST!
+0.476643;N0;G02; - I am implied in the NACK
+0.476643;N0;G03;    + Destination 1 was transmitting!s
+0.476643;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.476643;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.477080;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.477080;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.477080;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.477080;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.477080;N0;D04; - Distance to N1 = 50000.000000 m
+0.477080;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.477080;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.477080;N0;E09; - I am TRANSMITTING ---> do nothing
+0.477089;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.477089;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.477089;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.477089;N0;D04; - Distance to N1 = 50000.000000 m
+0.477089;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.477089;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.477089;N0;D07; - I am in TRANSMITTING state
+0.477089;N0;D07; - I am the TX destination (N0)
+0.477089;N0;D14;    + I am transmitting, packet cannot be received
+0.500227;N0;G00; myTXFinished()
+0.500227;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.500227;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.500227;N0;G02; - New BO generated of 0.000027 s
+0.500227;N0;E09;       - resuming backoff at 0.000028
+0.500255;N0;F00; endBackoff()
+0.500255:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.500255:N0;F03 - Transmission is possible
+0.500255:N0;F04    + Selected transmission range: 0 - 0
+0.500255;N0;G00; inportNackReceived() from 1
+0.500255;N0;G02; Packet 41 has been LOST!
+0.500255;N0;G02; - I am implied in the NACK
+0.500255;N0;G03;    + Destination 1 was transmitting!s
+0.500255;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.500255;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.503593;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.503593;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.503593;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.503593;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.503593;N0;D04; - Distance to N1 = 50000.000000 m
+0.503593;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.503593;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.503593;N0;E09; - I am TRANSMITTING ---> do nothing
+0.503659;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.503659;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.503659;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.503659;N0;D04; - Distance to N1 = 50000.000000 m
+0.503659;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.503659;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.503659;N0;D07; - I am in TRANSMITTING state
+0.503659;N0;D07; - I am the TX destination (N0)
+0.503659;N0;D14;    + I am transmitting, packet cannot be received
+0.506477;N0;G00; myTXFinished()
+0.506477;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.506477;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.506477;N0;G02; - New BO generated of 0.000028 s
+0.506477;N0;E09;       - resuming backoff at 0.000095
+0.506571;N0;F00; endBackoff()
+0.506571:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.506571:N0;F03 - Transmission is possible
+0.506571:N0;F04    + Selected transmission range: 0 - 0
+0.506571;N0;G00; inportNackReceived() from 1
+0.506571;N0;G02; Packet 42 has been LOST!
+0.506571;N0;G02; - I am implied in the NACK
+0.506571;N0;G03;    + Destination 1 was transmitting!s
+0.506571;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.506571;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.513749;N0;G00; myTXFinished()
+0.513749;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.513749;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.513749;N0;G02; - New BO generated of 0.000095 s
+0.513749;N0;E09;       - resuming backoff at 0.000017
+0.513766;N0;F00; endBackoff()
+0.513766:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.513766:N0;F03 - Transmission is possible
+0.513766:N0;F04    + Selected transmission range: 0 - 0
+0.513766;N0;G00; inportNackReceived() from 1
+0.513766;N0;G02; Packet 43 has been LOST!
+0.513766;N0;G02; - I am implied in the NACK
+0.513766;N0;G03;    + Destination 1 was transmitting!s
+0.513766;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.513766;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.514719;N0;G00; myTXFinished()
+0.514719;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.514719;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.514719;N0;G02; - New BO generated of 0.000017 s
+0.514719;N0;E09;       - resuming backoff at 0.000028
+0.514747;N0;F00; endBackoff()
+0.514747:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.514747:N0;F03 - Transmission is possible
+0.514747:N0;F04    + Selected transmission range: 0 - 0
+0.514747;N0;G00; inportNackReceived() from 1
+0.514747;N0;G02; Packet 44 has been LOST!
+0.514747;N0;G02; - I am implied in the NACK
+0.514747;N0;G03;    + Destination 1 was transmitting!s
+0.514747;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.514747;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.526789;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.526789;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.526789;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.526789;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.526789;N0;D04; - Distance to N1 = 50000.000000 m
+0.526789;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.526789;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.526789;N0;E09; - I am TRANSMITTING ---> do nothing
+0.526834;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.526834;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.526834;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.526834;N0;D04; - Distance to N1 = 50000.000000 m
+0.526834;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.526834;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.526834;N0;D07; - I am in TRANSMITTING state
+0.526834;N0;D07; - I am the TX destination (N0)
+0.526834;N0;D14;    + I am transmitting, packet cannot be received
+0.528157;N0;G00; myTXFinished()
+0.528157;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.528157;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.528157;N0;G02; - New BO generated of 0.000028 s
+0.528157;N0;E09;       - resuming backoff at 0.000029
+0.528186;N0;F00; endBackoff()
+0.528186:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.528186:N0;F03 - Transmission is possible
+0.528186:N0;F04    + Selected transmission range: 0 - 0
+0.528186;N0;G00; inportNackReceived() from 1
+0.528186;N0;G02; Packet 45 has been LOST!
+0.528186;N0;G02; - I am implied in the NACK
+0.528186;N0;G03;    + Destination 1 was transmitting!s
+0.528186;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.528186;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.534665;N0;G00; myTXFinished()
+0.534665;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.534665;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.534665;N0;G02; - New BO generated of 0.000029 s
+0.534665;N0;E09;       - resuming backoff at 0.000032
+0.534696;N0;F00; endBackoff()
+0.534696:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.534696:N0;F03 - Transmission is possible
+0.534696:N0;F04    + Selected transmission range: 0 - 0
+0.534696;N0;G00; inportNackReceived() from 1
+0.534696;N0;G02; Packet 46 has been LOST!
+0.534696;N0;G02; - I am implied in the NACK
+0.534696;N0;G03;    + Destination 1 was transmitting!s
+0.534696;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.534696;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.548101;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.548101;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.548101;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.548101;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.548101;N0;D04; - Distance to N1 = 50000.000000 m
+0.548101;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.548101;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.548101;N0;E09; - I am TRANSMITTING ---> do nothing
+0.548248;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.548248;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.548248;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.548248;N0;D04; - Distance to N1 = 50000.000000 m
+0.548248;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.548248;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.548248;N0;D07; - I am in TRANSMITTING state
+0.548248;N0;D07; - I am the TX destination (N0)
+0.548248;N0;D14;    + I am transmitting, packet cannot be received
+0.573235;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.573235;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.573235;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.573235;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.573235;N0;D04; - Distance to N1 = 50000.000000 m
+0.573235;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.573235;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.573235;N0;E09; - I am TRANSMITTING ---> do nothing
+0.573266;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.573266;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.573266;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.573266;N0;D04; - Distance to N1 = 50000.000000 m
+0.573266;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.573266;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.573266;N0;D07; - I am in TRANSMITTING state
+0.573266;N0;D07; - I am the TX destination (N0)
+0.573266;N0;D14;    + I am transmitting, packet cannot be received
+0.574489;N0;G00; myTXFinished()
+0.574489;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.574489;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.574489;N0;G02; - New BO generated of 0.000032 s
+0.574489;N0;E09;       - resuming backoff at 0.000055
+0.574544;N0;F00; endBackoff()
+0.574544:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.574544:N0;F03 - Transmission is possible
+0.574544:N0;F04    + Selected transmission range: 0 - 0
+0.574544;N0;G00; inportNackReceived() from 1
+0.574544;N0;G02; Packet 47 has been LOST!
+0.574544;N0;G02; - I am implied in the NACK
+0.574544;N0;G03;    + Destination 1 was transmitting!s
+0.574544;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.574544;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.593675;N0;G00; myTXFinished()
+0.593675;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.593675;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.593675;N0;G02; - New BO generated of 0.000055 s
+0.593675;N0;E09;       - resuming backoff at 0.000074
+0.593749;N0;F00; endBackoff()
+0.593749:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.593749:N0;F03 - Transmission is possible
+0.593749:N0;F04    + Selected transmission range: 0 - 0
+0.593749;N0;G00; inportNackReceived() from 1
+0.593749;N0;G02; Packet 48 has been LOST!
+0.593749;N0;G02; - I am implied in the NACK
+0.593749;N0;G03;    + Destination 1 was transmitting!s
+0.593749;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.593749;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.596643;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.596643;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.596643;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.596643;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.596643;N0;D04; - Distance to N1 = 50000.000000 m
+0.596643;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.596643;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.596643;N0;E09; - I am TRANSMITTING ---> do nothing
+0.596696;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.596696;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.596696;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.596696;N0;D04; - Distance to N1 = 50000.000000 m
+0.596696;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.596696;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.596696;N0;D07; - I am in TRANSMITTING state
+0.596696;N0;D07; - I am the TX destination (N0)
+0.596696;N0;D14;    + I am transmitting, packet cannot be received
+0.605603;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.605603;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.605603;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.605603;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.605603;N0;D04; - Distance to N1 = 50000.000000 m
+0.605603;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.605603;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.605603;N0;E09; - I am TRANSMITTING ---> do nothing
+0.605736;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.605736;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.605736;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.605736;N0;D04; - Distance to N1 = 50000.000000 m
+0.605736;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.605736;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.605736;N0;D07; - I am in TRANSMITTING state
+0.605736;N0;D07; - I am the TX destination (N0)
+0.605736;N0;D14;    + I am transmitting, packet cannot be received
+0.613010;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.613010;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.613010;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.613010;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.613010;N0;D04; - Distance to N1 = 50000.000000 m
+0.613010;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.613010;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.613010;N0;E09; - I am TRANSMITTING ---> do nothing
+0.613186;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.613186;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.613186;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.613186;N0;D04; - Distance to N1 = 50000.000000 m
+0.613186;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.613186;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.613186;N0;D07; - I am in TRANSMITTING state
+0.613186;N0;D07; - I am the TX destination (N0)
+0.613186;N0;D14;    + I am transmitting, packet cannot be received
+0.616498;N0;G00; myTXFinished()
+0.616498;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.616498;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.616498;N0;G02; - New BO generated of 0.000074 s
+0.616498;N0;E09;       - resuming backoff at 0.000010
+0.616509;N0;F00; endBackoff()
+0.616509:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.616509:N0;F03 - Transmission is possible
+0.616509:N0;F04    + Selected transmission range: 0 - 0
+0.616509;N0;G00; inportNackReceived() from 1
+0.616509;N0;G02; Packet 49 has been LOST!
+0.616509;N0;G02; - I am implied in the NACK
+0.616509;N0;G03;    + Destination 1 was transmitting!s
+0.616509;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.616509;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.634756;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.634756;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.634756;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.634756;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.634756;N0;D04; - Distance to N1 = 50000.000000 m
+0.634756;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.634756;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.634756;N0;E09; - I am TRANSMITTING ---> do nothing
+0.634771;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.634771;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.634771;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.634771;N0;D04; - Distance to N1 = 50000.000000 m
+0.634771;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.634771;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.634771;N0;D07; - I am in TRANSMITTING state
+0.634771;N0;D07; - I am the TX destination (N0)
+0.634771;N0;D14;    + I am transmitting, packet cannot be received
+0.637973;N0;G00; myTXFinished()
+0.637973;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.637973;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.637973;N0;G02; - New BO generated of 0.000010 s
+0.637973;N0;E09;       - resuming backoff at 0.000037
+0.638010;N0;F00; endBackoff()
+0.638010:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.638010:N0;F03 - Transmission is possible
+0.638010:N0;F04    + Selected transmission range: 0 - 0
+0.638010;N0;G00; inportNackReceived() from 1
+0.638010;N0;G02; Packet 50 has been LOST!
+0.638010;N0;G02; - I am implied in the NACK
+0.638010;N0;G03;    + Destination 1 was transmitting!s
+0.638010;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.638010;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.643945;N0;G00; myTXFinished()
+0.643945;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.643945;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.643945;N0;G02; - New BO generated of 0.000037 s
+0.643945;N0;E09;       - resuming backoff at 0.000007
+0.643952;N0;F00; endBackoff()
+0.643952:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.643952:N0;F03 - Transmission is possible
+0.643952:N0;F04    + Selected transmission range: 0 - 0
+0.643952;N0;G00; inportNackReceived() from 1
+0.643952;N0;G02; Packet 51 has been LOST!
+0.643952;N0;G02; - I am implied in the NACK
+0.643952;N0;G03;    + Destination 1 was transmitting!s
+0.643952;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.643952;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.645613;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.645613;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.645613;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.645613;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.645613;N0;D04; - Distance to N1 = 50000.000000 m
+0.645613;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.645613;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.645613;N0;E09; - I am TRANSMITTING ---> do nothing
+0.645670;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.645670;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.645670;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.645670;N0;D04; - Distance to N1 = 50000.000000 m
+0.645670;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.645670;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.645670;N0;D07; - I am in TRANSMITTING state
+0.645670;N0;D07; - I am the TX destination (N0)
+0.645670;N0;D14;    + I am transmitting, packet cannot be received
+0.657307;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.657307;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.657307;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.657307;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.657307;N0;D04; - Distance to N1 = 50000.000000 m
+0.657307;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.657307;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.657307;N0;E09; - I am TRANSMITTING ---> do nothing
+0.657348;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.657348;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.657348;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.657348;N0;D04; - Distance to N1 = 50000.000000 m
+0.657348;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.657348;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.657348;N0;D07; - I am in TRANSMITTING state
+0.657348;N0;D07; - I am the TX destination (N0)
+0.657348;N0;D14;    + I am transmitting, packet cannot be received
+0.665040;N0;G00; myTXFinished()
+0.665040;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.665040;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.665040;N0;G02; - New BO generated of 0.000007 s
+0.665040;N0;E09;       - resuming backoff at 0.000042
+0.665082;N0;F00; endBackoff()
+0.665082:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.665082:N0;F03 - Transmission is possible
+0.665082:N0;F04    + Selected transmission range: 0 - 0
+0.665082;N0;G00; inportNackReceived() from 1
+0.665082;N0;G02; Packet 52 has been LOST!
+0.665082;N0;G02; - I am implied in the NACK
+0.665082;N0;G03;    + Destination 1 was transmitting!s
+0.665082;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.665082;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.665904;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.665904;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.665904;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.665904;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.665904;N0;D04; - Distance to N1 = 50000.000000 m
+0.665904;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.665904;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.665904;N0;E09; - I am TRANSMITTING ---> do nothing
+0.665991;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.665991;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.665991;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.665991;N0;D04; - Distance to N1 = 50000.000000 m
+0.665991;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.665991;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.665991;N0;D07; - I am in TRANSMITTING state
+0.665991;N0;D07; - I am the TX destination (N0)
+0.665991;N0;D14;    + I am transmitting, packet cannot be received
+0.678944;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.678944;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.678944;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.678944;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.678944;N0;D04; - Distance to N1 = 50000.000000 m
+0.678944;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.678944;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.678944;N0;E09; - I am TRANSMITTING ---> do nothing
+0.678970;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.678970;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.678970;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.678970;N0;D04; - Distance to N1 = 50000.000000 m
+0.678970;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.678970;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.678970;N0;D07; - I am in TRANSMITTING state
+0.678970;N0;D07; - I am the TX destination (N0)
+0.678970;N0;D14;    + I am transmitting, packet cannot be received
+0.680872;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.680872;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.680872;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.680872;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.680872;N0;D04; - Distance to N1 = 50000.000000 m
+0.680872;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.680872;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.680872;N0;E09; - I am TRANSMITTING ---> do nothing
+0.680898;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.680898;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.680898;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.680898;N0;D04; - Distance to N1 = 50000.000000 m
+0.680898;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.680898;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.680898;N0;D07; - I am in TRANSMITTING state
+0.680898;N0;D07; - I am the TX destination (N0)
+0.680898;N0;D14;    + I am transmitting, packet cannot be received
+0.687592;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.687592;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.687592;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.687592;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.687592;N0;D04; - Distance to N1 = 50000.000000 m
+0.687592;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.687592;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.687592;N0;E09; - I am TRANSMITTING ---> do nothing
+0.687655;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.687655;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.687655;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.687655;N0;D04; - Distance to N1 = 50000.000000 m
+0.687655;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.687655;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.687655;N0;D07; - I am in TRANSMITTING state
+0.687655;N0;D07; - I am the TX destination (N0)
+0.687655;N0;D14;    + I am transmitting, packet cannot be received
+0.689888;N0;G00; myTXFinished()
+0.689888;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.689888;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.689888;N0;G02; - New BO generated of 0.000042 s
+0.689888;N0;E09;       - resuming backoff at 0.000117
+0.690005;N0;F00; endBackoff()
+0.690005:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.690005:N0;F03 - Transmission is possible
+0.690005:N0;F04    + Selected transmission range: 0 - 0
+0.690005;N0;G00; inportNackReceived() from 1
+0.690005;N0;G02; Packet 53 has been LOST!
+0.690005;N0;G02; - I am implied in the NACK
+0.690005;N0;G03;    + Destination 1 was transmitting!s
+0.690005;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.690005;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.701877;N0;G00; myTXFinished()
+0.701877;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.701877;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.701877;N0;G02; - New BO generated of 0.000117 s
+0.701877;N0;E09;       - resuming backoff at 0.000053
+0.701931;N0;F00; endBackoff()
+0.701931:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.701931:N0;F03 - Transmission is possible
+0.701931:N0;F04    + Selected transmission range: 0 - 0
+0.701931;N0;G00; inportNackReceived() from 1
+0.701931;N0;G02; Packet 54 has been LOST!
+0.701931;N0;G02; - I am implied in the NACK
+0.701931;N0;G03;    + Destination 1 was transmitting!s
+0.701931;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.701931;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.711466;N0;G00; myTXFinished()
+0.711466;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.711466;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.711466;N0;G02; - New BO generated of 0.000053 s
+0.711466;N0;E09;       - resuming backoff at 0.000083
+0.711549;N0;F00; endBackoff()
+0.711549:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.711549:N0;F03 - Transmission is possible
+0.711549:N0;F04    + Selected transmission range: 0 - 0
+0.711549;N0;G00; inportNackReceived() from 1
+0.711549;N0;G02; Packet 55 has been LOST!
+0.711549;N0;G02; - I am implied in the NACK
+0.711549;N0;G03;    + Destination 1 was transmitting!s
+0.711549;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.711549;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.716786;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.716786;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.716786;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.716786;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.716786;N0;D04; - Distance to N1 = 50000.000000 m
+0.716786;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.716786;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.716786;N0;E09; - I am TRANSMITTING ---> do nothing
+0.716890;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.716890;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.716890;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.716890;N0;D04; - Distance to N1 = 50000.000000 m
+0.716890;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.716890;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.716890;N0;D07; - I am in TRANSMITTING state
+0.716890;N0;D07; - I am the TX destination (N0)
+0.716890;N0;D14;    + I am transmitting, packet cannot be received
+0.722698;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.722698;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.722698;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.722698;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.722698;N0;D04; - Distance to N1 = 50000.000000 m
+0.722698;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.722698;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.722698;N0;E09; - I am TRANSMITTING ---> do nothing
+0.722750;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.722750;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.722750;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.722750;N0;D04; - Distance to N1 = 50000.000000 m
+0.722750;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.722750;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.722750;N0;D07; - I am in TRANSMITTING state
+0.722750;N0;D07; - I am the TX destination (N0)
+0.722750;N0;D14;    + I am transmitting, packet cannot be received
+0.728859;N0;G00; myTXFinished()
+0.728859;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.728859;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.728859;N0;G02; - New BO generated of 0.000083 s
+0.728859;N0;E09;       - resuming backoff at 0.000003
+0.728862;N0;F00; endBackoff()
+0.728862:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.728862:N0;F03 - Transmission is possible
+0.728862:N0;F04    + Selected transmission range: 0 - 0
+0.728862;N0;G00; inportNackReceived() from 1
+0.728862;N0;G02; Packet 56 has been LOST!
+0.728862;N0;G02; - I am implied in the NACK
+0.728862;N0;G03;    + Destination 1 was transmitting!s
+0.728862;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.728862;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.730661;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.730661;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.730661;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.730661;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.730661;N0;D04; - Distance to N1 = 50000.000000 m
+0.730661;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.730661;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.730661;N0;E09; - I am TRANSMITTING ---> do nothing
+0.730767;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.730767;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.730767;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.730767;N0;D04; - Distance to N1 = 50000.000000 m
+0.730767;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.730767;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.730767;N0;D07; - I am in TRANSMITTING state
+0.730767;N0;D07; - I am the TX destination (N0)
+0.730767;N0;D14;    + I am transmitting, packet cannot be received
+0.738815;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.738815;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.738815;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.738815;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.738815;N0;D04; - Distance to N1 = 50000.000000 m
+0.738815;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.738815;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.738815;N0;E09; - I am TRANSMITTING ---> do nothing
+0.738874;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.738874;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.738874;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.738874;N0;D04; - Distance to N1 = 50000.000000 m
+0.738874;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.738874;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.738874;N0;D07; - I am in TRANSMITTING state
+0.738874;N0;D07; - I am the TX destination (N0)
+0.738874;N0;D14;    + I am transmitting, packet cannot be received
+0.739851;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.739851;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.739851;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.739851;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.739851;N0;D04; - Distance to N1 = 50000.000000 m
+0.739851;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.739851;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.739851;N0;E09; - I am TRANSMITTING ---> do nothing
+0.739867;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.739867;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.739867;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.739867;N0;D04; - Distance to N1 = 50000.000000 m
+0.739867;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.739867;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.739867;N0;D07; - I am in TRANSMITTING state
+0.739867;N0;D07; - I am the TX destination (N0)
+0.739867;N0;D14;    + I am transmitting, packet cannot be received
+0.745519;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.745519;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.745519;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.745519;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.745519;N0;D04; - Distance to N1 = 50000.000000 m
+0.745519;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.745519;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.745519;N0;E09; - I am TRANSMITTING ---> do nothing
+0.745612;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.745612;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.745612;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.745612;N0;D04; - Distance to N1 = 50000.000000 m
+0.745612;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.745612;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.745612;N0;D07; - I am in TRANSMITTING state
+0.745612;N0;D07; - I am the TX destination (N0)
+0.745612;N0;D14;    + I am transmitting, packet cannot be received
+0.751590;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.751590;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.751590;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.751590;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.751590;N0;D04; - Distance to N1 = 50000.000000 m
+0.751590;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.751590;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.751590;N0;E09; - I am TRANSMITTING ---> do nothing
+0.751696;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.751696;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.751696;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.751696;N0;D04; - Distance to N1 = 50000.000000 m
+0.751696;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.751696;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.751696;N0;D07; - I am in TRANSMITTING state
+0.751696;N0;D07; - I am the TX destination (N0)
+0.751696;N0;D14;    + I am transmitting, packet cannot be received
+0.752783;N0;G00; myTXFinished()
+0.752783;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.752783;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.752783;N0;G02; - New BO generated of 0.000003 s
+0.752783;N0;E09;       - resuming backoff at 0.000010
+0.752792;N0;F00; endBackoff()
+0.752792:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.752792:N0;F03 - Transmission is possible
+0.752792:N0;F04    + Selected transmission range: 0 - 0
+0.752792;N0;G00; inportNackReceived() from 1
+0.752792;N0;G02; Packet 57 has been LOST!
+0.752792;N0;G02; - I am implied in the NACK
+0.752792;N0;G03;    + Destination 1 was transmitting!s
+0.752792;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.752792;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.758420;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.758420;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.758420;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.758420;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.758420;N0;D04; - Distance to N1 = 50000.000000 m
+0.758420;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.758420;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.758420;N0;E09; - I am TRANSMITTING ---> do nothing
+0.758531;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.758531;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.758531;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.758531;N0;D04; - Distance to N1 = 50000.000000 m
+0.758531;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.758531;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.758531;N0;D07; - I am in TRANSMITTING state
+0.758531;N0;D07; - I am the TX destination (N0)
+0.758531;N0;D14;    + I am transmitting, packet cannot be received
+0.762096;N0;G00; myTXFinished()
+0.762096;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.762096;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.762096;N0;G02; - New BO generated of 0.000010 s
+0.762096;N0;E09;       - resuming backoff at 0.000337
+0.762433;N0;F00; endBackoff()
+0.762433:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.762433:N0;F03 - Transmission is possible
+0.762433:N0;F04    + Selected transmission range: 0 - 0
+0.762433;N0;G00; inportNackReceived() from 1
+0.762433;N0;G02; Packet 58 has been LOST!
+0.762433;N0;G02; - I am implied in the NACK
+0.762433;N0;G03;    + Destination 1 was transmitting!s
+0.762433;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.762433;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.772257;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.772257;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.772257;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.772257;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.772257;N0;D04; - Distance to N1 = 50000.000000 m
+0.772257;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.772257;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.772257;N0;E09; - I am TRANSMITTING ---> do nothing
+0.772317;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.772317;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.772317;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.772317;N0;D04; - Distance to N1 = 50000.000000 m
+0.772317;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.772317;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.772317;N0;D07; - I am in TRANSMITTING state
+0.772317;N0;D07; - I am the TX destination (N0)
+0.772317;N0;D14;    + I am transmitting, packet cannot be received
+0.778101;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.778101;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.778101;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.778101;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.778101;N0;D04; - Distance to N1 = 50000.000000 m
+0.778101;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.778101;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.778101;N0;E09; - I am TRANSMITTING ---> do nothing
+0.778117;N0;G00; myTXFinished()
+0.778117;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.778117;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.778117;N0;G02; - New BO generated of 0.000337 s
+0.778117;N0;E09;       - resuming backoff at 0.000050
+0.778168;N0;F00; endBackoff()
+0.778168:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.778168:N0;F03 - Transmission is possible
+0.778168:N0;F04    + Selected transmission range: 0 - 0
+0.778168;N0;G00; inportNackReceived() from 1
+0.778168;N0;G02; Packet 59 has been LOST!
+0.778168;N0;G02; - I am implied in the NACK
+0.778168;N0;G03;    + Interference sensed in destination 1 is greater than its CCA!
+0.778168;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.778168;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.778224;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.778224;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.778224;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.778224;N0;D04; - Distance to N1 = 50000.000000 m
+0.778224;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.778224;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.778224;N0;D07; - I am in TRANSMITTING state
+0.778224;N0;D07; - I am the TX destination (N0)
+0.778224;N0;D14;    + I am transmitting, packet cannot be received
+0.782874;N0;G00; myTXFinished()
+0.782874;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.782874;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.782874;N0;G02; - New BO generated of 0.000050 s
+0.782874;N0;E09;       - resuming backoff at 0.000090
+0.782964;N0;F00; endBackoff()
+0.782964:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.782964:N0;F03 - Transmission is possible
+0.782964:N0;F04    + Selected transmission range: 0 - 0
+0.782964;N0;G00; inportNackReceived() from 1
+0.782964;N0;G02; Packet 60 has been LOST!
+0.782964;N0;G02; - I am implied in the NACK
+0.782964;N0;G03;    + Destination 1 was transmitting!s
+0.782964;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.782964;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.783632;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.783632;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.783632;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.783632;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.783632;N0;D04; - Distance to N1 = 50000.000000 m
+0.783632;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.783632;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.783632;N0;E09; - I am TRANSMITTING ---> do nothing
+0.783703;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.783703;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.783703;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.783703;N0;D04; - Distance to N1 = 50000.000000 m
+0.783703;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.783703;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.783703;N0;D07; - I am in TRANSMITTING state
+0.783703;N0;D07; - I am the TX destination (N0)
+0.783703;N0;D14;    + I am transmitting, packet cannot be received
+0.791251;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.791251;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.791251;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.791251;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.791251;N0;D04; - Distance to N1 = 50000.000000 m
+0.791251;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.791251;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.791251;N0;E09; - I am TRANSMITTING ---> do nothing
+0.791317;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.791317;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.791317;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.791317;N0;D04; - Distance to N1 = 50000.000000 m
+0.791317;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.791317;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.791317;N0;D07; - I am in TRANSMITTING state
+0.791317;N0;D07; - I am the TX destination (N0)
+0.791317;N0;D14;    + I am transmitting, packet cannot be received
+0.791676;N0;G00; myTXFinished()
+0.791676;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.791676;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.791676;N0;G02; - New BO generated of 0.000090 s
+0.791676;N0;E09;       - resuming backoff at 0.000051
+0.791727;N0;F00; endBackoff()
+0.791727:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.791727:N0;F03 - Transmission is possible
+0.791727:N0;F04    + Selected transmission range: 0 - 0
+0.791727;N0;G00; inportNackReceived() from 1
+0.791727;N0;G02; Packet 61 has been LOST!
+0.791727;N0;G02; - I am implied in the NACK
+0.791727;N0;G03;    + Destination 1 was transmitting!s
+0.791727;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.791727;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.794446;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.794446;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.794446;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.794446;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.794446;N0;D04; - Distance to N1 = 50000.000000 m
+0.794446;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.794446;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.794446;N0;E09; - I am TRANSMITTING ---> do nothing
+0.794454;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.794454;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.794454;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.794454;N0;D04; - Distance to N1 = 50000.000000 m
+0.794454;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.794454;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.794454;N0;D07; - I am in TRANSMITTING state
+0.794454;N0;D07; - I am the TX destination (N0)
+0.794454;N0;D14;    + I am transmitting, packet cannot be received
+0.807314;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.807314;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.807314;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.807314;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.807314;N0;D04; - Distance to N1 = 50000.000000 m
+0.807314;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.807314;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.807314;N0;E09; - I am TRANSMITTING ---> do nothing
+0.807486;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.807486;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.807486;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.807486;N0;D04; - Distance to N1 = 50000.000000 m
+0.807486;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.807486;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.807486;N0;D07; - I am in TRANSMITTING state
+0.807486;N0;D07; - I am the TX destination (N0)
+0.807486;N0;D14;    + I am transmitting, packet cannot be received
+0.811261;N0;G00; myTXFinished()
+0.811261;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.811261;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.811261;N0;G02; - New BO generated of 0.000051 s
+0.811261;N0;E09;       - resuming backoff at 0.000012
+0.811273;N0;F00; endBackoff()
+0.811273:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.811273:N0;F03 - Transmission is possible
+0.811273:N0;F04    + Selected transmission range: 0 - 0
+0.811273;N0;G00; inportNackReceived() from 1
+0.811273;N0;G02; Packet 62 has been LOST!
+0.811273;N0;G02; - I am implied in the NACK
+0.811273;N0;G03;    + Destination 1 was transmitting!s
+0.811273;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.811273;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.819004;N0;G00; myTXFinished()
+0.819004;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.819004;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.819004;N0;G02; - New BO generated of 0.000012 s
+0.819004;N0;E09;       - resuming backoff at 0.000164
+0.819168;N0;F00; endBackoff()
+0.819168:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.819168:N0;F03 - Transmission is possible
+0.819168:N0;F04    + Selected transmission range: 0 - 0
+0.819168;N0;G00; inportNackReceived() from 1
+0.819168;N0;G02; Packet 63 has been LOST!
+0.819168;N0;G02; - I am implied in the NACK
+0.819168;N0;G03;    + Destination 1 was transmitting!s
+0.819168;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.819168;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.820544;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.820544;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.820544;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.820544;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.820544;N0;D04; - Distance to N1 = 50000.000000 m
+0.820544;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.820544;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.820544;N0;E09; - I am TRANSMITTING ---> do nothing
+0.820652;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.820652;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.820652;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.820652;N0;D04; - Distance to N1 = 50000.000000 m
+0.820652;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.820652;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.820652;N0;D07; - I am in TRANSMITTING state
+0.820652;N0;D07; - I am the TX destination (N0)
+0.820652;N0;D14;    + I am transmitting, packet cannot be received
+0.829624;N0;G00; myTXFinished()
+0.829624;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.829624;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.829624;N0;G02; - New BO generated of 0.000164 s
+0.829624;N0;E09;       - resuming backoff at 0.000057
+0.829682;N0;F00; endBackoff()
+0.829682:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.829682:N0;F03 - Transmission is possible
+0.829682:N0;F04    + Selected transmission range: 0 - 0
+0.829682;N0;G00; inportNackReceived() from 1
+0.829682;N0;G02; Packet 64 has been LOST!
+0.829682;N0;G02; - I am implied in the NACK
+0.829682;N0;G03;    + Destination 1 was transmitting!s
+0.829682;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.829682;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.830209;N0;G00; myTXFinished()
+0.830209;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.830209;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.830209;N0;G02; - New BO generated of 0.000057 s
+0.830209;N0;E09;       - resuming backoff at 0.000155
+0.830364;N0;F00; endBackoff()
+0.830364:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.830364:N0;F03 - Transmission is possible
+0.830364:N0;F04    + Selected transmission range: 0 - 0
+0.830364;N0;G00; inportNackReceived() from 1
+0.830364;N0;G02; Packet 65 has been LOST!
+0.830364;N0;G02; - I am implied in the NACK
+0.830364;N0;G03;    + Destination 1 was transmitting!s
+0.830364;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.830364;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.830903;N0;G00; myTXFinished()
+0.830903;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.830903;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.830903;N0;G02; - New BO generated of 0.000155 s
+0.830903;N0;E09;       - resuming backoff at 0.000134
+0.831037;N0;F00; endBackoff()
+0.831037:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.831037:N0;F03 - Transmission is possible
+0.831037:N0;F04    + Selected transmission range: 0 - 0
+0.831037;N0;G00; inportNackReceived() from 1
+0.831037;N0;G02; Packet 66 has been LOST!
+0.831037;N0;G02; - I am implied in the NACK
+0.831037;N0;G03;    + Destination 1 was transmitting!s
+0.831037;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.831037;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.852771;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.852771;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.852771;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.852771;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.852771;N0;D04; - Distance to N1 = 50000.000000 m
+0.852771;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.852771;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.852771;N0;E09; - I am TRANSMITTING ---> do nothing
+0.852821;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.852821;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.852821;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.852821;N0;D04; - Distance to N1 = 50000.000000 m
+0.852821;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.852821;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.852821;N0;D07; - I am in TRANSMITTING state
+0.852821;N0;D07; - I am the TX destination (N0)
+0.852821;N0;D14;    + I am transmitting, packet cannot be received
+0.857192;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.857192;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.857192;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.857192;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.857192;N0;D04; - Distance to N1 = 50000.000000 m
+0.857192;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.857192;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.857192;N0;E09; - I am TRANSMITTING ---> do nothing
+0.857195;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.857195;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.857195;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.857195;N0;D04; - Distance to N1 = 50000.000000 m
+0.857195;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.857195;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.857195;N0;D07; - I am in TRANSMITTING state
+0.857195;N0;D07; - I am the TX destination (N0)
+0.857195;N0;D14;    + I am transmitting, packet cannot be received
+0.861516;N0;G00; myTXFinished()
+0.861516;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.861516;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.861516;N0;G02; - New BO generated of 0.000134 s
+0.861516;N0;E09;       - resuming backoff at 0.000012
+0.861527;N0;F00; endBackoff()
+0.861527:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.861527:N0;F03 - Transmission is possible
+0.861527:N0;F04    + Selected transmission range: 0 - 0
+0.861527;N0;G00; inportNackReceived() from 1
+0.861527;N0;G02; Packet 67 has been LOST!
+0.861527;N0;G02; - I am implied in the NACK
+0.861527;N0;G03;    + Destination 1 was transmitting!s
+0.861527;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.861527;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.871614;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.871614;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.871614;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.871614;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.871614;N0;D04; - Distance to N1 = 50000.000000 m
+0.871614;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.871614;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.871614;N0;E09; - I am TRANSMITTING ---> do nothing
+0.871658;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.871658;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.871658;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.871658;N0;D04; - Distance to N1 = 50000.000000 m
+0.871658;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.871658;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.871658;N0;D07; - I am in TRANSMITTING state
+0.871658;N0;D07; - I am the TX destination (N0)
+0.871658;N0;D14;    + I am transmitting, packet cannot be received
+0.872673;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.872673;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.872673;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.872673;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.872673;N0;D04; - Distance to N1 = 50000.000000 m
+0.872673;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.872673;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.872673;N0;E09; - I am TRANSMITTING ---> do nothing
+0.872765;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.872765;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.872765;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.872765;N0;D04; - Distance to N1 = 50000.000000 m
+0.872765;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.872765;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.872765;N0;D07; - I am in TRANSMITTING state
+0.872765;N0;D07; - I am the TX destination (N0)
+0.872765;N0;D14;    + I am transmitting, packet cannot be received
+0.888096;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.888096;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.888096;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.888096;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.888096;N0;D04; - Distance to N1 = 50000.000000 m
+0.888096;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.888096;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.888096;N0;E09; - I am TRANSMITTING ---> do nothing
+0.888194;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.888194;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.888194;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.888194;N0;D04; - Distance to N1 = 50000.000000 m
+0.888194;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.888194;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.888194;N0;D07; - I am in TRANSMITTING state
+0.888194;N0;D07; - I am the TX destination (N0)
+0.888194;N0;D14;    + I am transmitting, packet cannot be received
+0.901652;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.901652;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.901652;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.901652;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.901652;N0;D04; - Distance to N1 = 50000.000000 m
+0.901652;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.901652;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.901652;N0;E09; - I am TRANSMITTING ---> do nothing
+0.901750;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.901750;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.901750;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.901750;N0;D04; - Distance to N1 = 50000.000000 m
+0.901750;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.901750;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.901750;N0;D07; - I am in TRANSMITTING state
+0.901750;N0;D07; - I am the TX destination (N0)
+0.901750;N0;D14;    + I am transmitting, packet cannot be received
+0.913185;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.913185;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.913185;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.913185;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.913185;N0;D04; - Distance to N1 = 50000.000000 m
+0.913185;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.913185;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.913185;N0;E09; - I am TRANSMITTING ---> do nothing
+0.913202;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.913202;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.913202;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.913202;N0;D04; - Distance to N1 = 50000.000000 m
+0.913202;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.913202;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.913202;N0;D07; - I am in TRANSMITTING state
+0.913202;N0;D07; - I am the TX destination (N0)
+0.913202;N0;D14;    + I am transmitting, packet cannot be received
+0.913579;N0;G00; myTXFinished()
+0.913579;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.913579;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.913579;N0;G02; - New BO generated of 0.000012 s
+0.913579;N0;E09;       - resuming backoff at 0.000212
+0.913791;N0;F00; endBackoff()
+0.913791:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.913791:N0;F03 - Transmission is possible
+0.913791:N0;F04    + Selected transmission range: 0 - 0
+0.913791;N0;G00; inportNackReceived() from 1
+0.913791;N0;G02; Packet 68 has been LOST!
+0.913791;N0;G02; - I am implied in the NACK
+0.913791;N0;G03;    + Destination 1 was transmitting!s
+0.913791;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.913791;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.914283;N0;G00; myTXFinished()
+0.914283;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.914283;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.914283;N0;G02; - New BO generated of 0.000212 s
+0.914283;N0;E09;       - resuming backoff at 0.000051
+0.914334;N0;F00; endBackoff()
+0.914334:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.914334:N0;F03 - Transmission is possible
+0.914334:N0;F04    + Selected transmission range: 0 - 0
+0.914334;N0;G00; inportNackReceived() from 1
+0.914334;N0;G02; Packet 69 has been LOST!
+0.914334;N0;G02; - I am implied in the NACK
+0.914334;N0;G03;    + Destination 1 was transmitting!s
+0.914334;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.914334;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.970262;N0;G00; myTXFinished()
+0.970262;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.970262;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.970262;N0;G02; - New BO generated of 0.000051 s
+0.970262;N0;E09;       - resuming backoff at 0.000166
+0.970428;N0;F00; endBackoff()
+0.970428:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.970428:N0;F03 - Transmission is possible
+0.970428:N0;F04    + Selected transmission range: 0 - 0
+0.970428;N0;G00; inportNackReceived() from 1
+0.970428;N0;G02; Packet 70 has been LOST!
+0.970428;N0;G02; - I am implied in the NACK
+0.970428;N0;G03;    + Destination 1 was transmitting!s
+0.970428;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.970428;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.971957;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.971957;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.971957;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.971957;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.971957;N0;D04; - Distance to N1 = 50000.000000 m
+0.971957;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.971957;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.971957;N0;E09; - I am TRANSMITTING ---> do nothing
+0.972016;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.972016;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.972016;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.972016;N0;D04; - Distance to N1 = 50000.000000 m
+0.972016;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.972016;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.972016;N0;D07; - I am in TRANSMITTING state
+0.972016;N0;D07; - I am the TX destination (N0)
+0.972016;N0;D14;    + I am transmitting, packet cannot be received
+0.972864;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.972864;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.972864;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.972864;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.972864;N0;D04; - Distance to N1 = 50000.000000 m
+0.972864;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.972864;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.972864;N0;E09; - I am TRANSMITTING ---> do nothing
+0.973069;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.973069;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.973069;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.973069;N0;D04; - Distance to N1 = 50000.000000 m
+0.973069;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.973069;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.973069;N0;D07; - I am in TRANSMITTING state
+0.973069;N0;D07; - I am the TX destination (N0)
+0.973069;N0;D14;    + I am transmitting, packet cannot be received
+0.980187;N0;G00; myTXFinished()
+0.980187;N0;E00; inportSomeNodeFinishTX(): source = 0 - destination = 1
+0.980187;N0;E02; - I have finished a TX in channel range: 0 - 0
+0.980187;N0;G02; - New BO generated of 0.000166 s
+0.980187;N0;E09;       - resuming backoff at 0.000045
+0.980232;N0;F00; endBackoff()
+0.980232:N0;F02 - Channels for transmitting: 1  0  0  0  
+0.980232:N0;F03 - Transmission is possible
+0.980232:N0;F04    + Selected transmission range: 0 - 0
+0.980232;N0;G00; inportNackReceived() from 1
+0.980232;N0;G02; Packet 71 has been LOST!
+0.980232;N0;G02; - I am implied in the NACK
+0.980232;N0;G03;    + Destination 1 was transmitting!s
+0.980232;N0;D00; inportSomeNodeStartTX(): source = 0 - destination = 1
+0.980232;N0;D02; - I have started a TX in channels: 0 - 0; (TO BE DETAILED... 0;0;0)
+0.990234;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.990234;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.990234;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.990234;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.990234;N0;D04; - Distance to N1 = 50000.000000 m
+0.990234;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.990234;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.990234;N0;E09; - I am TRANSMITTING ---> do nothing
+0.990307;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.990307;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.990307;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.990307;N0;D04; - Distance to N1 = 50000.000000 m
+0.990307;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.990307;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.990307;N0;D07; - I am in TRANSMITTING state
+0.990307;N0;D07; - I am the TX destination (N0)
+0.990307;N0;D14;    + I am transmitting, packet cannot be received
+0.996079;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.996079;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.996079;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.996079;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.996079;N0;D04; - Distance to N1 = 50000.000000 m
+0.996079;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.996079;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.996079;N0;E09; - I am TRANSMITTING ---> do nothing
+0.996143;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.996143;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.996143;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.996143;N0;D04; - Distance to N1 = 50000.000000 m
+0.996143;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.996143;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.996143;N0;D07; - I am in TRANSMITTING state
+0.996143;N0;D07; - I am the TX destination (N0)
+0.996143;N0;D14;    + I am transmitting, packet cannot be received
+0.996854;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.996854;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.996854;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.996854;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.996854;N0;D04; - Distance to N1 = 50000.000000 m
+0.996854;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.996854;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.996854;N0;E09; - I am TRANSMITTING ---> do nothing
+0.996946;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.996946;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.996946;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.996946;N0;D04; - Distance to N1 = 50000.000000 m
+0.996946;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.996946;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.996946;N0;D07; - I am in TRANSMITTING state
+0.996946;N0;D07; - I am the TX destination (N0)
+0.996946;N0;D14;    + I am transmitting, packet cannot be received
+0.999558;N0;E00; inportSomeNodeFinishTX(): source = 1 - destination = 0
+0.999558;N0;E02; - N1 has finished a TX in channel range: 0 - 0
+0.999558;N0;E03; - Initial power of transmitter N1 = 0.001250 pW
+0.999558;N0;D03; - Pre update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.999558;N0;D04; - Distance to N1 = 50000.000000 m
+0.999558;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.999558;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.999558;N0;E09; - I am TRANSMITTING ---> do nothing
+0.999611;N0;D00; inportSomeNodeStartTX(): source = 1 - destination = 0
+0.999611;N0;D02; - N1 has started a TX in channels: 0 - 0; (TO BE DETAILED... 1;0;0)
+0.999611;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
+0.999611;N0;D04; - Distance to N1 = 50000.000000 m
+0.999611;N0;D05; - Power received from transmitter N1 = -119.031408 dBm (0.001250 pW)
+0.999611;N0;D06; - Post update channel state [dBm]: -119.031408  -139.031408  -inf  -inf  
+0.999611;N0;D07; - I am in TRANSMITTING state
+0.999611;N0;D07; - I am the TX destination (N0)
+0.999611;N0;D14;    + I am transmitting, packet cannot be received
+1.000000;N0;C00; Node Stop()
+1.000000;N0;C02; - Time transmitting in number of channels: (1) 1.973869  
+1.000000;N0;C03; - Time transmitting in each channel: 0.998539 0.000000 0.000000 0.000000 
+1.000000;N0;C02; - Time LOST in number of channels: (1) 0.998539  
+1.000000;N0;C03; - Time LOST in each channel: 0.998539 0.000000 0.000000 0.000000 
+1.000000;N0;C02; - Time EFFECTIVE in number of channels: (1) 0.975330  
+1.000000;N0;C03; - Time EFFECTIVE in each channel: 0.000000 0.000000 0.000000 0.000000 
+1.000000;N0;C04; - Packets sent = 72
+1.000000;N0;C04; - Throughput = 0.000000 Mbps
+1.000000;N0;C04; - LOST Throughput due to collisions = 0.766878 Mbps
+1.000000;N0;C04; - EFFECTIVE Throughput = -0.766878 Mbps
+1.000000;N0;C04; - Packets lost = 72
+1.000000;N0;C04; - % of Packets lost = 10000.000000 %
+1.000000;N0;CHANGE_CODE; - Total hidden nodes: 1
+1.000000;N0;CHANGE CODE; - Hidden nodes list: 0  1  
