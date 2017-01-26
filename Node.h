@@ -99,7 +99,7 @@ component Node : public TypeII{
 		double interference_pw;		// XXX
 		int progress_bar_delta;		// Percentage value between displayed values in the progress bar
 		int progress_bar_counter;	// Counter for displaying the progress bar
-		double pw_received_interest;	// Power received from a TX destined to the node
+		double pw_received_interest;	// Power received from a TX destined to the node (in pW!!)
 		int receiving_from_node_id;	// ID of the node that is transmitting to me
 		int receiving_packet_id;	// IF of the packet that is being transmitted to me
 		int packet_id;				// Packet ID
@@ -197,6 +197,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 
 		updateChannelsPower(notification, 1); // Update the power sensed at each channel ("1" indicates adding power)
 		computeMaxInterference(notification); // Interference checking
+		pw_received_interest = power_received_per_node[notification.source_id];
 
 		// DECIDE WHAT TO DO ACCORDING TO THE STATE
 		int loss_reason;
@@ -209,9 +210,10 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 					if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07;    + I am the TX destination (N%d)\n",
 							SimTime(), node_id, notification.tx_info.destination_id);
 					// Check if packet has been lost due to interferences or weak signal strength
-					pw_received_interest = power_received_per_node[notification.source_id];
 					loss_reason = isPacketLost(notification);
 					if(loss_reason != -1) {	// If packet is lost send logical Nack
+						if(save_node_logs) fprintf(own_log_file, "%f;N%d;D14;       - Reception of packet %d from %d CANNOT be started because of reason %d\n",
+							SimTime(), node_id, notification.tx_info.packet_id,	notification.source_id, loss_reason);
 						sendNack(notification.tx_info.packet_id, notification.source_id, -1, loss_reason);
 					} else {
 						node_state = 2;
@@ -249,7 +251,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 			// RECEIVING STATE
 			case 2:{
 				if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am in RECEIVING state\n",SimTime(), node_id);
-				if(pw_received_interest >= current_cca){
+				if(convertPower(0,pw_received_interest) >= current_cca){
 					if(notification.tx_info.destination_id == node_id){	// Node is the destination
 						// Pure collision (two nodes transmitting to me)
 						if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am the TX destination (N%d)\n",SimTime(),
@@ -572,7 +574,7 @@ double Node :: computeTxTime(int ix_num_channels_used){
 			break;
 		}
 		default:{
-			printf("Backoff model not found!\n");
+			printf("TX time model not found!\n");
 			break;
 		}
 	}
@@ -1000,9 +1002,9 @@ void Node :: cleanNack(){
  * - nack_info:
  */
 void Node :: processNack(NackInfo nack_info) {
-	handlePacketLoss();
 	if(nack_info.node_id_a == node_id || nack_info.node_id_b == node_id){
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;G02; - I am implied in the NACK\n", SimTime(), node_id);
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;G02; - I am implied in the NACK (reason = %d)\n",
+				SimTime(), node_id, nack_info.reason_id);
 		nacks_received[nack_info.reason_id] ++;
 		switch(nack_info.reason_id){
 			// destination was transmitting
@@ -1011,12 +1013,14 @@ void Node :: processNack(NackInfo nack_info) {
 						SimTime(), node_id, nack_info.source_id);
 				// Add to hidden nodes list ("I was not listening to him!")
 				hidden_nodes_list[nack_info.source_id] = 1;
+				handlePacketLoss();
 				break;
 			}
 			// power received < CCA
 			case 1:{
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Power received in destination %d is less than its CCA!s\n",
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Power received in destination %d is less than its CCA!\n",
 						SimTime(), node_id, nack_info.source_id);
+				handlePacketLoss();
 				break;
 			}
 			// interferences > CCA
@@ -1024,6 +1028,7 @@ void Node :: processNack(NackInfo nack_info) {
 				// Check that I was the source to increase the number of packets lost
 				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Interference sensed in destination %d is greater than its CCA!\n",
 						SimTime(), node_id, nack_info.source_id);
+				handlePacketLoss();
 				break;
 			}
 			// pure collision (2 nodes transmitting to same destination)
@@ -1036,6 +1041,7 @@ void Node :: processNack(NackInfo nack_info) {
 				} else if (nack_info.node_id_b != node_id) {
 					hidden_nodes_list[nack_info.node_id_b] = 1;
 				}
+				handlePacketLoss();
 				break;
 			}
 			case 4:{
@@ -1045,6 +1051,7 @@ void Node :: processNack(NackInfo nack_info) {
 					if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Collision detected at destination %d! %d appeared when %d was transmitting\n",
 							SimTime(), node_id, nack_info.source_id, nack_info.node_id_b, nack_info.node_id_a);
 					hidden_nodes_list[nack_info.node_id_b] = 1;
+					handlePacketLoss();
 				}
 				break;
 			}
@@ -1089,15 +1096,9 @@ int Node :: isPacketLost(Notification notification){
 
 	computeMaxInterference(notification);
 	int loss_reason = -1;				// Packet is NOT lost
-
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;D14;       - Reception of packet %d from %d CANNOT be started\n",
-		SimTime(), node_id, notification.tx_info.packet_id,	notification.source_id);
-
-	if (pw_received_interest < current_cca) {	// Signal strenght is not enough to be decoded
+	if (convertPower(0, pw_received_interest) < current_cca) {	// Signal strenght is not enough to be decoded
 		loss_reason = 1;
-		// Add to hidden nodes list
-		hidden_nodes_list[notification.source_id] = 1;
-	} else if(max_pw_interference > current_cca){	// There are interference signal greater than cca (collision)
+	} else if(convertPower(0, max_pw_interference) > current_cca){	// There are interference signal greater than cca (collision)
 		loss_reason = 2;
 	}
 	return loss_reason;
@@ -1307,7 +1308,7 @@ void Node :: initializeVariables() {
 	}
 
 	current_destination_id = destination_id;
-	pw_received_interest = 0;
+	pw_received_interest = 0; 	// in pW!!
 	progress_bar_delta = 5;	// TODO constant
 	progress_bar_counter = 0;
 	packets_sent = 0;
@@ -1422,8 +1423,8 @@ void Node :: printNodeStatistics(){
 	throughput = (((double)(packets_sent-packets_lost) * packet_length * num_packets_aggregated / 1000000))/SimTime();
 
 	printf("-----------------------------------------------------------------------------\n");
-	printf("(N%d) - Packets: acked = %d - sent = %d - lost = %d - loss ratio = %f %%\n",
-			node_id, packets_sent - packets_lost, packets_sent, packets_lost, packets_lost_percentage);
+	printf("(N%d) - Packets: sent = %d - lost = %d - loss ratio = %f %%\n",
+			node_id, packets_sent, packets_lost, packets_lost_percentage);
 	if(save_node_logs) fprintf(own_log_file,"%f;N%d;C04; - Packets sent = %d\n", SimTime(), node_id, packets_sent);
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;C04; - Throughput = %f Mbps\n", SimTime(), node_id, throughput);
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;C04; - LOST Throughput due to collisions = %f Mbps\n",
@@ -1446,7 +1447,7 @@ void Node :: printNodeStatistics(){
 
 	if(save_node_logs) fprintf(own_log_file,"%f;N%d;CHANGE CODE; - Hidden nodes list: ", SimTime(), node_id);
 	for(int i = 0; i < total_nodes_number; i++){
-		// printf("%d  ", hidden_nodes_list[i]);
+		printf("%d  ", hidden_nodes_list[i]);
 		if(save_node_logs) fprintf(own_log_file, "%d  ", hidden_nodes_list[i]);
 	}
 

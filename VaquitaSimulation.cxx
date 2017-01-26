@@ -1339,7 +1339,7 @@ struct NackInfo
 
 
 
-#line 281 "Node.h"
+#line 283 "Node.h"
 ;
 
 
@@ -1349,7 +1349,7 @@ struct NackInfo
 
 
 
-#line 339 "Node.h"
+#line 341 "Node.h"
 ;
 
 
@@ -1360,7 +1360,7 @@ struct NackInfo
 
 
 
-#line 405 "Node.h"
+#line 407 "Node.h"
 ;
 
 
@@ -1370,7 +1370,7 @@ struct NackInfo
 
 
 
-#line 422 "Node.h"
+#line 424 "Node.h"
 ;
 
 
@@ -1509,7 +1509,7 @@ int exceededCCA(double* channel_power, int primary_channel, int cca){
 
 
 
-#line 594 "Node.h"
+#line 596 "Node.h"
 int getBoundaryChannel(int position, int *channels_available, int total_channels_number){
 	int left_tx_ch = 0;
 	int left_tx_ch_is_set = 0;
@@ -1543,7 +1543,7 @@ int getBoundaryChannel(int position, int *channels_available, int total_channels
 
 
 
-#line 1336 "Node.h"
+#line 1337 "Node.h"
 void printChannelPower(int save_node_logs, int print_location, double *channel_power, int num_channels_vaquita, FILE *own_log_file){
 	if(print_location == 1){
 		for(int c = 0; c < num_channels_vaquita; c++){
@@ -1680,12 +1680,12 @@ struct NackInfo
 
 
 
-#line 391 "VaquitaSimulation.cc"
+#line 393 "VaquitaSimulation.cc"
 const char* getfield(char* line, int num){
     const char* tok;
-    for (tok = strtok(line, ";");
+    for (tok = strtok(line, ",");
             tok && *tok;
-            tok = strtok(NULL, ";\n"))
+            tok = strtok(NULL, ",\n"))
     {
         if (!--num)
             return tok;
@@ -2198,6 +2198,7 @@ void compcxx_Node_5 :: inportSomeNodeStartTX(Notification &notification){
 
 		updateChannelsPower(notification, 1); 
 		computeMaxInterference(notification); 
+		pw_received_interest = power_received_per_node[notification.source_id];
 
 		
 		int loss_reason;
@@ -2210,9 +2211,10 @@ void compcxx_Node_5 :: inportSomeNodeStartTX(Notification &notification){
 					if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07;    + I am the TX destination (N%d)\n",
 							SimTime(), node_id, notification.tx_info.destination_id);
 					
-					pw_received_interest = power_received_per_node[notification.source_id];
 					loss_reason = isPacketLost(notification);
 					if(loss_reason != -1) {	
+						if(save_node_logs) fprintf(own_log_file, "%f;N%d;D14;       - Reception of packet %d from %d CANNOT be started because of reason %d\n",
+							SimTime(), node_id, notification.tx_info.packet_id,	notification.source_id, loss_reason);
 						sendNack(notification.tx_info.packet_id, notification.source_id, -1, loss_reason);
 					} else {
 						node_state = 2;
@@ -2250,7 +2252,7 @@ void compcxx_Node_5 :: inportSomeNodeStartTX(Notification &notification){
 			
 			case 2:{
 				if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am in RECEIVING state\n",SimTime(), node_id);
-				if(pw_received_interest >= current_cca){
+				if(convertPower(0,pw_received_interest) >= current_cca){
 					if(notification.tx_info.destination_id == node_id){	
 						
 						if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am the TX destination (N%d)\n",SimTime(),
@@ -2280,7 +2282,7 @@ void compcxx_Node_5 :: inportSomeNodeStartTX(Notification &notification){
 	}
 	
 }
-#line 289 "Node.h"
+#line 291 "Node.h"
 void compcxx_Node_5 :: inportSomeNodeFinishTX(Notification &notification){
 
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;E00; inportSomeNodeFinishTX(): source = %d - destination = %d\n",
@@ -2332,7 +2334,7 @@ void compcxx_Node_5 :: inportSomeNodeFinishTX(Notification &notification){
 	}
 	
 }
-#line 348 "Node.h"
+#line 350 "Node.h"
 void compcxx_Node_5 :: inportNackReceived(NackInfo &nack_info){
 	if(nack_info.source_id != node_id){
 		if(save_node_logs) fprintf(own_log_file, "%f;N%d;G00; inportNackReceived() from %d\n", SimTime(), node_id, nack_info.source_id);
@@ -2351,7 +2353,7 @@ void compcxx_Node_5 :: inportNackReceived(NackInfo &nack_info){
 
 
 
-#line 365 "Node.h"
+#line 367 "Node.h"
 void compcxx_Node_5 :: endBackoff(trigger_t &){
 	
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;F00; endBackoff()\n", SimTime(), node_id);
@@ -2393,7 +2395,7 @@ void compcxx_Node_5 :: endBackoff(trigger_t &){
 	}
 	
 }
-#line 413 "Node.h"
+#line 415 "Node.h"
 void compcxx_Node_5 :: myTXFinished(trigger_t &){
 	
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;G00; myTXFinished()\n", SimTime(), node_id);
@@ -2404,7 +2406,7 @@ void compcxx_Node_5 :: myTXFinished(trigger_t &){
 	restartNode();
 	
 }
-#line 559 "Node.h"
+#line 561 "Node.h"
 double compcxx_Node_5 :: computeTxTime(int ix_num_channels_used){
 
 	double tx_time;
@@ -2421,7 +2423,7 @@ double compcxx_Node_5 :: computeTxTime(int ix_num_channels_used){
 			break;
 		}
 		default:{
-			printf("Backoff model not found!\n");
+			printf("TX time model not found!\n");
 			break;
 		}
 	}
@@ -2441,7 +2443,7 @@ double compcxx_Node_5 :: computeTxTime(int ix_num_channels_used){
 
 
 
-#line 626 "Node.h"
+#line 628 "Node.h"
 void compcxx_Node_5 :: getChannelOccupancyByCCA(){
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 		if(channel_power[c] < convertPower(1, current_cca)){
@@ -2460,7 +2462,7 @@ void compcxx_Node_5 :: getChannelOccupancyByCCA(){
 
 
 
-#line 643 "Node.h"
+#line 645 "Node.h"
 void compcxx_Node_5 :: updateChannelsPower(Notification notification, int update_type){
 
 	double pw_received_pico;
@@ -2560,7 +2562,7 @@ void compcxx_Node_5 :: updateChannelsPower(Notification notification, int update
 
 
 
-#line 741 "Node.h"
+#line 743 "Node.h"
 void compcxx_Node_5 :: getTxChannelsByChannelBonding(int channel_bonding_model, int *channels_free){
 	
 
@@ -2737,7 +2739,7 @@ void compcxx_Node_5 :: getTxChannelsByChannelBonding(int channel_bonding_model, 
 
 
 
-#line 916 "Node.h"
+#line 918 "Node.h"
 void compcxx_Node_5 :: updateSINR(double pw_received_interest, double interference_pw){
 	current_sinr = convertPower(0,pw_received_interest) - convertPower(0, (convertPower(1, noise_level) + interference_pw));
 }
@@ -2748,7 +2750,7 @@ void compcxx_Node_5 :: updateSINR(double pw_received_interest, double interferen
 
 
 
-#line 925 "Node.h"
+#line 927 "Node.h"
 void compcxx_Node_5 :: computeMaxInterference(Notification notification) {
 	double max_pw_interference = 0;
 	for(int c = notification.left_channel; c <= notification.right_channel; c++){
@@ -2773,7 +2775,7 @@ void compcxx_Node_5 :: computeMaxInterference(Notification notification) {
 
 
 
-#line 948 "Node.h"
+#line 950 "Node.h"
 Notification compcxx_Node_5 :: generateNotification(int destination_id, double tx_duration){
 	Notification notification;
 	TxInfo tx_info;
@@ -2803,7 +2805,7 @@ Notification compcxx_Node_5 :: generateNotification(int destination_id, double t
 
 
 
-#line 976 "Node.h"
+#line 978 "Node.h"
 void compcxx_Node_5 :: sendNack(int packet_id, int node_id_a, int node_id_b, int reason_id){
 	NackInfo nack_info;
 	nack_info.source_id = node_id;
@@ -2818,7 +2820,7 @@ void compcxx_Node_5 :: sendNack(int packet_id, int node_id_a, int node_id_b, int
 
 
 
-#line 989 "Node.h"
+#line 991 "Node.h"
 void compcxx_Node_5 :: cleanNack(){
 	nack.source_id = -1;
 	nack.packet_id = -1;
@@ -2833,11 +2835,11 @@ void compcxx_Node_5 :: cleanNack(){
 
 
 
-#line 1002 "Node.h"
+#line 1004 "Node.h"
 void compcxx_Node_5 :: processNack(NackInfo nack_info) {
-	handlePacketLoss();
 	if(nack_info.node_id_a == node_id || nack_info.node_id_b == node_id){
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;G02; - I am implied in the NACK\n", SimTime(), node_id);
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;G02; - I am implied in the NACK (reason = %d)\n",
+				SimTime(), node_id, nack_info.reason_id);
 		nacks_received[nack_info.reason_id] ++;
 		switch(nack_info.reason_id){
 			
@@ -2846,12 +2848,14 @@ void compcxx_Node_5 :: processNack(NackInfo nack_info) {
 						SimTime(), node_id, nack_info.source_id);
 				
 				hidden_nodes_list[nack_info.source_id] = 1;
+				handlePacketLoss();
 				break;
 			}
 			
 			case 1:{
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Power received in destination %d is less than its CCA!s\n",
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Power received in destination %d is less than its CCA!\n",
 						SimTime(), node_id, nack_info.source_id);
+				handlePacketLoss();
 				break;
 			}
 			
@@ -2859,6 +2863,7 @@ void compcxx_Node_5 :: processNack(NackInfo nack_info) {
 				
 				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Interference sensed in destination %d is greater than its CCA!\n",
 						SimTime(), node_id, nack_info.source_id);
+				handlePacketLoss();
 				break;
 			}
 			
@@ -2871,6 +2876,7 @@ void compcxx_Node_5 :: processNack(NackInfo nack_info) {
 				} else if (nack_info.node_id_b != node_id) {
 					hidden_nodes_list[nack_info.node_id_b] = 1;
 				}
+				handlePacketLoss();
 				break;
 			}
 			case 4:{
@@ -2880,6 +2886,7 @@ void compcxx_Node_5 :: processNack(NackInfo nack_info) {
 					if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Collision detected at destination %d! %d appeared when %d was transmitting\n",
 							SimTime(), node_id, nack_info.source_id, nack_info.node_id_b, nack_info.node_id_a);
 					hidden_nodes_list[nack_info.node_id_b] = 1;
+					handlePacketLoss();
 				}
 				break;
 			}
@@ -2903,7 +2910,7 @@ void compcxx_Node_5 :: processNack(NackInfo nack_info) {
 
 
 
-#line 1070 "Node.h"
+#line 1077 "Node.h"
 void compcxx_Node_5 :: handlePacketLoss(){
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;G02; Packet %d has been LOST!\n", SimTime(), node_id, packet_id);
 	for(int c = current_left_channel; c <= current_right_channel; c++){
@@ -2923,20 +2930,14 @@ void compcxx_Node_5 :: handlePacketLoss(){
 
 
 
-#line 1088 "Node.h"
+#line 1095 "Node.h"
 int compcxx_Node_5 :: isPacketLost(Notification notification){
 
 	computeMaxInterference(notification);
 	int loss_reason = -1;				
-
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;D14;       - Reception of packet %d from %d CANNOT be started\n",
-		SimTime(), node_id, notification.tx_info.packet_id,	notification.source_id);
-
-	if (pw_received_interest < current_cca) {	
+	if (convertPower(0, pw_received_interest) < current_cca) {	
 		loss_reason = 1;
-		
-		hidden_nodes_list[notification.source_id] = 1;
-	} else if(max_pw_interference > current_cca){	
+	} else if(convertPower(0, max_pw_interference) > current_cca){	
 		loss_reason = 2;
 	}
 	return loss_reason;
@@ -2957,7 +2958,7 @@ int compcxx_Node_5 :: isPacketLost(Notification notification){
 
 
 
-#line 1120 "Node.h"
+#line 1121 "Node.h"
 double compcxx_Node_5 :: computeBackoff(int pdf, double lambda){
 	double backoff;
 	switch(pdf){
@@ -2986,7 +2987,7 @@ double compcxx_Node_5 :: computeBackoff(int pdf, double lambda){
 
 
 
-#line 1147 "Node.h"
+#line 1148 "Node.h"
 void compcxx_Node_5 :: handleBackoff(int mode, Notification notification){
 	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
 		switch(mode){
@@ -3038,7 +3039,7 @@ void compcxx_Node_5 :: handleBackoff(int mode, Notification notification){
 
 
 
-#line 1197 "Node.h"
+#line 1198 "Node.h"
 void compcxx_Node_5 :: pauseBackoff(){
 	
 	if(trigger_backoff.Active()){
@@ -3055,7 +3056,7 @@ void compcxx_Node_5 :: pauseBackoff(){
 
 
 
-#line 1212 "Node.h"
+#line 1213 "Node.h"
 void compcxx_Node_5 :: resumeBackoff(){
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;E09;       - resuming backoff at %f\n",
 			SimTime(), node_id, remaining_backoff);
@@ -3073,7 +3074,7 @@ void compcxx_Node_5 :: resumeBackoff(){
 
 
 
-#line 1228 "Node.h"
+#line 1229 "Node.h"
 void compcxx_Node_5 :: restartNode(){
 	total_time_transmitting_in_num_channels[current_right_channel - current_left_channel] += current_tx_duration;
 	
@@ -3087,7 +3088,7 @@ void compcxx_Node_5 :: restartNode(){
 }
 
 
-#line 1240 "Node.h"
+#line 1241 "Node.h"
 void compcxx_Node_5 :: printNodeInfo(){
 	printf("    - Node %d info:\n", node_id);
 	printf("       · position = (%d, %d, %d)\n", x, y, z);
@@ -3105,7 +3106,7 @@ void compcxx_Node_5 :: printNodeInfo(){
 
 
 
-#line 1256 "Node.h"
+#line 1257 "Node.h"
 void compcxx_Node_5 :: printProgressBar(trigger_t &){
 	printf("* %d %% *\n", progress_bar_counter * progress_bar_delta);
 	trigger_sim_time.Set(SimTime()+sim_time/(100/progress_bar_delta));
@@ -3121,7 +3122,7 @@ void compcxx_Node_5 :: printProgressBar(trigger_t &){
 
 
 
-#line 1270 "Node.h"
+#line 1271 "Node.h"
 void compcxx_Node_5 :: initializeVariables() {
 
 	channel_power = (double *) malloc(num_channels_vaquita * sizeof(*channel_power));
@@ -3162,7 +3163,7 @@ void compcxx_Node_5 :: initializeVariables() {
 	}
 
 	current_destination_id = destination_id;
-	pw_received_interest = 0;
+	pw_received_interest = 0; 	
 	progress_bar_delta = 5;	
 	progress_bar_counter = 0;
 	packets_sent = 0;
@@ -3189,7 +3190,7 @@ void compcxx_Node_5 :: initializeVariables() {
 
 
 
-#line 1376 "Node.h"
+#line 1377 "Node.h"
 void compcxx_Node_5 :: printNodeStatistics(){
 
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;C02; - Time transmitting in number of channels: ", SimTime(), node_id);
@@ -3239,8 +3240,8 @@ void compcxx_Node_5 :: printNodeStatistics(){
 	throughput = (((double)(packets_sent-packets_lost) * packet_length * num_packets_aggregated / 1000000))/SimTime();
 
 	printf("-----------------------------------------------------------------------------\n");
-	printf("(N%d) - Packets: acked = %d - sent = %d - lost = %d - loss ratio = %f %%\n",
-			node_id, packets_sent - packets_lost, packets_sent, packets_lost, packets_lost_percentage);
+	printf("(N%d) - Packets: sent = %d - lost = %d - loss ratio = %f %%\n",
+			node_id, packets_sent, packets_lost, packets_lost_percentage);
 	if(save_node_logs) fprintf(own_log_file,"%f;N%d;C04; - Packets sent = %d\n", SimTime(), node_id, packets_sent);
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;C04; - Throughput = %f Mbps\n", SimTime(), node_id, throughput);
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;C04; - LOST Throughput due to collisions = %f Mbps\n",
@@ -3263,7 +3264,7 @@ void compcxx_Node_5 :: printNodeStatistics(){
 
 	if(save_node_logs) fprintf(own_log_file,"%f;N%d;CHANGE CODE; - Hidden nodes list: ", SimTime(), node_id);
 	for(int i = 0; i < total_nodes_number; i++){
-		
+		printf("%d  ", hidden_nodes_list[i]);
 		if(save_node_logs) fprintf(own_log_file, "%d  ", hidden_nodes_list[i]);
 	}
 
@@ -3586,6 +3587,8 @@ void compcxx_VaquitaEnvironment_6 :: generateNodesByReadingInputFile(char *nodes
 			node_container[node_ix].lambda =  1/(EB * SLOT);
 			node_container[node_ix].wavelength = wavelength;
 			node_container[node_ix].path_loss_model = path_loss_model;
+			node_container[node_ix].pdf_backoff = pdf_backoff;
+			node_container[node_ix].pdf_tx_time = pdf_tx_time;
 			node_container[node_ix].packet_length = packet_length;
 			node_container[node_ix].num_packets_aggregated = num_packets_aggregated;
 			node_container[node_ix].num_channels_vaquita = num_channels_vaquita;

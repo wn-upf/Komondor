@@ -367,6 +367,8 @@ void VaquitaEnvironment :: generateNodesByReadingInputFile(char *nodes_filename,
 			node_container[node_ix].lambda =  1/(EB * SLOT);
 			node_container[node_ix].wavelength = wavelength;
 			node_container[node_ix].path_loss_model = path_loss_model;
+			node_container[node_ix].pdf_backoff = pdf_backoff;
+			node_container[node_ix].pdf_tx_time = pdf_tx_time;
 			node_container[node_ix].packet_length = packet_length;
 			node_container[node_ix].num_packets_aggregated = num_packets_aggregated;
 			node_container[node_ix].num_channels_vaquita = num_channels_vaquita;
@@ -390,9 +392,9 @@ void VaquitaEnvironment :: generateNodesByReadingInputFile(char *nodes_filename,
  */
 const char* getfield(char* line, int num){
     const char* tok;
-    for (tok = strtok(line, ";");
+    for (tok = strtok(line, ",");
             tok && *tok;
-            tok = strtok(NULL, ";\n"))
+            tok = strtok(NULL, ",\n"))
     {
         if (!--num)
             return tok;

@@ -1,2 +1,0 @@
-wlan_code;min_sta_number;max_sta_number;max_distance_sta;primary_channel;min_channel_allowed;max_channel_allowed;mu(1/s);tpc_min(dBm);tpc_default(dBm);tpc_max(dBm);cca_min(dBm);cca_default(dBm);cca_max(dBm);x(m);y(m);z(m);tx_antenna_gain;rx_antenna_gain;channel_bonding_model;
-LG;1;5;5;0;0;0;81.5727;0;15;20;-90;-82;-80;0;0;0;0;0;4;1
