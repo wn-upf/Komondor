@@ -6,11 +6,12 @@
 #include "./COST/cost.h"
 
 #include "Node.h"
-#include "AuxStructures.h"
+#include "structures/Notification.h"
+#include "structures/NACK.h"
 
 #define SLOT 0.000009
 
-component VaquitaEnvironment : public CostSimEng
+component KomondorEnvironment : public CostSimEng
 {
 	public:
 		void Setup(double sim_time, int save_node_logs, char *system_filename, char *nodes_filename, char *script_filename);
@@ -26,7 +27,7 @@ component VaquitaEnvironment : public CostSimEng
 
 		double mu;					// Packet departure rate [1/s]
 		double wavelength;			// Signal wavelength [m] (in WiFi 0.1249 m)
-		int num_channels_vaquita;	// Number of subchannels composing the whole channel
+		int num_channels_komondor;	// Number of subchannels composing the whole channel
 		int basic_channel_bandwidth;	// Bandwidth of a basic channel [Mbps]
 		int CW;						// Backoff contention window
 		int pdf_backoff;			// Probability distribution type of the backoff (0: exponential, 1: deterministic)
@@ -47,7 +48,7 @@ component VaquitaEnvironment : public CostSimEng
 		FILE *script_file;			// File for the output logs (including statistics)
 };
 
-void VaquitaEnvironment :: Setup(double sim_time, int save_node_logs_console, char *system_filename, char *nodes_filename, char *script_filename){
+void KomondorEnvironment :: Setup(double sim_time, int save_node_logs_console, char *system_filename, char *nodes_filename, char *script_filename){
 	printf("-------------- Setup() --------------\n");
 
 	save_node_logs = save_node_logs_console;
@@ -83,7 +84,7 @@ void VaquitaEnvironment :: Setup(double sim_time, int save_node_logs_console, ch
 	}
 };
 
-void VaquitaEnvironment :: Start(){
+void KomondorEnvironment :: Start(){
 	printf("--------------  MAIN Start() --------------\n");
 	fprintf(logs_output_file,"[MAIN] - SIMULATION STARTED!\n");
 };
@@ -94,7 +95,7 @@ void VaquitaEnvironment :: Start(){
 /*********************/
 /*********************/
 
-void VaquitaEnvironment :: Stop(){
+void KomondorEnvironment :: Stop(){
 	printf("-------------- MAIN Stop() --------------\n");
 
 	fclose(logs_output_file);
@@ -121,7 +122,7 @@ void VaquitaEnvironment :: Stop(){
 /*
  * inputChecker()
  */
-void VaquitaEnvironment :: inputChecker(){
+void KomondorEnvironment :: inputChecker(){
 	int nodes_ids[total_nodes_number];
 	double nodes_x[total_nodes_number];
 	double nodes_y[total_nodes_number];
@@ -143,9 +144,9 @@ void VaquitaEnvironment :: inputChecker(){
 		if (node_container[i].primary_channel > node_container[i].max_channel_allowed
 				|| node_container[i].primary_channel < node_container[i].min_channel_allowed
 				|| node_container[i].min_channel_allowed > node_container[i].max_channel_allowed
-				|| node_container[i].primary_channel > num_channels_vaquita
-				|| node_container[i].min_channel_allowed > num_channels_vaquita
-				|| node_container[i].max_channel_allowed > num_channels_vaquita) {
+				|| node_container[i].primary_channel > num_channels_komondor
+				|| node_container[i].min_channel_allowed > num_channels_komondor
+				|| node_container[i].max_channel_allowed > num_channels_komondor) {
 			printf("\nERROR: Channels are not properly configured at node in line %d\n",i+2);
 			printf("   · primary_channel = %d, range: %d - %d  \n",
 					node_container[i].primary_channel, node_container[i].min_channel_allowed, node_container[i].max_channel_allowed);
@@ -173,14 +174,14 @@ void VaquitaEnvironment :: inputChecker(){
  * Input arguments:
  * - system_filename: ...
  */
-void VaquitaEnvironment :: setupEnvironmentByReadingInputFile(char *system_filename) {
+void KomondorEnvironment :: setupEnvironmentByReadingInputFile(char *system_filename) {
 	// printf("Reading system configuration...\n");
 	fprintf(logs_output_file, "Reading system configuration...\n");
 
 	FILE* stream_system = fopen(system_filename, "r");
 	if (!stream_system){
-		// printf("Vaquita system file not found************!\nExiting...\n");
-		fprintf(logs_output_file, "Vaquita system file '%s' not found!\n", system_filename);
+		// printf("Komondor system file not found************!\nExiting...\n");
+		fprintf(logs_output_file, "Komondor system file '%s' not found!\n", system_filename);
 		exit(-1);
 	}
 	char line_system[1024];
@@ -196,16 +197,16 @@ void VaquitaEnvironment :: setupEnvironmentByReadingInputFile(char *system_filen
 			char* tmp = strdup(line_system);
 
 			tmp = strdup(line_system);
-			const char* num_channels_vaquita_char = getfield(tmp, field_ix);
-			num_channels_vaquita = atoi(num_channels_vaquita_char);
-			// printf("- num_channels_vaquita_char = %d\n", num_channels_vaquita);
-			fprintf(logs_output_file, "- num_channels_vaquita = %d\n", num_channels_vaquita);
+			const char* num_channels_komondor_char = getfield(tmp, field_ix);
+			num_channels_komondor = atoi(num_channels_komondor_char);
+			// printf("- num_channels_komondor_char = %d\n", num_channels_komondor);
+			fprintf(logs_output_file, "- num_channels_komondor = %d\n", num_channels_komondor);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* basic_channel_bandwidth_char = getfield(tmp, field_ix);
 			basic_channel_bandwidth = atoi(basic_channel_bandwidth_char);
-			// printf("- num_channels_vaquita_char = %d\n", num_channels_vaquita);
+			// printf("- num_channels_komondor_char = %d\n", num_channels_komondor);
 			fprintf(logs_output_file, "- basic_channel_bandwidth = %d\n", basic_channel_bandwidth);
 			field_ix++;
 
@@ -299,7 +300,7 @@ void VaquitaEnvironment :: setupEnvironmentByReadingInputFile(char *system_filen
  * - nodes_filename: ...
  * - sim_time: [dBm]
  */
-void VaquitaEnvironment :: generateNodesByReadingInputFile(char *nodes_filename, double sim_time) {
+void KomondorEnvironment :: generateNodesByReadingInputFile(char *nodes_filename, double sim_time) {
 	printf("Reading nodes configuration...\n");
 	fprintf(logs_output_file, "Reading nodes configuration...\n");
 	total_nodes_number = getNumOfLines(nodes_filename);
@@ -371,7 +372,7 @@ void VaquitaEnvironment :: generateNodesByReadingInputFile(char *nodes_filename,
 			node_container[node_ix].pdf_tx_time = pdf_tx_time;
 			node_container[node_ix].packet_length = packet_length;
 			node_container[node_ix].num_packets_aggregated = num_packets_aggregated;
-			node_container[node_ix].num_channels_vaquita = num_channels_vaquita;
+			node_container[node_ix].num_channels_komondor = num_channels_komondor;
 			node_container[node_ix].noise_level = noise_level;
 			node_container[node_ix].sim_time = sim_time;
 			node_container[node_ix].cochannel_model = cochannel_model;
@@ -433,7 +434,7 @@ int main(int argc, char *argv[]){
 
 	printf("\n\n\n------------------------------------------\n");
 	printf("*******************************\n");
-	printf("* VAQUITA SIMULATION EXECUTED *\n");
+	printf("***** KOMONDOR SIMULATION *****\n");
 	printf("*******************************\n");
 
 	printf("\n");
@@ -447,7 +448,7 @@ int main(int argc, char *argv[]){
 	printf("\n");
 
 	if(argc != 7) {
-		printf("error: Arguments where not set properly!\n  Execute './VaquitaSimulation -stop_time [s] -seed -logs_on -system_filename -nodes_filename'.\n\n");
+		printf("error: Arguments where not set properly!\n  Execute './KomondorSimulation -stop_time [s] -seed -logs_on -system_filename -nodes_filename'.\n\n");
 		return(-1);
 	}
 
@@ -458,8 +459,8 @@ int main(int argc, char *argv[]){
 	int seed = atoi(argv[5]);
 	int save_node_logs = atoi(argv[6]);
 
-	// Generate VaquitaEnvironment component
-	VaquitaEnvironment test;
+	// Generate KomondorEnvironment component
+	KomondorEnvironment test;
 	test.Seed = seed;
 	test.StopTime(Sim_time);
 	test.Setup(Sim_time, save_node_logs,system_filename, nodes_filename, script_filename);

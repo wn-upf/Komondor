@@ -1,4 +1,4 @@
 rm -rf /output/*
 clear
-./COST/cxx VaquitaSimulation.cc
-g++ -Wall -Werror -g -o VaquitaSimulation VaquitaSimulation.cxx
+./COST/cxx Komondor.cc
+g++ -Wall -Werror -g -o Komondor Komondor.cxx
