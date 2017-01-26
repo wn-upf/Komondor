@@ -15,242 +15,359 @@
 0.000077;N1;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.000077;N1;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.000077;N1;D03; - Pre update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
-0.000077;N1;D04; - Distance to N2 = 10000.000000 m
-0.000077;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
-0.000077;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.000077;N1;D04; - Distance to N2 = 1000.000000 m
+0.000077;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
+0.000077;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.000077;N1;D07; - I am in SENSING state
-0.000077;N1;D07;    + I am the TX destination BUT I AM NOT LISTENING!
+0.000077;N1;D07;    + I am the TX destination (N1)
+0.000077;N1;D14;       - Reception of packet 0 from 2 CANNOT be started because of reason 2
 0.004982;N1;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.004982;N1;E02; - N2 has finished a TX in channel range: 0 - 0
-0.004982;N1;E03; - Initial power of transmitter N2 = 0.031246 pW
-0.004982;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
-0.004982;N1;D04; - Distance to N2 = 10000.000000 m
-0.004982;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
+0.004982;N1;E03; - Initial power of transmitter N2 = 312.463428 pW
+0.004982;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
+0.004982;N1;D04; - Distance to N2 = 1000.000000 m
+0.004982;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
 0.004982;N1;D06; - Post update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
+0.004982;N1;E09; - I am SENSING
+0.004982;N1;E06; - Primary_channel (#0) affected
+0.004982;N1;E07; - Power sensed in primary channel:  -79.031408 dBm (12.498537 pW)
+0.004982;N1;E08;    + CCA (-82 dBm) exceeded
 0.005000;N1;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.005000;N1;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.005000;N1;D03; - Pre update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
-0.005000;N1;D04; - Distance to N2 = 10000.000000 m
-0.005000;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
-0.005000;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.005000;N1;D04; - Distance to N2 = 1000.000000 m
+0.005000;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
+0.005000;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.005000;N1;D07; - I am in SENSING state
-0.005000;N1;D07;    + I am the TX destination BUT I AM NOT LISTENING!
+0.005000;N1;D07;    + I am the TX destination (N1)
+0.005000;N1;D14;       - Reception of packet 1 from 2 CANNOT be started because of reason 2
 0.005685;N1;E00; inportSomeNodeFinishTX(): source = 0 - destination = 3
 0.005685;N1;E02; - N0 has finished a TX in channel range: 1 - 1
 0.005685;N1;E03; - Initial power of transmitter N0 = 1249.853713 pW
-0.005685;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.005685;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.005685;N1;D04; - Distance to N0 = 50.000000 m
 0.005685;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.005685;N1;D06; - Post update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.005685;N1;D06; - Post update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
+0.005685;N1;E09; - I am SENSING
+0.005685;N1;E06; - Primary_channel (#0) affected
+0.005685;N1;E07; - Power sensed in primary channel:  -65.052008 dBm (312.463428 pW)
+0.005685;N1;E08;    + CCA (-82 dBm) exceeded
 0.005793;N1;D00; inportSomeNodeStartTX(): source = 0 - destination = 3
 0.005793;N1;D02; - N0 has started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
-0.005793;N1;D03; - Pre update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.005793;N1;D03; - Pre update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
 0.005793;N1;D04; - Distance to N0 = 50.000000 m
 0.005793;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.005793;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.005793;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.005793;N1;D07; - I am in SENSING state
+0.005793;N1;D07; - I am NOT the TX destination (N3)
+0.005793;N1;D10; - primary_channel (#0) affected
+0.005793;N1;D11;    + Power sensed in primary channel:  -64.881675 dBm (324.961965 pW)
+0.005793;N1;D12;    + CCA (-82 dBm) exceeded
+0.005793;N1;D13;       - Backoff is NOT active (frozen at 0.000209 s)
 0.016547;N1;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.016547;N1;E02; - N2 has finished a TX in channel range: 0 - 0
-0.016547;N1;E03; - Initial power of transmitter N2 = 0.031246 pW
-0.016547;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
-0.016547;N1;D04; - Distance to N2 = 10000.000000 m
-0.016547;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
+0.016547;N1;E03; - Initial power of transmitter N2 = 312.463428 pW
+0.016547;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
+0.016547;N1;D04; - Distance to N2 = 1000.000000 m
+0.016547;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
 0.016547;N1;D06; - Post update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
+0.016547;N1;E09; - I am SENSING
+0.016547;N1;E06; - Primary_channel (#0) affected
+0.016547;N1;E07; - Power sensed in primary channel:  -79.031408 dBm (12.498537 pW)
+0.016547;N1;E08;    + CCA (-82 dBm) exceeded
 0.016621;N1;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.016621;N1;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.016621;N1;D03; - Pre update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
-0.016621;N1;D04; - Distance to N2 = 10000.000000 m
-0.016621;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
-0.016621;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.016621;N1;D04; - Distance to N2 = 1000.000000 m
+0.016621;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
+0.016621;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.016621;N1;D07; - I am in SENSING state
-0.016621;N1;D07;    + I am the TX destination BUT I AM NOT LISTENING!
+0.016621;N1;D07;    + I am the TX destination (N1)
+0.016621;N1;D14;       - Reception of packet 2 from 2 CANNOT be started because of reason 2
 0.027484;N1;E00; inportSomeNodeFinishTX(): source = 0 - destination = 3
 0.027484;N1;E02; - N0 has finished a TX in channel range: 1 - 1
 0.027484;N1;E03; - Initial power of transmitter N0 = 1249.853713 pW
-0.027484;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.027484;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.027484;N1;D04; - Distance to N0 = 50.000000 m
 0.027484;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.027484;N1;D06; - Post update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.027484;N1;D06; - Post update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
+0.027484;N1;E09; - I am SENSING
+0.027484;N1;E06; - Primary_channel (#0) affected
+0.027484;N1;E07; - Power sensed in primary channel:  -65.052008 dBm (312.463428 pW)
+0.027484;N1;E08;    + CCA (-82 dBm) exceeded
 0.027607;N1;D00; inportSomeNodeStartTX(): source = 0 - destination = 3
 0.027607;N1;D02; - N0 has started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
-0.027607;N1;D03; - Pre update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.027607;N1;D03; - Pre update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
 0.027607;N1;D04; - Distance to N0 = 50.000000 m
 0.027607;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.027607;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.027607;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.027607;N1;D07; - I am in SENSING state
+0.027607;N1;D07; - I am NOT the TX destination (N3)
+0.027607;N1;D10; - primary_channel (#0) affected
+0.027607;N1;D11;    + Power sensed in primary channel:  -64.881675 dBm (324.961965 pW)
+0.027607;N1;D12;    + CCA (-82 dBm) exceeded
+0.027607;N1;D13;       - Backoff is NOT active (frozen at 0.000209 s)
 0.031136;N1;E00; inportSomeNodeFinishTX(): source = 0 - destination = 3
 0.031136;N1;E02; - N0 has finished a TX in channel range: 1 - 1
 0.031136;N1;E03; - Initial power of transmitter N0 = 1249.853713 pW
-0.031136;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.031136;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.031136;N1;D04; - Distance to N0 = 50.000000 m
 0.031136;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.031136;N1;D06; - Post update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.031136;N1;D06; - Post update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
+0.031136;N1;E09; - I am SENSING
+0.031136;N1;E06; - Primary_channel (#0) affected
+0.031136;N1;E07; - Power sensed in primary channel:  -65.052008 dBm (312.463428 pW)
+0.031136;N1;E08;    + CCA (-82 dBm) exceeded
 0.031235;N1;D00; inportSomeNodeStartTX(): source = 0 - destination = 3
 0.031235;N1;D02; - N0 has started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
-0.031235;N1;D03; - Pre update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.031235;N1;D03; - Pre update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
 0.031235;N1;D04; - Distance to N0 = 50.000000 m
 0.031235;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.031235;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.031235;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.031235;N1;D07; - I am in SENSING state
+0.031235;N1;D07; - I am NOT the TX destination (N3)
+0.031235;N1;D10; - primary_channel (#0) affected
+0.031235;N1;D11;    + Power sensed in primary channel:  -64.881675 dBm (324.961965 pW)
+0.031235;N1;D12;    + CCA (-82 dBm) exceeded
+0.031235;N1;D13;       - Backoff is NOT active (frozen at 0.000209 s)
 0.036066;N1;E00; inportSomeNodeFinishTX(): source = 0 - destination = 3
 0.036066;N1;E02; - N0 has finished a TX in channel range: 1 - 1
 0.036066;N1;E03; - Initial power of transmitter N0 = 1249.853713 pW
-0.036066;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.036066;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.036066;N1;D04; - Distance to N0 = 50.000000 m
 0.036066;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.036066;N1;D06; - Post update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.036066;N1;D06; - Post update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
+0.036066;N1;E09; - I am SENSING
+0.036066;N1;E06; - Primary_channel (#0) affected
+0.036066;N1;E07; - Power sensed in primary channel:  -65.052008 dBm (312.463428 pW)
+0.036066;N1;E08;    + CCA (-82 dBm) exceeded
 0.036189;N1;D00; inportSomeNodeStartTX(): source = 0 - destination = 3
 0.036189;N1;D02; - N0 has started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
-0.036189;N1;D03; - Pre update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.036189;N1;D03; - Pre update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
 0.036189;N1;D04; - Distance to N0 = 50.000000 m
 0.036189;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.036189;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.036189;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.036189;N1;D07; - I am in SENSING state
+0.036189;N1;D07; - I am NOT the TX destination (N3)
+0.036189;N1;D10; - primary_channel (#0) affected
+0.036189;N1;D11;    + Power sensed in primary channel:  -64.881675 dBm (324.961965 pW)
+0.036189;N1;D12;    + CCA (-82 dBm) exceeded
+0.036189;N1;D13;       - Backoff is NOT active (frozen at 0.000209 s)
 0.041430;N1;E00; inportSomeNodeFinishTX(): source = 0 - destination = 3
 0.041430;N1;E02; - N0 has finished a TX in channel range: 1 - 1
 0.041430;N1;E03; - Initial power of transmitter N0 = 1249.853713 pW
-0.041430;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.041430;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.041430;N1;D04; - Distance to N0 = 50.000000 m
 0.041430;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.041430;N1;D06; - Post update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.041430;N1;D06; - Post update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
+0.041430;N1;E09; - I am SENSING
+0.041430;N1;E06; - Primary_channel (#0) affected
+0.041430;N1;E07; - Power sensed in primary channel:  -65.052008 dBm (312.463428 pW)
+0.041430;N1;E08;    + CCA (-82 dBm) exceeded
 0.041431;N1;D00; inportSomeNodeStartTX(): source = 0 - destination = 3
 0.041431;N1;D02; - N0 has started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
-0.041431;N1;D03; - Pre update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.041431;N1;D03; - Pre update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
 0.041431;N1;D04; - Distance to N0 = 50.000000 m
 0.041431;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.041431;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.041431;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.041431;N1;D07; - I am in SENSING state
+0.041431;N1;D07; - I am NOT the TX destination (N3)
+0.041431;N1;D10; - primary_channel (#0) affected
+0.041431;N1;D11;    + Power sensed in primary channel:  -64.881675 dBm (324.961965 pW)
+0.041431;N1;D12;    + CCA (-82 dBm) exceeded
+0.041431;N1;D13;       - Backoff is NOT active (frozen at 0.000209 s)
 0.060612;N1;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.060612;N1;E02; - N2 has finished a TX in channel range: 0 - 0
-0.060612;N1;E03; - Initial power of transmitter N2 = 0.031246 pW
-0.060612;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
-0.060612;N1;D04; - Distance to N2 = 10000.000000 m
-0.060612;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
+0.060612;N1;E03; - Initial power of transmitter N2 = 312.463428 pW
+0.060612;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
+0.060612;N1;D04; - Distance to N2 = 1000.000000 m
+0.060612;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
 0.060612;N1;D06; - Post update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
+0.060612;N1;E09; - I am SENSING
+0.060612;N1;E06; - Primary_channel (#0) affected
+0.060612;N1;E07; - Power sensed in primary channel:  -79.031408 dBm (12.498537 pW)
+0.060612;N1;E08;    + CCA (-82 dBm) exceeded
 0.060625;N1;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.060625;N1;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.060625;N1;D03; - Pre update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
-0.060625;N1;D04; - Distance to N2 = 10000.000000 m
-0.060625;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
-0.060625;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.060625;N1;D04; - Distance to N2 = 1000.000000 m
+0.060625;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
+0.060625;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.060625;N1;D07; - I am in SENSING state
-0.060625;N1;D07;    + I am the TX destination BUT I AM NOT LISTENING!
+0.060625;N1;D07;    + I am the TX destination (N1)
+0.060625;N1;D14;       - Reception of packet 3 from 2 CANNOT be started because of reason 2
 0.061341;N1;E00; inportSomeNodeFinishTX(): source = 0 - destination = 3
 0.061341;N1;E02; - N0 has finished a TX in channel range: 1 - 1
 0.061341;N1;E03; - Initial power of transmitter N0 = 1249.853713 pW
-0.061341;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.061341;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.061341;N1;D04; - Distance to N0 = 50.000000 m
 0.061341;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.061341;N1;D06; - Post update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.061341;N1;D06; - Post update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
+0.061341;N1;E09; - I am SENSING
+0.061341;N1;E06; - Primary_channel (#0) affected
+0.061341;N1;E07; - Power sensed in primary channel:  -65.052008 dBm (312.463428 pW)
+0.061341;N1;E08;    + CCA (-82 dBm) exceeded
 0.061377;N1;D00; inportSomeNodeStartTX(): source = 0 - destination = 3
 0.061377;N1;D02; - N0 has started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
-0.061377;N1;D03; - Pre update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.061377;N1;D03; - Pre update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
 0.061377;N1;D04; - Distance to N0 = 50.000000 m
 0.061377;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.061377;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.061377;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.061377;N1;D07; - I am in SENSING state
+0.061377;N1;D07; - I am NOT the TX destination (N3)
+0.061377;N1;D10; - primary_channel (#0) affected
+0.061377;N1;D11;    + Power sensed in primary channel:  -64.881675 dBm (324.961965 pW)
+0.061377;N1;D12;    + CCA (-82 dBm) exceeded
+0.061377;N1;D13;       - Backoff is NOT active (frozen at 0.000209 s)
 0.067460;N1;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.067460;N1;E02; - N2 has finished a TX in channel range: 0 - 0
-0.067460;N1;E03; - Initial power of transmitter N2 = 0.031246 pW
-0.067460;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
-0.067460;N1;D04; - Distance to N2 = 10000.000000 m
-0.067460;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
+0.067460;N1;E03; - Initial power of transmitter N2 = 312.463428 pW
+0.067460;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
+0.067460;N1;D04; - Distance to N2 = 1000.000000 m
+0.067460;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
 0.067460;N1;D06; - Post update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
+0.067460;N1;E09; - I am SENSING
+0.067460;N1;E06; - Primary_channel (#0) affected
+0.067460;N1;E07; - Power sensed in primary channel:  -79.031408 dBm (12.498537 pW)
+0.067460;N1;E08;    + CCA (-82 dBm) exceeded
 0.067484;N1;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.067484;N1;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.067484;N1;D03; - Pre update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
-0.067484;N1;D04; - Distance to N2 = 10000.000000 m
-0.067484;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
-0.067484;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.067484;N1;D04; - Distance to N2 = 1000.000000 m
+0.067484;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
+0.067484;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.067484;N1;D07; - I am in SENSING state
-0.067484;N1;D07;    + I am the TX destination BUT I AM NOT LISTENING!
+0.067484;N1;D07;    + I am the TX destination (N1)
+0.067484;N1;D14;       - Reception of packet 4 from 2 CANNOT be started because of reason 2
 0.073585;N1;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.073585;N1;E02; - N2 has finished a TX in channel range: 0 - 0
-0.073585;N1;E03; - Initial power of transmitter N2 = 0.031246 pW
-0.073585;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
-0.073585;N1;D04; - Distance to N2 = 10000.000000 m
-0.073585;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
+0.073585;N1;E03; - Initial power of transmitter N2 = 312.463428 pW
+0.073585;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
+0.073585;N1;D04; - Distance to N2 = 1000.000000 m
+0.073585;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
 0.073585;N1;D06; - Post update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
+0.073585;N1;E09; - I am SENSING
+0.073585;N1;E06; - Primary_channel (#0) affected
+0.073585;N1;E07; - Power sensed in primary channel:  -79.031408 dBm (12.498537 pW)
+0.073585;N1;E08;    + CCA (-82 dBm) exceeded
 0.073620;N1;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.073620;N1;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.073620;N1;D03; - Pre update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
-0.073620;N1;D04; - Distance to N2 = 10000.000000 m
-0.073620;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
-0.073620;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.073620;N1;D04; - Distance to N2 = 1000.000000 m
+0.073620;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
+0.073620;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.073620;N1;D07; - I am in SENSING state
-0.073620;N1;D07;    + I am the TX destination BUT I AM NOT LISTENING!
+0.073620;N1;D07;    + I am the TX destination (N1)
+0.073620;N1;D14;       - Reception of packet 5 from 2 CANNOT be started because of reason 2
 0.079930;N1;E00; inportSomeNodeFinishTX(): source = 0 - destination = 3
 0.079930;N1;E02; - N0 has finished a TX in channel range: 1 - 1
 0.079930;N1;E03; - Initial power of transmitter N0 = 1249.853713 pW
-0.079930;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.079930;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.079930;N1;D04; - Distance to N0 = 50.000000 m
 0.079930;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.079930;N1;D06; - Post update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.079930;N1;D06; - Post update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
+0.079930;N1;E09; - I am SENSING
+0.079930;N1;E06; - Primary_channel (#0) affected
+0.079930;N1;E07; - Power sensed in primary channel:  -65.052008 dBm (312.463428 pW)
+0.079930;N1;E08;    + CCA (-82 dBm) exceeded
 0.079976;N1;D00; inportSomeNodeStartTX(): source = 0 - destination = 3
 0.079976;N1;D02; - N0 has started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
-0.079976;N1;D03; - Pre update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.079976;N1;D03; - Pre update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
 0.079976;N1;D04; - Distance to N0 = 50.000000 m
 0.079976;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.079976;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.079976;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.079976;N1;D07; - I am in SENSING state
+0.079976;N1;D07; - I am NOT the TX destination (N3)
+0.079976;N1;D10; - primary_channel (#0) affected
+0.079976;N1;D11;    + Power sensed in primary channel:  -64.881675 dBm (324.961965 pW)
+0.079976;N1;D12;    + CCA (-82 dBm) exceeded
+0.079976;N1;D13;       - Backoff is NOT active (frozen at 0.000209 s)
 0.080359;N1;E00; inportSomeNodeFinishTX(): source = 0 - destination = 3
 0.080359;N1;E02; - N0 has finished a TX in channel range: 1 - 1
 0.080359;N1;E03; - Initial power of transmitter N0 = 1249.853713 pW
-0.080359;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.080359;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.080359;N1;D04; - Distance to N0 = 50.000000 m
 0.080359;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.080359;N1;D06; - Post update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.080359;N1;D06; - Post update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
+0.080359;N1;E09; - I am SENSING
+0.080359;N1;E06; - Primary_channel (#0) affected
+0.080359;N1;E07; - Power sensed in primary channel:  -65.052008 dBm (312.463428 pW)
+0.080359;N1;E08;    + CCA (-82 dBm) exceeded
 0.080379;N1;D00; inportSomeNodeStartTX(): source = 0 - destination = 3
 0.080379;N1;D02; - N0 has started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
-0.080379;N1;D03; - Pre update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.080379;N1;D03; - Pre update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
 0.080379;N1;D04; - Distance to N0 = 50.000000 m
 0.080379;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.080379;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.080379;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.080379;N1;D07; - I am in SENSING state
+0.080379;N1;D07; - I am NOT the TX destination (N3)
+0.080379;N1;D10; - primary_channel (#0) affected
+0.080379;N1;D11;    + Power sensed in primary channel:  -64.881675 dBm (324.961965 pW)
+0.080379;N1;D12;    + CCA (-82 dBm) exceeded
+0.080379;N1;D13;       - Backoff is NOT active (frozen at 0.000209 s)
 0.080983;N1;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.080983;N1;E02; - N2 has finished a TX in channel range: 0 - 0
-0.080983;N1;E03; - Initial power of transmitter N2 = 0.031246 pW
-0.080983;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
-0.080983;N1;D04; - Distance to N2 = 10000.000000 m
-0.080983;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
+0.080983;N1;E03; - Initial power of transmitter N2 = 312.463428 pW
+0.080983;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
+0.080983;N1;D04; - Distance to N2 = 1000.000000 m
+0.080983;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
 0.080983;N1;D06; - Post update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
+0.080983;N1;E09; - I am SENSING
+0.080983;N1;E06; - Primary_channel (#0) affected
+0.080983;N1;E07; - Power sensed in primary channel:  -79.031408 dBm (12.498537 pW)
+0.080983;N1;E08;    + CCA (-82 dBm) exceeded
 0.081000;N1;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.081000;N1;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.081000;N1;D03; - Pre update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
-0.081000;N1;D04; - Distance to N2 = 10000.000000 m
-0.081000;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
-0.081000;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.081000;N1;D04; - Distance to N2 = 1000.000000 m
+0.081000;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
+0.081000;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.081000;N1;D07; - I am in SENSING state
-0.081000;N1;D07;    + I am the TX destination BUT I AM NOT LISTENING!
+0.081000;N1;D07;    + I am the TX destination (N1)
+0.081000;N1;D14;       - Reception of packet 6 from 2 CANNOT be started because of reason 2
 0.092442;N1;E00; inportSomeNodeFinishTX(): source = 0 - destination = 3
 0.092442;N1;E02; - N0 has finished a TX in channel range: 1 - 1
 0.092442;N1;E03; - Initial power of transmitter N0 = 1249.853713 pW
-0.092442;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.092442;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.092442;N1;D04; - Distance to N0 = 50.000000 m
 0.092442;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.092442;N1;D06; - Post update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.092442;N1;D06; - Post update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
+0.092442;N1;E09; - I am SENSING
+0.092442;N1;E06; - Primary_channel (#0) affected
+0.092442;N1;E07; - Power sensed in primary channel:  -65.052008 dBm (312.463428 pW)
+0.092442;N1;E08;    + CCA (-82 dBm) exceeded
 0.092514;N1;D00; inportSomeNodeStartTX(): source = 0 - destination = 3
 0.092514;N1;D02; - N0 has started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
-0.092514;N1;D03; - Pre update channel state [dBm]: -105.052008  -125.052008  -145.052008  -inf  
+0.092514;N1;D03; - Pre update channel state [dBm]: -65.052008  -85.052008  -105.052008  -125.052008  
 0.092514;N1;D04; - Distance to N0 = 50.000000 m
 0.092514;N1;D05; - Power received from transmitter N0 = -59.031408 dBm (1249.853713 pW)
-0.092514;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.092514;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.092514;N1;D07; - I am in SENSING state
+0.092514;N1;D07; - I am NOT the TX destination (N3)
+0.092514;N1;D10; - primary_channel (#0) affected
+0.092514;N1;D11;    + Power sensed in primary channel:  -64.881675 dBm (324.961965 pW)
+0.092514;N1;D12;    + CCA (-82 dBm) exceeded
+0.092514;N1;D13;       - Backoff is NOT active (frozen at 0.000209 s)
 0.096230;N1;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.096230;N1;E02; - N2 has finished a TX in channel range: 0 - 0
-0.096230;N1;E03; - Initial power of transmitter N2 = 0.031246 pW
-0.096230;N1;D03; - Pre update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
-0.096230;N1;D04; - Distance to N2 = 10000.000000 m
-0.096230;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
+0.096230;N1;E03; - Initial power of transmitter N2 = 312.463428 pW
+0.096230;N1;D03; - Pre update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
+0.096230;N1;D04; - Distance to N2 = 1000.000000 m
+0.096230;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
 0.096230;N1;D06; - Post update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
+0.096230;N1;E09; - I am SENSING
+0.096230;N1;E06; - Primary_channel (#0) affected
+0.096230;N1;E07; - Power sensed in primary channel:  -79.031408 dBm (12.498537 pW)
+0.096230;N1;E08;    + CCA (-82 dBm) exceeded
 0.096257;N1;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.096257;N1;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.096257;N1;D03; - Pre update channel state [dBm]: -79.031408  -59.031408  -79.031408  -99.031408  
-0.096257;N1;D04; - Distance to N2 = 10000.000000 m
-0.096257;N1;D05; - Power received from transmitter N2 = -105.052008 dBm (0.031246 pW)
-0.096257;N1;D06; - Post update channel state [dBm]: -79.020564  -59.031407  -79.031407  -99.031408  
+0.096257;N1;D04; - Distance to N2 = 1000.000000 m
+0.096257;N1;D05; - Power received from transmitter N2 = -65.052008 dBm (312.463428 pW)
+0.096257;N1;D06; - Post update channel state [dBm]: -64.881675  -59.020564  -79.020564  -99.020564  
 0.096257;N1;D07; - I am in SENSING state
-0.096257;N1;D07;    + I am the TX destination BUT I AM NOT LISTENING!
+0.096257;N1;D07;    + I am the TX destination (N1)
+0.096257;N1;D14;       - Reception of packet 7 from 2 CANNOT be started because of reason 2
 0.100000;N1;C00; Node Stop()
 0.100000;N1;C02; - Time transmitting in number of channels: (1) 0.000000  
 0.100000;N1;C03; - Time transmitting in each channel: 0.000000 0.000000 0.000000 0.000000 

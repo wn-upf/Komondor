@@ -14,7 +14,6 @@ component Node : public TypeII{
 		double computeTxTime(int num_channels_used);
 		void printNodeStatistics();
 		int isPacketLost(Notification notification);
-		void updateSINR(double pw_received_interest, double interference_pw);
 		void sendNack(int packet_id, int node_id_a, int node_id_b, int reason_id);
 		void processNack(NackInfo nack_info);
 		void cleanNack();
@@ -63,7 +62,6 @@ component Node : public TypeII{
 		int num_packets_aggregated;	// Number of packets aggregated in one transmission
 		double noise_level;			// Environment noise [dBm]
 		int save_node_logs;			// Flag for activating the log writting of nodes
-		double current_sinr;		// SINR perceived in current TX [no unit] (linear)
 		int basic_channel_bandwidth;	// Bandwidth of a basic channel [Mbps]
 		int data_rate_array[4];		// Hardcoded data rates [bps]
 
@@ -198,9 +196,8 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 				notification.left_channel, notification.right_channel);
 
 		updateChannelsPower(notification, 1); // Update the power sensed at each channel ("1" indicates adding power)
-		computeMaxInterference(notification); // Interference checking
 		pw_received_interest = power_received_per_node[notification.source_id];
-
+		computeMaxInterference(notification); // Interference checking
 		// DECIDE WHAT TO DO ACCORDING TO THE STATE
 		int loss_reason;
 		switch(node_state){
@@ -223,8 +220,6 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 						receiving_packet_id = notification.tx_info.packet_id;
 						pauseBackoff();
 						if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07;    + I am the TX destination (N%d)\n",SimTime(), node_id, notification.tx_info.destination_id);
-						if(save_node_logs) fprintf(own_log_file, "%f;N%d;D08;       - current_sinr = %f dB (%f pW)\n", SimTime(), node_id, convertPower(0,current_sinr), current_sinr );
-						if(save_node_logs) fprintf(own_log_file, "%f;N%d;D09;       - capacity = %f Mbps\n", SimTime(), node_id, 20*log10(1+current_sinr)/log10(2));
 					}
 				} else {
 					if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am NOT the TX destination (N%d)\n",SimTime(), node_id, notification.tx_info.destination_id);
@@ -270,18 +265,6 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 						sendNack(notification.tx_info.packet_id, receiving_from_node_id, notification.source_id, loss_reason);
 					}
 				} else if(convertPower(0,max_pw_interference) >= current_cca){
-					loss_reason = 1;
-					sendNack(notification.tx_info.packet_id, notification.source_id, -1, loss_reason);
-				}
-				break;
-			}
-			// BACKOFF ACTIVE! NOT LISTENING NOR TRANSMITTING
-			case 3:{
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am in SENSING state\n",SimTime(), node_id);
-				// If node is the receiver
-				if(notification.tx_info.destination_id == node_id){
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07;    + I am the TX destination BUT I AM NOT LISTENING!\n",
-							SimTime(), node_id);
 					loss_reason = 2;
 					sendNack(notification.tx_info.packet_id, notification.source_id, -1, loss_reason);
 				}
@@ -923,23 +906,13 @@ void Node :: getTxChannelsByChannelBonding(int channel_bonding_model, int *chann
 }
 
 /*
- * updateSINR(): Updates the current_sinr parameter
- * Arguments:
- * - pw_received_interest:
- * - interference_pw:
- * */
-void Node :: updateSINR(double pw_received_interest, double interference_pw){
-	current_sinr = convertPower(0,pw_received_interest) - convertPower(0, (convertPower(1, noise_level) + interference_pw));
-}
-
-/*
  * computeMaxInterference():
  * Arguments:
  * - notification:
  * */
 void Node :: computeMaxInterference(Notification notification) {
-	double max_pw_interference = 0;
-	for(int c = notification.left_channel; c <= notification.right_channel; c++){
+	max_pw_interference = 0;
+	for(int c = current_left_channel; c <= current_right_channel; c++){
 		if(max_pw_interference <= (channel_power[c] - power_received_per_node[notification.source_id])){
 			max_pw_interference = channel_power[c] - power_received_per_node[notification.source_id];
 			channel_max_interference = c;
@@ -1059,7 +1032,7 @@ void Node :: processNack(NackInfo nack_info) {
 			}
 			case 4:{
 				// Only node_id_a has lost the packet, so that node_id_b is his hidden node
-				// Add to hidden nodes list
+				// Case 1 with hidden node
 				if(nack_info.node_id_a == node_id) {
 					if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Collision detected at destination %d! %d appeared when %d was transmitting\n",
 							SimTime(), node_id, nack_info.source_id, nack_info.node_id_b, nack_info.node_id_a);
@@ -1097,7 +1070,7 @@ void Node :: handlePacketLoss(){
 }
 
 /*
- * isPacketLost(): Computes packet loss according to SINR received
+ * isPacketLost(): Computes packet loss according to pw_received and interferences (compare with CCA)
  * Arguments:
  * - channel_power:
  * - pw_received_interest:
@@ -1107,12 +1080,13 @@ void Node :: handlePacketLoss(){
  */
 int Node :: isPacketLost(Notification notification){
 
-	computeMaxInterference(notification);
+	//computeMaxInterference(notification);
 	int loss_reason = -1;				// Packet is NOT lost
+	if(convertPower(0, max_pw_interference) >= current_cca){	// There are interference signal greater than cca (collision)
+		loss_reason = 2;
+	}
 	if (convertPower(0, pw_received_interest) < current_cca) {	// Signal strenght is not enough to be decoded
 		loss_reason = 1;
-	} else if(convertPower(0, max_pw_interference) > current_cca){	// There are interference signal greater than cca (collision)
-		loss_reason = 2;
 	}
 	return loss_reason;
 }
@@ -1210,7 +1184,7 @@ void Node :: pauseBackoff(){
 		remaining_backoff = trigger_backoff.GetTime()-SimTime();
 		if(save_node_logs) fprintf(own_log_file, "%f;N%d;D13;       - Backoff is active --> freeze it at %f s\n", SimTime(), node_id, remaining_backoff);
 		trigger_backoff.Cancel();
-		node_state = 3;
+		//node_state = 3;
 	} else {
 		// printf("%f: [N%d]    - Backoff is already frozen at %f s\n", SimTime(), node_id, trigger_backoff.GetTime());
 		if(save_node_logs) fprintf(own_log_file, "%f;N%d;D13;       - Backoff is NOT active (frozen at %f s)\n", SimTime(), node_id, trigger_backoff.GetTime());
@@ -1224,7 +1198,7 @@ void Node :: resumeBackoff(){
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;E09;       - resuming backoff at %f\n",
 			SimTime(), node_id, remaining_backoff);
 	// Resume Backoff
-	node_state = 0;
+	//node_state = 0;
 	trigger_backoff.Set(SimTime() + remaining_backoff);
 }
 

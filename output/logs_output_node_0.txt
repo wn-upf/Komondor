@@ -11,17 +11,17 @@
 0.000077;N0;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.000077;N0;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.000077;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
-0.000077;N0;D04; - Distance to N2 = 10050.000000 m
-0.000077;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
-0.000077;N0;D06; - Post update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
+0.000077;N0;D04; - Distance to N2 = 1050.000000 m
+0.000077;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
+0.000077;N0;D06; - Post update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
 0.000077;N0;D07; - I am in TRANSMITTING state
 0.000077;N0;D07; - I am NOT the TX destination (N1)
 0.004982;N0;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.004982;N0;E02; - N2 has finished a TX in channel range: 0 - 0
-0.004982;N0;E03; - Initial power of transmitter N2 = 0.030936 pW
-0.004982;N0;D03; - Pre update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
-0.004982;N0;D04; - Distance to N2 = 10050.000000 m
-0.004982;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
+0.004982;N0;E03; - Initial power of transmitter N2 = 283.413540 pW
+0.004982;N0;D03; - Pre update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
+0.004982;N0;D04; - Distance to N2 = 1050.000000 m
+0.004982;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
 0.004982;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
 0.004982;N0;E09; - I am TRANSMITTING ---> do nothing
 0.005000;N0;G00; inportNackReceived() from 1
@@ -29,9 +29,9 @@
 0.005000;N0;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.005000;N0;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.005000;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
-0.005000;N0;D04; - Distance to N2 = 10050.000000 m
-0.005000;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
-0.005000;N0;D06; - Post update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
+0.005000;N0;D04; - Distance to N2 = 1050.000000 m
+0.005000;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
+0.005000;N0;D06; - Post update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
 0.005000;N0;D07; - I am in TRANSMITTING state
 0.005000;N0;D07; - I am NOT the TX destination (N1)
 0.005685;N0;G00; myTXFinished()
@@ -47,10 +47,10 @@
 0.005793;N0;D02; - I have started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
 0.016547;N0;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.016547;N0;E02; - N2 has finished a TX in channel range: 0 - 0
-0.016547;N0;E03; - Initial power of transmitter N2 = 0.030936 pW
-0.016547;N0;D03; - Pre update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
-0.016547;N0;D04; - Distance to N2 = 10050.000000 m
-0.016547;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
+0.016547;N0;E03; - Initial power of transmitter N2 = 283.413540 pW
+0.016547;N0;D03; - Pre update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
+0.016547;N0;D04; - Distance to N2 = 1050.000000 m
+0.016547;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
 0.016547;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
 0.016547;N0;E09; - I am TRANSMITTING ---> do nothing
 0.016621;N0;G00; inportNackReceived() from 1
@@ -58,9 +58,9 @@
 0.016621;N0;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.016621;N0;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.016621;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
-0.016621;N0;D04; - Distance to N2 = 10050.000000 m
-0.016621;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
-0.016621;N0;D06; - Post update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
+0.016621;N0;D04; - Distance to N2 = 1050.000000 m
+0.016621;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
+0.016621;N0;D06; - Post update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
 0.016621;N0;D07; - I am in TRANSMITTING state
 0.016621;N0;D07; - I am NOT the TX destination (N1)
 0.027484;N0;G00; myTXFinished()
@@ -109,10 +109,10 @@
 0.041431;N0;D02; - I have started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
 0.060612;N0;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.060612;N0;E02; - N2 has finished a TX in channel range: 0 - 0
-0.060612;N0;E03; - Initial power of transmitter N2 = 0.030936 pW
-0.060612;N0;D03; - Pre update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
-0.060612;N0;D04; - Distance to N2 = 10050.000000 m
-0.060612;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
+0.060612;N0;E03; - Initial power of transmitter N2 = 283.413540 pW
+0.060612;N0;D03; - Pre update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
+0.060612;N0;D04; - Distance to N2 = 1050.000000 m
+0.060612;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
 0.060612;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
 0.060612;N0;E09; - I am TRANSMITTING ---> do nothing
 0.060625;N0;G00; inportNackReceived() from 1
@@ -120,9 +120,9 @@
 0.060625;N0;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.060625;N0;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.060625;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
-0.060625;N0;D04; - Distance to N2 = 10050.000000 m
-0.060625;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
-0.060625;N0;D06; - Post update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
+0.060625;N0;D04; - Distance to N2 = 1050.000000 m
+0.060625;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
+0.060625;N0;D06; - Post update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
 0.060625;N0;D07; - I am in TRANSMITTING state
 0.060625;N0;D07; - I am NOT the TX destination (N1)
 0.061341;N0;G00; myTXFinished()
@@ -138,10 +138,10 @@
 0.061377;N0;D02; - I have started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
 0.067460;N0;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.067460;N0;E02; - N2 has finished a TX in channel range: 0 - 0
-0.067460;N0;E03; - Initial power of transmitter N2 = 0.030936 pW
-0.067460;N0;D03; - Pre update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
-0.067460;N0;D04; - Distance to N2 = 10050.000000 m
-0.067460;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
+0.067460;N0;E03; - Initial power of transmitter N2 = 283.413540 pW
+0.067460;N0;D03; - Pre update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
+0.067460;N0;D04; - Distance to N2 = 1050.000000 m
+0.067460;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
 0.067460;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
 0.067460;N0;E09; - I am TRANSMITTING ---> do nothing
 0.067484;N0;G00; inportNackReceived() from 1
@@ -149,17 +149,17 @@
 0.067484;N0;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.067484;N0;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.067484;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
-0.067484;N0;D04; - Distance to N2 = 10050.000000 m
-0.067484;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
-0.067484;N0;D06; - Post update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
+0.067484;N0;D04; - Distance to N2 = 1050.000000 m
+0.067484;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
+0.067484;N0;D06; - Post update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
 0.067484;N0;D07; - I am in TRANSMITTING state
 0.067484;N0;D07; - I am NOT the TX destination (N1)
 0.073585;N0;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.073585;N0;E02; - N2 has finished a TX in channel range: 0 - 0
-0.073585;N0;E03; - Initial power of transmitter N2 = 0.030936 pW
-0.073585;N0;D03; - Pre update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
-0.073585;N0;D04; - Distance to N2 = 10050.000000 m
-0.073585;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
+0.073585;N0;E03; - Initial power of transmitter N2 = 283.413540 pW
+0.073585;N0;D03; - Pre update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
+0.073585;N0;D04; - Distance to N2 = 1050.000000 m
+0.073585;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
 0.073585;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
 0.073585;N0;E09; - I am TRANSMITTING ---> do nothing
 0.073620;N0;G00; inportNackReceived() from 1
@@ -167,9 +167,9 @@
 0.073620;N0;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.073620;N0;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.073620;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
-0.073620;N0;D04; - Distance to N2 = 10050.000000 m
-0.073620;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
-0.073620;N0;D06; - Post update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
+0.073620;N0;D04; - Distance to N2 = 1050.000000 m
+0.073620;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
+0.073620;N0;D06; - Post update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
 0.073620;N0;D07; - I am in TRANSMITTING state
 0.073620;N0;D07; - I am NOT the TX destination (N1)
 0.079930;N0;G00; myTXFinished()
@@ -196,10 +196,10 @@
 0.080379;N0;D02; - I have started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
 0.080983;N0;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.080983;N0;E02; - N2 has finished a TX in channel range: 0 - 0
-0.080983;N0;E03; - Initial power of transmitter N2 = 0.030936 pW
-0.080983;N0;D03; - Pre update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
-0.080983;N0;D04; - Distance to N2 = 10050.000000 m
-0.080983;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
+0.080983;N0;E03; - Initial power of transmitter N2 = 283.413540 pW
+0.080983;N0;D03; - Pre update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
+0.080983;N0;D04; - Distance to N2 = 1050.000000 m
+0.080983;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
 0.080983;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
 0.080983;N0;E09; - I am TRANSMITTING ---> do nothing
 0.081000;N0;G00; inportNackReceived() from 1
@@ -207,9 +207,9 @@
 0.081000;N0;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.081000;N0;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.081000;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
-0.081000;N0;D04; - Distance to N2 = 10050.000000 m
-0.081000;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
-0.081000;N0;D06; - Post update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
+0.081000;N0;D04; - Distance to N2 = 1050.000000 m
+0.081000;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
+0.081000;N0;D06; - Post update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
 0.081000;N0;D07; - I am in TRANSMITTING state
 0.081000;N0;D07; - I am NOT the TX destination (N1)
 0.092442;N0;G00; myTXFinished()
@@ -225,10 +225,10 @@
 0.092514;N0;D02; - I have started a TX in channels: 1 - 1; (TO BE DETAILED... 0;1;1)
 0.096230;N0;E00; inportSomeNodeFinishTX(): source = 2 - destination = 1
 0.096230;N0;E02; - N2 has finished a TX in channel range: 0 - 0
-0.096230;N0;E03; - Initial power of transmitter N2 = 0.030936 pW
-0.096230;N0;D03; - Pre update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
-0.096230;N0;D04; - Distance to N2 = 10050.000000 m
-0.096230;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
+0.096230;N0;E03; - Initial power of transmitter N2 = 283.413540 pW
+0.096230;N0;D03; - Pre update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
+0.096230;N0;D04; - Distance to N2 = 1050.000000 m
+0.096230;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
 0.096230;N0;D06; - Post update channel state [dBm]: -inf  -inf  -inf  -inf  
 0.096230;N0;E09; - I am TRANSMITTING ---> do nothing
 0.096257;N0;G00; inportNackReceived() from 1
@@ -236,9 +236,9 @@
 0.096257;N0;D00; inportSomeNodeStartTX(): source = 2 - destination = 1
 0.096257;N0;D02; - N2 has started a TX in channels: 0 - 0; (TO BE DETAILED... 2;0;0)
 0.096257;N0;D03; - Pre update channel state [dBm]: -inf  -inf  -inf  -inf  
-0.096257;N0;D04; - Distance to N2 = 10050.000000 m
-0.096257;N0;D05; - Power received from transmitter N2 = -105.095329 dBm (0.030936 pW)
-0.096257;N0;D06; - Post update channel state [dBm]: -105.095329  -125.095329  -145.095329  -inf  
+0.096257;N0;D04; - Distance to N2 = 1050.000000 m
+0.096257;N0;D05; - Power received from transmitter N2 = -65.475794 dBm (283.413540 pW)
+0.096257;N0;D06; - Post update channel state [dBm]: -65.475794  -85.475794  -105.475794  -125.475794  
 0.096257;N0;D07; - I am in TRANSMITTING state
 0.096257;N0;D07; - I am NOT the TX destination (N1)
 0.100000;N0;C00; Node Stop()
