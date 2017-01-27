@@ -1616,3 +1616,1686 @@ Reading nodes configuration...
  ----------------------------- 
  ----------------------------- 
 [MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_komondor = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_komondor = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_komondor = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_komondor = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_komondor = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration...
+- num_channels_komondor = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+[MAIN] - SIMULATION STARTED!
+Reading system configuration file './input/input_system_conf.csv'...
+System configuration: - num_channels_komondor = 4
+- basic_channel_bandwidth = 20
+- CW = 16
+- pdf_backoff = 0
+- pdf_tx_time = 0
+- packet_length = 12000
+- logs_flag = 0
+- path_loss_model = 0
+- num_packets_aggregated = 64
+- wavelength = 0.124914 m
+- noise_level = -100.000000 dBm
+- cochannel_model = 1
+- collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration:       - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration:       - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+Reading nodes configuration...
+- Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+    + Node 0:
+      - node_id = 0
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - position = (0, 0, -50) m
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+    + Node 1:
+      - node_id = 1
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - position = (0, 0, 0) m
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+    + Node 2:
+      - node_id = 2
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - position = (0, 0, 1000) m
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - position = (0, 0, -50) m
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - position = (0, 0, 0) m
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - position = (0, 0, 1000) m
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 15
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 19
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 19
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 19
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 2449
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 19
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 2449
+- Reading system configuration file './input/input_system_conf.csv'...
+   · System configuration: 
+      - num_channels_komondor = 4
+      - basic_channel_bandwidth = 20
+      - CW = 16
+      - pdf_backoff = 0
+      - pdf_tx_time = 0
+      - packet_length = 12000
+      - logs_flag = 0
+      - path_loss_model = 0
+      - num_packets_aggregated = 64
+      - wavelength = 0.124914 m
+      - noise_level = -100.000000 dBm
+      - cochannel_model = 1
+      - collisions_model = 0
+- Reading nodes configuration...
+   · Number of nodes: 3
+ ----------------------------- 
+ ----------------------------- 
+ ----------------------------- 
+     + Node 0:
+      - node_id = 0
+      - position = (0, 0, -50) m
+      - primary_channel = 1
+      - min_channel_allowed = 1
+      - max_channel_allowed = 1
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 1:
+      - node_id = 1
+      - position = (0, 0, 0) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 15.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 3
+      - lambda = 14814.814815 pkts/s
+     + Node 2:
+      - node_id = 2
+      - position = (0, 0, 1000) m
+      - primary_channel = 0
+      - min_channel_allowed = 0
+      - max_channel_allowed = 0
+      - tpc_default = 35.000000 dBm
+      - cca_default = -82.000000 dBm
+      - tx_gain = 0.000000 dB
+      - rx_gain = 0.000000 dB
+      - channel_bonding_model = 4
+      - destination_id = 1
+      - lambda = 14814.814815 pkts/s
+STATISTICS:
+- Total number of packets sent = 242

@@ -8,8 +8,9 @@
 #include "Node.h"
 #include "structures/Notification.h"
 #include "structures/NACK.h"
+#include "list_of_defines.h"
 
-#define SLOT 0.000009
+// #define T_SLOT 0.000009
 
 component KomondorEnvironment : public CostSimEng
 {
@@ -19,13 +20,15 @@ component KomondorEnvironment : public CostSimEng
 		void Start();
 		void inputChecker();
 		void setupEnvironmentByReadingInputFile(char *system_filename);
+		void printSystemInfo(int write_or_print);
 		void generateNodesByReadingInputFile(char *nodes_filename, double sim_time);
+		void printNodesInfo(int write_or_print);
 		void readNodesFile(char *nodes_filename, double sim_time);
 
 	public:
 		Node[] node_container;
 
-		double mu;					// Packet departure rate [1/s]
+		double lambda;				// Packet generation rate
 		double wavelength;			// Signal wavelength [m] (in WiFi 0.1249 m)
 		int num_channels_komondor;	// Number of subchannels composing the whole channel
 		int basic_channel_bandwidth;	// Bandwidth of a basic channel [Mbps]
@@ -70,10 +73,6 @@ void KomondorEnvironment :: Setup(double sim_time, int save_node_logs_console, c
 	// Check input
 	inputChecker();
 
-	printf(" ----------------------------- \n");
-	printf("Configuration ready!\n");
-
-	printf("total_nodes_number = %d\n", total_nodes_number);
 	// Set connections
 	for(int n = 0; n < total_nodes_number; n++){
 		for(int m=0; m < total_nodes_number; m++) {
@@ -85,8 +84,7 @@ void KomondorEnvironment :: Setup(double sim_time, int save_node_logs_console, c
 };
 
 void KomondorEnvironment :: Start(){
-	printf("--------------  MAIN Start() --------------\n");
-	fprintf(logs_output_file,"[MAIN] - SIMULATION STARTED!\n");
+	printf("\n--------------  Start() --------------\n");
 };
 
 /*********************/
@@ -97,9 +95,6 @@ void KomondorEnvironment :: Start(){
 
 void KomondorEnvironment :: Stop(){
 	printf("-------------- MAIN Stop() --------------\n");
-
-	fclose(logs_output_file);
-
 	int total_packets_sent = 0;
 	double total_throughput = 0;
 	for(int m=0;m<total_nodes_number;m++){
@@ -113,9 +108,12 @@ void KomondorEnvironment :: Stop(){
 	printf("[STATS] Average throughput = %f\n", (total_throughput/total_nodes_number));
 	printf("\n\n");
 
-	// Script info
-	fprintf(script_file, "- Total number of packets sent = %d\n", total_packets_sent);
 
+	fprintf(logs_output_file, "STATISTICS:\n");
+	fprintf(logs_output_file, "- Total number of packets sent = %d\n", total_packets_sent);
+	fclose(logs_output_file);
+
+	fprintf(script_file, "- Total number of packets sent = %d\n", total_packets_sent);
 	fclose(script_file);
 };
 
@@ -123,6 +121,8 @@ void KomondorEnvironment :: Stop(){
  * inputChecker()
  */
 void KomondorEnvironment :: inputChecker(){
+	printf(" - Validating input files...\n");
+
 	int nodes_ids[total_nodes_number];
 	double nodes_x[total_nodes_number];
 	double nodes_y[total_nodes_number];
@@ -167,6 +167,7 @@ void KomondorEnvironment :: inputChecker(){
 			}
 		}
 	}
+	printf("    · Input files validated!\n");
 }
 
 /*
@@ -175,20 +176,22 @@ void KomondorEnvironment :: inputChecker(){
  * - system_filename: ...
  */
 void KomondorEnvironment :: setupEnvironmentByReadingInputFile(char *system_filename) {
-	// printf("Reading system configuration...\n");
-	fprintf(logs_output_file, "Reading system configuration...\n");
+	printf("- Reading system configuration file '%s'...\n", system_filename);
+	fprintf(logs_output_file, "- Reading system configuration file '%s'...\n", system_filename);
 
 	FILE* stream_system = fopen(system_filename, "r");
 	if (!stream_system){
-		// printf("Komondor system file not found************!\nExiting...\n");
-		fprintf(logs_output_file, "Komondor system file '%s' not found!\n", system_filename);
+		printf("   · Komondor system file '%s' not found! ---> Exiting...\n", system_filename);
+		fprintf(logs_output_file, "   · Komondor system file '%s' not found! ---> Exiting...\n", system_filename);
 		exit(-1);
+	} else {
+		printf("   · System configuration: \n");
+		fprintf(logs_output_file, "   · System configuration: \n");
 	}
 	char line_system[1024];
 	int first_line_skiped_flag = 0;
 	int field_ix;
-	while (fgets(line_system, 1024, stream_system))
-	{
+	while (fgets(line_system, 1024, stream_system))	{
 		if(!first_line_skiped_flag){
 			first_line_skiped_flag = 1;
 		} else{
@@ -199,100 +202,116 @@ void KomondorEnvironment :: setupEnvironmentByReadingInputFile(char *system_file
 			tmp = strdup(line_system);
 			const char* num_channels_komondor_char = getfield(tmp, field_ix);
 			num_channels_komondor = atoi(num_channels_komondor_char);
-			// printf("- num_channels_komondor_char = %d\n", num_channels_komondor);
-			fprintf(logs_output_file, "- num_channels_komondor = %d\n", num_channels_komondor);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* basic_channel_bandwidth_char = getfield(tmp, field_ix);
 			basic_channel_bandwidth = atoi(basic_channel_bandwidth_char);
-			// printf("- num_channels_komondor_char = %d\n", num_channels_komondor);
-			fprintf(logs_output_file, "- basic_channel_bandwidth = %d\n", basic_channel_bandwidth);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* cw_char = getfield(tmp, field_ix);
 			CW = atoi(cw_char);
-			// printf("- CW = %d\n", CW);
-			fprintf(logs_output_file, "- CW = %d\n", CW);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* pdf_backoff_char = getfield(tmp, field_ix);
 			pdf_backoff = atoi(pdf_backoff_char);
-			// printf("- pdf_backoff = %d\n", pdf_backoff);
-			fprintf(logs_output_file, "- pdf_backoff = %d\n", pdf_backoff);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* pdf_tx_time_char = getfield(tmp, field_ix);
 			pdf_tx_time = atoi(pdf_tx_time_char);
-			// printf("- pdf_tx_time = %d\n", pdf_tx_time);
-			fprintf(logs_output_file, "- pdf_tx_time = %d\n", pdf_tx_time);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* pkt_length_char = getfield(tmp, field_ix);
 			packet_length = atoi(pkt_length_char);
-			printf("- packet_length = %d\n", packet_length);
-			fprintf(logs_output_file, "- packet_length = %d\n", packet_length);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* logs_flag_char = getfield(tmp, field_ix);
 			logs_flag = atoi(logs_flag_char);
-			printf("- logs_flag = %d\n", logs_flag);
-			fprintf(logs_output_file, "- logs_flag = %d\n", logs_flag);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* path_loss_model_char = getfield(tmp, field_ix);
 			path_loss_model = atoi(path_loss_model_char);
-			printf("- path_loss_model = %d\n", path_loss_model);
-			fprintf(logs_output_file, "- path_loss_model = %d\n", path_loss_model);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* num_packets_aggregated_char = getfield(tmp, field_ix);
 			num_packets_aggregated = atoi(num_packets_aggregated_char);
-			printf("- num_packets_aggregated = %d\n", num_packets_aggregated);
-			fprintf(logs_output_file, "- num_packets_aggregated = %d\n", num_packets_aggregated);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* wavelength_char = getfield(tmp, field_ix);
 			wavelength = atof(wavelength_char);
-			printf("- wavelength = %f m\n", wavelength);
-			fprintf(logs_output_file, "- wavelength = %f m\n", wavelength);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* noise_level_char = getfield(tmp, field_ix);
 			noise_level = atof(noise_level_char);
-			printf("- noise_level = %f dBm\n", noise_level);
-			fprintf(logs_output_file, "- noise_level = %f dBm\n", noise_level);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* cochannel_model_char = getfield(tmp, field_ix);
 			cochannel_model = atof(cochannel_model_char);
-			printf("- cochannel_model = %d\n", cochannel_model);
-			fprintf(logs_output_file, "- cochannel_model = %d\n", cochannel_model);
 			field_ix++;
 
 			tmp = strdup(line_system);
 			const char* collisions_model_char = getfield(tmp, field_ix);
 			collisions_model = atof(collisions_model_char);
-			printf("- collisions_model = %d\n", collisions_model);
-			fprintf(logs_output_file, "- collisions_model = %d\n", collisions_model);
 			field_ix++;
 
 			free(tmp);
 		}
 	}
 	fclose(stream_system);
+	printSystemInfo(PRINT_LOG);
+	printSystemInfo(WRITE_LOG);
 }
 
+/*
+ * printSystemInfo(): prints or writes the system info
+ */
+void KomondorEnvironment :: printSystemInfo(int write_or_print){
+	switch(write_or_print){
+		case PRINT_LOG:{
+			printf("      - num_channels_komondor = %d\n", num_channels_komondor);
+			printf("      - basic_channel_bandwidth = %d\n", basic_channel_bandwidth);
+			printf("      - CW = %d\n", CW);
+			printf("      - pdf_backoff = %d\n", pdf_backoff);
+			printf("      - pdf_tx_time = %d\n", pdf_tx_time);
+			printf("      - packet_length = %d\n", packet_length);
+			printf("      - logs_flag = %d\n", logs_flag);
+			printf("      - path_loss_model = %d\n", path_loss_model);
+			printf("      - num_packets_aggregated = %d\n", num_packets_aggregated);
+			printf("      - wavelength = %f m\n", wavelength);
+			printf("      - noise_level = %f dBm\n", noise_level);
+			printf("      - cochannel_model = %d\n", cochannel_model);
+			printf("      - collisions_model = %d\n", collisions_model);
+			printf("      - save_node_logs = %d\n", save_node_logs);
+			break;
+		}
+		case WRITE_LOG:{
+			fprintf(logs_output_file, "      - num_channels_komondor = %d\n", num_channels_komondor);
+			fprintf(logs_output_file, "      - basic_channel_bandwidth = %d\n", basic_channel_bandwidth);
+			fprintf(logs_output_file, "      - CW = %d\n", CW);
+			fprintf(logs_output_file, "      - pdf_backoff = %d\n", pdf_backoff);
+			fprintf(logs_output_file, "      - pdf_tx_time = %d\n", pdf_tx_time);
+			fprintf(logs_output_file, "      - packet_length = %d\n", packet_length);
+			fprintf(logs_output_file, "      - logs_flag = %d\n", logs_flag);
+			fprintf(logs_output_file, "      - path_loss_model = %d\n", path_loss_model);
+			fprintf(logs_output_file, "      - num_packets_aggregated = %d\n", num_packets_aggregated);
+			fprintf(logs_output_file, "      - wavelength = %f m\n", wavelength);
+			fprintf(logs_output_file, "      - noise_level = %f dBm\n", noise_level);
+			fprintf(logs_output_file, "      - cochannel_model = %d\n", cochannel_model);
+			fprintf(logs_output_file, "      - collisions_model = %d\n", collisions_model);
+			break;
+		}
+	}
+}
 
 /*
  * generateNodesByReadingInputFile()
@@ -301,20 +320,21 @@ void KomondorEnvironment :: setupEnvironmentByReadingInputFile(char *system_file
  * - sim_time: [dBm]
  */
 void KomondorEnvironment :: generateNodesByReadingInputFile(char *nodes_filename, double sim_time) {
-	printf("Reading nodes configuration...\n");
-	fprintf(logs_output_file, "Reading nodes configuration...\n");
+	printf("- Reading nodes configuration...\n");
+	fprintf(logs_output_file, "- Reading nodes configuration...\n");
+
 	total_nodes_number = getNumOfLines(nodes_filename);
-	fprintf(logs_output_file, "- Number of nodes: %d\n", total_nodes_number);
+	printf("   · Number of nodes: %d\n", total_nodes_number);
+	fprintf(logs_output_file, "   · Number of nodes: %d\n", total_nodes_number);
+
 	node_container.SetSize(total_nodes_number);
 	FILE* stream_nodes = fopen(nodes_filename, "r");
-
 	char line_nodes[1024];
 	int first_line_skiped_flag = 0;
 	int node_ix = 0;
 	int node_id_aux = 0;
 	int field_ix;
-	while (fgets(line_nodes, 1024, stream_nodes))
-	{
+	while (fgets(line_nodes, 1024, stream_nodes)){
 		field_ix = 1;
 		if(!first_line_skiped_flag){
 			first_line_skiped_flag = 1;
@@ -353,10 +373,10 @@ void KomondorEnvironment :: generateNodesByReadingInputFile(char *nodes_filename
 			node_container[node_ix].z = atof(getfield(tmp_nodes, field_ix));
 			field_ix++;
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].tx_gain = atoi(getfield(tmp_nodes, field_ix));
+			node_container[node_ix].tx_gain = atof(getfield(tmp_nodes, field_ix));
 			field_ix++;
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].rx_gain = atoi(getfield(tmp_nodes, field_ix));
+			node_container[node_ix].rx_gain = atof(getfield(tmp_nodes, field_ix));
 			field_ix++;
 			tmp_nodes = strdup(line_nodes);
 			node_container[node_ix].channel_bonding_model = atoi(getfield(tmp_nodes, field_ix));
@@ -365,7 +385,8 @@ void KomondorEnvironment :: generateNodesByReadingInputFile(char *nodes_filename
 			node_container[node_ix].destination_id = atoi(getfield(tmp_nodes, field_ix));
 			field_ix++;
 			double EB = (double) (CW-1)/2;
-			node_container[node_ix].lambda =  1/(EB * SLOT);
+			lambda = 1/(EB * T_SLOT);
+			node_container[node_ix].lambda = lambda;
 			node_container[node_ix].wavelength = wavelength;
 			node_container[node_ix].path_loss_model = path_loss_model;
 			node_container[node_ix].pdf_backoff = pdf_backoff;
@@ -379,14 +400,57 @@ void KomondorEnvironment :: generateNodesByReadingInputFile(char *nodes_filename
 			node_container[node_ix].save_node_logs = save_node_logs;
 			node_container[node_ix].collisions_model = collisions_model;
 			node_container[node_ix].basic_channel_bandwidth = basic_channel_bandwidth;
-
 			free(tmp_nodes);
-			node_container[node_ix].printNodeInfo();
 			node_ix++;
 		}
 	}
+	printNodesInfo(PRINT_LOG);
+	printNodesInfo(WRITE_LOG);
 }
 
+/*
+ * printNodesInfo(): prints or writes the nodes info
+ */
+void KomondorEnvironment :: printNodesInfo(int write_or_print){
+	switch(write_or_print){
+		case PRINT_LOG:{
+			for(int n = 0; n < total_nodes_number; n++){
+				printf("     + Node %d:\n", node_container[n].node_id);
+				printf("      - node_id = %d\n", node_container[n].node_id);
+				printf("      - position = (%d, %d, %d) m\n", node_container[n].x, node_container[n].y, node_container[n].z);
+				printf("      - primary_channel = %d\n", node_container[n].primary_channel);
+				printf("      - min_channel_allowed = %d\n", node_container[n].min_channel_allowed);
+				printf("      - max_channel_allowed = %d\n", node_container[n].max_channel_allowed);
+				printf("      - tpc_default = %f dBm\n", node_container[n].tpc_default);
+				printf("      - cca_default = %f dBm\n", node_container[n].cca_default);
+				printf("      - tx_gain = %f dB\n", node_container[n].tx_gain);
+				printf("      - rx_gain = %f dB\n", node_container[n].rx_gain);
+				printf("      - channel_bonding_model = %d\n", node_container[n].channel_bonding_model);
+				printf("      - destination_id = %d\n", node_container[n].destination_id);
+				printf("      - lambda = %f pkts/s\n", node_container[n].lambda);
+			}
+			break;
+		}
+		case WRITE_LOG:{
+			for(int n = 0; n < total_nodes_number; n++){
+				fprintf(logs_output_file, "     + Node %d:\n", node_container[n].node_id);
+				fprintf(logs_output_file, "      - node_id = %d\n", node_container[n].node_id);
+				fprintf(logs_output_file, "      - position = (%d, %d, %d) m\n", node_container[n].x, node_container[n].y, node_container[n].z);
+				fprintf(logs_output_file, "      - primary_channel = %d\n", node_container[n].primary_channel);
+				fprintf(logs_output_file, "      - min_channel_allowed = %d\n", node_container[n].min_channel_allowed);
+				fprintf(logs_output_file, "      - max_channel_allowed = %d\n", node_container[n].max_channel_allowed);
+				fprintf(logs_output_file, "      - tpc_default = %f dBm\n", node_container[n].tpc_default);
+				fprintf(logs_output_file, "      - cca_default = %f dBm\n", node_container[n].cca_default);
+				fprintf(logs_output_file, "      - tx_gain = %f dB\n", node_container[n].tx_gain);
+				fprintf(logs_output_file, "      - rx_gain = %f dB\n", node_container[n].rx_gain);
+				fprintf(logs_output_file, "      - channel_bonding_model = %d\n", node_container[n].channel_bonding_model);
+				fprintf(logs_output_file, "      - destination_id = %d\n", node_container[n].destination_id);
+				fprintf(logs_output_file, "      - lambda = %f pkts/s\n", node_container[n].lambda);
+			}
+			break;
+		}
+	}
+}
 
 /*
  * getfield(): returns a field corresponding to a given index from a csv file
