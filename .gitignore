@@ -31,4 +31,5 @@
 # Komondor
 *.csv
 *.cxx
+*.txt~
 output/*
