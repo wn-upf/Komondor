@@ -32,6 +32,7 @@ component Node : public TypeII{
 		void restartNode();
 		void printNodeInfo(int write_or_print);
 		void printChannelPower(int write_or_print);
+		void printChannelForTx(int write_or_print);
 
 	public:
 		int node_id; 				// Node identifier
@@ -63,10 +64,9 @@ component Node : public TypeII{
 		int packet_length;				// Packet length [bits]
 		int path_loss_model;			// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 		int num_packets_aggregated;		// Number of packets aggregated in one transmission
-		double noise_level;				// Environment noise [dBm]
 		int save_node_logs;				// Flag for activating the log writting of nodes
 		int basic_channel_bandwidth;	// Bandwidth of a basic channel [Mbps]
-		int data_rate_array[4];			// Hardcoded data rates [bps] (corresponding to the CTMN Matlab code)
+		int data_rate_array[8];			// Hardcoded data rates [bps] (corresponding to the CTMN Matlab code)
 
 		// Statistics
 		int packets_sent;
@@ -91,14 +91,13 @@ component Node : public TypeII{
 		// State and timers
 		int node_state;						// Node's internal state (0: sensing the channel, 1: transmitting, 2: receiving packet)
 		double remaining_backoff;			// Remaining backoff
-		int progress_bar_delta;				// Percentage value between displayed values in the progress bar
 		int progress_bar_counter;			// Counter for displaying the progress bar
 
 		// Transmission parameters
 		int current_left_channel;			// Left channel used in current TX
 		int current_right_channel;			// Right channel used in current TX
-		int current_tpc;					// Transmission power used in current TX
-		int current_cca;					// Current CCA (variable "sensitivity")
+		double current_tpc;					// Transmission power used in current TX
+		double current_cca;					// Current CCA (variable "sensitivity")
 		int current_destination_id;			// Current destination ID
 		int num_channels_allowed;			// Maximum number of channels allowed to TX in
 		double current_tx_duration;			// Duration of the TX being done
@@ -154,7 +153,7 @@ void Node :: Start(){
 	if(save_node_logs) remove(own_file_path);
 	if(save_node_logs) own_log_file = fopen(own_file_path, "at");
 
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; Start()\n", SimTime(), node_id, STATE_UNKNOWN, LOG_B00);
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Start()\n", SimTime(), node_id, STATE_UNKNOWN, LOG_B00, LOG_LVL1);
 
 	printNodeInfo(WRITE_LOG);
 
@@ -169,19 +168,19 @@ void Node :: Start(){
 		trigger_sim_time.Set(SimTime() + 0.000001);
 	}
 
-	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; Start() END\n", SimTime(), node_id, node_state, LOG_B01);
+	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Start() END\n", SimTime(), node_id, node_state, LOG_B01, LOG_LVL1);
 };
 
 void Node :: Stop(){
 
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;    - Node Stop()\n", SimTime(), node_id, node_state, LOG_C00);
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Node Stop()\n", SimTime(), node_id, node_state, LOG_C00, LOG_LVL1);
 
 	printNodeStatistics(PRINT_LOG);
 	printNodeStatistics(WRITE_LOG);
 
 	if(save_node_logs) fclose(own_log_file);
 
-	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;    - Node info:\n", SimTime(), node_id, node_state, LOG_C01);
+	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Node info:\n", SimTime(), node_id, node_state, LOG_C01, LOG_LVL1);
 };
 
 /*************************************/
@@ -192,21 +191,24 @@ void Node :: Stop(){
 
 void Node :: inportSomeNodeStartTX(Notification &notification){
 
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; inportSomeNodeStartTX(): source = %d - destination = %d\n",
-			SimTime(), node_id, node_state, LOG_D00, notification.source_id, notification.tx_info.destination_id);
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s inportSomeNodeStartTX(): source = %d - destination = %d\n",
+			SimTime(), node_id, node_state, LOG_D00, LOG_LVL1, notification.source_id, notification.tx_info.destination_id);
 
 	if(notification.source_id == node_id){ // If node is the transmitter, do nothing
 
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; - I have started a TX in channels: %d - %d to N%d\n",
-				SimTime(), node_id, node_state, LOG_D02, notification.left_channel, notification.right_channel, notification.tx_info.destination_id);
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I have started a TX to N%d in channels %d - %d\n",
+				SimTime(), node_id, node_state, LOG_D02, LOG_LVL2, notification.tx_info.destination_id, notification.left_channel,
+				notification.right_channel);
 
 	} else {	// If other node is the transmitter
 
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; - N%d has started a TX in channels: %d - %d to N%d\n",
-				SimTime(), node_id, node_state, LOG_D02, notification.source_id, notification.left_channel, notification.right_channel, notification.tx_info.destination_id);
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s N%d has started a TX to N%d in channels %d - %d\n",
+				SimTime(), node_id, node_state, LOG_D02, LOG_LVL2, notification.source_id, notification.tx_info.destination_id,
+				notification.left_channel, notification.right_channel);
 
 		updateChannelsPower(notification, TX_INITIATED);	// Update the power sensed at each channel
-		pw_received_interest = power_received_per_node[notification.source_id];
+		if(notification.tx_info.destination_id == node_id) pw_received_interest = power_received_per_node[notification.source_id];
+
 		computeMaxInterference(notification);
 
 		// Decide action according to current state
@@ -218,21 +220,22 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 
 				if(notification.tx_info.destination_id == node_id){	// Node is the destination
 
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;    + I am the TX destination (N%d)\n",
-							SimTime(), node_id, node_state, LOG_D07, notification.tx_info.destination_id);
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if packet can be received.\n",
+							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.tx_info.destination_id);
 
 					// Check if packet has been lost due to interferences or weak signal strength
 					loss_reason = isPacketLost(notification);
+
 					if(loss_reason != PACKET_NOT_LOST) {	// If packet is lost send logical Nack
 
-						if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;       - Reception of packet %d from %d CANNOT be started because of reason %d\n",
-								SimTime(), node_id, node_state, LOG_D14, notification.tx_info.packet_id, notification.source_id, loss_reason);
+						if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Reception of packet %d from N%d CANNOT be started because of reason %d\n",
+								SimTime(), node_id, node_state, LOG_D15, LOG_LVL4, notification.tx_info.packet_id, notification.source_id, loss_reason);
 						sendNack(notification.tx_info.packet_id, notification.source_id, NO_NODE_ID, loss_reason);
 
 					} else {	// Packet can be properly received
 
-						if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;       - Reception of packet %d from %d CAN be started\n",
-								SimTime(), node_id, node_state, LOG_D15, notification.tx_info.packet_id, notification.source_id);
+						if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Reception of packet %d from N%d CAN be started\n",
+								SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.tx_info.packet_id, notification.source_id);
 						node_state = STATE_RX;
 						receiving_from_node_id = notification.source_id;
 						receiving_packet_id = notification.tx_info.packet_id;
@@ -241,8 +244,8 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 					}
 				} else {	// Node is not the destination
 
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;    + I am NOT the TX destination (N%d)\n",
-								SimTime(), node_id, node_state, LOG_D07, notification.tx_info.destination_id);
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.tx_info.destination_id);
 					handleBackoff(PAUSE_TIMER, notification);	// Check if I have to freeze the BO (if it is not already frozen)
 				}
 				break;
@@ -251,19 +254,19 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 			// TRANSMITTING STATE
 			case 1:{
 
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am in TRANSMITTING state\n",SimTime(), node_id);
-
 				if(notification.tx_info.destination_id == node_id){ // Node is the destination
 
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;    + I am the TX destination (N%d)\n",
-												SimTime(), node_id, node_state, LOG_D07, notification.tx_info.destination_id);
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
+											SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.tx_info.destination_id);
 					// Packet cannot be received as I am transmitting...
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;D14;    + I am transmitting, packet cannot be received\n",SimTime(), node_id);
-					loss_reason = PACKET_LOST_DESTINATION_TX;
-					sendNack(notification.tx_info.packet_id, notification.source_id, -1, loss_reason);
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am transmitting, packet cannot be received\n",
+											SimTime(), node_id, node_state, LOG_D18, LOG_LVL3);
+
+					sendNack(notification.tx_info.packet_id, notification.source_id, NO_NODE_ID, PACKET_LOST_DESTINATION_TX);
 
 				} else {	// Node is NOT the destination: do nothing
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am NOT the TX destination (N%d)\n",SimTime(), node_id, notification.tx_info.destination_id);
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.tx_info.destination_id);
 				}
 				break;
 			}
@@ -271,29 +274,45 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 			// RECEIVING STATE
 			case 2:{
 
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am in RECEIVING state\n",SimTime(), node_id);
-
 				if(notification.tx_info.destination_id == node_id){	// Node is the destination
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;    + I am the TX destination (N%d)\n",
-												SimTime(), node_id, node_state, LOG_D07, notification.tx_info.destination_id);
-					if(convertPower(PICO_TO_DBM,pw_received_interest) >= current_cca){
+
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
+												SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.tx_info.destination_id);
+					if(convertPower(PICO_TO_DBM, pw_received_interest) >= current_cca){
 						// Pure collision (two nodes transmitting to me)
-						if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am the TX destination (N%d)\n",SimTime(),
-								node_id, notification.tx_info.destination_id);
+						if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Pure collision! Already receiving from N%d\n",
+								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id);
 						// Send NACK
-						loss_reason = 3;
+						loss_reason = PACKET_LOST_PURE_COLLISION;
 						sendNack(notification.tx_info.packet_id, receiving_from_node_id, notification.source_id, loss_reason);
+
 					} else {
 						// Hidden node
-						if(save_node_logs) fprintf(own_log_file, "%f;N%d;D07; - I am NOT the TX destination (N%d)\n",SimTime(),
-								node_id, notification.tx_info.destination_id);
+						if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Low strength signal received while already receiving from N%d\n",
+									SimTime(), node_id, node_state, LOG_D20, LOG_LVL4, receiving_from_node_id);
 						// Send NACK
-						loss_reason = 4;
-						sendNack(notification.tx_info.packet_id, receiving_from_node_id, notification.source_id, loss_reason);
+						sendNack(notification.tx_info.packet_id, receiving_from_node_id, notification.source_id, PACKET_LOST_LOW_SIGNAL_AND_RX);
 					}
-				} else if(convertPower(PICO_TO_DBM,max_pw_interference) >= current_cca){
-					loss_reason = 2;
-					sendNack(notification.tx_info.packet_id, notification.source_id, -1, loss_reason);
+
+				} else {	// Node is not the destination
+
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+											SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.tx_info.destination_id);
+
+					if(convertPower(PICO_TO_DBM, max_pw_interference) >= current_cca){	// Too much interference --> packet being received is lost
+
+						if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Too much interference received from N%d. Current packet reception from N%d is lost.\n",
+											SimTime(), node_id, node_state, LOG_D08, LOG_LVL4, notification.source_id, receiving_from_node_id);
+
+						// Transmission is not possible. Change state to avoid sending repetetive NACKs
+						node_state = STATE_SENSING;
+						pw_received_interest = 0;
+						sendNack(notification.tx_info.packet_id, receiving_from_node_id, NO_NODE_ID, PACKET_LOST_INTERFERENCE);
+
+					} else {	// NOT too much interference
+						if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s NOT too much interference received from N%d. Current packet reception from N%d is not affected.\n",
+																	SimTime(), node_id, node_state, LOG_D08, LOG_LVL4, notification.source_id, receiving_from_node_id);
+					}
 				}
 				break;
 			}
@@ -303,7 +322,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 		}
 	}
 
-	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; inportSomeNodeStartTX() END\n", SimTime(), node_id, node_state, LOG_D00,);
+	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s inportSomeNodeStartTX() END\n", SimTime(), node_id, node_state, LOG_D01, LOG_LVL1);
 };
 
 /**************************************/
@@ -314,54 +333,63 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 
 void Node :: inportSomeNodeFinishTX(Notification &notification){
 
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;E00; inportSomeNodeFinishTX(): source = %d - destination = %d\n",
-			SimTime(), node_id, notification.source_id, notification.tx_info.destination_id);
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s inportSomeNodeFinishTX(): source = %d - destination = %d\n",
+								SimTime(), node_id, node_state, LOG_E00, LOG_LVL1, notification.source_id, notification.tx_info.destination_id);
 
-	if(notification.source_id == node_id){
-		// Own transmission is finished: do nothing
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;E02; - I have finished a TX in channel range: %d - %d\n",
-				SimTime(), node_id, notification.left_channel, notification.right_channel);
-	} else {
-		// Some node has finished its transmission
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;E02; - N%d has finished a TX in channel range: %d - %d\n",
-				SimTime(), node_id, notification.source_id, notification.left_channel, notification.right_channel);
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;E03; - Initial power of transmitter N%d = %f pW\n",
-				SimTime(), node_id, notification.source_id, power_received_per_node[notification.source_id]);
-		updateChannelsPower(notification, 0);
+	if(notification.source_id == node_id){	// Node is the TX source: do nothing
 
-		// DECIDE WHAT TO DO ACCORDING TO THE STATE
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I have finished a TX in channel range: %d - %d\n",
+				SimTime(), node_id, node_state, LOG_E18, LOG_LVL2, notification.left_channel, notification.right_channel);
+
+	} else {	// Node is not the TX source
+
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s N%d has finished a TX in channel range: %d - %d\n",
+				SimTime(), node_id, node_state, LOG_E02, LOG_LVL2, notification.source_id, notification.left_channel, notification.right_channel);
+
+		updateChannelsPower(notification, TX_FINISHED);
+
 		switch(node_state){
+
 			// SENSING STATE: backoff process
 			case 0:{
-				handleBackoff(1, notification);	// Attempt to restart Backoff
+
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Attempting to restart backoff.\n",
+					SimTime(), node_id, node_state, LOG_E11, LOG_LVL3);
+				handleBackoff(RESUME_TIMER, notification);	// Attempt to restart Backoff
 				break;
 			}
+
 			// TRANSMITTING STATE: do nothing
 			case 1:{
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;E09; - I am TRANSMITTING ---> do nothing\n", SimTime(), node_id);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am TXing. Do nothing.\n",
+					SimTime(), node_id, node_state, LOG_E13, LOG_LVL3);
 				break;
 			}
+
 			// RECEIVING STATE: check if my transmission has finished
 			case 2:{
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;E09; - I am RECEIVING\n", SimTime(), node_id);
 				// Check if my transmission has finished
-				if(notification.tx_info.destination_id == node_id){
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;E06; - Packet %d transmission from %d is finished successfully\n",
-							SimTime(), node_id, notification.tx_info.packet_id, notification.source_id);
-					node_state = 0;
-					receiving_from_node_id = -1;
-					receiving_packet_id = -1;
-					// Check now if channel is free
-					handleBackoff(1, notification);
-				} else {
-					// Transmission was not mine
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;E09; - I am not the destination --> do nothing\n", SimTime(), node_id);
+				if(notification.tx_info.destination_id == node_id){	// Node is the TX destination
+
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packet %d reception from N%d is finished successfully.\n",
+							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, notification.tx_info.packet_id, notification.source_id);
+					node_state = STATE_SENSING;
+					receiving_from_node_id = NO_NODE_ID;
+					receiving_packet_id = NO_PACKET_ID;
+					handleBackoff(RESUME_TIMER, notification);
+
+				} else {	// Node is NOT the TX destination
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Still receiving packet %d reception from N%d.\n",
+							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, notification.tx_info.packet_id, notification.source_id);
+
 				}
 				break;
 			}
 		}
 	}
-	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;E00; - inportSomeNodeFinishTX() END\n", SimTime(), node_id);
+
+	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s inportSomeNodeFinishTX() END",	SimTime(), node_id, node_state, LOG_E01, LOG_LVL1);
+
 };
 
 /************************************/
@@ -370,15 +398,22 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 /************************************/
 /************************************/
 
-// Someone has sent as Nack notification
+// Someone has sent a Nack notification
 void Node :: inportNackReceived(NackInfo &nack_info){
-	if(nack_info.source_id != node_id){
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;G00; inportNackReceived() from %d\n", SimTime(), node_id, nack_info.source_id);
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s inportNackReceived(): source = %d - node_id_a = %d - node_id_b = %d\n",
+									SimTime(), node_id, node_state, LOG_H00, LOG_LVL1, nack_info.source_id, nack_info.node_id_a, nack_info.node_id_b);
+
+	if(nack_info.source_id != node_id){	// Node is not the NACK transmitter
+
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s NACK of packet #%d received from N%d sent to a) N%d and b) N%d with reason %d\n",
+						SimTime(), node_id, node_state, LOG_H00, LOG_LVL2, nack_info.packet_id, nack_info.source_id, nack_info.node_id_a, nack_info.node_id_b, nack_info.loss_reason);
 		processNack(nack_info);
-	} else {
-		// do nothing
+
+	} else {	// Node is the NACK transmitter
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s NACK of packet #%d sent to a) N%d and b) N%d with reason %d\n",
+				SimTime(), node_id, node_state, LOG_H00, LOG_LVL2, nack_info.packet_id, nack_info.node_id_a, nack_info.node_id_b, nack_info.loss_reason);
 	}
-	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;G01; inportNackReceived() END\n", SimTime(), node_id);
+	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;G01;%s inportNackReceived() END\n", SimTime(), node_id, LOG_LVL1);
 }
 
 
@@ -389,29 +424,29 @@ void Node :: inportNackReceived(NackInfo &nack_info){
 /**********************************/
 
 void Node :: endBackoff(trigger_t &){
-	//printf("%f: [N%d] - endBackoff()\n", SimTime(), node_id);
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;F00; endBackoff()\n", SimTime(), node_id);
 
-	node_state = 1;	// Change state to TXing
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s endBackoff()\n", SimTime(), node_id, node_state, LOG_F00, LOG_LVL1);
 
+	node_state = STATE_TX;
 	getChannelOccupancyByCCA();
 	getTxChannelsByChannelBonding(channel_bonding_model, channels_free);
 
-	if(save_node_logs) fprintf(own_log_file, "%f:N%d;F02 - Channels for transmitting: ",SimTime(), node_id);
-	printChannelForTx(save_node_logs, 1, channels_for_tx, num_channels_komondor, own_log_file);
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Channels for transmitting: ", SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+	printChannelForTx(WRITE_LOG);
 
 	// Check if TX is possible (coded in the first element of channels_for_tx array)
-	if(channels_for_tx[0] != -1){
-		// TX is possible
-		if(save_node_logs) fprintf(own_log_file, "%f:N%d;F03 - Transmission is possible\n",SimTime(), node_id);
-		current_left_channel = getBoundaryChannel(0, channels_for_tx,  num_channels_komondor);
-		current_right_channel = getBoundaryChannel(1, channels_for_tx, num_channels_komondor);
+	if(channels_for_tx[0] != TX_NOT_POSSIBLE){	// TX is possible
+
+		current_left_channel = getBoundaryChannel(FIRST_ONE_IN_ARRAY, channels_for_tx,  num_channels_komondor);
+		current_right_channel = getBoundaryChannel(LAST_ONE_IN_ARRAY, channels_for_tx, num_channels_komondor);
 		int num_channels_tx = current_right_channel - current_left_channel + 1;
 		current_tx_duration = computeTxTime(num_channels_tx-1);
-		if(save_node_logs) fprintf(own_log_file, "%f:N%d;F04    + Selected transmission range: %d - %d\n",
-				SimTime(), node_id, current_left_channel, current_right_channel);
-		// Send packet
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
+						SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
+		// Send data packet
 		Notification notification = generateNotification(current_destination_id, current_tx_duration);
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Transmission of packet #%d started\n",
+								SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, packet_id);
 		outportSelfStartTX(notification);
 		trigger_toFinishTX.Set(SimTime()+current_tx_duration);
 		packets_sent++;
@@ -420,14 +455,16 @@ void Node :: endBackoff(trigger_t &){
 			total_time_transmitting_per_channel[c] += current_tx_duration;
 		}
 		total_time_transmitting_in_num_channels[current_right_channel - current_left_channel] += current_tx_duration;
-	} else {
-		// TX not possible due to CB requirements. Compute a new backoff.
-		if(save_node_logs) fprintf(own_log_file, "%f:N%d;F03 - Transmission is NOT possible\n",SimTime(), node_id);
+
+	} else {	// TX not possible due to CB requirements. Compute a new backoff.
+
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Transmission is NOT possible\n",
+				SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
 		remaining_backoff = computeBackoff(pdf_backoff, lambda);
 		resumeBackoff();
-		if(save_node_logs) fprintf(own_log_file, "%f:N%d;F05    + New backoff generated of %f s\n",SimTime(), node_id, remaining_backoff);
 	}
-	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;E01; endBackoff() END\n", SimTime(), node_id);
+
+	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s endBackoff() END\n", SimTime(), node_id, node_state, LOG_F01, LOG_LVL1);
 };
 
 /***********************************/
@@ -437,14 +474,14 @@ void Node :: endBackoff(trigger_t &){
 /***********************************/
 
 void Node :: myTXFinished(trigger_t &){
-	// printf("%f: [N%d] - myTXFinished()\n", SimTime(), node_id);
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;G00; myTXFinished()\n", SimTime(), node_id);
-	node_state = 0;	// Change state to "sensing"
-	Notification notification = generateNotification(current_destination_id, 0);
+
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s myTXFinished()\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
+	node_state = STATE_SENSING;
+	Notification notification = generateNotification(current_destination_id, 0);	// 0: No transmission duration
 	outportSelfFinishTX(notification);
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;G02; - New BO generated of %f s\n", SimTime(), node_id, remaining_backoff);
 	restartNode();
-	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;G01; myTXFinished() end\n", SimTime(), node_id)
+	// if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;  myTXFinished()\n", SimTime(), node_id, node_state, LOG_G01, LOG_LVL1);
+
 };
 
 /***********************/
@@ -565,9 +602,9 @@ double computeDistance(int x1, int y1, int z1, int x2, int y2, int z2){
 int exceededCCA(double* channel_power, int primary_channel, int cca){
 	// Transmission not allowed (channel power exceeds CCA level)
 	if(channel_power[primary_channel] > convertPower(DBM_TO_PICO, cca)){
-		return 1;
+		return CCA_EXCEEDED;
 	} else {
-		return 0;
+		return CCA_NOT_EXCEEDED;
 	}
 }
 
@@ -594,7 +631,7 @@ double Node :: computeTxTime(int ix_num_channels_used){
 		}
 		// Deterministic
 		case 1:{
-			tx_time = (packet_length * num_packets_aggregated)/data_rate;
+			tx_time = (packet_length * num_packets_aggregated)/data_rate;	// 0.01234 s
 			break;
 		}
 		default:{
@@ -602,6 +639,8 @@ double Node :: computeTxTime(int ix_num_channels_used){
 			break;
 		}
 	}
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Computed TX duration: %f s\n",
+			SimTime(), node_id, node_state, LOG_Z01, LOG_LVL3, tx_time);
 	return tx_time;
 }
 
@@ -652,9 +691,9 @@ int getBoundaryChannel(int position, int *channels_available, int total_channels
 void Node :: getChannelOccupancyByCCA(){
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 		if(channel_power[c] < convertPower(DBM_TO_PICO, current_cca)){
-			channels_free[c] = 1;
+			channels_free[c] = CHANNEL_OCCUPIED;
 		} else {
-			channels_free[c] = 0;
+			channels_free[c] = CHANNEL_FREE;
 		}
 	}
 }
@@ -671,28 +710,27 @@ void Node :: updateChannelsPower(Notification notification, int update_type){
 	double pw_received_pico;
 
 	if(update_type == TX_FINISHED) {
-
 		pw_received_pico = power_received_per_node[notification.source_id];
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; - Pre update channel state [dBm]: ", SimTime(), node_id, node_state, LOG_D03);
+		power_received_per_node[notification.source_id] = 0;
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Pre update channel state [dBm]: ", SimTime(), node_id, node_state, LOG_E04, LOG_LVL3);
 
 	} else if(update_type == TX_INITIATED) {
 
 		double distance = computeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y, notification.tx_info.z);
 		double pw_received = computePowerReceived(path_loss_model, distance, wavelength, notification.tx_info.tx_power, tx_gain, rx_gain);
-		pw_received_pico = convertPower(DBM_TO_PICO, pw_received);	// dBm to pW
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; - Pre update channel state [dBm]: ", SimTime(), node_id, node_state, LOG_E04);
+		pw_received_pico = convertPower(DBM_TO_PICO, pw_received);
+		power_received_per_node[notification.source_id] = pw_received_pico;
+
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Distance to transmitting node N%d: %f m\n",
+				SimTime(), node_id, node_state, LOG_D04, LOG_LVL3, notification.source_id, distance);
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Power received from N%d: = %f dBm (%f pW)\n",
+				SimTime(), node_id, node_state, LOG_D04, LOG_LVL3, notification.source_id, convertPower(PICO_TO_DBM, pw_received_pico), pw_received_pico);
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Pre update channel state [dBm]: ", SimTime(), node_id, node_state, LOG_D03, LOG_LVL3);
 
 	} else {
 		printf("ERROR: update_type %d does not exist!!!", update_type);
 	}
 	printChannelPower(WRITE_LOG);
-
-	double distance = computeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y, notification.tx_info.z);
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; - Distance to N%d = %f m\n",
-			SimTime(), node_id, node_state, LOG_D04, notification.source_id, distance);
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; - Power received from transmitter N%d = %f dBm (%f pW)\n",
-			SimTime(), node_id, node_state, LOG_D05, notification.source_id, convertPower(PICO_TO_DBM, pw_received_pico), pw_received_pico);
-	power_received_per_node[notification.source_id] = pw_received_pico;
 
 	// Total power (of interest and interference) genetared only by the incomming or outgoing TX
 	double total_power[num_channels_komondor];
@@ -751,18 +789,18 @@ void Node :: updateChannelsPower(Notification notification, int update_type){
 
 	// Increase/decrease power sensed if TX started/finished
 	for(int c = 0; c < num_channels_komondor; c++){
-		if(update_type == 0) {
+		if(update_type == TX_FINISHED) {
 			channel_power[c] -= total_power[c];
-		} else {
+		} else if (update_type == TX_INITIATED) {
 			channel_power[c] += total_power[c];
 		}
 	}
 
 	if(save_node_logs){
-		if(update_type == TX_INITIATED)	fprintf(own_log_file, "%f;N%d;S%d;%s; - Post update channel state [dBm]: ",
-				SimTime(), node_id, node_state, LOG_D06);
-		if(update_type == TX_FINISHED) fprintf(own_log_file, "%f;N%d;S%d;%s; - Post update channel state [dBm]: ",
-				SimTime(), node_id, node_state, LOG_E05);
+		if(update_type == TX_INITIATED)	fprintf(own_log_file, "%f;N%d;S%d;%s;%s Post update channel state [dBm]: ",
+				SimTime(), node_id, node_state, LOG_D06, LOG_LVL3);
+		if(update_type == TX_FINISHED) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Post update channel state [dBm]: ",
+				SimTime(), node_id, node_state, LOG_E05, LOG_LVL3);
 	}
 	printChannelPower(WRITE_LOG);
 }
@@ -771,9 +809,7 @@ void Node :: updateChannelsPower(Notification notification, int update_type){
  * getTxChannelsByChannelBonding: returns the channels to TX in depending on the channel_bonding scheme and channel_power state.
  */
 void Node :: getTxChannelsByChannelBonding(int channel_bonding_model, int *channels_free){
-	// printf("\n\n ------------ getTxChannelsByChannelBonding() ----------------\n");
 
-	// Reset channels_for_tx;
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 		channels_for_tx[c] = 0;
 	}
@@ -793,36 +829,26 @@ void Node :: getTxChannelsByChannelBonding(int channel_bonding_model, int *chann
 			}
 		}
 	}
-	// printf("left_free_ch = %d\n", left_free_ch);
-	// printf("right_free_ch = %d\n", right_free_ch);
-	// printf("primary_channel = %d\n", primary_channel);
 	int num_free_ch = right_free_ch - left_free_ch + 1;
 	int num_available_ch = max_channel_allowed - min_channel_allowed + 1;
 
-
-	int m;			// Auxiliary variable representing a modulus
-	int left_tx_ch;	// Left channel to TX
+	int m;				// Auxiliary variable representing a modulus
+	int left_tx_ch;		// Left channel to TX
 	int right_tx_ch;	// Right channel to TX
-
-
-	// printf("PRE\n");
-	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-		// printf("- channels_for_tx[%d] =  %d\n", c, channels_for_tx[c]);
-	}
 
 	// Select channels to transmit depending on the sensed power
 	switch(channel_bonding_model){
 
 		// Only Primary Channel used if FREE
-		case 0:{
+		case CB_ONLY_PRIMARY:{
 			if(primary_channel >= left_free_ch && primary_channel <= right_free_ch){
-				channels_for_tx[primary_channel] = 1;
+				channels_for_tx[primary_channel] = CHANNEL_OCCUPIED;
 			}
 			break;
 		}
 
 		// Aggresive SCB: if all channels are FREE, transmit. If not, generate a new backoff.
-		case 1:{
+		case CB_AGGRESIVE_SCB:{
 			int tx_possible = 1;
 			// If all channels are FREE, transmit. If not, generate a new backoff.
 			for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
@@ -834,36 +860,31 @@ void Node :: getTxChannelsByChannelBonding(int channel_bonding_model, int *chann
 				left_tx_ch = left_free_ch;
 				right_tx_ch = right_free_ch;
 				for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-					channels_for_tx[c] = 1;
+					channels_for_tx[c] = CHANNEL_OCCUPIED;
 				}
 			} else {
 				// TX not possible (code it with negative value)
-				channels_for_tx[0] = -1;
+				channels_for_tx[0] = TX_NOT_POSSIBLE;
 			}
 			break;
 		}
 
 		// Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
-		case 2:{
+		case CB_LOG2_SCB:{
 			while(1){
-				// printf("num_channels_available = %d\n", num_available_ch);
 				// II. If num_free_ch is power of 2
 				if(fmod(log10(num_available_ch)/log10(2), 1) == 0){
-					// printf("num_free_ch is power of 2!\n");
 					m = primary_channel % num_available_ch;
 					left_tx_ch = primary_channel - m;
 					right_tx_ch = primary_channel + num_available_ch - m - 1;
 					// Check if tx channels are inside the free ones
 					if((left_tx_ch >= min_channel_allowed) && (right_tx_ch <= max_channel_allowed)){
-						// printf("TX channels found are OKAY: %d - %d\n", left_tx_ch, right_tx_ch);
 						// TX channels found!
 						break;
 					} else {
-						// printf("TX channels found are NOT POSSIBLE: %d - %d\n", left_tx_ch, right_tx_ch);
 						num_available_ch --;
 					}
 				} else{
-					// printf("num_free_ch is NOT power of 2!\n");
 					num_available_ch --;
 				}
 			}
@@ -877,65 +898,52 @@ void Node :: getTxChannelsByChannelBonding(int channel_bonding_model, int *chann
 			}
 			if(tx_possible){
 				for(int c = left_tx_ch; c <= right_tx_ch; c++){
-					channels_for_tx[c] = 1;
+					channels_for_tx[c] = CHANNEL_OCCUPIED;
 				}
 			} else {
 				// TX not possible (code it with negative value)
-				channels_for_tx[0] = -1;
+				channels_for_tx[0] = TX_NOT_POSSIBLE;
 			}
 			break;
 		}
 
 		// Aggresive DCB: TX in all the free channels contiguous to the primary channel
-		case 3:{
+		case CB_AGGRESIVE_DCB:{
 			for(int c = left_free_ch; c <= right_free_ch; c++){
-				channels_for_tx[c] = 1;
+				channels_for_tx[c] = CHANNEL_OCCUPIED;
 			}
 			break;
 		}
 
 		// Log2 DCB: TX in the larger channel range allowed by the log2 mapping
-		case 4:{
+		case CB_LOG2_DCB:{
 			while(1){
-				// printf("num_free_ch = %d\n", num_free_ch);
 				// II. If num_free_ch is power of 2
 				if(fmod(log10(num_free_ch)/log10(2), 1) == 0){
-					// printf("num_free_ch is power of 2!\n");
 					m = primary_channel % num_free_ch;
 					left_tx_ch = primary_channel - m;
 					right_tx_ch = primary_channel + num_free_ch - m - 1;
 					// Check if tx channels are inside the free ones
 					if((left_tx_ch >= min_channel_allowed) && (right_tx_ch <= max_channel_allowed)){
-						// printf("TX channels found are OKAY: %d - %d\n", left_tx_ch, right_tx_ch);
 						// TX channels found!
 						for(int c = left_tx_ch; c <= right_tx_ch; c++){
-							channels_for_tx[c] = 1;
+							channels_for_tx[c] = CHANNEL_OCCUPIED;
 						}
 						break;
 					} else {
-						// printf("TX channels found are NOT POSSIBLE: %d - %d\n", left_tx_ch, right_tx_ch);
 						num_free_ch --;
 					}
 				} else{
-					// printf("num_free_ch is NOT power of 2!\n");
 					num_free_ch --;
 				}
 			}
 			break;
 		}
 		default:{
-			// printf("channel_bonding_model %d is NOT VALID!\n", channel_bonding_model);
+			printf("channel_bonding_model %d is NOT VALID!\n", channel_bonding_model);
 			break;
 		}
 	}
-
-
-	// printf("Summary:\n- channel_bonding_model: %d\n- channels allowed: %d - %d\n", channel_bonding_model, min_channel_allowed, max_channel_allowed);
-	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-		// printf("- channels_for_tx[%d] =  %d\n", c, channels_for_tx[c]);
-	}
-
-	// printf("------------ ----------------------------- ----------------\n\n");
 
 }
 
@@ -946,11 +954,19 @@ void Node :: getTxChannelsByChannelBonding(int channel_bonding_model, int *chann
  * */
 void Node :: computeMaxInterference(Notification notification) {
 	max_pw_interference = 0;
+	channel_max_interference = -1;
 	for(int c = current_left_channel; c <= current_right_channel; c++){
-		if(max_pw_interference <= (channel_power[c] - power_received_per_node[notification.source_id])){
-			max_pw_interference = channel_power[c] - power_received_per_node[notification.source_id];
+		if(max_pw_interference < (channel_power[c] - pw_received_interest)){
+			max_pw_interference = channel_power[c] - pw_received_interest;
 			channel_max_interference = c;
 		}
+	}
+	if(channel_max_interference != -1){
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Max power interference is %f dBm (%f pW) sensed in channel #%d\n",
+									SimTime(), node_id, node_state, LOG_D17, LOG_LVL4, convertPower(PICO_TO_DBM, max_pw_interference), max_pw_interference, channel_max_interference);
+	} else {
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s No interference sensed in range of interest\n",
+							SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
 	}
 }
 
@@ -1002,6 +1018,10 @@ void Node :: sendNack(int packet_id, int node_id_a, int node_id_b, int loss_reas
 	nack_info.loss_reason = loss_reason;
 	nack_info.node_id_a = node_id_a;
 	nack_info.node_id_b = node_id_b;
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s NACK sent to a) N%d and b) N%d with reason %d\n",
+								SimTime(), node_id, node_state, LOG_I00, LOG_LVL2, nack_info.node_id_a, nack_info.node_id_b, nack_info.loss_reason);
+
+	// MIN_TIME_VALUE
 	outportSendNack(nack_info);
 }
 
@@ -1023,20 +1043,19 @@ void Node :: cleanNack(){
  */
 void Node :: processNack(NackInfo nack_info) {
 
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s; - processNack()\n",
-							SimTime(), node_id, node_state, LOG_D02);
+	if(nack_info.node_id_a == node_id || nack_info.node_id_b == node_id){	// Node implied in the NACK
 
-	if(nack_info.node_id_a == node_id || nack_info.node_id_b == node_id){
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am implied in the NACK with packet id #%d\n",
+							SimTime(), node_id, node_state, LOG_H02, LOG_LVL2, nack_info.packet_id);
 
-		// Node is implied in the logical NACK
 		nacks_received[nack_info.loss_reason] ++;
 
 		switch(nack_info.loss_reason){
 
 			case PACKET_LOST_DESTINATION_TX:{
 				// Destination was already transmitting when the transmission was attempted
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Destination %d was transmitting!s\n",
-						SimTime(), node_id, nack_info.source_id);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Destination N%d was transmitting!s\n",
+						SimTime(), node_id, node_state, LOG_H02, LOG_LVL2, nack_info.source_id);
 				// Add to hidden nodes list ("I was not listening to him!")
 				hidden_nodes_list[nack_info.source_id] = 1;
 				handlePacketLoss();
@@ -1045,24 +1064,24 @@ void Node :: processNack(NackInfo nack_info) {
 
 			case PACKET_LOST_LOW_SIGNAL:{
 				// Signal strenght is not enough (< CCA) to be decoded
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Power received in destination %d is less than its CCA!\n",
-						SimTime(), node_id, nack_info.source_id);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Power received in destination N%d is less than its CCA!\n",
+						SimTime(), node_id, node_state, LOG_H02, LOG_LVL2, nack_info.source_id);
 				handlePacketLoss();
 				break;
 			}
 
 			case PACKET_LOST_INTERFERENCE:{
 				// There are interference signals greater than cca (collision)
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Interference sensed in destination %d is greater than its CCA!\n",
-						SimTime(), node_id, nack_info.source_id);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Interference sensed in destination %d is greater than its CCA!\n",
+						SimTime(), node_id, node_state, LOG_H02, LOG_LVL2, nack_info.source_id);
 				handlePacketLoss();
 				break;
 			}
 
 			case PACKET_LOST_PURE_COLLISION:{
 				// Two nodes transmitting to same destination with signal strengths enough to be decoded
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Pure collision detected at destination %d! %d was transmitting and %d appeared\n",
-										SimTime(), node_id, nack_info.source_id, nack_info.node_id_a, nack_info.node_id_b);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Pure collision detected at destination %d! %d was transmitting and %d appeared\n",
+						SimTime(), node_id, node_state, LOG_H02, LOG_LVL2, nack_info.source_id, nack_info.node_id_a, nack_info.node_id_b);
 				// Add to hidden nodes list
 				if(nack_info.node_id_a != node_id) {
 					hidden_nodes_list[nack_info.node_id_a] = 1;
@@ -1076,20 +1095,22 @@ void Node :: processNack(NackInfo nack_info) {
 				// Destination already receiving and new signal strength was not enough to be decoded (Case 'PACKET_LOST_LOW_SIGNAL' with hidden node)
 				// Only node_id_a has lost the packet, so that node_id_b is his hidden node
 				if(nack_info.node_id_a == node_id) {
-					if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Collision detected at destination %d! %d appeared when %d was transmitting\n",
-							SimTime(), node_id, nack_info.source_id, nack_info.node_id_b, nack_info.node_id_a);
+					if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Collision detected at destination %d! %d appeared when %d was transmitting\n",
+							SimTime(), node_id, node_state, LOG_H02, LOG_LVL2, nack_info.source_id, nack_info.node_id_b, nack_info.node_id_a);
 					hidden_nodes_list[nack_info.node_id_b] = 1;
 					handlePacketLoss();
 				}
 				break;
 			}
 			default:{
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;G03;    + Unknown reason for packet loss\n", SimTime(), node_id);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Unknown reason for packet loss\n",
+						SimTime(), node_id, node_state, LOG_H02, LOG_LVL2);
 				break;
 			}
 		}
-	} else {
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;G02; I am NOT implied in the NACK\n", SimTime(), node_id);
+	} else {	// Not implied in the NACK
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s I am NOT implied in the NACK\n",
+						SimTime(), node_id, node_state, LOG_H02, LOG_LVL2);
 	}
 }
 
@@ -1103,7 +1124,7 @@ void Node :: processNack(NackInfo nack_info) {
  * handlePacketLoss():
  */
 void Node :: handlePacketLoss(){
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;G02; Packet %d has been LOST!\n", SimTime(), node_id, packet_id);
+
 	for(int c = current_left_channel; c <= current_right_channel; c++){
 		total_time_lost_per_channel[c] += current_tx_duration;
 	}
@@ -1122,14 +1143,17 @@ void Node :: handlePacketLoss(){
  */
 int Node :: isPacketLost(Notification notification){
 
-	//computeMaxInterference(notification);
 	int loss_reason = PACKET_NOT_LOST;
-	if(convertPower(DBM_TO_PICO, max_pw_interference) >= current_cca){
+	if(convertPower(PICO_TO_DBM, max_pw_interference) >= current_cca){
 		// There are interference signal greater than cca (collision)
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s There are interference signals (%f dBm) greater than cca (%f dBm)\n",
+				SimTime(), node_id, node_state, LOG_D17, LOG_LVL4, convertPower(PICO_TO_DBM, max_pw_interference), current_cca);
 		loss_reason = PACKET_LOST_INTERFERENCE;
 	}
-	if (convertPower(DBM_TO_PICO, pw_received_interest) < current_cca) {
+	if (convertPower(PICO_TO_DBM, pw_received_interest) < current_cca) {
 		// Signal strenght is not enough (< CCA) to be decoded
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Signal strenght (%f dBm) is less than CCA (%f dBm)\n",
+					SimTime(), node_id, node_state, LOG_D17, LOG_LVL4, convertPower(PICO_TO_DBM, pw_received_interest), current_cca);
 		loss_reason = PACKET_LOST_LOW_SIGNAL;
 	}
 	return loss_reason;
@@ -1182,39 +1206,46 @@ void Node :: handleBackoff(int pause_or_resume, Notification notification){
 
 		case PAUSE_TIMER:{
 
-			if(save_node_logs) fprintf(own_log_file, "%f;N%d;D10; - primary_channel (#%d) affected\n", SimTime(), node_id, primary_channel);
-			if(save_node_logs) fprintf(own_log_file, "%f;N%d;D11;    + Power sensed in primary channel:  %f dBm (%f pW)\n", SimTime(), node_id, convertPower(DBM_TO_PICO, channel_power[primary_channel]), channel_power[primary_channel]);
+			if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s primary_channel (#%d) affected\n",
+					SimTime(), node_id, node_state, LOG_F00, LOG_LVL2, primary_channel);
+			if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f dBm (%f pW)\n",
+					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, convertPower(PICO_TO_DBM, channel_power[primary_channel]),
+					channel_power[primary_channel]);
 
 			if(exceededCCA(channel_power, primary_channel, current_cca) == CCA_EXCEEDED){ // CCA exceeded
 
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;D12;    + CCA (%d dBm) exceeded\n", SimTime(), node_id, current_cca);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
 				pauseBackoff();
 
 			} else {	// CCA NOT exceeded
 
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;D12;    + CCA (%d dBm) NOT exceeded\n", SimTime(), node_id, current_cca);
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;D10; - primary_channel (#%d) NOT affected\n", SimTime(), node_id, primary_channel);
-
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
 			}
 			break;
 		}
 
 		case RESUME_TIMER:{
 
-			if(save_node_logs) fprintf(own_log_file, "%f;N%d;E09; - I am SENSING\n", SimTime(), node_id);
-			if(save_node_logs) fprintf(own_log_file, "%f;N%d;E06; - Primary_channel (#%d) affected\n",
-					SimTime(), node_id, primary_channel);
-			if(save_node_logs) fprintf(own_log_file, "%f;N%d;E07; - Power sensed in primary channel:  %f dBm (%f pW)\n",
-					SimTime(), node_id, convertPower(DBM_TO_PICO, channel_power[primary_channel]), channel_power[primary_channel]);
+			if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Primary_channel (#%d) affected\n",
+					SimTime(), node_id, node_state, LOG_F00, LOG_LVL2, primary_channel);
+			if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f dBm (%f pW)\n",
+					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, convertPower(PICO_TO_DBM, channel_power[primary_channel]),
+					channel_power[primary_channel]);
 
 			if(exceededCCA(channel_power, primary_channel, current_cca) == CCA_NOT_EXCEEDED){ // CCA NOT exceeded
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;E08;    + CCA (%d dBm) NOT exceeded\n",
-						SimTime(), node_id, current_cca);
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;D10; - primary_channel (#%d) NOT affected\n", SimTime(), node_id, primary_channel);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
 				resumeBackoff();
 
 			} else {	// CCA exceeded
-				if(save_node_logs) fprintf(own_log_file, "%f;N%d;E08;    + CCA (%d dBm) exceeded\n", SimTime(), node_id, current_cca);
+				if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
 			}
 			break;
 		}
@@ -1229,15 +1260,20 @@ void Node :: handleBackoff(int pause_or_resume, Notification notification){
  * pauseBackoff():
  * */
 void Node :: pauseBackoff(){
+
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Pausing the backoff\n",
+					SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
 	// If backoff trigger is active, freeze it
 	if(trigger_backoff.Active()){
 		remaining_backoff = trigger_backoff.GetTime()-SimTime();
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;D13;       - Backoff is active --> freeze it at %f s\n", SimTime(), node_id, remaining_backoff);
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Backoff is active --> freeze it at %f s\n",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, remaining_backoff);
 		trigger_backoff.Cancel();
 		//node_state = 3;
 	} else {
 		// printf("%f: [N%d]    - Backoff is already frozen at %f s\n", SimTime(), node_id, trigger_backoff.GetTime());
-		if(save_node_logs) fprintf(own_log_file, "%f;N%d;D13;       - Backoff is NOT active (frozen at %f s)\n", SimTime(), node_id, trigger_backoff.GetTime());
+		if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Backoff is NOT active (frozen at %f s)\n",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, trigger_backoff.GetTime());
 	}
 }
 
@@ -1245,11 +1281,11 @@ void Node :: pauseBackoff(){
  * resumeBackoff():
  * */
 void Node :: resumeBackoff(){
-	if(save_node_logs) fprintf(own_log_file, "%f;N%d;E09;       - resuming backoff at %f\n",
-			SimTime(), node_id, remaining_backoff);
-	// Resume Backoff
-	//node_state = 0;
+
+	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Resuming backoff at %f s\n",
+			SimTime(), node_id, node_state, LOG_F00, LOG_LVL2, remaining_backoff);
 	trigger_backoff.Set(SimTime() + remaining_backoff);
+
 }
 
 /***********************/
@@ -1262,15 +1298,16 @@ void Node :: resumeBackoff(){
  * restartNode(): Go back to initial state (sensing and decreasing BO)
  */
 void Node :: restartNode(){
-	total_time_transmitting_in_num_channels[current_right_channel - current_left_channel] += current_tx_duration;
+
 	// Reinitialize parameters
 	current_tx_duration = 0;
-	node_state = 0;
-	receiving_from_node_id = -1;
-	receiving_packet_id = -1;
+	node_state = STATE_SENSING;
+	receiving_from_node_id = NO_NODE_ID;
+	receiving_packet_id = NO_PACKET_ID;
 	remaining_backoff = computeBackoff(pdf_backoff, lambda);
 	resumeBackoff();
 	cleanNack();
+
 }
 
 void Node :: printNodeInfo(int write_or_print){
@@ -1290,34 +1327,32 @@ void Node :: printNodeInfo(int write_or_print){
 		}
 		case WRITE_LOG:{
 			if(save_node_logs) {
-				fprintf(own_log_file, "%f;N%d;S%d;%s;    - Node info:\n", SimTime(), node_id, node_state, LOG_Z00);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;       · position = (%d, %d, %d)\n", SimTime(), node_id, node_state, LOG_Z00, x, y, z);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;       · primary_channel = %d\n", SimTime(), node_id, node_state, LOG_Z00, primary_channel);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;       · min_channel_allowed = %d\n", SimTime(), node_id, node_state, LOG_Z00, min_channel_allowed);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;       · max_channel_allowed = %d\n", SimTime(), node_id, node_state, LOG_Z00, max_channel_allowed);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;       · lambda = %f packets/s\n", SimTime(), node_id, node_state, LOG_Z00, lambda);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;       · channel_bonding_model = %d\n", SimTime(), node_id, node_state, LOG_Z00, channel_bonding_model);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;       · destination_id = %d\n", SimTime(), node_id, node_state, LOG_Z00, destination_id);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;       · tpc_default = %f dBm\n", SimTime(), node_id, node_state, LOG_Z00, tpc_default);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;       · cca_default = %f dBm\n", SimTime(), node_id, node_state, LOG_Z00, cca_default);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Node info:\n", SimTime(), node_id, node_state, LOG_Z00, LOG_LVL2);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s position = (%d, %d, %d)\n", SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, x, y, z);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s primary_channel = %d\n",  SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, primary_channel);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s min_channel_allowed = %d\n",  SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, min_channel_allowed);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s max_channel_allowed = %d\n",  SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, max_channel_allowed);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s lambda = %f packets/s\n",  SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, lambda);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s channel_bonding_model = %d\n",  SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, channel_bonding_model);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s destination_id = %d\n",  SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, destination_id);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s tpc_default = %f dBm\n",  SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, tpc_default);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s cca_default = %f dBm\n",  SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, cca_default);
 			}
 			break;
 		}
 	}
-
-
 }
 
 /*
  * printProgressBar(): prints the progress bar of the Komondor simulation
  */
 void Node :: printProgressBar(trigger_t &){
-	printf("* %d %% *\n", progress_bar_counter * progress_bar_delta);
-	trigger_sim_time.Set(SimTime()+sim_time/(100/progress_bar_delta));
+	printf("* %d %% *\n", progress_bar_counter * PROGRESS_BAR_DELTA);
+	trigger_sim_time.Set(SimTime()+sim_time/(100/PROGRESS_BAR_DELTA));
 
 	// *** END PROGRESS BAR (ONLY NODE 0) ***
-	if(node_id == 0 && progress_bar_counter == (100/progress_bar_delta)-1){
-		trigger_sim_time.Set(SimTime()+sim_time/(100/progress_bar_delta)-0.0001);
+	if(node_id == 0 && progress_bar_counter == (100/PROGRESS_BAR_DELTA)-1){
+		trigger_sim_time.Set(SimTime()+sim_time/(100/PROGRESS_BAR_DELTA)-0.0001);
 	}
 	progress_bar_counter ++;
 }
@@ -1356,7 +1391,6 @@ void Node :: initializeVariables() {
 		hidden_nodes_list[i] = 0;
 	}
 
-	// 5 types of NACKs TODO constant
 	nacks_received = (int *) malloc(5 * sizeof(*nacks_received));
 	for(int i = 0; i < 5; i++){
 		nacks_received[i] = 0;
@@ -1364,7 +1398,6 @@ void Node :: initializeVariables() {
 
 	current_destination_id = destination_id;
 	pw_received_interest = 0; 	// in pW!!
-	progress_bar_delta = 5;	// TODO constant
 	progress_bar_counter = 0;
 	packets_sent = 0;
 	node_state = 0; // Sensing the channel
@@ -1373,15 +1406,18 @@ void Node :: initializeVariables() {
 	current_right_channel = max_channel_allowed;
 	current_tpc = tpc_default;
 	current_cca = cca_default;
-
 	node_state = 0;
+	packets_lost = 0;
+	packet_id = 0;
 
 	data_rate_array[0] = 81.5727 * packet_length * num_packets_aggregated;	// 1 channel
 	data_rate_array[1] = 150.8068 * packet_length * num_packets_aggregated; // 2 channels
-	data_rate_array[2] = 215.7497 * packet_length * num_packets_aggregated;	// 4 channels
-	data_rate_array[3] = 284.1716 * packet_length * num_packets_aggregated; // 8 channels
-
-	packets_lost = 0;
+	data_rate_array[2] = 0;
+	data_rate_array[3] = 215.7497 * packet_length * num_packets_aggregated;	// 4 channels
+	data_rate_array[4] = 0;
+	data_rate_array[5] = 0;
+	data_rate_array[6] = 0;
+	data_rate_array[7] = 284.1716 * packet_length * num_packets_aggregated; // 8 channels
 }
 
 
@@ -1412,20 +1448,26 @@ void Node :: printChannelPower(int write_or_print){
 /*
  * printChannelForTx: prints (or writes) the channels_for_tx array representing the channels used for TX
  */
-void printChannelForTx(int save_node_logs, int print_location, int *channels_for_tx, int num_channels_komondor, FILE *own_log_file){
-	if(print_location == 1){
-		for(int c = 0; c < num_channels_komondor; c++){
-			 if(save_node_logs)  fprintf(own_log_file, "%d  ", channels_for_tx[c]);
-			// printf("%d  ", channels_for_tx[c]);
+void Node :: printChannelForTx(int write_or_print){
+
+	switch(write_or_print){
+		case PRINT_LOG:{
+			printf("channels_for_tx: ");
+			for(int c = 0; c < num_channels_komondor; c++){
+				printf("%d  ", channels_for_tx[c]);
+				// printf("%d  ", channels_for_tx[c]);
+			}
+			printf("\n");
+			break;
 		}
-		 if(save_node_logs)  fprintf(own_log_file, "\n");
-	} else {
-		printf("channels_for_tx: ");
-		for(int c = 0; c < num_channels_komondor; c++){
-			printf("%d  ", channels_for_tx[c]);
-			// printf("%d  ", channels_for_tx[c]);
+		case WRITE_LOG:{
+			for(int c = 0; c < num_channels_komondor; c++){
+				 if(save_node_logs)  fprintf(own_log_file, "%d  ", channels_for_tx[c]);
+				// printf("%d  ", channels_for_tx[c]);
+			}
+			if(save_node_logs)  fprintf(own_log_file, "\n");
+			break;
 		}
-		printf("\n");
 	}
 }
 
@@ -1501,41 +1543,41 @@ void Node :: printNodeStatistics(int write_or_print){
 			if (save_node_logs){
 
 				// Throughput
-				fprintf(own_log_file, "%f;N%d;S%d;%s;    - Throughput = %f Mbps\n",
-						SimTime(), node_id, node_state, LOG_Z00, throughput);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Throughput = %f Mbps\n",
+						SimTime(), node_id, node_state, LOG_C02, LOG_LVL2, throughput);
 
 				// Packets sent and lost
-				fprintf(own_log_file, "%f;N%d;S%d;%s;    - Packets sent: %d\n", SimTime(), node_id, node_state, LOG_Z00, packets_sent);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;    - Packets lost: %d\n", SimTime(), node_id, node_state, LOG_Z00, packets_lost);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;    - Loss ratio: %f\n", SimTime(), node_id, node_state, LOG_Z00, packets_lost_percentage);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets sent: %d\n", SimTime(), node_id, node_state, LOG_C03, LOG_LVL2, packets_sent);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets lost: %d\n", SimTime(), node_id, node_state, LOG_C04, LOG_LVL2, packets_lost);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Loss ratio: %f\n", SimTime(), node_id, node_state, LOG_C05, LOG_LVL2, packets_lost_percentage);
 
 				// Time EFFECTIVELY transmitting in a given number of channels (no losses)
-				fprintf(own_log_file, "%f;N%d;S%d;%s;        · Time EFFECTIVELY transmitting in N channels: ",
-						SimTime(), node_id, node_state, LOG_Z00);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in N channels: ",
+						SimTime(), node_id, node_state, LOG_C06, LOG_LVL2);
 				for(int n = 0; n < num_channels_allowed; n++){
 					fprintf(own_log_file, "(%d) %f  ", n+1, total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n]);
 				}
 				fprintf(own_log_file, "\n");
 
 				// Time EFFECTIVELY transmitting in each of the channels (no losses)
-				fprintf(own_log_file, "%f;N%d;S%d;%s;        · Time EFFECTIVELY transmitting in each channel: ",
-						SimTime(), node_id, node_state, LOG_Z00);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in each channel: ",
+						SimTime(), node_id, node_state, LOG_C07, LOG_LVL2);
 				for(int c = 0; c < num_channels_komondor; c++){
 					fprintf(own_log_file, "(#%d) %f ", c, total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c]);
 				}
 				fprintf(own_log_file, "\n");
 
 				// Time LOST transmitting in a given number of channels
-				fprintf(own_log_file, "%f;N%d;S%d;%s;        · Time LOST transmitting in N channels: ",
-						SimTime(), node_id, node_state, LOG_Z00);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in N channels: ",
+						SimTime(), node_id, node_state, LOG_C08, LOG_LVL2);
 				for(int n = 0; n < num_channels_allowed; n++){
 					fprintf(own_log_file, "(%d) %f  ", n+1, total_time_lost_in_num_channels[n]);
 				}
 				fprintf(own_log_file, "\n");
 
 				// Time LOST transmitting in each of the channels
-				fprintf(own_log_file, "%f;N%d;S%d;%s;        · Time LOST transmitting in each channel: ",
-						SimTime(), node_id, node_state, LOG_Z00);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in each channel: ",
+						SimTime(), node_id, node_state, LOG_C09, LOG_LVL2);
 				for(int c = 0; c < num_channels_komondor; c++){
 					fprintf(own_log_file, "(#%d) %f ", c, total_time_lost_per_channel[c]);
 				}
@@ -1546,11 +1588,11 @@ void Node :: printNodeStatistics(int write_or_print){
 				for(int n = 0; n < total_nodes_number; n++){
 					if(hidden_nodes_list[n] == 1) hidden_nodes_number++;
 				}
-				fprintf(own_log_file, "%f;N%d;S%d;%s;    - Total hidden nodes: %d\n",
-						SimTime(), node_id, node_state, LOG_Z00, hidden_nodes_number);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Total hidden nodes: %d\n",
+						SimTime(), node_id, node_state, LOG_C10, LOG_LVL2, hidden_nodes_number);
 
-				fprintf(own_log_file, "%f;N%d;S%d;%s;- Hidden nodes list: ",
-						SimTime(), node_id, node_state, LOG_Z00);
+				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Hidden nodes list: ",
+						SimTime(), node_id, node_state, LOG_C11, LOG_LVL2);
 				for(int i = 0; i < total_nodes_number; i++){
 					fprintf(own_log_file, "%d  ", hidden_nodes_list[i]);
 				}

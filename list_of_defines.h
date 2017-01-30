@@ -1,6 +1,12 @@
 // Fix parameters
 #define T_SLOT 			0.000009
 
+// Log hierarchy level to make output log file more readable
+#define LOG_LVL1	""
+#define LOG_LVL2	"  -"
+#define LOG_LVL3	"    ·"
+#define LOG_LVL4	"       +"
+#define LOG_LVL5	"          *"
 
 // Node states
 #define STATE_UNKNOWN	-1	// Unkwnown state (e.g. at the beginning of the simulation)
@@ -15,6 +21,7 @@
 // Transmission initiated or finished
 #define TX_INITIATED	0	// Transmission is initiated ('inportSomeNodeStartTX()')
 #define TX_FINISHED		1	// Transmission is finished ('inportSomeNodeFinishTX()')
+#define TX_NOT_POSSIBLE -1	// Transmission is not possible
 
 // Logical Nack reasons
 #define PACKET_NOT_LOST					-1	// Packet is not lost
@@ -45,7 +52,28 @@
 #define MILLI_TO_DBM	2	// Convert mW to dBm
 #define DBM_TO_MILLI	3	// Convert dBm to mW
 
-/* LOG TYPE ENCODING */
+// Boundary channels
+#define FIRST_ONE_IN_ARRAY 	0	// Search first element '1' in an array
+#define LAST_ONE_IN_ARRAY	1	// Search last element '1' in an array
+
+// Channel free - occupied
+#define CHANNEL_FREE		0
+#define CHANNEL_OCCUPIED	1
+
+// Progress bar
+#define PROGRESS_BAR_DELTA	5	// Amount of percentage between two progress bar indicators
+
+// Time variables
+#define MIN_TIME_VALUE	0.000001
+
+// Channel bonding model
+#define CB_ONLY_PRIMARY		0	// Only Primary Channel used if FREE
+#define CB_AGGRESIVE_SCB	1	// Aggresive SCB: if all channels are FREE, transmit. If not, generate a new backoff.
+#define CB_LOG2_SCB			2	// Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
+#define CB_AGGRESIVE_DCB	3	// Aggresive DCB: TX in all the free channels contiguous to the primary channel
+#define CB_LOG2_DCB			4	// Log2 DCB: TX in the larger channel range allowed by the log2 mapping
+
+/* LOG TYPE ENCODING: TODO */
 
 // Setup() - A
 
@@ -105,6 +133,12 @@
 #define LOG_D14 "D14"
 #define LOG_D15 "D15"
 #define LOG_D16 "D16"
+#define LOG_D17 "D17"
+#define LOG_D18 "D18"
+#define LOG_D19 "D19"
+#define LOG_D20 "D20"
+#define LOG_D21 "D21"
+#define LOG_D22 "D22"
 
 // InportSomeNodeFinishTX() - E
 #define LOG_E00 "E00"
@@ -124,6 +158,13 @@
 #define LOG_E14 "E14"
 #define LOG_E15 "E15"
 #define LOG_E16 "E16"
+#define LOG_E17 "E17"
+#define LOG_E18 "E18"
+#define LOG_E19 "E19"
+#define LOG_E20 "E20"
+#define LOG_E21 "E21"
+#define LOG_E22 "E22"
+#define LOG_E23 "E23"
 
 // endBackoff() - F
 #define LOG_F00 "F00"
@@ -182,7 +223,6 @@
 #define LOG_H15 "H15"
 #define LOG_H16 "H16"
 
-// sendNack() - I
 #define LOG_I00 "I00"
 #define LOG_I01 "I01"
 #define LOG_I02 "I02"

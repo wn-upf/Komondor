@@ -38,7 +38,6 @@ component KomondorEnvironment : public CostSimEng
 		int packet_length;				// Packet length [bits]
 		int path_loss_model;		// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 		int num_packets_aggregated;	// Number of packets aggregated in one transmission
-		double noise_level;			// Environment noise [dBm]
 		int cochannel_model;		// Co-channel interference model
 		int collisions_model;		// Collisions model
 		int logs_flag;				// NOT IMPLEMENTED YET
@@ -250,11 +249,6 @@ void KomondorEnvironment :: setupEnvironmentByReadingInputFile(char *system_file
 			field_ix++;
 
 			tmp = strdup(line_system);
-			const char* noise_level_char = getfield(tmp, field_ix);
-			noise_level = atof(noise_level_char);
-			field_ix++;
-
-			tmp = strdup(line_system);
 			const char* cochannel_model_char = getfield(tmp, field_ix);
 			cochannel_model = atof(cochannel_model_char);
 			field_ix++;
@@ -288,7 +282,6 @@ void KomondorEnvironment :: printSystemInfo(int write_or_print){
 			printf("      - path_loss_model = %d\n", path_loss_model);
 			printf("      - num_packets_aggregated = %d\n", num_packets_aggregated);
 			printf("      - wavelength = %f m\n", wavelength);
-			printf("      - noise_level = %f dBm\n", noise_level);
 			printf("      - cochannel_model = %d\n", cochannel_model);
 			printf("      - collisions_model = %d\n", collisions_model);
 			printf("      - save_node_logs = %d\n", save_node_logs);
@@ -305,7 +298,6 @@ void KomondorEnvironment :: printSystemInfo(int write_or_print){
 			fprintf(logs_output_file, "      - path_loss_model = %d\n", path_loss_model);
 			fprintf(logs_output_file, "      - num_packets_aggregated = %d\n", num_packets_aggregated);
 			fprintf(logs_output_file, "      - wavelength = %f m\n", wavelength);
-			fprintf(logs_output_file, "      - noise_level = %f dBm\n", noise_level);
 			fprintf(logs_output_file, "      - cochannel_model = %d\n", cochannel_model);
 			fprintf(logs_output_file, "      - collisions_model = %d\n", collisions_model);
 			break;
@@ -394,7 +386,6 @@ void KomondorEnvironment :: generateNodesByReadingInputFile(char *nodes_filename
 			node_container[node_ix].packet_length = packet_length;
 			node_container[node_ix].num_packets_aggregated = num_packets_aggregated;
 			node_container[node_ix].num_channels_komondor = num_channels_komondor;
-			node_container[node_ix].noise_level = noise_level;
 			node_container[node_ix].sim_time = sim_time;
 			node_container[node_ix].cochannel_model = cochannel_model;
 			node_container[node_ix].save_node_logs = save_node_logs;
