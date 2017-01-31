@@ -52,6 +52,7 @@ component Node : public TypeII{
 		int channel_bonding_model;	// Channel bonding model (definition of models in function getTxChannelsByChannelBonding())
 		int cochannel_model;		// Co-channel interference model (definition of models in function updateChannelsPower())
 		int collisions_model;		// Collisions model
+		int transmitting_flag;		// Determines if the node transmits (1) or not (0)
 
 		// Same default in every node (parameters from system input and console arguments)
 		double sim_time;				// Observation time (time when the simulation stops)
@@ -1281,11 +1282,9 @@ void Node :: pauseBackoff(){
  * resumeBackoff():
  * */
 void Node :: resumeBackoff(){
-
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Resuming backoff at %f s\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL2, remaining_backoff);
-	trigger_backoff.Set(SimTime() + remaining_backoff);
-
+	if(transmitting_flag) trigger_backoff.Set(SimTime() + remaining_backoff);
 }
 
 /***********************/
@@ -1493,41 +1492,42 @@ void Node :: printNodeStatistics(int write_or_print){
 
 			printf("------- N%d ------\n", node_id);
 
-			// Throughput
-			printf(" - Throughput = %f Mbps\n", throughput);
+			if (transmitting_flag) {
+				// Throughput
+				printf(" - Throughput = %f Mbps\n", throughput);
 
-			// Packets sent and lost
-			printf(" - Packets sent = %d - Packets lost = %d  (%f %% lost)\n",
-							packets_sent, packets_lost, packets_lost_percentage);
+				// Packets sent and lost
+				printf(" - Packets sent = %d - Packets lost = %d  (%f %% lost)\n",
+								packets_sent, packets_lost, packets_lost_percentage);
 
-			// Time EFFECTIVELY transmitting in a given number of channels (no losses)
-			printf("    · Time EFFECTIVELY transmitting in N channels: ");
-			for(int n = 0; n < num_channels_allowed; n++){
-				printf("(%d) %f  ", n+1, total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n]);
+				// Time EFFECTIVELY transmitting in a given number of channels (no losses)
+				printf("    · Time EFFECTIVELY transmitting in N channels: ");
+				for(int n = 0; n < num_channels_allowed; n++){
+					printf("(%d) %f  ", n+1, total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n]);
+				}
+				printf("\n");
+
+				// Time EFFECTIVELY transmitting in each of the channels (no losses)
+				printf("    · Time EFFECTIVELY transmitting in each channel: ");
+				for(int c = 0; c < num_channels_komondor; c++){
+					printf("(#%d) %f ", c, total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c]);
+				}
+				printf("\n");
+
+				// Time LOST transmitting in a given number of channels
+				printf("    · Time LOST transmitting in N channels: ");
+				for(int n = 0; n < num_channels_allowed; n++){
+					printf("(%d) %f  ", n+1, total_time_lost_in_num_channels[n]);
+				}
+				printf("\n");
+
+				// Time LOST transmitting in each of the channels
+				printf("    · Time LOST transmitting in each channel: ");
+				for(int c = 0; c < num_channels_komondor; c++){
+					printf("(#%d) %f ", c, total_time_lost_per_channel[c]);
+				}
+				printf("\n");
 			}
-			printf("\n");
-
-			// Time EFFECTIVELY transmitting in each of the channels (no losses)
-			printf("    · Time EFFECTIVELY transmitting in each channel: ");
-			for(int c = 0; c < num_channels_komondor; c++){
-				printf("(#%d) %f ", c, total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c]);
-			}
-			printf("\n");
-
-			// Time LOST transmitting in a given number of channels
-			printf("    · Time LOST transmitting in N channels: ");
-			for(int n = 0; n < num_channels_allowed; n++){
-				printf("(%d) %f  ", n+1, total_time_lost_in_num_channels[n]);
-			}
-			printf("\n");
-
-			// Time LOST transmitting in each of the channels
-			printf("    · Time LOST transmitting in each channel: ");
-			for(int c = 0; c < num_channels_komondor; c++){
-				printf("(#%d) %f ", c, total_time_lost_per_channel[c]);
-			}
-			printf("\n");
-
 			// Hidden nodes
 			printf(" - Total hidden nodes: %d\n", hidden_nodes_number);
 			printf(" - Hidden nodes list: ");
@@ -1542,46 +1542,48 @@ void Node :: printNodeStatistics(int write_or_print){
 
 			if (save_node_logs){
 
-				// Throughput
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Throughput = %f Mbps\n",
-						SimTime(), node_id, node_state, LOG_C02, LOG_LVL2, throughput);
+				if (transmitting_flag) {
+					// Throughput
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Throughput = %f Mbps\n",
+							SimTime(), node_id, node_state, LOG_C02, LOG_LVL2, throughput);
 
-				// Packets sent and lost
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets sent: %d\n", SimTime(), node_id, node_state, LOG_C03, LOG_LVL2, packets_sent);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets lost: %d\n", SimTime(), node_id, node_state, LOG_C04, LOG_LVL2, packets_lost);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Loss ratio: %f\n", SimTime(), node_id, node_state, LOG_C05, LOG_LVL2, packets_lost_percentage);
+					// Packets sent and lost
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets sent: %d\n", SimTime(), node_id, node_state, LOG_C03, LOG_LVL2, packets_sent);
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets lost: %d\n", SimTime(), node_id, node_state, LOG_C04, LOG_LVL2, packets_lost);
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Loss ratio: %f\n", SimTime(), node_id, node_state, LOG_C05, LOG_LVL2, packets_lost_percentage);
 
-				// Time EFFECTIVELY transmitting in a given number of channels (no losses)
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in N channels: ",
-						SimTime(), node_id, node_state, LOG_C06, LOG_LVL2);
-				for(int n = 0; n < num_channels_allowed; n++){
-					fprintf(own_log_file, "(%d) %f  ", n+1, total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n]);
+					// Time EFFECTIVELY transmitting in a given number of channels (no losses)
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in N channels: ",
+							SimTime(), node_id, node_state, LOG_C06, LOG_LVL2);
+					for(int n = 0; n < num_channels_allowed; n++){
+						fprintf(own_log_file, "(%d) %f  ", n+1, total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n]);
+					}
+					fprintf(own_log_file, "\n");
+
+					// Time EFFECTIVELY transmitting in each of the channels (no losses)
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in each channel: ",
+							SimTime(), node_id, node_state, LOG_C07, LOG_LVL2);
+					for(int c = 0; c < num_channels_komondor; c++){
+						fprintf(own_log_file, "(#%d) %f ", c, total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c]);
+					}
+					fprintf(own_log_file, "\n");
+
+					// Time LOST transmitting in a given number of channels
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in N channels: ",
+							SimTime(), node_id, node_state, LOG_C08, LOG_LVL2);
+					for(int n = 0; n < num_channels_allowed; n++){
+						fprintf(own_log_file, "(%d) %f  ", n+1, total_time_lost_in_num_channels[n]);
+					}
+					fprintf(own_log_file, "\n");
+
+					// Time LOST transmitting in each of the channels
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in each channel: ",
+							SimTime(), node_id, node_state, LOG_C09, LOG_LVL2);
+					for(int c = 0; c < num_channels_komondor; c++){
+						fprintf(own_log_file, "(#%d) %f ", c, total_time_lost_per_channel[c]);
+					}
+					fprintf(own_log_file, "\n");
 				}
-				fprintf(own_log_file, "\n");
-
-				// Time EFFECTIVELY transmitting in each of the channels (no losses)
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in each channel: ",
-						SimTime(), node_id, node_state, LOG_C07, LOG_LVL2);
-				for(int c = 0; c < num_channels_komondor; c++){
-					fprintf(own_log_file, "(#%d) %f ", c, total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c]);
-				}
-				fprintf(own_log_file, "\n");
-
-				// Time LOST transmitting in a given number of channels
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in N channels: ",
-						SimTime(), node_id, node_state, LOG_C08, LOG_LVL2);
-				for(int n = 0; n < num_channels_allowed; n++){
-					fprintf(own_log_file, "(%d) %f  ", n+1, total_time_lost_in_num_channels[n]);
-				}
-				fprintf(own_log_file, "\n");
-
-				// Time LOST transmitting in each of the channels
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in each channel: ",
-						SimTime(), node_id, node_state, LOG_C09, LOG_LVL2);
-				for(int c = 0; c < num_channels_komondor; c++){
-					fprintf(own_log_file, "(#%d) %f ", c, total_time_lost_per_channel[c]);
-				}
-				fprintf(own_log_file, "\n");
 
 				// Hidden nodes
 				int hidden_nodes_number = 0;

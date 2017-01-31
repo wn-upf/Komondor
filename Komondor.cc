@@ -376,6 +376,9 @@ void KomondorEnvironment :: generateNodesByReadingInputFile(char *nodes_filename
 			tmp_nodes = strdup(line_nodes);
 			node_container[node_ix].destination_id = atoi(getfield(tmp_nodes, field_ix));
 			field_ix++;
+			tmp_nodes = strdup(line_nodes);
+			node_container[node_ix].transmitting_flag = atoi(getfield(tmp_nodes, field_ix));
+			field_ix++;
 			double EB = (double) (CW-1)/2;
 			lambda = 1/(EB * T_SLOT);
 			node_container[node_ix].lambda = lambda;
@@ -418,6 +421,7 @@ void KomondorEnvironment :: printNodesInfo(int write_or_print){
 				printf("      - rx_gain = %f dB\n", node_container[n].rx_gain);
 				printf("      - channel_bonding_model = %d\n", node_container[n].channel_bonding_model);
 				printf("      - destination_id = %d\n", node_container[n].destination_id);
+				printf("      - transmitting_flag = %d\n", node_container[n].transmitting_flag);
 				printf("      - lambda = %f pkts/s\n", node_container[n].lambda);
 			}
 			break;
@@ -436,6 +440,7 @@ void KomondorEnvironment :: printNodesInfo(int write_or_print){
 				fprintf(logs_output_file, "      - rx_gain = %f dB\n", node_container[n].rx_gain);
 				fprintf(logs_output_file, "      - channel_bonding_model = %d\n", node_container[n].channel_bonding_model);
 				fprintf(logs_output_file, "      - destination_id = %d\n", node_container[n].destination_id);
+				fprintf(logs_output_file, "      - transmitting_flag = %d\n", node_container[n].transmitting_flag);
 				fprintf(logs_output_file, "      - lambda = %f pkts/s\n", node_container[n].lambda);
 			}
 			break;

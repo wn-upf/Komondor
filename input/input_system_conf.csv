@@ -1,2 +1,2 @@
 num_channels_vaquita,basic_channel_bandwidth[Mbps],CW,pdf_backoff,pdf_tx_time,pkt_length,logs_flag,path_loss_model,num_packets_aggregated,wavelength,noise_level[dBm],cochannel_model,collisions_model
-4,20,16,0,0,12000,0,0,64,0.124913524,-100,0,0
+4,20,16,0,0,12000,0,3,64,0.124913524,-100,0,0

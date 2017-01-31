@@ -1598,25 +1598,15 @@ struct NackInfo
 
 
 
-#line 147 "Node.h"
+#line 148 "Node.h"
 ;
 
 
-#line 172 "Node.h"
+#line 173 "Node.h"
 ;
 
 
-#line 184 "Node.h"
-;
-
-
-
-
-
-
-
-
-#line 326 "Node.h"
+#line 185 "Node.h"
 ;
 
 
@@ -1626,7 +1616,17 @@ struct NackInfo
 
 
 
-#line 393 "Node.h"
+#line 327 "Node.h"
+;
+
+
+
+
+
+
+
+
+#line 394 "Node.h"
 ;
 
 
@@ -1637,7 +1637,7 @@ struct NackInfo
 
 
 
-#line 468 "Node.h"
+#line 469 "Node.h"
 ;
 
 
@@ -1647,7 +1647,7 @@ struct NackInfo
 
 
 
-#line 485 "Node.h"
+#line 486 "Node.h"
 ;
 
 
@@ -1786,7 +1786,7 @@ int exceededCCA(double* channel_power, int primary_channel, int cca){
 
 
 
-#line 659 "Node.h"
+#line 660 "Node.h"
 int getBoundaryChannel(int position, int *channels_available, int total_channels_number){
 	int left_tx_ch = 0;
 	int left_tx_ch_is_set = 0;
@@ -2191,7 +2191,7 @@ struct NackInfo
 
 
 
-#line 449 "Komondor.cc"
+#line 454 "Komondor.cc"
 const char* getfield(char* line, int num){
     const char* tok;
     for (tok = strtok(line, ",");
@@ -2349,6 +2349,7 @@ class compcxx_Node_5 : public compcxx_component, public TypeII{
 		int channel_bonding_model;	
 		int cochannel_model;		
 		int collisions_model;		
+		int transmitting_flag;		
 
 		
 		double sim_time;				
@@ -2651,17 +2652,17 @@ class compcxx_KomondorEnvironment_6 : public compcxx_component, public CostSimEn
 
 
 
-#line 133 "Node.h"
-
 #line 134 "Node.h"
 
 #line 135 "Node.h"
 
-#line 145 "Node.h"
+#line 136 "Node.h"
+
+#line 146 "Node.h"
 void compcxx_Node_5 :: Setup(){
 	
 }
-#line 149 "Node.h"
+#line 150 "Node.h"
 void compcxx_Node_5 :: Start(){
 
 	
@@ -2686,7 +2687,7 @@ void compcxx_Node_5 :: Start(){
 
 	
 }
-#line 174 "Node.h"
+#line 175 "Node.h"
 void compcxx_Node_5 :: Stop(){
 
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Node Stop()\n", SimTime(), node_id, node_state, LOG_C00, LOG_LVL1);
@@ -2698,7 +2699,7 @@ void compcxx_Node_5 :: Stop(){
 
 	
 }
-#line 192 "Node.h"
+#line 193 "Node.h"
 void compcxx_Node_5 :: inportSomeNodeStartTX(Notification &notification){
 
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s inportSomeNodeStartTX(): source = %d - destination = %d\n",
@@ -2834,7 +2835,7 @@ void compcxx_Node_5 :: inportSomeNodeStartTX(Notification &notification){
 
 	
 }
-#line 334 "Node.h"
+#line 335 "Node.h"
 void compcxx_Node_5 :: inportSomeNodeFinishTX(Notification &notification){
 
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s inportSomeNodeFinishTX(): source = %d - destination = %d\n",
@@ -2895,7 +2896,7 @@ void compcxx_Node_5 :: inportSomeNodeFinishTX(Notification &notification){
 	
 
 }
-#line 402 "Node.h"
+#line 403 "Node.h"
 void compcxx_Node_5 :: inportNackReceived(NackInfo &nack_info){
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s inportNackReceived(): source = %d - node_id_a = %d - node_id_b = %d\n",
 									SimTime(), node_id, node_state, LOG_H00, LOG_LVL1, nack_info.source_id, nack_info.node_id_a, nack_info.node_id_b);
@@ -2921,7 +2922,7 @@ void compcxx_Node_5 :: inportNackReceived(NackInfo &nack_info){
 
 
 
-#line 426 "Node.h"
+#line 427 "Node.h"
 void compcxx_Node_5 :: endBackoff(trigger_t &){
 
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s endBackoff()\n", SimTime(), node_id, node_state, LOG_F00, LOG_LVL1);
@@ -2965,7 +2966,7 @@ void compcxx_Node_5 :: endBackoff(trigger_t &){
 
 	
 }
-#line 476 "Node.h"
+#line 477 "Node.h"
 void compcxx_Node_5 :: myTXFinished(trigger_t &){
 
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s myTXFinished()\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
@@ -2976,7 +2977,7 @@ void compcxx_Node_5 :: myTXFinished(trigger_t &){
 	
 
 }
-#line 622 "Node.h"
+#line 623 "Node.h"
 double compcxx_Node_5 :: computeTxTime(int ix_num_channels_used){
 
 	double tx_time;
@@ -3015,7 +3016,7 @@ double compcxx_Node_5 :: computeTxTime(int ix_num_channels_used){
 
 
 
-#line 691 "Node.h"
+#line 692 "Node.h"
 void compcxx_Node_5 :: getChannelOccupancyByCCA(){
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 		if(channel_power[c] < convertPower(DBM_TO_PICO, current_cca)){
@@ -3034,7 +3035,7 @@ void compcxx_Node_5 :: getChannelOccupancyByCCA(){
 
 
 
-#line 708 "Node.h"
+#line 709 "Node.h"
 void compcxx_Node_5 :: updateChannelsPower(Notification notification, int update_type){
 
 	double pw_received_pico;
@@ -3139,7 +3140,7 @@ void compcxx_Node_5 :: updateChannelsPower(Notification notification, int update
 
 
 
-#line 811 "Node.h"
+#line 812 "Node.h"
 void compcxx_Node_5 :: getTxChannelsByChannelBonding(int channel_bonding_model, int *channels_free){
 
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
@@ -3285,7 +3286,7 @@ void compcxx_Node_5 :: getTxChannelsByChannelBonding(int channel_bonding_model, 
 
 
 
-#line 955 "Node.h"
+#line 956 "Node.h"
 void compcxx_Node_5 :: computeMaxInterference(Notification notification) {
 	max_pw_interference = 0;
 	channel_max_interference = -1;
@@ -3318,7 +3319,7 @@ void compcxx_Node_5 :: computeMaxInterference(Notification notification) {
 
 
 
-#line 986 "Node.h"
+#line 987 "Node.h"
 Notification compcxx_Node_5 :: generateNotification(int destination_id, double tx_duration){
 	Notification notification;
 	TxInfo tx_info;
@@ -3348,7 +3349,7 @@ Notification compcxx_Node_5 :: generateNotification(int destination_id, double t
 
 
 
-#line 1014 "Node.h"
+#line 1015 "Node.h"
 void compcxx_Node_5 :: sendNack(int packet_id, int node_id_a, int node_id_b, int loss_reason){
 	NackInfo nack_info;
 	nack_info.source_id = node_id;
@@ -3367,7 +3368,7 @@ void compcxx_Node_5 :: sendNack(int packet_id, int node_id_a, int node_id_b, int
 
 
 
-#line 1031 "Node.h"
+#line 1032 "Node.h"
 void compcxx_Node_5 :: cleanNack(){
 	nack.source_id = NO_NODE_ID;
 	nack.packet_id = NO_PACKET_ID;
@@ -3382,7 +3383,7 @@ void compcxx_Node_5 :: cleanNack(){
 
 
 
-#line 1044 "Node.h"
+#line 1045 "Node.h"
 void compcxx_Node_5 :: processNack(NackInfo nack_info) {
 
 	if(nack_info.node_id_a == node_id || nack_info.node_id_b == node_id){	
@@ -3466,7 +3467,7 @@ void compcxx_Node_5 :: processNack(NackInfo nack_info) {
 
 
 
-#line 1126 "Node.h"
+#line 1127 "Node.h"
 void compcxx_Node_5 :: handlePacketLoss(){
 
 	for(int c = current_left_channel; c <= current_right_channel; c++){
@@ -3486,7 +3487,7 @@ void compcxx_Node_5 :: handlePacketLoss(){
 
 
 
-#line 1144 "Node.h"
+#line 1145 "Node.h"
 int compcxx_Node_5 :: isPacketLost(Notification notification){
 
 	int loss_reason = PACKET_NOT_LOST;
@@ -3520,7 +3521,7 @@ int compcxx_Node_5 :: isPacketLost(Notification notification){
 
 
 
-#line 1176 "Node.h"
+#line 1177 "Node.h"
 double compcxx_Node_5 :: computeBackoff(int pdf, double lambda){
 	double backoff;
 	switch(pdf){
@@ -3549,7 +3550,7 @@ double compcxx_Node_5 :: computeBackoff(int pdf, double lambda){
 
 
 
-#line 1203 "Node.h"
+#line 1204 "Node.h"
 void compcxx_Node_5 :: handleBackoff(int pause_or_resume, Notification notification){
 
 	switch(pause_or_resume){
@@ -3610,7 +3611,7 @@ void compcxx_Node_5 :: handleBackoff(int pause_or_resume, Notification notificat
 
 
 
-#line 1262 "Node.h"
+#line 1263 "Node.h"
 void compcxx_Node_5 :: pauseBackoff(){
 
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Pausing the backoff\n",
@@ -3633,13 +3634,11 @@ void compcxx_Node_5 :: pauseBackoff(){
 
 
 
-#line 1283 "Node.h"
+#line 1284 "Node.h"
 void compcxx_Node_5 :: resumeBackoff(){
-
 	if(save_node_logs) fprintf(own_log_file, "%f;N%d;S%d;%s;%s Resuming backoff at %f s\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL2, remaining_backoff);
-	trigger_backoff.Set(SimTime() + remaining_backoff);
-
+	if(transmitting_flag) trigger_backoff.Set(SimTime() + remaining_backoff);
 }
 
 
@@ -3652,7 +3651,7 @@ void compcxx_Node_5 :: resumeBackoff(){
 
 
 
-#line 1300 "Node.h"
+#line 1299 "Node.h"
 void compcxx_Node_5 :: restartNode(){
 
 	
@@ -3667,7 +3666,7 @@ void compcxx_Node_5 :: restartNode(){
 }
 
 
-#line 1313 "Node.h"
+#line 1312 "Node.h"
 void compcxx_Node_5 :: printNodeInfo(int write_or_print){
 	switch(write_or_print){
 		case PRINT_LOG:{
@@ -3699,15 +3698,13 @@ void compcxx_Node_5 :: printNodeInfo(int write_or_print){
 			break;
 		}
 	}
-
-
 }
 
 
 
 
 
-#line 1351 "Node.h"
+#line 1348 "Node.h"
 void compcxx_Node_5 :: printProgressBar(trigger_t &){
 	printf("* %d %% *\n", progress_bar_counter * PROGRESS_BAR_DELTA);
 	trigger_sim_time.Set(SimTime()+sim_time/(100/PROGRESS_BAR_DELTA));
@@ -3723,7 +3720,7 @@ void compcxx_Node_5 :: printProgressBar(trigger_t &){
 
 
 
-#line 1365 "Node.h"
+#line 1362 "Node.h"
 void compcxx_Node_5 :: initializeVariables() {
 
 	channel_power = (double *) malloc(num_channels_komondor * sizeof(*channel_power));
@@ -3770,8 +3767,9 @@ void compcxx_Node_5 :: initializeVariables() {
 	current_right_channel = max_channel_allowed;
 	current_tpc = tpc_default;
 	current_cca = cca_default;
-
 	node_state = 0;
+	packets_lost = 0;
+	packet_id = 0;
 
 	data_rate_array[0] = 81.5727 * packet_length * num_packets_aggregated;	
 	data_rate_array[1] = 150.8068 * packet_length * num_packets_aggregated; 
@@ -3781,10 +3779,6 @@ void compcxx_Node_5 :: initializeVariables() {
 	data_rate_array[5] = 0;
 	data_rate_array[6] = 0;
 	data_rate_array[7] = 284.1716 * packet_length * num_packets_aggregated; 
-
-	packets_lost = 0;
-
-	packet_id = 0;
 }
 
 
@@ -3792,7 +3786,7 @@ void compcxx_Node_5 :: initializeVariables() {
 
 
 
-#line 1432 "Node.h"
+#line 1426 "Node.h"
 void compcxx_Node_5 :: printChannelPower(int write_or_print){
 
 	switch(write_or_print){
@@ -3818,7 +3812,7 @@ void compcxx_Node_5 :: printChannelPower(int write_or_print){
 
 
 
-#line 1456 "Node.h"
+#line 1450 "Node.h"
 void compcxx_Node_5 :: printChannelForTx(int write_or_print){
 
 	switch(write_or_print){
@@ -3846,7 +3840,7 @@ void compcxx_Node_5 :: printChannelForTx(int write_or_print){
 
 
 
-#line 1482 "Node.h"
+#line 1476 "Node.h"
 void compcxx_Node_5 :: printNodeStatistics(int write_or_print){
 
 	
@@ -3866,41 +3860,42 @@ void compcxx_Node_5 :: printNodeStatistics(int write_or_print){
 
 			printf("------- N%d ------\n", node_id);
 
-			
-			printf(" - Throughput = %f Mbps\n", throughput);
+			if (transmitting_flag) {
+				
+				printf(" - Throughput = %f Mbps\n", throughput);
 
-			
-			printf(" - Packets sent = %d - Packets lost = %d  (%f %% lost)\n",
-							packets_sent, packets_lost, packets_lost_percentage);
+				
+				printf(" - Packets sent = %d - Packets lost = %d  (%f %% lost)\n",
+								packets_sent, packets_lost, packets_lost_percentage);
 
-			
-			printf("    · Time EFFECTIVELY transmitting in N channels: ");
-			for(int n = 0; n < num_channels_allowed; n++){
-				printf("(%d) %f  ", n+1, total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n]);
+				
+				printf("    · Time EFFECTIVELY transmitting in N channels: ");
+				for(int n = 0; n < num_channels_allowed; n++){
+					printf("(%d) %f  ", n+1, total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n]);
+				}
+				printf("\n");
+
+				
+				printf("    · Time EFFECTIVELY transmitting in each channel: ");
+				for(int c = 0; c < num_channels_komondor; c++){
+					printf("(#%d) %f ", c, total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c]);
+				}
+				printf("\n");
+
+				
+				printf("    · Time LOST transmitting in N channels: ");
+				for(int n = 0; n < num_channels_allowed; n++){
+					printf("(%d) %f  ", n+1, total_time_lost_in_num_channels[n]);
+				}
+				printf("\n");
+
+				
+				printf("    · Time LOST transmitting in each channel: ");
+				for(int c = 0; c < num_channels_komondor; c++){
+					printf("(#%d) %f ", c, total_time_lost_per_channel[c]);
+				}
+				printf("\n");
 			}
-			printf("\n");
-
-			
-			printf("    · Time EFFECTIVELY transmitting in each channel: ");
-			for(int c = 0; c < num_channels_komondor; c++){
-				printf("(#%d) %f ", c, total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c]);
-			}
-			printf("\n");
-
-			
-			printf("    · Time LOST transmitting in N channels: ");
-			for(int n = 0; n < num_channels_allowed; n++){
-				printf("(%d) %f  ", n+1, total_time_lost_in_num_channels[n]);
-			}
-			printf("\n");
-
-			
-			printf("    · Time LOST transmitting in each channel: ");
-			for(int c = 0; c < num_channels_komondor; c++){
-				printf("(#%d) %f ", c, total_time_lost_per_channel[c]);
-			}
-			printf("\n");
-
 			
 			printf(" - Total hidden nodes: %d\n", hidden_nodes_number);
 			printf(" - Hidden nodes list: ");
@@ -3915,46 +3910,48 @@ void compcxx_Node_5 :: printNodeStatistics(int write_or_print){
 
 			if (save_node_logs){
 
-				
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Throughput = %f Mbps\n",
-						SimTime(), node_id, node_state, LOG_C02, LOG_LVL2, throughput);
+				if (transmitting_flag) {
+					
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Throughput = %f Mbps\n",
+							SimTime(), node_id, node_state, LOG_C02, LOG_LVL2, throughput);
 
-				
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets sent: %d\n", SimTime(), node_id, node_state, LOG_C03, LOG_LVL2, packets_sent);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets lost: %d\n", SimTime(), node_id, node_state, LOG_C04, LOG_LVL2, packets_lost);
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Loss ratio: %f\n", SimTime(), node_id, node_state, LOG_C05, LOG_LVL2, packets_lost_percentage);
+					
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets sent: %d\n", SimTime(), node_id, node_state, LOG_C03, LOG_LVL2, packets_sent);
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Packets lost: %d\n", SimTime(), node_id, node_state, LOG_C04, LOG_LVL2, packets_lost);
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Loss ratio: %f\n", SimTime(), node_id, node_state, LOG_C05, LOG_LVL2, packets_lost_percentage);
 
-				
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in N channels: ",
-						SimTime(), node_id, node_state, LOG_C06, LOG_LVL2);
-				for(int n = 0; n < num_channels_allowed; n++){
-					fprintf(own_log_file, "(%d) %f  ", n+1, total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n]);
+					
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in N channels: ",
+							SimTime(), node_id, node_state, LOG_C06, LOG_LVL2);
+					for(int n = 0; n < num_channels_allowed; n++){
+						fprintf(own_log_file, "(%d) %f  ", n+1, total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n]);
+					}
+					fprintf(own_log_file, "\n");
+
+					
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in each channel: ",
+							SimTime(), node_id, node_state, LOG_C07, LOG_LVL2);
+					for(int c = 0; c < num_channels_komondor; c++){
+						fprintf(own_log_file, "(#%d) %f ", c, total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c]);
+					}
+					fprintf(own_log_file, "\n");
+
+					
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in N channels: ",
+							SimTime(), node_id, node_state, LOG_C08, LOG_LVL2);
+					for(int n = 0; n < num_channels_allowed; n++){
+						fprintf(own_log_file, "(%d) %f  ", n+1, total_time_lost_in_num_channels[n]);
+					}
+					fprintf(own_log_file, "\n");
+
+					
+					fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in each channel: ",
+							SimTime(), node_id, node_state, LOG_C09, LOG_LVL2);
+					for(int c = 0; c < num_channels_komondor; c++){
+						fprintf(own_log_file, "(#%d) %f ", c, total_time_lost_per_channel[c]);
+					}
+					fprintf(own_log_file, "\n");
 				}
-				fprintf(own_log_file, "\n");
-
-				
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in each channel: ",
-						SimTime(), node_id, node_state, LOG_C07, LOG_LVL2);
-				for(int c = 0; c < num_channels_komondor; c++){
-					fprintf(own_log_file, "(#%d) %f ", c, total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c]);
-				}
-				fprintf(own_log_file, "\n");
-
-				
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in N channels: ",
-						SimTime(), node_id, node_state, LOG_C08, LOG_LVL2);
-				for(int n = 0; n < num_channels_allowed; n++){
-					fprintf(own_log_file, "(%d) %f  ", n+1, total_time_lost_in_num_channels[n]);
-				}
-				fprintf(own_log_file, "\n");
-
-				
-				fprintf(own_log_file, "%f;N%d;S%d;%s;%s Time LOST transmitting in each channel: ",
-						SimTime(), node_id, node_state, LOG_C09, LOG_LVL2);
-				for(int c = 0; c < num_channels_komondor; c++){
-					fprintf(own_log_file, "(#%d) %f ", c, total_time_lost_per_channel[c]);
-				}
-				fprintf(own_log_file, "\n");
 
 				
 				int hidden_nodes_number = 0;
@@ -4299,6 +4296,9 @@ void compcxx_KomondorEnvironment_6 :: generateNodesByReadingInputFile(char *node
 			tmp_nodes = strdup(line_nodes);
 			node_container[node_ix].destination_id = atoi(getfield(tmp_nodes, field_ix));
 			field_ix++;
+			tmp_nodes = strdup(line_nodes);
+			node_container[node_ix].transmitting_flag = atoi(getfield(tmp_nodes, field_ix));
+			field_ix++;
 			double EB = (double) (CW-1)/2;
 			lambda = 1/(EB * T_SLOT);
 			node_container[node_ix].lambda = lambda;
@@ -4326,7 +4326,7 @@ void compcxx_KomondorEnvironment_6 :: generateNodesByReadingInputFile(char *node
 
 
 
-#line 405 "Komondor.cc"
+#line 408 "Komondor.cc"
 void compcxx_KomondorEnvironment_6 :: printNodesInfo(int write_or_print){
 	switch(write_or_print){
 		case PRINT_LOG:{
@@ -4343,6 +4343,7 @@ void compcxx_KomondorEnvironment_6 :: printNodesInfo(int write_or_print){
 				printf("      - rx_gain = %f dB\n", node_container[n].rx_gain);
 				printf("      - channel_bonding_model = %d\n", node_container[n].channel_bonding_model);
 				printf("      - destination_id = %d\n", node_container[n].destination_id);
+				printf("      - transmitting_flag = %d\n", node_container[n].transmitting_flag);
 				printf("      - lambda = %f pkts/s\n", node_container[n].lambda);
 			}
 			break;
@@ -4361,6 +4362,7 @@ void compcxx_KomondorEnvironment_6 :: printNodesInfo(int write_or_print){
 				fprintf(logs_output_file, "      - rx_gain = %f dB\n", node_container[n].rx_gain);
 				fprintf(logs_output_file, "      - channel_bonding_model = %d\n", node_container[n].channel_bonding_model);
 				fprintf(logs_output_file, "      - destination_id = %d\n", node_container[n].destination_id);
+				fprintf(logs_output_file, "      - transmitting_flag = %d\n", node_container[n].transmitting_flag);
 				fprintf(logs_output_file, "      - lambda = %f pkts/s\n", node_container[n].lambda);
 			}
 			break;
