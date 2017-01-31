@@ -2184,14 +2184,14 @@ struct NackInfo
 
 
 
-#line 131 "Komondor.cc"
+#line 135 "Komondor.cc"
 ;
 
 
 
 
 
-#line 468 "Komondor.cc"
+#line 472 "Komondor.cc"
 const char* getfield(char* line, int num){
     const char* tok;
     for (tok = strtok(line, ",");
@@ -4033,20 +4033,24 @@ void compcxx_KomondorEnvironment_6 :: Stop(){
 	double avg_tpt = 0;
 	double min_val = 10000;
 	double max_val = -1000;
+	int transmitting_nodes = 0;
 	for(int m=0;m<total_nodes_number;m++){
-		if (node_container[m].transmitting_flag) fprintf(script_file, "- Node #%d Throughput = %f\n", m, node_container[m].throughput);
-		avg_tpt += node_container[m].throughput;
-		if(node_container[m].throughput > max_val) max_val = node_container[m].throughput;
-		if(node_container[m].throughput < min_val) min_val = node_container[m].throughput;
+		if (node_container[m].transmitting_flag){
+			fprintf(script_file, "- Node #%d Throughput = %f\n", m, node_container[m].throughput);
+			avg_tpt += node_container[m].throughput;
+			transmitting_nodes ++;
+			if(node_container[m].throughput > max_val) max_val = node_container[m].throughput;
+			if(node_container[m].throughput < min_val) min_val = node_container[m].throughput;
+		}
 	}
-	avg_tpt = avg_tpt/total_nodes_number;
+	avg_tpt = avg_tpt/transmitting_nodes;
 	fprintf(script_file, "- AVERAGE TPT = %f\n", avg_tpt);
 	fprintf(script_file, "- MIN VAL = %f\n", min_val);
 	fprintf(script_file, "- MAX VAL = %f\n", max_val);
 
 	fclose(script_file);
 }
-#line 136 "Komondor.cc"
+#line 140 "Komondor.cc"
 void compcxx_KomondorEnvironment_6 :: inputChecker(){
 	printf(" - Validating input files...\n");
 
@@ -4103,7 +4107,7 @@ void compcxx_KomondorEnvironment_6 :: inputChecker(){
 
 
 
-#line 191 "Komondor.cc"
+#line 195 "Komondor.cc"
 void compcxx_KomondorEnvironment_6 :: setupEnvironmentByReadingInputFile(char *system_filename) {
 	printf("- Reading system configuration file '%s'...\n", system_filename);
 	fprintf(logs_output_file, "- Reading system configuration file '%s'...\n", system_filename);
@@ -4200,7 +4204,7 @@ void compcxx_KomondorEnvironment_6 :: setupEnvironmentByReadingInputFile(char *s
 
 
 
-#line 286 "Komondor.cc"
+#line 290 "Komondor.cc"
 void compcxx_KomondorEnvironment_6 :: printSystemInfo(int write_or_print){
 	switch(write_or_print){
 		case PRINT_LOG:{
@@ -4244,7 +4248,7 @@ void compcxx_KomondorEnvironment_6 :: printSystemInfo(int write_or_print){
 
 
 
-#line 328 "Komondor.cc"
+#line 332 "Komondor.cc"
 void compcxx_KomondorEnvironment_6 :: generateNodesByReadingInputFile(char *nodes_filename, double sim_time) {
 	printf("- Reading nodes configuration...\n");
 	fprintf(logs_output_file, "- Reading nodes configuration...\n");
@@ -4340,7 +4344,7 @@ void compcxx_KomondorEnvironment_6 :: generateNodesByReadingInputFile(char *node
 
 
 
-#line 422 "Komondor.cc"
+#line 426 "Komondor.cc"
 void compcxx_KomondorEnvironment_6 :: printNodesInfo(int write_or_print){
 	switch(write_or_print){
 		case PRINT_LOG:{

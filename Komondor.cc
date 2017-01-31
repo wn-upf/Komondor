@@ -116,13 +116,17 @@ void KomondorEnvironment :: Stop(){
 	double avg_tpt = 0;
 	double min_val = 10000;
 	double max_val = -1000;
+	int transmitting_nodes = 0;
 	for(int m=0;m<total_nodes_number;m++){
-		if (node_container[m].transmitting_flag) fprintf(script_file, "- Node #%d Throughput = %f\n", m, node_container[m].throughput);
-		avg_tpt += node_container[m].throughput;
-		if(node_container[m].throughput > max_val) max_val = node_container[m].throughput;
-		if(node_container[m].throughput < min_val) min_val = node_container[m].throughput;
+		if (node_container[m].transmitting_flag){
+			fprintf(script_file, "- Node #%d Throughput = %f\n", m, node_container[m].throughput);
+			avg_tpt += node_container[m].throughput;
+			transmitting_nodes ++;
+			if(node_container[m].throughput > max_val) max_val = node_container[m].throughput;
+			if(node_container[m].throughput < min_val) min_val = node_container[m].throughput;
+		}
 	}
-	avg_tpt = avg_tpt/total_nodes_number;
+	avg_tpt = avg_tpt/transmitting_nodes;
 	fprintf(script_file, "- AVERAGE TPT = %f\n", avg_tpt);
 	fprintf(script_file, "- MIN VAL = %f\n", min_val);
 	fprintf(script_file, "- MAX VAL = %f\n", max_val);

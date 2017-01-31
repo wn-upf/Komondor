@@ -25,6 +25,6 @@ do
 	echo ""
 	echo ""
 	echo "- Executing ${array[executing_ix]}"
-	./Komondor ./input/input_system_conf.csv ./input/script_input_files_nodes/${array[executing_ix]} ./output/script_output.txt 1 455 0
+	./Komondor ./input/input_system_conf.csv ./input/script_input_files_nodes/${array[executing_ix]} ./output/script_output.txt 1000 455 0
 done
 echo 'Script finished!'
