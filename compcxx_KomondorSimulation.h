@@ -13,5 +13,7 @@ protected: std::vector<compcxx_component*>c; std::vector<T> f; };
 class compcxx_component { public: 
 typedef void  (compcxx_component::*Node_outportSelfStartTX_f_t)(Notification &notification);
 typedef void  (compcxx_component::*Node_outportSelfFinishTX_f_t)(Notification &notification);
-typedef void  (compcxx_component::*Node_outportSendNack_f_t)(NackInfo &nack_info);
+typedef void  (compcxx_component::*Node_outportSendLogicalNack_f_t)(LogicalNack &logical_nack_info);
+typedef void  (compcxx_component::*Node_outportAskForTxModulation_f_t)(Notification &notification);
+typedef void  (compcxx_component::*Node_outportAnswerTxModulation_f_t)(Notification &notification);
 };

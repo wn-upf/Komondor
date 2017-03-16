@@ -1,4 +1,3 @@
-rm -rf /output/*
 clear
-./COST/cxx Komondor.cc
-g++ -Wall -Werror -g -o Komondor Komondor.cxx
+./COST/cxx KomondorSimulation.cc
+g++ -Wall -Werror -g -o KomondorSimulation KomondorSimulation.cxx

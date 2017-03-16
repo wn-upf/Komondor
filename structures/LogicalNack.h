@@ -1,8 +1,8 @@
-#ifndef _AUX1_
-#define _AUX1_
+#ifndef _AUX_LOGICAL_NACK_
+#define _AUX_LOGICAL_NACK_
 
-// Logical NACK (not transmitted through the medium)
-struct NackInfo
+// Logical NACK (it is not transmitted through the medium)
+struct LogicalNack
 {
 	int source_id;			// Node sending the NACK
 	int packet_id;			// Packet_id
@@ -16,6 +16,9 @@ struct NackInfo
 	 */
 	int node_id_a;			// (other uses may be) Hidden node that started the transmission
 	int node_id_b;			// Hidden node causing the collision
+
+	double BER;
+	double SINR;
 
 	void printNackInfo(void){
 		printf("source_id = %d - packet_id = %d - loss_reason = %d - node_id_a = %d - node_id_b = %d\n",
