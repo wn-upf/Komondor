@@ -1,22 +1,60 @@
-/*
- * This file includes lots of fixed constant parameters used to define a KOMONDOR simulation.
+/* TODO: DEFINE copyright headers.*/
+
+/* This is just an skecth of what our Komondor headers should look like.
+ *
+ * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the Institute nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *
+ * -----------------------------------------------------------------
+ *
+ * Author  : Sergio Barrachina-Muñoz and Francesc Wilhelmi
+ * Created : 2016-12-05
+ * Updated : $Date: 2017/03/20 10:32:36 $
+ *           $Revision: 1.0 $
+ *
+ * -----------------------------------------------------------------
+ * File description: this file includes lots of fixed constant parameters used to define a KOMONDOR simulation.
+ *
+ * - Bla bla bla...
  */
 
-// Fix parameters
+
+// Code parameters
+#define FALSE 				0			// Boolean: false
+#define TRUE 				1			// Boolean: true
+#define INTEGER_SIZE		8			// Size of an interger
+#define CHAR_BUFFER_SIZE	1024		// Size of system buffer
+
+// System parameters
 #define SLOT_TIME 			0.000009	// Slot time unit [s]
 
-#define FALSE 0
-#define TRUE 1
-
-#define SIGNAL 1
-#define INTERFERENCE 2
-
-#define INCREASE_CW 1
-#define DECREASE_CW 2
-
-#define C 3*pow(10,8)
-
-#define MAX_POWER 20 // Maximum power that can be transmitted (dBm)
+// Physical parameters
+#define SPEED_LIGHT			3*pow(10,8)	// Speed of light [m/s]
 
 // Log hierarchy level to make output log file more readable
 #define LOG_LVL1	""
@@ -99,7 +137,7 @@
 #define PROGRESS_BAR_DISPLAY 	1	// Activate progress bar
 
 // C++ macros
-#define MIN_VALUE_C	0.000001
+#define MIN_VALUE_C_LANGUAGE	0.000001	// Minimum float value accepted by C++ language
 
 // Path-loss models
 #define PATH_LOSS_LFS 				0	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
@@ -124,32 +162,11 @@
 #define COCHANNEL_BOUNDARY	1	// (RECOMMENDED) Boundary co-channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
 #define COCHANNEL_EXTREME	2	// Extreme co-channel interference: ALL channels used in the TX affect the rest of channels
 
-// System variables
-#define INTEGER_SIZE			8		// Size of an interger
-#define CHAR_BUFFER_SIZE		1024	// Size of system buffer
+// Protocols
+#define INCREASE_CW 1		// Command to increase Congestion Window
+#define DECREASE_CW 2		// Command to decrease Congestion Window
+#define MAX_POWER 20 		// Maximum power that can be transmitted (dBm)
 
-// CONSOLE ARGUMENTS
-#define NUM_FULL_ARGUMENTS_CONSOLE		11		// Number of arguments entered per console corresponding to full config
-#define NUM_PARTIAL_ARGUMENTS_CONSOLE	5		// Number of arguments entered per console corresponding to partial config
-#define NUM_PARTIAL_ARGUMENTS_SCRIPT	6		// Number of arguments entered per script corresponding to partial config
-
-#define IX_SYSTEM_INPUT_FILE		1
-#define IX_NODES_INPUT_FILE			2
-#define IX_SCRIPT_OUTPUT_FILENAME	3
-#define IX_SIMULATION_CODE			4
-#define IX_WRITE_SYSTEM_LOGS		5
-#define IX_WRITE_NODE_LOGS			6
-#define IX_PRINT_SYSTEM_LOGS		7
-#define IX_PRINT_NODE_LOGS			8
-#define IX_SIMULATION_TIME			9
-#define IX_RANDOM_SEED				10
-
-#define DEFAULT_SCRIPT_FILENAME		"./output/script_output.txt"
-#define DEFAULT_SIMULATION_CODE		"DEFAULT_SIM"
-#define DEFAULT_WRITE_SYSTEM_LOGS	0
-#define DEFAULT_WRITE_NODE_LOGS		0
-#define DEFAULT_PRINT_SYSTEM_LOGS	1
-#define DEFAULT_PRINT_NODE_LOGS		1
 
 // Node type
 #define NODE_TYPE_UNKWNOW	-1	// Unknown (none) node type
@@ -192,7 +209,36 @@ const int modulation_rates[4][12] = {	// rows: modulation type, colums: number o
 #define INFO_DETAIL_LEVEL_2		2
 #define INFO_DETAIL_LEVEL_3		3
 
-/* INPUT FILES TERM INDEX */
+
+
+
+/* ************************************************
+ * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
+ * ************************************************
+ */
+
+// CONSOLE ARGUMENTS
+#define NUM_FULL_ARGUMENTS_CONSOLE		11		// Number of arguments entered per console corresponding to full config
+#define NUM_PARTIAL_ARGUMENTS_CONSOLE	5		// Number of arguments entered per console corresponding to partial config
+#define NUM_PARTIAL_ARGUMENTS_SCRIPT	6		// Number of arguments entered per script corresponding to partial config
+
+#define IX_SYSTEM_INPUT_FILE		1
+#define IX_NODES_INPUT_FILE			2
+#define IX_SCRIPT_OUTPUT_FILENAME	3
+#define IX_SIMULATION_CODE			4
+#define IX_WRITE_SYSTEM_LOGS		5
+#define IX_WRITE_NODE_LOGS			6
+#define IX_PRINT_SYSTEM_LOGS		7
+#define IX_PRINT_NODE_LOGS			8
+#define IX_SIMULATION_TIME			9
+#define IX_RANDOM_SEED				10
+
+#define DEFAULT_SCRIPT_FILENAME		"./output/script_output.txt"
+#define DEFAULT_SIMULATION_CODE		"DEFAULT_SIM"
+#define DEFAULT_WRITE_SYSTEM_LOGS	0
+#define DEFAULT_WRITE_NODE_LOGS		0
+#define DEFAULT_PRINT_SYSTEM_LOGS	1
+#define DEFAULT_PRINT_NODE_LOGS		1
 
 // File types
 #define FILE_TYPE_UNKNOWN		-1
@@ -267,7 +313,14 @@ const int modulation_rates[4][12] = {	// rows: modulation type, colums: number o
 #define IX_AP_MODULATION_DEFAULT		22
 #define IX_AP_CENTRAL_FREQ				23
 
-/* LOG TYPE ENCODING: TODO */
+
+
+/* *********************
+ * * LOG TYPE ENCODING *
+ * *********************
+ */
+
+// TODO
 
 // Setup() - A
 

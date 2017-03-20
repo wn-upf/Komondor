@@ -1,5 +1,48 @@
-/*
- * Node is a component representing any device in the network (AP, STA, etc.).
+/* TODO: DEFINE copyright headers.*/
+
+/* This is just an skecth of what our Komondor headers should look like.
+ *
+ * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the Institute nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *
+ * -----------------------------------------------------------------
+ *
+ * Author  : Sergio Barrachina-Muñoz and Francesc Wilhelmi
+ * Created : 2016-12-05
+ * Updated : $Date: 2017/03/20 10:32:36 $
+ *           $Revision: 1.0 $
+ *
+ * -----------------------------------------------------------------
+ * File description: Node is a component representing any device in the
+ * network (i.e., AP, STA, etc.). Node contains all the logic and algorithms
+ * for simulating nodes operation.
+ *
+ * - Bla bla bla...
  */
 
 #include <math.h>
@@ -14,8 +57,11 @@
 
 // Node component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Node : public TypeII{
+
+	// Methods
 	public:
 
+		// COST
 		void Setup();
 		void Start();
 		void Stop();
@@ -65,6 +111,7 @@ component Node : public TypeII{
 		void resumeBackoff();
 		void handleCW(int mode);
 
+	// Public items (entered by nodes constructor in Komondor simulation)
 	public:
 
 		// Specific to a node
@@ -137,9 +184,9 @@ component Node : public TypeII{
 		int num_packets_aggregated;			// Number of packets aggregated in one transmission
 		int ack_length;						// ACK length [bits]
 
+	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
 
-		// Statistics
 		int packets_sent;
 		double *total_time_transmitting_per_channel;		// Time transmitting per channel;
 		double *total_time_transmitting_in_num_channels;	// Time transmitting in (ix 0: 1 channel, ix 1: 2 channels...)
@@ -151,6 +198,7 @@ component Node : public TypeII{
 		int *nacks_received;								// Counter of the type of Nacks received
 		int num_tx_init_not_possible;						// Number of TX initiations that have been not possible due to channel state and DCB model
 
+	// Private items (just for node operation)
 	private:
 
 		// Komondor environment
@@ -169,26 +217,25 @@ component Node : public TypeII{
 		double remaining_backoff;			// Remaining backoff
 		int progress_bar_counter;			// Counter for displaying the progress bar
 
-		int node_is_transmitter;
-
 		// Transmission parameters
+		int node_is_transmitter;			// Flag for determining if node is able to tranmsit packet (e.g., AP in downlink)
 		int current_left_channel;			// Left channel used in current TX
 		int current_right_channel;			// Right channel used in current TX
 		double current_tpc;					// Transmission power used in current TX [dBm]
 		double current_cca;					// Current CCA (variable "sensitivity")	[dBm]
-		int current_destination_id;			// Current destination ID
+		int current_destination_id;			// Current destination node ID
 		double current_tx_duration;			// Duration of the TX being done [s]
 		int packet_id;						// Notification ID
 		Notification ack;					// ACK to be filled before sending it
 		Notification ongoing_notification; 	// Current notification (DATA or ACK) being received
 		double current_sinr;				// SINR perceived in current TX [no unit] (linear)
-		int default_modulation;
-		double current_data_rate;
-		int current_CW;
+		int default_modulation;				// Default MCS identifier
+		double current_data_rate;			// Data rate being used currently
+		int current_CW;						// Congestion Window being used currently
 
 		int **modulation_per_node;			// Modulation selected for each of the nodes (only transmitting nodes)
-		int *change_modulation_flag;		//
-		int *mcs_response;
+		int *change_modulation_flag;		// Flag for changig the MCS of any of the potential receivers
+		int *mcs_response;					// MCS response received from receiver
 
 		// Sensing and Reception parameters
 		LogicalNack nack;					// NACK to be filled in case node is the destination of tx loss
@@ -202,9 +249,10 @@ component Node : public TypeII{
 		int *hidden_nodes_list;				// Store nodes that for sure are hidden (1 indicates that node "i" is hidden)
 		int *potential_hidden_nodes;		// Maintain a list of the times a node participated in a collision by hidden node
 		int collisions_by_hidden_node; 		// Number of noticed collisions by hidden node (maintained by the transmitter)
-		double BER;
-		double PER;
+		double BER;							// Bit error rate (deprecated)
+		double PER;							// Packet error rate (deprecated)
 
+	// Connections and timers
 	public:
 
 		// INPORT connections for receiving notifications
@@ -282,18 +330,19 @@ void Node :: Start(){
 
 	initializeVariables();
 
+	// Start backoff procedure only if node is able to tranmsit
 	if(node_is_transmitter) {
 		remaining_backoff = computeBackoff();
 		trigger_backoff.Set(SimTime() + remaining_backoff);
 	} else {
-		current_destination_id = wlan.wlan_id;
+		current_destination_id = wlan.ap_id;	// TODO: for uplink traffic. Set STAs destination to the GW
 	}
 
-	// Progress bar (only print by node with id 0)
+	// Progress bar (trick: it is only printed by node with id 0)
 	if(PROGRESS_BAR_DISPLAY){
 		if(node_id == 0){
 			if(print_node_logs) printf("%s PROGRESS BAR:\n", LOG_LVL1);
-			trigger_sim_time.Set(SimTime() + MIN_VALUE_C);
+			trigger_sim_time.Set(SimTime() + MIN_VALUE_C_LANGUAGE);
 		}
 	}
 	// if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Start() END\n", SimTime(), node_id, node_state, LOG_B01, LOG_LVL1);
@@ -358,15 +407,9 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 
 		updateChannelsPower(notification, TX_INITIATED);	// Update the power sensed at each channel
 
-
-		if(node_state == STATE_RX_DATA ||node_state == STATE_RX_ACK) {
-
-}
 		computeMaxInterference(notification);
-		if(node_state == STATE_RX_DATA ||node_state == STATE_RX_ACK) {
 
 
-		}
 //		if(notification.tx_info.destination_id == node_id) pw_received_interest =
 //						power_received_per_node[notification.source_id];
 //		computeMaxInterference(notification);
@@ -1011,7 +1054,7 @@ void Node :: myTXFinished(trigger_t &){
 
 			Notification notification = generateNotification(PACKET_TYPE_DATA, current_destination_id, 0);	// 0: No transmission duration
 			outportSelfFinishTX(notification);
-			trigger_ACK_timeout.Set(SimTime() + (1 + MIN_VALUE_C) * SIFS);
+			trigger_ACK_timeout.Set(SimTime() + (1 + MIN_VALUE_C_LANGUAGE) * SIFS);
 			node_state = STATE_WAIT_ACK;
 			break;
 
@@ -1245,7 +1288,7 @@ double Node::computePowerReceived(double distance, double tx_power, int tx_gain,
 			double h_AP = 10;		// Height of the AP in m
 			double h_STA = 1.5; 	// Height of the STA in m
 
-			double d_BP = (4 * (h_AP - 1) * (h_STA - 1) * central_frequency * pow(10,9)) / C;
+			double d_BP = (4 * (h_AP - 1) * (h_STA - 1) * central_frequency * pow(10,9)) / SPEED_LIGHT;
 
 
 			if (distance < d_BP && distance >= 10) {
@@ -1578,7 +1621,7 @@ void Node :: applyInterferenceModel(Notification notification, int update_type){
 
 					}
 
-					if(total_power[c] < MIN_VALUE_C){
+					if(total_power[c] < MIN_VALUE_C_LANGUAGE){
 
 						total_power[c] = 0;
 
@@ -1600,7 +1643,7 @@ void Node :: applyInterferenceModel(Notification notification, int update_type){
 
 						total_power[i] += convertPower(PICO_TO_DBM, convertPower(DBM_TO_PICO, power_received_per_node[notification.source_id]) - 20*abs(i-j));
 
-						if(total_power[i] < MIN_VALUE_C) total_power[i] = 0;
+						if(total_power[i] < MIN_VALUE_C_LANGUAGE) total_power[i] = 0;
 
 					}
 				}
@@ -1968,10 +2011,10 @@ void Node :: ackTimeout(trigger_t &){
 	if(save_node_logs) fprintf(node_logger.file,
 			"%f;N%d;G02; - ACK TIMEOUT! Transmission %d has been lost\n", SimTime(), node_id, packet_id);
 
-	current_tx_duration += (1 + MIN_VALUE_C) * SIFS;		// Add ACK timeout to tx_duration
+	current_tx_duration += (1 + MIN_VALUE_C_LANGUAGE) * SIFS;		// Add ACK timeout to tx_duration
 
 	for(int c = current_left_channel; c <= current_right_channel; c++){
-		total_time_transmitting_per_channel[c] += (1 + MIN_VALUE_C) * SIFS;
+		total_time_transmitting_per_channel[c] += (1 + MIN_VALUE_C_LANGUAGE) * SIFS;
 	}
 
 	handlePacketLoss();
@@ -2603,7 +2646,7 @@ void Node :: printProgressBar(trigger_t &){
 
 	// End progress bar
 	if(node_id == 0 && progress_bar_counter == (100/PROGRESS_BAR_DELTA)-1){
-		trigger_sim_time.Set(SimTime() + simulation_time_komondor/(100/PROGRESS_BAR_DELTA) - MIN_VALUE_C);
+		trigger_sim_time.Set(SimTime() + simulation_time_komondor/(100/PROGRESS_BAR_DELTA) - MIN_VALUE_C_LANGUAGE);
 	}
 	progress_bar_counter ++;
 }
