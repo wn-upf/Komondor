@@ -85,6 +85,7 @@ component Node : public TypeII{
 		void computeMaxInterference(Notification notification);
 		void updateSINR(double pw_received_interest);
 		void applyInterferenceModel(Notification notification, int update_type);
+		double compute_tx_power_per_channel(double tx_power, int num_channels_tx);
 
 		// Packets
 		Notification generateNotification(int packet_type, int destination_id, double tx_duration);
@@ -1527,6 +1528,58 @@ double Node :: computeTxTime(int ix_num_channels_used, int total_bits){
 
 }
 
+/*
+ * compute_tx_power_per_channel(): computes the transmission time (just link rate) according to the number of channels used and packet lenght
+ * Input arguments:
+ * - current_tpc: number of channels (OR INDEX) used in the transmission
+ * - num_channels_tx: num_channels_tx of bits sent in the transmission
+ */
+double Node :: compute_tx_power_per_channel(double current_tpc, int num_channels_tx){
+
+	double tx_power_per_channel = current_tpc;
+	int num_channels_tx_ix = 0;
+
+	// TODO: improve hardcoded translation "num channels - index" (log2)
+	switch(num_channels_tx){
+
+		case 1:{
+			num_channels_tx_ix = 0;
+			break;
+		}
+
+		case 2:{
+			num_channels_tx_ix = 1;
+			break;
+		}
+
+		case 4:{
+			num_channels_tx_ix = 2;
+			break;
+		}
+
+		case 8:{
+			num_channels_tx_ix = 3;
+			break;
+		}
+
+		default:{
+			printf("Invalid channel range size!");
+			exit(EXIT_FAILURE);
+			break;
+		}
+	}
+
+	for (int num_ch_ix = 0; num_ch_ix < num_channels_tx_ix; num_ch_ix ++){
+
+		tx_power_per_channel =- 3;	// Half the power
+
+	}
+
+
+	return tx_power_per_channel;
+}
+
+
 /***********************/
 /***********************/
 /* CHANNELS MANAGEMENT */
@@ -1974,11 +2027,20 @@ Notification Node :: generateNotification(int packet_type, int destination_id, d
 	Notification notification;
 	TxInfo tx_info;
 
+	notification.packet_type = packet_type;
+	notification.source_id = node_id;
+	notification.left_channel = current_left_channel;
+	notification.right_channel = current_right_channel;
+
 	tx_info.setSizeOfMCS(4);
+
+	int num_channels_tx = current_right_channel - current_left_channel + 1;
+	// tx_info.tx_power = current_tpc;
+	tx_info.tx_power = compute_tx_power_per_channel(current_tpc, num_channels_tx);
 
 	tx_info.destination_id = destination_id;
 	tx_info.tx_duration = tx_duration;
-	tx_info.tx_power = current_tpc;
+
 
 	tx_info.data_rate = current_data_rate;
 	tx_info.x = x;
@@ -1987,10 +2049,7 @@ Notification Node :: generateNotification(int packet_type, int destination_id, d
 	tx_info.packet_id = packet_id;
 
 	notification.tx_info = tx_info;
-	notification.packet_type = packet_type;
-	notification.source_id = node_id;
-	notification.left_channel = current_left_channel;
-	notification.right_channel = current_right_channel;
+
 
 	switch(packet_type){
 
