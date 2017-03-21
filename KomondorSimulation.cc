@@ -232,8 +232,8 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			connect node_container[n].outportSendLogicalNack,node_container[m].inportNackReceived;
 
 			if(strcmp(node_container[n].wlan_code,node_container[m].wlan_code) == 0) {
-				connect node_container[n].outportAskForTxModulation,node_container[m].inportTxRequestReceived;
-				connect node_container[n].outportAnswerTxModulation,node_container[m].inportTxResponseReceived;
+				connect node_container[n].outportAskForTxModulation,node_container[m].inportMCSRequestReceived;
+				connect node_container[n].outportAnswerTxModulation,node_container[m].inportMCSResponseReceived;
 			}
 		}
 	}

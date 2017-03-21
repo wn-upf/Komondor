@@ -80,9 +80,10 @@
 #define LOG_HEADER_NODE_SIZE	30	// Node log header size
 
 // Transmission initiated or finished
-#define TX_INITIATED	0	// Transmission is initiated ('inportSomeNodeStartTX()')
-#define TX_FINISHED		1	// Transmission is finished ('inportSomeNodeFinishTX()')
-#define TX_NOT_POSSIBLE -1	// Transmission is not possible
+#define TX_INITIATED		0	// Transmission is initiated ('inportSomeNodeStartTX()')
+#define TX_FINISHED			1	// Transmission is finished ('inportSomeNodeFinishTX()')
+#define TX_NOT_POSSIBLE 	-1	// Transmission is not possible
+#define TX_DURATION_NONE	0 	// No transmission duration for logical notifications
 
 // Logical Nack reasons
 #define PACKET_NOT_LOST					-1	// Packet is not lost
@@ -103,7 +104,8 @@
 #define MAX_PACKET_ID				645210	// Maybe some day it is needed :D
 #define PACKET_TYPE_DATA			0		// Data packet type
 #define PACKET_TYPE_ACK				1		// ACK packet type
-#define PACKET_TYPE_MCS_RESPONSE 	2 		// MCS response type
+#define PACKET_TYPE_MCS_REQUEST		2		// MCS request type
+#define PACKET_TYPE_MCS_RESPONSE 	3 		// MCS response type
 
 // Timers
 #define PAUSE_TIMER		0	// Try to pause a timer (e.g. backoff)
@@ -125,8 +127,9 @@
 
 
 // Boundary channels
-#define FIRST_ONE_IN_ARRAY 	0	// Search first element '1' in an array
-#define LAST_ONE_IN_ARRAY	1	// Search last element '1' in an array
+#define FIRST_ONE_IN_ARRAY 			0	// Search first element '1' in an array
+#define LAST_ONE_IN_ARRAY			1	// Search last element '1' in an array
+#define NUM_OPTIONS_CHANNEL_LENGTH	4	// Number of options of channel lengths (1, 2, 4, 8)
 
 // Channel free - occupied
 #define CHANNEL_FREE		0
