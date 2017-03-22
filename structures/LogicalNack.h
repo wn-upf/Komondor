@@ -52,6 +52,7 @@
 struct LogicalNack
 {
 	int source_id;		// Node sending the NACK
+	int packet_type;	// Type of packet
 	int packet_id;		// Packet_id
 	int loss_reason;	// Loss reason. Why the packet has been lost? (Look for possible reasons in file ListOfDefines.h)
 	int node_id_a;		// TODO: update definition - Old comment: "(other uses may be) Hidden node that started the transmission"

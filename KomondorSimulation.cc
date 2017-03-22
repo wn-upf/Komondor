@@ -102,6 +102,8 @@ component Komondor : public CostSimEng {
 		int pdf_tx_time;				// Probability distribution type of the transmission time (0: exponential, 1: deterministic)
 		int packet_length;				// Packet length [bits]
 		int ack_length;					// ACK length [bits]
+		int rts_length;					// RTS length [bits]
+		int cts_length;					// CTS length [bits]
 		int num_packets_aggregated;		// Number of packets aggregated in one transmission
 		int path_loss_model;			// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 		double capture_effect;
@@ -111,6 +113,7 @@ component Komondor : public CostSimEng {
 		double SIFS;					// Short Interframe Space (SIFS) [s]
 		double DIFS;					// DCF Interframe Space (DIFS) [s]
 		double constant_PER;			// Constant PER for successful transmissions
+		int RTS_CTS_active;				// Determines whether to use or not RTS/CTS - Yes = 1, No = 0
 
 	// Private items
 	private:
@@ -452,6 +455,17 @@ void Komondor :: setupEnvironmentByReadingInputFile(char *system_filename) {
 			const char* ack_length_char = getfield(tmp, IX_ACK_LENGTH);
 			ack_length = atoi(ack_length_char);
 
+			// RTS packet length
+			tmp = strdup(line_system);
+			const char* rts_length_char = getfield(tmp, IX_RTS_LENGTH);
+			rts_length = atoi(rts_length_char);
+
+			// CTS packet length
+			tmp = strdup(line_system);
+			const char* cts_length_char = getfield(tmp, IX_CTS_LENGTH);
+			cts_length = atoi(cts_length_char);
+
+
 			// Number of packets aggregated in one transmission
 			tmp = strdup(line_system);
 			const char* num_packets_aggregated_char = getfield(tmp, IX_NUM_PACKETS_AGGREGATED);
@@ -492,6 +506,11 @@ void Komondor :: setupEnvironmentByReadingInputFile(char *system_filename) {
 			tmp = strdup(line_system);
 			const char* constant_PER_char = getfield(tmp, IX_CONSTANT_PER);
 			constant_PER = atof(constant_PER_char);
+
+			// Constant PER for successful transmissions
+			tmp = strdup(line_system);
+			const char* RTS_CTS_active_char = getfield(tmp, IX_RTS_CTS_ACTIVE);
+			RTS_CTS_active = atoi(RTS_CTS_active_char);
 
 			free(tmp);
 		}
@@ -761,7 +780,10 @@ void Komondor :: generateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].packet_length = packet_length;
 				node_container[node_ix].num_packets_aggregated = num_packets_aggregated;
 				node_container[node_ix].ack_length = ack_length;
+				node_container[node_ix].rts_length = rts_length;
+				node_container[node_ix].cts_length = cts_length;
 				node_container[node_ix].simulation_code = simulation_code;
+				node_container[node_ix].RTS_CTS_active = RTS_CTS_active;
 
 				node_ix++;
 			}
@@ -991,7 +1013,10 @@ void Komondor :: generateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].packet_length = packet_length;
 			node_container[node_ix].num_packets_aggregated = num_packets_aggregated;
 			node_container[node_ix].ack_length = ack_length;
+			node_container[node_ix].rts_length = rts_length;
+			node_container[node_ix].cts_length = cts_length;
 			node_container[node_ix].simulation_code = simulation_code;
+			node_container[node_ix].RTS_CTS_active = RTS_CTS_active;
 
 			node_ix ++;
 			free(tmp_nodes);
@@ -1025,6 +1050,8 @@ void Komondor :: printSystemInfo(){
 		printf("%s pdf_tx_time = %d\n", LOG_LVL3, pdf_tx_time);
 		printf("%s packet_length = %d bits\n", LOG_LVL3, packet_length);
 		printf("%s ack_length = %d bits\n", LOG_LVL3, ack_length);
+		printf("%s cts_length = %d bits\n", LOG_LVL3, cts_length);
+		printf("%s rts_length = %d bits\n", LOG_LVL3, rts_length);
 		printf("%s num_packets_aggregated = %d\n", LOG_LVL3, num_packets_aggregated);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 		printf("%s capture_effect = %f\n", LOG_LVL3, capture_effect);
@@ -1034,6 +1061,7 @@ void Komondor :: printSystemInfo(){
 		printf("%s SIFS = %f s\n", LOG_LVL3, SIFS);
 		printf("%s DIFS = %f s\n", LOG_LVL3, DIFS);
 		printf("%s Constant PER = %f\n", LOG_LVL3, constant_PER);
+		printf("%s RTS_CTS_active = %d\n", LOG_LVL3, RTS_CTS_active);
 		printf("\n");
 	}
 }

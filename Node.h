@@ -91,8 +91,12 @@ component Node : public TypeII{
 		Notification generateNotification(int packet_type, int destination_id, double tx_duration);
 		void selectDestination();
 		double computeTxTime(int num_channels_used, int packet_size);
-		void sendAck();
+		double computeNavTime();
+		void sendResponse();
 		void ackTimeout();
+		void ctsTimeout();
+		void dataTimeout();
+		void navTimeout();
 		int applyModulationProbabilityError(Notification notification);
 		void selectMCSResponse();
 		int attemptToDecodePacket();
@@ -100,7 +104,7 @@ component Node : public TypeII{
 
 		// NACK
 		int isPacketLost(double channel_power, Notification notification);
-		void generateAndSendLogicalNack(int packet_id, int node_id_a, int node_id_b, int reason_id);
+		void generateAndSendLogicalNack(int packet_type, int packet_id, int node_id_a, int node_id_b, int reason_id);
 		void processNack(LogicalNack logical_nack_info);
 		void cleanNack();
 		void handlePacketLoss();
@@ -171,6 +175,7 @@ component Node : public TypeII{
 		int CW_max;							// Backoff maximum Contention Window
 		int pdf_backoff;					// Probability distribution type of the backoff (0: exponential, 1: deterministic)
 		int path_loss_model;				// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
+		int RTS_CTS_active;					// Determines whether to use or not RTS/CTS - Yes = 1, No = 0
 
 		// Data rate - modulations
 		int modulation_rates[4][12];		// Modulation rates in bps used in IEEE 802.11ax
@@ -184,6 +189,8 @@ component Node : public TypeII{
 		int packet_length;					// Notification length [bits]
 		int num_packets_aggregated;			// Number of packets aggregated in one transmission
 		int ack_length;						// ACK length [bits]
+		int rts_length;						// RTS length [bits]
+		int cts_length;						// CTS length [bits]
 
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
@@ -226,9 +233,14 @@ component Node : public TypeII{
 		double current_cca;					// Current CCA (variable "sensitivity")	[dBm]
 		int current_destination_id;			// Current destination node ID
 		double current_tx_duration;			// Duration of the TX being done [s]
+		double current_nav_time;					// Current NAV duration
 		int packet_id;						// Notification ID
-		Notification ack;					// ACK to be filled before sending it
+		int rts_cts_id;						// Id for RTS/CTS transactions
+		Notification data_notification;		// DATA notification to be filled before sending it
+		Notification ack_notification;		// ACK to be filled before sending it
 		Notification ongoing_notification; 	// Current notification (DATA or ACK) being received
+		Notification rts_notification;		// RTS to be filled before sending it
+		Notification cts_notification;		// CTS to be filled before sending it
 		double current_sinr;				// SINR perceived in current TX [no unit] (linear)
 		int default_modulation;				// Default MCS identifier
 		double current_data_rate;			// Data rate being used currently
@@ -278,15 +290,21 @@ component Node : public TypeII{
 		Timer <trigger_t> trigger_sim_time;		// Timer for displaying the exectuion time status (progress bar)
 		Timer <trigger_t> trigger_DIFS;			// Timer for the DIFS
 		Timer <trigger_t> trigger_SIFS;			// Timer for the SIFS
-		Timer <trigger_t> trigger_ACK_timeout;	// Determines whether a whole transmission has been lost
+		Timer <trigger_t> trigger_ACK_timeout;	// Trigger when ACK hasn't arrived in time
+		Timer <trigger_t> trigger_CTS_timeout;	// Trigger when CTS hasn't arrived in time
+		Timer <trigger_t> trigger_DATA_timeout; // Trigger when DATA TX could not start due to RTS/CTS failure
+		Timer <trigger_t> trigger_NAV_timeout;  // Trigger for the NAV
 
 		// Every time the timer expires execute this
 		inport inline void endBackoff(trigger_t& t1);
 		inport inline void myTXFinished(trigger_t& t1);
 		inport inline void printProgressBar(trigger_t& t1);
 		inport inline void resumeBackoff(trigger_t& t1);
-		inport inline void sendAck(trigger_t& t1);
+		inport inline void sendResponse(trigger_t& t1);
 		inport inline void ackTimeout(trigger_t& t1);
+		inport inline void ctsTimeout(trigger_t& t1);
+		inport inline void dataTimeout(trigger_t& t1);
+		inport inline void navTimeout(trigger_t& t1);
 
 		// Connect timers to methods
 		Node () {
@@ -294,8 +312,11 @@ component Node : public TypeII{
 			connect trigger_toFinishTX.to_component,myTXFinished;
 			connect trigger_sim_time.to_component,printProgressBar;
 			connect trigger_DIFS.to_component,resumeBackoff;
-			connect trigger_SIFS.to_component,sendAck;
+			connect trigger_SIFS.to_component,sendResponse;
 			connect trigger_ACK_timeout.to_component,ackTimeout;
+			connect trigger_CTS_timeout.to_component,ctsTimeout;
+			connect trigger_DATA_timeout.to_component,dataTimeout;
+			connect trigger_NAV_timeout.to_component,navTimeout;
 		}
 };
 
@@ -445,12 +466,12 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 							"%f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
 							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.tx_info.destination_id);
 
-					if(notification.packet_type == PACKET_TYPE_DATA){	// Notification COTAINS a DATA PACKET
+					if(notification.packet_type == PACKET_TYPE_RTS){	// Notification COTAINS an RTS PACKET
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						loss_reason = isPacketLost(channel_power[primary_channel], notification);
 
-						if(loss_reason != PACKET_NOT_LOST) {	// If data packet IS LOST, send logical Nack
+						if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
 							if(save_node_logs) fprintf(node_logger.file,
 									"%f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
@@ -458,7 +479,8 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 									notification.source_id, loss_reason);
 
 							// Send logical NACK to transmitter sending incoming notification for indicating the loss reason
-							generateAndSendLogicalNack(notification.tx_info.packet_id, notification.source_id, NODE_ID_NONE, loss_reason);
+							generateAndSendLogicalNack(notification.packet_type, notification.tx_info.packet_id,
+									notification.source_id, NODE_ID_NONE, loss_reason);
 
 							// Check if node has to freeze the BO (if it is not already frozen)
 							if (node_is_transmitter) handleBackoff(PAUSE_TIMER);
@@ -466,7 +488,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 						} else {	// Data packet IS NOT LOST (it can be properly received)
 
 							if(save_node_logs) fprintf(node_logger.file,
-									"%f;N%d;S%d;%s;%s Reception of packet %d from N%d CAN be started\n",
+									"%f;N%d;S%d;%s;%s Reception of RTS %d from N%d CAN be started\n",
 									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.tx_info.packet_id,
 									notification.source_id);
 
@@ -475,12 +497,8 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 									SimTime(), node_id, node_state, LOG_D16, LOG_LVL5, convertPower(LINEAR_TO_DB,current_sinr),
 									current_sinr);
 
-							if(save_node_logs) fprintf(node_logger.file,
-									"%f;N%d;S%d;%s;%s capacity = %f Mbps\n",
-									SimTime(), node_id, node_state, LOG_D16, LOG_LVL5, 20*log10(1+current_sinr)/log10(2));
-
 							// Change state and update receiving info
-							node_state = STATE_RX_DATA;
+							node_state = STATE_RX_RTS;
 							receiving_from_node_id = notification.source_id;
 							receiving_packet_id = notification.tx_info.packet_id;
 
@@ -489,7 +507,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 
 						}
 
-					} else {	//	Notification does NOT CONTAIN a DATA PACKET
+					} else {	//	Notification does NOT CONTAIN an RTS
 						if(save_node_logs) fprintf(node_logger.file,
 								"%f;N%d;S%d;%s;%s Unexpected packet type (%d) received!\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4, notification.packet_type);
@@ -497,24 +515,65 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 
 				} else {	// Node IS NOT THE DESTINATION
 
-					if(save_node_logs) fprintf(node_logger.file,
-							"%f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
-								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.tx_info.destination_id);
+					if(notification.packet_type == PACKET_TYPE_RTS || notification.packet_type == PACKET_TYPE_RTS){
 
-					// Check if node has to freeze the BO (if it is not already frozen)
-					if (node_is_transmitter) handleBackoff(PAUSE_TIMER);
+						loss_reason = isPacketLost(channel_power[primary_channel], notification);
+
+						// Check if node has to freeze the BO (if it is not already frozen)
+						if (node_is_transmitter) handleBackoff(PAUSE_TIMER);
+
+						if(loss_reason == PACKET_NOT_LOST) { // RTS/CTS affecting my BO
+							node_state = STATE_NAV;
+							trigger_NAV_timeout.Set(SimTime() + (1 + MIN_VALUE_C_LANGUAGE)
+									* notification.tx_info.nav_time);
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s RTS received from N%d\n",
+										SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.tx_info.destination_id);
+						}
+
+					}
+
 				}
 
 				break;
 			}
 
+			/* STATE_TX_NAV
+			 * - If node IS destination: generateNack to incoming notification transmitter
+			 * - If node IS NOT destination: check if NAV trigger must be updated
+			 */
+			case STATE_NAV:{
+
+				if(notification.tx_info.destination_id == node_id){	// Node IS THE DESTINATION
+					// Generate NACK
+					generateAndSendLogicalNack(notification.packet_type, notification.tx_info.packet_id,
+							notification.source_id, NODE_ID_NONE, PACKET_LOST_RX_IN_NAV);
+				} else {
+					if(notification.packet_type == PACKET_TYPE_RTS ||
+							notification.packet_type == PACKET_TYPE_CTS) {
+						// Check if affects me
+						loss_reason = isPacketLost(channel_power[primary_channel], notification);
+						if(loss_reason != PACKET_NOT_LOST) {
+							// Update NAV trigger
+							trigger_NAV_timeout.Set(SimTime() + (1 + MIN_VALUE_C_LANGUAGE)
+									* notification.tx_info.nav_time);
+						}
+					}
+				}
+
+
+				break;
+			}
 
 			/* STATE_TX_DATA || STATE_TX_ACK:
 			 * - If node IS destination: generateNack to incoming notification transmitter
-			 * - If node IS NOT destiatnion: do nothing
+			 * - If node IS NOT destination: do nothing
 			 */
 			case STATE_TX_DATA:
-			case STATE_TX_ACK:{
+			case STATE_TX_ACK:
+			case STATE_TX_RTS:
+			case STATE_TX_CTS:{
 
 				if(notification.tx_info.destination_id == node_id){ // Node IS THE DESTINATION
 
@@ -528,7 +587,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 							SimTime(), node_id, node_state, LOG_D18, LOG_LVL3);
 
 					// Send logical NACK to incoming notification transmitter due to receiver (node) was already receiving
-					generateAndSendLogicalNack(notification.tx_info.packet_id, notification.source_id,
+					generateAndSendLogicalNack(notification.packet_type, notification.tx_info.packet_id, notification.source_id,
 							NODE_ID_NONE, PACKET_LOST_DESTINATION_TX);
 
 				} else {	// Node IS NOT THE DESTINATION, do nothing
@@ -547,7 +606,9 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 			 *   * If packet NOT lost: do nothing
 			 */
 			case STATE_RX_DATA:
-			case STATE_RX_ACK:{
+			case STATE_RX_ACK:
+			case STATE_RX_RTS:
+			case STATE_RX_CTS:{
 
 				if(notification.tx_info.destination_id == node_id){	// Node IS THE DESTINATION
 
@@ -575,7 +636,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id);
 
 						// Send NACK to both ongoing transmitter and incoming interferer nodes
-						generateAndSendLogicalNack(ongoing_notification.tx_info.packet_id, ongoing_notification.source_id,
+						generateAndSendLogicalNack(ongoing_notification.packet_type, ongoing_notification.tx_info.packet_id, ongoing_notification.source_id,
 								notification.source_id, PACKET_LOST_PURE_COLLISION);
 
 						restartNode();
@@ -587,7 +648,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 							SimTime(), node_id, node_state, LOG_D20, LOG_LVL4, receiving_from_node_id);
 
 						// Send logical NACK to incoming transmitter indicating that node is already receiving
-						generateAndSendLogicalNack(notification.tx_info.packet_id, receiving_from_node_id,
+						generateAndSendLogicalNack(ongoing_notification.packet_type, notification.tx_info.packet_id, receiving_from_node_id,
 								notification.source_id, PACKET_LOST_LOW_SIGNAL_AND_RX);
 
 					}
@@ -617,7 +678,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id, notification.source_id);
 
 						// Send logical NACK to ongoing transmitter
-						generateAndSendLogicalNack(ongoing_notification.tx_info.packet_id, receiving_from_node_id,
+						generateAndSendLogicalNack(ongoing_notification.packet_type, ongoing_notification.tx_info.packet_id, receiving_from_node_id,
 								NODE_ID_NONE, PACKET_LOST_INTERFERENCE);
 
 						restartNode();
@@ -658,7 +719,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 									notification.source_id, loss_reason);
 
 							// Send logical NACK to ACK transmitter
-							generateAndSendLogicalNack(notification.tx_info.packet_id, notification.source_id,
+							generateAndSendLogicalNack(notification.packet_type, notification.tx_info.packet_id, notification.source_id,
 									NODE_ID_NONE, loss_reason);
 
 							// Do nothing until ACK timeout is triggered
@@ -672,6 +733,159 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 							// Cancel ACK timeout and go to STATE_RX_ACK while updating receiving info
 							trigger_ACK_timeout.Cancel();
 							node_state = STATE_RX_ACK;
+							receiving_from_node_id = notification.source_id;
+							receiving_packet_id = notification.tx_info.packet_id;
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
+									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.tx_info.destination_id);
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s current_sinr = %f dB (%f)\n",
+									SimTime(), node_id, node_state, LOG_D16, LOG_LVL5, convertPower(LINEAR_TO_DB,current_sinr),
+									current_sinr);
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s capacity = %f Mbps\n",
+									SimTime(), node_id, node_state, LOG_D16, LOG_LVL5, 20*log10(1+current_sinr)/log10(2));
+
+						}
+
+					}  else {	//	Some packet type received that is not ACK
+						if(save_node_logs) fprintf(node_logger.file,
+								"%f;N%d;S%d;%s;%s Unexpected packet type received!\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
+					}
+
+				} else {	// Node IS NOT THE DESTINATION, do nothing
+
+					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.tx_info.destination_id);
+
+				}
+				break;
+			}
+
+			/* STATE_WAIT_CTS:
+			 * - If node IS destination and packet is CTS:
+			 *   * Check if CTS packet can be received:
+
+			 * - If node IS NOT destination: do nothing
+			 */
+			case STATE_WAIT_CTS:{
+
+				if(notification.tx_info.destination_id == node_id){	// Node is the destination
+
+					pw_received_interest = power_received_per_node[notification.source_id];
+					ongoing_notification = notification;
+
+					if(save_node_logs) fprintf(node_logger.file,
+							"%f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
+							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.tx_info.destination_id);
+
+					if(notification.packet_type == PACKET_TYPE_CTS){	// CTS packet transmission started
+
+						// Check if notification has been lost due to interferences or weak signal strength
+						loss_reason = isPacketLost(channel_power[primary_channel], notification);
+
+						if(loss_reason != PACKET_NOT_LOST) {	// If CTS packet IS LOST, send logical Nack
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
+									SimTime(), node_id, node_state, LOG_D15, LOG_LVL4, notification.tx_info.packet_id,
+									notification.source_id, loss_reason);
+
+							// Send logical NACK to ACK transmitter
+							generateAndSendLogicalNack(notification.packet_type, notification.tx_info.packet_id, notification.source_id,
+									NODE_ID_NONE, loss_reason);
+
+							// Do nothing until ACK timeout is triggered
+
+						} else {	// If CTS packet IS NOT LOST (it can be properly received)
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s Reception of CTS %d from N%d CAN be started\n",
+									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.tx_info.packet_id, notification.source_id);
+
+							// Cancel ACK timeout and go to STATE_RX_ACK while updating receiving info
+							trigger_CTS_timeout.Cancel();
+							node_state = STATE_RX_CTS;
+							receiving_from_node_id = notification.source_id;
+							receiving_packet_id = notification.tx_info.packet_id;
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
+									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.tx_info.destination_id);
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s current_sinr = %f dB (%f)\n",
+									SimTime(), node_id, node_state, LOG_D16, LOG_LVL5, convertPower(LINEAR_TO_DB,current_sinr),
+									current_sinr);
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s capacity = %f Mbps\n",
+									SimTime(), node_id, node_state, LOG_D16, LOG_LVL5, 20*log10(1+current_sinr)/log10(2));
+
+						}
+
+					}  else {	//	Some packet type received that is not ACK
+						if(save_node_logs) fprintf(node_logger.file,
+								"%f;N%d;S%d;%s;%s Unexpected packet type received!\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
+					}
+
+				} else {	// Node IS NOT THE DESTINATION, do nothing
+
+					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.tx_info.destination_id);
+
+				}
+				break;
+			}
+
+			/* STATE_WAIT_DATA:
+			 * - If node IS destination and packet is DATA:
+			 *   * Check if DATA packet can be received:
+			 * - If node IS NOT destination: do nothing
+			 */
+			case STATE_WAIT_DATA:{
+
+				if(notification.tx_info.destination_id == node_id){	// Node is the destination
+
+					pw_received_interest = power_received_per_node[notification.source_id];
+					ongoing_notification = notification;
+
+					if(save_node_logs) fprintf(node_logger.file,
+							"%f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
+							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.tx_info.destination_id);
+
+					if(notification.packet_type == PACKET_TYPE_DATA){	// DATA packet transmission started
+
+						// Check if notification has been lost due to interferences or weak signal strength
+						loss_reason = isPacketLost(channel_power[primary_channel], notification);
+
+						if(loss_reason != PACKET_NOT_LOST) {	// If DATA packet IS LOST, send logical Nack
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
+									SimTime(), node_id, node_state, LOG_D15, LOG_LVL4, notification.tx_info.packet_id,
+									notification.source_id, loss_reason);
+
+							// Send logical NACK to ACK transmitter
+							generateAndSendLogicalNack(notification.packet_type, notification.tx_info.packet_id, notification.source_id,
+									NODE_ID_NONE, loss_reason);
+
+							// Do nothing until ACK timeout is triggered
+
+						} else {	// If DATA packet IS NOT LOST (it can be properly received)
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s Reception of CTS %d from N%d CAN be started\n",
+									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.tx_info.packet_id, notification.source_id);
+
+							// Cancel ACK timeout and go to STATE_RX_ACK while updating receiving info
+							trigger_DATA_timeout.Cancel();
+							node_state = STATE_RX_DATA;
 							receiving_from_node_id = notification.source_id;
 							receiving_packet_id = notification.tx_info.packet_id;
 
@@ -765,17 +979,6 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 				break;
 			}
 
-			/* STATE_TX_DATA || STATE_TX_ACK:
-			 * - Do nothing
-			 */
-			case STATE_TX_DATA:
-			case STATE_TX_ACK:{	// Do nothing
-
-				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s I am currently transmitting ---> Do nothing.\n",
-						SimTime(), node_id, node_state, LOG_E13, LOG_LVL3);
-				break;
-			}
-
 			/* STATE_RX_DATA:
 			 * - If node IS the destination and data packet transmission finished:
 			 *   * start SIFS and generate ACK
@@ -798,10 +1001,10 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 						current_right_channel = notification.right_channel;
 						int num_channels_tx = current_right_channel - current_left_channel + 1;
 						node_state = STATE_TX_ACK;
-						current_tx_duration = computeTxTime(num_channels_tx, ack_length);
+						current_tx_duration = computeTxTime(log2(num_channels_tx), ack_length);
 						current_destination_id = notification.source_id;
-						ack = generateNotification(PACKET_TYPE_ACK, current_destination_id, current_tx_duration);
-						trigger_SIFS.Set(SimTime() + SIFS); // triggers the sendAck() function after SIFS
+						ack_notification = generateNotification(PACKET_TYPE_ACK, current_destination_id, current_tx_duration);
+						trigger_SIFS.Set(SimTime() + SIFS); // triggers the sendResponse() function after SIFS
 
 					} else {	// Other packet type transmission finished
 						if(save_node_logs) fprintf(node_logger.file,
@@ -817,6 +1020,7 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 							notification.source_id);
 
 				}
+
 				break;
 			}
 
@@ -842,7 +1046,7 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 						// Transmission succeeded ---> decrease congestion window
 						handleCW(DECREASE_CW);
 
-						// Restart node (implicitely to STATE_SENSING)
+						// Restart node (implicitly to STATE_SENSING)
 						restartNode();
 
 					} else {	// Other packet type transmission finished
@@ -861,11 +1065,127 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 				break;
 			}
 
-			/* STATE_WAIT_ACK:
+			/* STATE_TX_DATA || STATE_TX_ACK:
 			 * - Do nothing
 			 */
-			case STATE_WAIT_ACK:{
-				// Do nothing
+			case STATE_TX_DATA:
+			case STATE_TX_ACK:
+			case STATE_WAIT_ACK:
+			case STATE_TX_RTS:
+			case STATE_TX_CTS:
+			case STATE_WAIT_CTS:
+			case STATE_WAIT_DATA:{	// Do nothing
+				break;
+			}
+
+			/* STATE_RX_RTS:
+			 * -
+			 */
+			case STATE_RX_RTS:{
+
+				if(notification.tx_info.destination_id == node_id){	// Node IS THE DESTINATION
+
+					if(notification.packet_type == PACKET_TYPE_RTS){	// RTS packet transmission finished
+
+						if(save_node_logs) fprintf(node_logger.file,
+							"%f;N%d;S%d;%s;%s RTS %d reception from N%d is finished successfully.\n",
+							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, notification.tx_info.packet_id,
+							notification.source_id);
+
+						// Check channel availability in order to send the CTS
+						double distance = computeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y, notification.tx_info.z);
+						double pw_received = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain);
+
+						if(save_node_logs) fprintf(node_logger.file,
+							"%f;N%d;S%d;%s;%s Checking if CTS can be sent due to channel conditions: "
+							"SINR = %f dBm, Capture Effect = %f, Power Received = %f dBm, CCA = %f dBm.\n",
+							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
+							convertPower(PICO_TO_DBM, current_sinr), capture_effect,
+							pw_received, current_cca);
+
+						if(convertPower(LINEAR_TO_DB, current_sinr) > capture_effect) {
+
+							node_state = STATE_TX_CTS;
+							// Generate and send CTS to transmitter after SIFS
+							current_left_channel = notification.left_channel;
+							current_right_channel = notification.right_channel;
+							int num_channels_tx = current_right_channel - current_left_channel + 1;
+							current_destination_id = notification.source_id;
+
+							if(RTS_CTS_active) {
+								current_tx_duration = computeTxTime(log2(num_channels_tx), cts_length);
+								current_nav_time = computeNavTime();
+							} else {
+								current_tx_duration = 0;
+								current_nav_time = 0;
+							}
+
+							cts_notification = generateNotification(PACKET_TYPE_CTS, current_destination_id, current_tx_duration);
+							trigger_SIFS.Set(SimTime() + SIFS); // triggers the sendResponse() function after SIFS
+
+						} else {
+							// CANNOT START PACKET TX
+							// Generate NACK
+							restartNode();
+						}
+
+					} else {	// Other packet type transmission finished
+						if(save_node_logs) fprintf(node_logger.file,
+								"%f;N%d;S%d;%s;%s Unexpected packet type transmission finished!\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
+					}
+
+				} else {	// Node IS NOT THE DESTINATION
+
+					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Still receiving packet %d reception from N%d.\n",
+							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, notification.tx_info.packet_id,
+							notification.source_id);
+				}
+
+				break;
+			}
+
+
+			/* STATE_RX_CTS:
+			 * -
+			 */
+			case STATE_RX_CTS:{
+
+				if(notification.tx_info.destination_id == node_id){	// Node IS THE DESTINATION
+
+					if(notification.packet_type == PACKET_TYPE_CTS){	// RTS packet transmission finished
+
+						if(save_node_logs) fprintf(node_logger.file,
+								"%f;N%d;S%d;%s;%s CTS %d reception from N%d is finished successfully.\n",
+								SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, notification.tx_info.packet_id,
+								notification.source_id);
+
+						// Generate and send CTS to transmitter after SIFS
+						current_left_channel = notification.left_channel;
+						current_right_channel = notification.right_channel;
+						int num_channels_tx = current_right_channel - current_left_channel + 1;
+						current_destination_id = notification.source_id;
+
+						current_tx_duration = computeTxTime(log2(num_channels_tx), packet_length * num_packets_aggregated);
+
+						node_state = STATE_TX_DATA;
+						data_notification = generateNotification(PACKET_TYPE_DATA, current_destination_id, current_tx_duration);
+
+						trigger_SIFS.Set(SimTime() + SIFS); // triggers the sendResponse() function after SIFS
+
+					} else {	// Other packet type transmission finished
+						if(save_node_logs) fprintf(node_logger.file,
+								"%f;N%d;S%d;%s;%s Unexpected packet type transmission finished!\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
+					}
+
+				} else {	// Node IS NOT THE DESTINATION
+
+					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Still receiving packet %d reception from N%d.\n",
+							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, notification.tx_info.packet_id,
+							notification.source_id);
+				}
+
 				break;
 			}
 
@@ -1068,32 +1388,39 @@ void Node :: endBackoff(trigger_t &){
 
 	if(channels_for_tx[0] != TX_NOT_POSSIBLE){	// Transmission IS POSSIBLE
 
-		// Change state
-		node_state = STATE_TX_DATA;
-
+		// Start RTS/CTS exchange (in case it is active)
+		node_state = STATE_TX_RTS;
 		// Generate Notification
 		current_left_channel = getBoundaryChannel(FIRST_ONE_IN_ARRAY, channels_for_tx,  num_channels_komondor);
 		current_right_channel = getBoundaryChannel(LAST_ONE_IN_ARRAY, channels_for_tx, num_channels_komondor);
 		int num_channels_tx = current_right_channel - current_left_channel + 1;
 
-		current_tx_duration = computeTxTime(num_channels_tx, packet_length * num_packets_aggregated);
+		if(save_node_logs) fprintf(node_logger.file,
+			"%f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
+			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
+
+		if(RTS_CTS_active) {
+			current_tx_duration = computeTxTime(int(log2(num_channels_tx)), rts_length);
+			current_nav_time = computeNavTime();
+
+			printf("current_tx_duration = %f, current_nav_time = %f\n",
+					current_tx_duration,current_nav_time);
+		} else {
+			// set tx duration to 0
+			current_tx_duration = 0;
+			current_nav_time = 0;
+		}
+
+		Notification notification = generateNotification(PACKET_TYPE_RTS, current_destination_id, current_tx_duration);
 
 		if(save_node_logs) fprintf(node_logger.file,
-				"%f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
-				SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
-
-		Notification notification = generateNotification(PACKET_TYPE_DATA, current_destination_id, current_tx_duration);
-
-		if(save_node_logs) fprintf(node_logger.file,
-				"%f;N%d;S%d;%s;%s Transmission of data packet #%d started\n",
-				SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, packet_id);
-
-		// Send data packet notification and trigger to finsih transmission
+				"%f;N%d;S%d;%s;%s Transmission of RTS #%d started\n",
+				SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, rts_cts_id);
+		// Send RTS notification and trigger to finish transmission
 		outportSelfStartTX(notification);
 		trigger_toFinishTX.Set(SimTime() + current_tx_duration);
 
-		// Sum sent packet for statistics purposes
-		packets_sent++;
+		rts_cts_id++;
 
 		trigger_DIFS.Cancel();	// Safety instruction
 
@@ -1144,6 +1471,30 @@ void Node :: myTXFinished(trigger_t &){
 			outportSelfFinishTX(notification);
 
 			restartNode();
+
+			break;
+		}
+
+		case STATE_TX_RTS:{		// Wait for CTS
+
+			Notification notification = generateNotification(PACKET_TYPE_RTS, current_destination_id, TX_DURATION_NONE);
+			outportSelfFinishTX(notification);
+
+			// Set CTS timeout and change state to STATE_WAIT_ACK
+			trigger_CTS_timeout.Set(SimTime() + (1 + MIN_VALUE_C_LANGUAGE) * SIFS);
+			node_state = STATE_WAIT_CTS;
+
+			break;
+		}
+
+		case STATE_TX_CTS:{		// Wait for Data
+
+			Notification notification = generateNotification(PACKET_TYPE_CTS, current_destination_id, TX_DURATION_NONE);
+			outportSelfFinishTX(notification);
+
+			// Set CTS timeout and change state to STATE_WAIT_ACK
+			trigger_DATA_timeout.Set(SimTime() + (1 + MIN_VALUE_C_LANGUAGE) * SIFS);
+			node_state = STATE_WAIT_DATA;
 
 			break;
 		}
@@ -1482,16 +1833,15 @@ double Node :: computeTxTime(int ix_num_channels_used, int total_bits){
 
 	// Decide current modulation and channels to be used during transmission
 
-	if(node_state == STATE_TX_DATA) {
+	if(node_state == STATE_TX_RTS) {
 
-		int channels_to_use_ix = current_right_channel - current_left_channel;
 		int ix_aux = current_destination_id - wlan.list_sta_id[0];
 		// TODO: by now, dumb policy: maximum modulation and channels provided by CB model
-		current_modulation = mcs_per_node[ix_aux][channels_to_use_ix];
-		current_data_rate = modulation_rates[channels_to_use_ix][current_modulation-1]
-										 * coding_rate_modulation[current_modulation-1];
+		current_modulation = mcs_per_node[ix_aux][ix_num_channels_used];
+		current_data_rate = modulation_rates[ix_num_channels_used][current_modulation-1]
+			 * coding_rate_modulation[current_modulation-1];
 
-	} else if (node_state == STATE_TX_ACK) {
+	} else if(node_state == STATE_TX_CTS || node_state == STATE_TX_DATA || node_state == STATE_TX_ACK){
 
 		current_data_rate = ongoing_notification.tx_info.data_rate;
 
@@ -1524,10 +1874,37 @@ double Node :: computeTxTime(int ix_num_channels_used, int total_bits){
 	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Computed TX duration: %f s\n",
 			SimTime(), node_id, node_state, LOG_Z01, LOG_LVL3, tx_time);
 
-	return tx_time;
+	//return tx_time;
+
+	return 0.5;
 
 }
 
+double Node :: computeNavTime(){
+
+	int num_channels_tx = current_right_channel - current_left_channel + 1;
+	double data_duration = computeTxTime(log2(num_channels_tx), packet_length * num_packets_aggregated);
+	double ack_duration = computeTxTime(log2(num_channels_tx), ack_length);
+	double nav_time;
+
+	switch(node_state){
+		case STATE_TX_RTS:{
+			double cts_duration = computeTxTime(log2(num_channels_tx), cts_length);
+			nav_time = 3*SIFS + cts_duration + data_duration + ack_duration;
+			break;
+		}
+		case STATE_TX_CTS:{
+			nav_time = 2*SIFS + data_duration + ack_duration;
+			break;
+		}
+		default:{
+			printf("ERROR: Unreachable state\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	return nav_time;
+}
 /*
  * compute_tx_power_per_channel(): computes the transmission time (just link rate) according to the number of channels used and packet lenght
  * Input arguments:
@@ -2075,8 +2452,23 @@ Notification Node :: generateNotification(int packet_type, int destination_id, d
 			break;
 		}
 
-		default:
+		case PACKET_TYPE_RTS:{
+			notification.packet_length = rts_length;
+			notification.tx_info.nav_time = current_nav_time;
 			break;
+		}
+
+		case PACKET_TYPE_CTS:{
+			notification.packet_length = cts_length;
+			notification.tx_info.nav_time = current_nav_time;
+			break;
+		}
+
+		default:{
+			printf("ERROR: Packet type unknown\n");
+			exit(EXIT_FAILURE);
+			break;
+		}
 	}
 
 	return notification;
@@ -2090,9 +2482,10 @@ Notification Node :: generateNotification(int packet_type, int destination_id, d
  * - node_id_b:
  * - reason_id:
  */
-void Node :: generateAndSendLogicalNack(int packet_id, int node_id_a, int node_id_b, int loss_reason){
+void Node :: generateAndSendLogicalNack(int packet_type, int packet_id, int node_id_a, int node_id_b, int loss_reason){
 
 	LogicalNack logical_nack_info;
+	logical_nack_info.packet_type = packet_type;
 	logical_nack_info.source_id = node_id;
 	logical_nack_info.packet_id = packet_id;
 	logical_nack_info.loss_reason = loss_reason;
@@ -2104,9 +2497,9 @@ void Node :: generateAndSendLogicalNack(int packet_id, int node_id_a, int node_i
 	outportSendLogicalNack(logical_nack_info);
 
 	if(save_node_logs) fprintf(node_logger.file,
-			"%f;N%d;S%d;%s;%s NACK sent to a) N%d and b) N%d with reason %d\n",
-			SimTime(), node_id, node_state, LOG_I00, LOG_LVL2, logical_nack_info.node_id_a,
-			logical_nack_info.node_id_b, logical_nack_info.loss_reason);
+			"%f;N%d;S%d;%s;%s NACK of type %d sent to a) N%d and b) N%d with reason %d\n",
+			SimTime(), node_id, node_state, LOG_I00, LOG_LVL2, logical_nack_info.packet_type,
+			logical_nack_info.node_id_a, logical_nack_info.node_id_b, logical_nack_info.loss_reason);
 
 }
 
@@ -2124,16 +2517,36 @@ void Node :: cleanNack(){
 }
 
 /*
- * sendAck(): sends and ACK. It is called when SIFS is triggered.
+ * sendResponse(): Sends the response according to the current state (called when SIFS is triggered)
  */
-void Node :: sendAck(trigger_t &){
+void Node :: sendResponse(trigger_t &){
 
 	if(save_node_logs) fprintf(node_logger.file,
 			"%f;N%d;S%d;%s;%s SIFS completed, sending ACK\n",
 			SimTime(), node_id, node_state, LOG_I00, LOG_LVL2);
 
-	outportSelfStartTX(ack);
-	trigger_toFinishTX.Set(SimTime() + ack.tx_info.tx_duration);
+	switch(node_state){
+
+		case STATE_RX_DATA:{
+			outportSelfStartTX(ack_notification);
+			trigger_toFinishTX.Set(SimTime() + ack_notification.tx_info.tx_duration);
+			break;
+		}
+
+		case STATE_RX_RTS:{
+			outportSelfStartTX(cts_notification);
+			trigger_toFinishTX.Set(SimTime() + cts_notification.tx_info.tx_duration);
+			break;
+		}
+
+		case STATE_RX_CTS:{
+			outportSelfStartTX(data_notification);
+			trigger_toFinishTX.Set(SimTime() + data_notification.tx_info.tx_duration);
+			packets_sent++;
+			break;
+		}
+	}
+
 }
 
 /*
@@ -2152,6 +2565,51 @@ void Node :: ackTimeout(trigger_t &){
 
 	handlePacketLoss();
 	restartNode();
+}
+
+/*
+ * ctsTimeout(): handles ACK timeout. It is called when ACK timeout is triggered.
+ */
+void Node :: ctsTimeout(trigger_t &){
+
+	if(save_node_logs) fprintf(node_logger.file,
+			"%f;N%d;G02; - CTS TIMEOUT! Transmission %d has been lost\n", SimTime(), node_id, packet_id);
+
+	// Quantify lost time during the WAIT status
+	// TODO: create CTS tx duration variable
+	//current_cts_tx_duration += (1 + MIN_VALUE_C_LANGUAGE) * SIFS;
+
+	handlePacketLoss(); // TODO: MODIFY TO INCLUDE CTS AND DATA TYPE
+	restartNode();
+}
+
+/*
+ * dataTimeout(): handles ACK timeout. It is called when ACK timeout is triggered.
+ */
+void Node :: dataTimeout(trigger_t &){
+
+	if(save_node_logs) fprintf(node_logger.file,
+			"%f;N%d;G02; - DATA TIMEOUT! Transmission %d has been lost\n", SimTime(), node_id, packet_id);
+
+	// Quantify lost time during the WAIT status
+	// TODO: create CTS tx duration variable
+	//current_cts_tx_duration += (1 + MIN_VALUE_C_LANGUAGE) * SIFS;
+
+	handlePacketLoss(); // TODO: MODIFY TO INCLUDE CTS AND DATA TYPE
+	restartNode();
+}
+
+/*
+ * navTimeout(): handles ACK timeout. It is called when ACK timeout is triggered.
+ */
+void Node :: navTimeout(trigger_t &){
+
+	if(save_node_logs) fprintf(node_logger.file,
+			"%f;N%d;G02; - NAV TIMEOUT! Attempting to resume the backoff\n", SimTime(), node_id);
+
+	// Attempt to resume the backoff
+	if (node_is_transmitter) handleBackoff(RESUME_TIMER);
+
 }
 
 /*
@@ -2250,6 +2708,13 @@ void Node :: processNack(LogicalNack logical_nack_info) {
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Packet lost due to the BER (%f) "
 						"associated to the current SINR (%f dB)\n", SimTime(), node_id, node_state, LOG_H02, LOG_LVL2,
 						logical_nack_info.BER, convertPower(LINEAR_TO_DB,logical_nack_info.SINR));
+
+				break;
+			}
+
+			case PACKET_LOST_RX_IN_NAV:{			// Packet lost because node was in NAV
+				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Packet lost due to NAV\n",
+						SimTime(), node_id, node_state, LOG_H02, LOG_LVL2);
 
 				break;
 			}
@@ -2861,6 +3326,8 @@ void Node :: initializeVariables() {
 	node_state = STATE_SENSING;
 	current_modulation = modulation_default;
 	current_CW = CW_min;
+	packet_id = 0;
+	rts_cts_id = 0;
 
 	if(node_type == NODE_TYPE_AP) {
 		node_is_transmitter = TRUE;

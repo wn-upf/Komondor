@@ -1,2 +1,2 @@
-num_channels,basic_channel_bandwidth[Mbps],pdf_backoff,pdf_tx_time,packet_length,ack_length,num_packets_aggregated,path_loss_model,capture_effect,noise_level[dBm],cochannel_model,collisions_model,SIFS [us],constant PER
-8,20,1,1,12000,432,64,0,10,-100,0,1,16,0
+num_channels,basic_channel_bandwidth[Mbps],pdf_backoff,pdf_tx_time,packet_length,ack_length,rts_length,cts_length,num_packets_aggregated,path_loss_model,capture_effect,noise_level[dBm],cochannel_model,collisions_model,SIFS [us],constant PER,RTS_CTS_active
+8,20,1,1,12000,112,160,112,64,0,10,-100,0,1,16,0,1

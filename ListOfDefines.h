@@ -71,6 +71,13 @@
 #define STATE_WAIT_ACK	3	// Waiting ACK
 #define STATE_TX_ACK	4	// Transmitting ACK
 #define STATE_RX_ACK	5	// Receiving ACK
+#define STATE_TX_RTS	6	// Transmitting RTS
+#define STATE_TX_CTS	7	// Transmitting CTS
+#define STATE_RX_RTS	8	// Receiving RTS
+#define STATE_RX_CTS	9	// Receiving CTS
+#define STATE_WAIT_CTS	10	// Waiting CTS packet
+#define STATE_WAIT_DATA	11	// Waiting Data after CTS
+#define STATE_NAV		12	// Virtual Carrier Sense (process only RTS and CTS)
 
 // Logs
 #define PRINT_LOG				0	// Print logs per console
@@ -94,6 +101,7 @@
 #define PACKET_LOST_LOW_SIGNAL_AND_RX	4	// Destination already receiving and new signal strength was not enough to be decoded
 #define PACKET_LOST_SINR_PROB			5	// Packet lost due to SINR probability
 #define PACKET_ACK_LOST					6	// ACK lost
+#define PACKET_LOST_RX_IN_NAV			7	// Received a packet when being in NAV state
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1
@@ -106,6 +114,8 @@
 #define PACKET_TYPE_ACK				1		// ACK packet type
 #define PACKET_TYPE_MCS_REQUEST		2		// MCS request type
 #define PACKET_TYPE_MCS_RESPONSE 	3 		// MCS response type
+#define PACKET_TYPE_RTS				4		// RTS type
+#define PACKET_TYPE_CTS				5		// CTS type
 
 // Timers
 #define PAUSE_TIMER		0	// Try to pause a timer (e.g. backoff)
@@ -257,14 +267,17 @@ const int modulation_rates[4][12] = {	// rows: modulation type, colums: number o
 #define IX_PDF_TX_TIME				4
 #define IX_PACKET_LENGTH			5
 #define IX_ACK_LENGTH				6
-#define IX_NUM_PACKETS_AGGREGATED	7
-#define IX_PATH_LOSS				8
-#define IX_CAPTURE_EFFECT			9
-#define IX_NOISE_LEVEL				10
-#define IX_COCHANNEL_MODEL			11
-#define IX_COLLISIONS_MODEL			12
-#define IX_SIFS						13
-#define IX_CONSTANT_PER				14
+#define IX_RTS_LENGTH				7
+#define IX_CTS_LENGTH				8
+#define IX_NUM_PACKETS_AGGREGATED	9
+#define IX_PATH_LOSS				10
+#define IX_CAPTURE_EFFECT			11
+#define IX_NOISE_LEVEL				12
+#define IX_COCHANNEL_MODEL			13
+#define IX_COLLISIONS_MODEL			14
+#define IX_SIFS						15
+#define IX_CONSTANT_PER				16
+#define IX_RTS_CTS_ACTIVE			17
 
 // Nodes file
 #define IX_NODE_CODE				1
