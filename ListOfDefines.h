@@ -1,6 +1,6 @@
 /* TODO: DEFINE copyright headers.*/
 
-/* This is just an skecth of what our Komondor headers should look like.
+/* This is just an sketch of what our Komondor headers should look like.
  *
  * Copyright (c) 2017, Universitat Pompeu Fabra.
  * All rights reserved.
@@ -47,7 +47,7 @@
 // Code parameters
 #define FALSE 				0			// Boolean: false
 #define TRUE 				1			// Boolean: true
-#define INTEGER_SIZE		8			// Size of an interger
+#define INTEGER_SIZE		8			// Size of an integer
 #define CHAR_BUFFER_SIZE	1024		// Size of system buffer
 
 // System parameters
@@ -64,7 +64,7 @@
 #define LOG_LVL5	"          *"
 
 // Node states
-#define STATE_UNKNOWN	-1	// Unkwown state (e.g. at the beginning of the simulation)
+#define STATE_UNKNOWN	-1	// Unknown state (e.g. at the beginning of the simulation)
 #define STATE_SENSING	0	// Sensing the channel and decreasing backoff counter when possible according CCA requirements
 #define STATE_TX_DATA	1	// Transmitting. Transmission are finished after the transmission duration established.
 #define STATE_RX_DATA	2	// Receiving a packet from other node.
@@ -165,9 +165,9 @@
 
 // Channel bonding model
 #define CB_ONLY_PRIMARY		0	// Only Primary Channel used if FREE
-#define CB_AGGRESIVE_SCB	1	// Aggresive SCB: if all channels are FREE, transmit. If not, generate a new backoff.
+#define CB_AGGRESIVE_SCB	1	// Aggressive SCB: if all channels are FREE, transmit. If not, generate a new backoff.
 #define CB_LOG2_SCB			2	// Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
-#define CB_AGGRESIVE_DCB	3	// Aggresive DCB: TX in all the free channels contiguous to the primary channel
+#define CB_AGGRESIVE_DCB	3	// Aggressive DCB: TX in all the free channels contiguous to the primary channel
 #define CB_LOG2_DCB			4	// Log2 DCB: TX in the larger channel range allowed by the log2 mapping
 
 // Co-channel interference model
@@ -208,7 +208,7 @@
 #define MODULATION_1024QAM_5_6	12
 
 /*
-const int modulation_rates[4][12] = {	// rows: modulation type, colums: number of channels (1, 2, 4, 8)
+const int modulation_rates[4][12] = {	// rows: modulation type, columns: number of channels (1, 2, 4, 8)
 		{4,16,24,33,49,65,73,81,98,108,122,135},
 		{8,33,49,65,98,130,146,163,195,217,244,271},
 		{17,68,102,136,204,272,306,340,408,453,510,567},
