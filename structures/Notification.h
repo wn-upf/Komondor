@@ -55,6 +55,13 @@ struct TxInfo
 	int packet_id;				// Packet identifier
 	int destination_id;			// Destination node of the transmission
 	double tx_duration;			// Duration of the transmission
+
+	// For RTS/CTS management
+	double data_duration;
+	double ack_duration;
+	double rts_duration;
+	double cts_duration;
+
 	double tx_power;			// Transmission power in [dBm]
 	double data_rate; 			// Rate at which data is transmitted
 	int *modulation_schemes;	// Modulation scheme used
