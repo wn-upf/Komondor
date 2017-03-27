@@ -1,3 +1,3 @@
 clear
-./COST/cxx KomondorSimulation.cc
+.././COST/cxx KomondorSimulation.cc
 g++ -Wall -Werror -g -o KomondorSimulation KomondorSimulation.cxx

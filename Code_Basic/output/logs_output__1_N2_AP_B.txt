@@ -1,0 +1,189 @@
+0.000000;N2;S-1;B00; Start()
+0.000000;N2;S0;Z00;    · Node AP_B info:
+0.000000;N2;S0;Z00;    · - node_id = 2
+0.000000;N2;S0;Z00;    · - node_type = 0
+0.000000;N2;S0;Z00;    · - position = (700, 0, 0)
+0.000000;N2;S0;Z00;    · - primary_channel = 0
+0.000000;N2;S0;Z00;    · - min_channel_allowed = 0
+0.000000;N2;S0;Z00;    · - max_channel_allowed = 0
+0.000000;N2;S0;Z00;    · - channel_bonding_model = 4
+0.000000;N2;S0;Z00;    · WLAN B:
+0.000000;N2;S0;Z00;    · - wlan_id: 1
+0.000000;N2;S0;Z00;    · - num_stas: 1
+0.000000;N2;S0;Z00;    · - ap_id: 2
+0.000000;N2;S0;Z00;    · - list of STAs IDs: 3  
+0.000000;N2;S0;Z00;    · - lambda = 14814.814815 packets/s
+0.000000;N2;S0;Z00;    · - CW_min = 16
+0.000000;N2;S0;Z00;    · - CW_max = 1024
+0.000000;N2;S0;Z00;    · - destination_id = -1
+0.000000;N2;S0;Z00;    · - tpc_default = 15.000000 dBm
+0.000000;N2;S0;Z00;    · - cca_default = -82.000000 dBm
+0.000064;N2;S0;F00; endBackoff()
+0.000064;N2;S0;G00; requestMCS()
+0.000064;N2;S0;F00; inportMCSResponseReceived()
+0.000064;N2;S0;F00;  - MCS per number of channels: 4 3 2 1 
+0.000064;N2;S0;G00; selectDestination()
+0.000064;N2;S0;G00;  - Selected destination: N3
+-inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000064;N2;S0;F02;  - Channels free: 1 0 0 0 0 0 0 0 
+0.000064;N2;S0;F02;  - Channels for transmitting: 1  0  0  0  0  0  0  0  
+0.000064;N2;S6;F04;    · Transmission is possible in range: 0 - 0
+0.000064;N2;S6;Z01;    · Data rate (0 channels and modulation 4): 16.500000 Mbps
+0.000064;N2;S6;Z01;    · Computed TX duration: 0.257748 s
+0.000064;N2;S6;Z01;    · Data rate (0 channels and modulation 4): 16.500000 Mbps
+0.000064;N2;S6;Z01;    · Computed TX duration: 0.000004 s
+0.000064;N2;S6;Z01;    · Data rate (0 channels and modulation 4): 16.500000 Mbps
+0.000064;N2;S6;Z01;    · Computed TX duration: 0.000007 s
+0.000064;N2;S6;Z01;    · Data rate (0 channels and modulation 4): 16.500000 Mbps
+0.000064;N2;S6;Z01;    · Computed TX duration: 0.000005 s
+0.000064;N2;S6;F04;       + Setting NAV time to 0.257811
+0.000064;N2;S6;F04;    · Transmission of RTS #0 started
+0.000064;N2;S6;D00; inportSomeNodeStartTX(): N2 to N3
+0.000064;N2;S6;E00;  - List of nodes transmitting: N2 
+0.000064;N2;S6;D02;  - I have started a TX of packet #0 (type 4) to N3 in channels 0 - 0
+0.000064;N2;S6;D02;    · DIFS: active = 0, t_DIFS = -0.000064 - backoff: active = 0 - t_back = 0.000000
+0.000071;N2;S6;G00; myTXFinished()
+0.000071;N2;S6;E00; inportSomeNodeFinishTX(): N2 to N3
+0.000071;N2;S6;E00;  - List of nodes transmitting: 
+0.000071;N2;S6;E18;  - I have finished the TX of packet #0 (type 4) in channel range: 0 - 0
+0.000071;N2;S10;G00;  - RTS tx finished. Waiting for CTS...
+0.000087;N2;S10;D00; inportSomeNodeStartTX(): N3 to N2
+0.000087;N2;S10;E00;  - List of nodes transmitting: N3 
+0.000087;N2;S10;D02;  - N3 has started a TX of packet #0 (type 5) to N2 in channels 0 - 0
+0.000087;N2;S10;E04;    · Increasing channel power sensed
+0.000087;N2;S10;D04;       + Distance to transmitting node N3: 200.000000 m
+0.000087;N2;S10;D04;       + Power received from N3: = -71.024825 dBm (78.980072 pW)
+0.000087;N2;S10;D03;       + Pre update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000087;N2;S10;D06;          * Power to sum or subtract [dBm]: -71.024825 -inf -inf -inf -inf -inf -inf -inf 
+0.000087;N2;S10;D06;       + Post update channel state [dBm]: -71.024825  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000087;N2;S10;D07;    · I am the TX destination (N2). Checking if notification can be received.
+0.000087;N2;S10;D04;       + SINR (after update) = 28.975175 dBm
+0.000087;N2;S10;D16;       + Reception of CTS 0 from N3 CAN be started
+0.000087;N2;S9;D16;       + I am the TX destination (N2)
+0.000087;N2;S9;D16;          * current_sinr = 28.975175 dB (789.800720)
+0.000087;N2;S9;D16;          * capacity = 192.543407 Mbps
+0.000092;N2;S9;E00; inportSomeNodeFinishTX(): N3 to N2
+0.000092;N2;S9;E00;  - List of nodes transmitting: 
+0.000092;N2;S9;E18;  - N3 has finished the TX of packet #0 (type 5) in channel range: 0 - 0
+0.000092;N2;S9;E04;    · Decreasing channel power sensed
+0.000092;N2;S9;E04;       + Pre update channel state [dBm]: -71.024825  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000092;N2;S9;D06;          * Power to sum or subtract [dBm]: -71.024825 -inf -inf -inf -inf -inf -inf -inf 
+0.000092;N2;S9;E05;       + Post update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000092;N2;S9;E14;    · CTS 0 reception from N3 is finished successfully.
+0.000108;N2;S1;I00;  - SIFS completed after receiving CTS, sending DATA...
+0.000108;N2;S1;D00; inportSomeNodeStartTX(): N2 to N3
+0.000108;N2;S1;E00;  - List of nodes transmitting: N2 
+0.000108;N2;S1;D02;  - I have started a TX of packet #0 (type 0) to N3 in channels 0 - 0
+0.000108;N2;S1;D02;    · DIFS: active = 0, t_DIFS = -0.000108 - backoff: active = 0 - t_back = -0.000044
+0.000260;N2;S1;H00; inportNackReceived(): N1 to N0 (A) and N-1 (B)
+0.000260;N2;S1;H00;  - NACK of packet #0 received from N1 sent to a) N0 and b) N-1 with reason 7
+0.000260;N2;S1;H02;  - I am NOT implied in the NACK
+0.000260;N2;S1;D00; inportSomeNodeStartTX(): N0 to N1
+0.000260;N2;S1;E00;  - List of nodes transmitting: N0 N2 
+0.000260;N2;S1;D02;  - N0 has started a TX of packet #0 (type 4) to N1 in channels 0 - 0
+0.000260;N2;S1;E04;    · Increasing channel power sensed
+0.000260;N2;S1;D04;       + Distance to transmitting node N0: 800.000000 m
+0.000260;N2;S1;D04;       + Power received from N0: = -83.066025 dBm (4.936254 pW)
+0.000260;N2;S1;D03;       + Pre update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000260;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.000260;N2;S1;D06;       + Post update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000260;N2;S1;D08;    · I am NOT the TX destination (N1)
+0.000261;N2;S1;E00; inportSomeNodeFinishTX(): N0 to N1
+0.000261;N2;S1;E00;  - List of nodes transmitting: N2 
+0.000261;N2;S1;E18;  - N0 has finished the TX of packet #0 (type 4) in channel range: 0 - 0
+0.000261;N2;S1;E04;    · Decreasing channel power sensed
+0.000261;N2;S1;E04;       + Pre update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000261;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.000261;N2;S1;E05;       + Post update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000364;N2;S1;H00; inportNackReceived(): N1 to N0 (A) and N-1 (B)
+0.000364;N2;S1;H00;  - NACK of packet #1 received from N1 sent to a) N0 and b) N-1 with reason 7
+0.000364;N2;S1;H02;  - I am NOT implied in the NACK
+0.000364;N2;S1;D00; inportSomeNodeStartTX(): N0 to N1
+0.000364;N2;S1;E00;  - List of nodes transmitting: N0 N2 
+0.000364;N2;S1;D02;  - N0 has started a TX of packet #1 (type 4) to N1 in channels 0 - 0
+0.000364;N2;S1;E04;    · Increasing channel power sensed
+0.000364;N2;S1;D04;       + Distance to transmitting node N0: 800.000000 m
+0.000364;N2;S1;D04;       + Power received from N0: = -83.066025 dBm (4.936254 pW)
+0.000364;N2;S1;D03;       + Pre update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000364;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.000364;N2;S1;D06;       + Post update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000364;N2;S1;D08;    · I am NOT the TX destination (N1)
+0.000368;N2;S1;E00; inportSomeNodeFinishTX(): N0 to N1
+0.000368;N2;S1;E00;  - List of nodes transmitting: N2 
+0.000368;N2;S1;E18;  - N0 has finished the TX of packet #1 (type 4) in channel range: 0 - 0
+0.000368;N2;S1;E04;    · Decreasing channel power sensed
+0.000368;N2;S1;E04;       + Pre update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000368;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.000368;N2;S1;E05;       + Post update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000485;N2;S1;H00; inportNackReceived(): N1 to N0 (A) and N-1 (B)
+0.000485;N2;S1;H00;  - NACK of packet #2 received from N1 sent to a) N0 and b) N-1 with reason 7
+0.000485;N2;S1;H02;  - I am NOT implied in the NACK
+0.000485;N2;S1;D00; inportSomeNodeStartTX(): N0 to N1
+0.000485;N2;S1;E00;  - List of nodes transmitting: N0 N2 
+0.000485;N2;S1;D02;  - N0 has started a TX of packet #2 (type 4) to N1 in channels 0 - 0
+0.000485;N2;S1;E04;    · Increasing channel power sensed
+0.000485;N2;S1;D04;       + Distance to transmitting node N0: 800.000000 m
+0.000485;N2;S1;D04;       + Power received from N0: = -83.066025 dBm (4.936254 pW)
+0.000485;N2;S1;D03;       + Pre update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000485;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.000485;N2;S1;D06;       + Post update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000485;N2;S1;D08;    · I am NOT the TX destination (N1)
+0.000493;N2;S1;E00; inportSomeNodeFinishTX(): N0 to N1
+0.000493;N2;S1;E00;  - List of nodes transmitting: N2 
+0.000493;N2;S1;E18;  - N0 has finished the TX of packet #2 (type 4) in channel range: 0 - 0
+0.000493;N2;S1;E04;    · Decreasing channel power sensed
+0.000493;N2;S1;E04;       + Pre update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000493;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.000493;N2;S1;E05;       + Post update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000682;N2;S1;H00; inportNackReceived(): N1 to N0 (A) and N-1 (B)
+0.000682;N2;S1;H00;  - NACK of packet #3 received from N1 sent to a) N0 and b) N-1 with reason 7
+0.000682;N2;S1;H02;  - I am NOT implied in the NACK
+0.000682;N2;S1;D00; inportSomeNodeStartTX(): N0 to N1
+0.000682;N2;S1;E00;  - List of nodes transmitting: N0 N2 
+0.000682;N2;S1;D02;  - N0 has started a TX of packet #3 (type 4) to N1 in channels 0 - 0
+0.000682;N2;S1;E04;    · Increasing channel power sensed
+0.000682;N2;S1;D04;       + Distance to transmitting node N0: 800.000000 m
+0.000682;N2;S1;D04;       + Power received from N0: = -83.066025 dBm (4.936254 pW)
+0.000682;N2;S1;D03;       + Pre update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000682;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.000682;N2;S1;D06;       + Post update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000682;N2;S1;D08;    · I am NOT the TX destination (N1)
+0.000684;N2;S1;E00; inportSomeNodeFinishTX(): N0 to N1
+0.000684;N2;S1;E00;  - List of nodes transmitting: N2 
+0.000684;N2;S1;E18;  - N0 has finished the TX of packet #3 (type 4) in channel range: 0 - 0
+0.000684;N2;S1;E04;    · Decreasing channel power sensed
+0.000684;N2;S1;E04;       + Pre update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.000684;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.000684;N2;S1;E05;       + Post update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.006121;N2;S1;H00; inportNackReceived(): N1 to N0 (A) and N-1 (B)
+0.006121;N2;S1;H00;  - NACK of packet #4 received from N1 sent to a) N0 and b) N-1 with reason 7
+0.006121;N2;S1;H02;  - I am NOT implied in the NACK
+0.006121;N2;S1;D00; inportSomeNodeStartTX(): N0 to N1
+0.006121;N2;S1;E00;  - List of nodes transmitting: N0 N2 
+0.006121;N2;S1;D02;  - N0 has started a TX of packet #4 (type 4) to N1 in channels 0 - 0
+0.006121;N2;S1;E04;    · Increasing channel power sensed
+0.006121;N2;S1;D04;       + Distance to transmitting node N0: 800.000000 m
+0.006121;N2;S1;D04;       + Power received from N0: = -83.066025 dBm (4.936254 pW)
+0.006121;N2;S1;D03;       + Pre update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.006121;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.006121;N2;S1;D06;       + Post update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.006121;N2;S1;D08;    · I am NOT the TX destination (N1)
+0.006136;N2;S1;E00; inportSomeNodeFinishTX(): N0 to N1
+0.006136;N2;S1;E00;  - List of nodes transmitting: N2 
+0.006136;N2;S1;E18;  - N0 has finished the TX of packet #4 (type 4) in channel range: 0 - 0
+0.006136;N2;S1;E04;    · Decreasing channel power sensed
+0.006136;N2;S1;E04;       + Pre update channel state [dBm]: -83.066025  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.006136;N2;S1;D06;          * Power to sum or subtract [dBm]: -83.066025 -inf -inf -inf -inf -inf -inf -inf 
+0.006136;N2;S1;E05;       + Post update channel state [dBm]: -inf  -inf  -inf  -inf  -inf  -inf  -inf  -inf  
+0.010000;N2;S1;C00; Node Stop()
+0.010000;N2;S1;C02;  - Throughput = 76.800000 Mbps
+0.010000;N2;S1;C03;  - Packets sent: 1
+0.010000;N2;S1;C04;  - Packets lost: 0
+0.010000;N2;S1;C05;  - Loss ratio: 0.000000
+0.010000;N2;S1;C06;  - Time EFFECTIVELY transmitting in N channels: (1) 0.000000  
+0.010000;N2;S1;C07;  - Time EFFECTIVELY transmitting in each channel: (#0) 0.000000 (#1) 0.000000 (#2) 0.000000 (#3) 0.000000 (#4) 0.000000 (#5) 0.000000 (#6) 0.000000 (#7) 0.000000 
+0.010000;N2;S1;C08;  - Time LOST transmitting in N channels: (1) 0.000000  
+0.010000;N2;S1;C09;  - Time LOST transmitting in each channel: (#0) 0.000000 (#1) 0.000000 (#2) 0.000000 (#3) 0.000000 (#4) 0.000000 (#5) 0.000000 (#6) 0.000000 (#7) 0.000000 
+0.010000;N2;S1;C09;  - num_tx_init_not_possible = 0
+0.010000;N2;S1;C10;  - Total hidden nodes: 0
+0.010000;N2;S1;C11;  - Hidden nodes list: 0  0  0  0  
