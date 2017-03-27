@@ -1,6 +1,6 @@
 /* TODO: DEFINE copyright headers.*/
 
-/* This is just an skecth of what our Komondor headers should look like.
+/* This is just an sketch of what our Komondor headers should look like.
  *
  * Copyright (c) 2017, Universitat Pompeu Fabra.
  * All rights reserved.
@@ -50,6 +50,7 @@
 #include <stddef.h>
 
 #include "ListOfDefines.h"
+#include "methods/BackoffMethods.h"
 #include "structures/Notification.h"
 #include "structures/LogicalNack.h"
 #include "structures/Wlan.h"
@@ -114,7 +115,7 @@ component Node : public TypeII{
 		void handleBackoff(int pause_or_resume);
 		void pauseBackoff();
 		void resumeBackoff();
-		void handleCW(int mode);
+		//void handleCW(int mode);
 
 	// Public items (entered by nodes constructor in Komondor simulation)
 	public:
@@ -196,6 +197,7 @@ component Node : public TypeII{
 	public:
 
 		int packets_sent;
+		int rts_cts_sent;
 		double *total_time_transmitting_per_channel;		// Time transmitting per channel;
 		double *total_time_transmitting_in_num_channels;	// Time transmitting in (ix 0: 1 channel, ix 1: 2 channels...)
 		double *total_time_lost_per_channel;				// Time transmitting per channel unsuccessfully;
@@ -203,6 +205,7 @@ component Node : public TypeII{
 		double throughput;									// Throughput [Mbps]
 		double throughput_loss;								// Throughput of lost packets [Mbps]
 		int packets_lost;									// Own packets that have been collided or lost
+		int rts_cts_lost;
 		int *nacks_received;								// Counter of the type of Nacks received
 		int num_tx_init_not_possible;						// Number of TX initiations that have been not possible due to channel state and DCB model
 
@@ -360,7 +363,7 @@ void Node :: Start(){
 	// Initialize variables
 	initializeVariables();
 
-	// Start backoff procedure only if node is able to tranmsit
+	// Start backoff procedure only if node is able to transmit
 	if(node_is_transmitter) {
 		remaining_backoff = computeBackoff();
 		trigger_backoff.Set(SimTime() + remaining_backoff);
@@ -439,9 +442,11 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 		// Update the power sensed at each channel
 		// When not using RTS/CTS, just consider DATA and ACK packets
 		if(RTS_CTS_active || (!RTS_CTS_active &&
-				(notification.packet_type == PACKET_TYPE_DATA ||
-				 notification.packet_type == PACKET_TYPE_ACK))) {
+			(notification.packet_type == PACKET_TYPE_DATA ||
+			 notification.packet_type == PACKET_TYPE_ACK))) {
+
 			updateChannelsPower(notification, TX_INITIATED);
+
 		}
 
 		// Decide action according to current state and Notification initiated
@@ -475,7 +480,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 						// Check if notification has been lost due to interferences or weak signal strength
 						loss_reason = isPacketLost(channel_power[primary_channel], notification);
 
-						if(loss_reason != PACKET_NOT_LOST && RTS_CTS_active) {	// If RTS IS LOST, send logical Nack
+						if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
 							if(save_node_logs) fprintf(node_logger.file,
 									"%f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
@@ -568,8 +573,8 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 					generateAndSendLogicalNack(notification.packet_type, notification.tx_info.packet_id,
 							notification.source_id, NODE_ID_NONE, PACKET_LOST_RX_IN_NAV);
 				} else {
-					if(notification.packet_type == PACKET_TYPE_RTS ||
-							notification.packet_type == PACKET_TYPE_CTS) {
+					if(RTS_CTS_active && (notification.packet_type == PACKET_TYPE_RTS ||
+							notification.packet_type == PACKET_TYPE_CTS)) {
 
 						// Check if affects me
 						loss_reason = isPacketLost(channel_power[primary_channel], notification);
@@ -654,28 +659,34 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 					// Check if ongoing notification has been lost due to interferences caused by new transmission
 					loss_reason = isPacketLost(channel_power[primary_channel], ongoing_notification);
 
-					if(loss_reason != PACKET_NOT_LOST) {	// If ongoing data packet IS LOST
+					if(RTS_CTS_active || (!RTS_CTS_active
+							&& (notification.packet_type == PACKET_TYPE_DATA
+									|| notification.packet_type == PACKET_TYPE_ACK))) {
 
-						// Pure collision (two nodes transmitting to me with enough power)
-						if(save_node_logs) fprintf(node_logger.file,
-								"%f;N%d;S%d;%s;%s Pure collision! Already receiving from N%d\n",
-								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id);
+						if(loss_reason != PACKET_NOT_LOST) {	// If ongoing data packet IS LOST
 
-						// Send NACK to both ongoing transmitter and incoming interferer nodes
-						generateAndSendLogicalNack(ongoing_notification.packet_type, ongoing_notification.tx_info.packet_id, ongoing_notification.source_id,
-								notification.source_id, PACKET_LOST_PURE_COLLISION);
+							// Pure collision (two nodes transmitting to me with enough power)
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s Pure collision! Already receiving from N%d\n",
+									SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id);
 
-						restartNode();
+							// Send NACK to both ongoing transmitter and incoming interferer nodes
+							generateAndSendLogicalNack(ongoing_notification.packet_type, ongoing_notification.tx_info.packet_id, ongoing_notification.source_id,
+									notification.source_id, PACKET_LOST_PURE_COLLISION);
 
-					} else {	// If ongoing data packet IS NOT LOST (incoming transmission does not affect ongoing reception)
+							restartNode();
 
-						if(save_node_logs) fprintf(node_logger.file,
-								"%f;N%d;S%d;%s;%s Low strength signal received while already receiving from N%d\n",
-							SimTime(), node_id, node_state, LOG_D20, LOG_LVL4, receiving_from_node_id);
+						} else {	// If ongoing data packet IS NOT LOST (incoming transmission does not affect ongoing reception)
 
-						// Send logical NACK to incoming transmitter indicating that node is already receiving
-						generateAndSendLogicalNack(ongoing_notification.packet_type, notification.tx_info.packet_id, receiving_from_node_id,
-								notification.source_id, PACKET_LOST_LOW_SIGNAL_AND_RX);
+							if(save_node_logs) fprintf(node_logger.file,
+									"%f;N%d;S%d;%s;%s Low strength signal received while already receiving from N%d\n",
+								SimTime(), node_id, node_state, LOG_D20, LOG_LVL4, receiving_from_node_id);
+
+							// Send logical NACK to incoming transmitter indicating that node is already receiving
+							generateAndSendLogicalNack(ongoing_notification.packet_type, notification.tx_info.packet_id, receiving_from_node_id,
+									notification.source_id, PACKET_LOST_LOW_SIGNAL_AND_RX);
+
+						}
 
 					}
 
@@ -817,7 +828,7 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 						// Check if notification has been lost due to interferences or weak signal strength
 						loss_reason = isPacketLost(channel_power[primary_channel], notification);
 
-						if(loss_reason != PACKET_NOT_LOST && RTS_CTS_active) {	// If CTS packet IS LOST, send logical Nack
+						if(loss_reason != PACKET_NOT_LOST) {	// If CTS packet IS LOST, send logical Nack
 
 							if(save_node_logs) fprintf(node_logger.file,
 									"%f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
@@ -1080,7 +1091,10 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 						current_tx_duration += (notification.tx_info.tx_duration + SIFS);	// Add ACK time to tx_duration
 
 						// Transmission succeeded ---> decrease congestion window
-						handleCW(DECREASE_CW);
+//						handleCW(DECREASE_CW);
+
+						current_CW = handleCW(DECREASE_CW, current_CW, CW_min, CW_max);
+
 
 						// Restart node (implicitly to STATE_SENSING)
 						restartNode();
@@ -1209,16 +1223,22 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 
 						// Generate and send DATA to transmitter after SIFS
 						current_destination_id = notification.source_id;
+
 						if(RTS_CTS_active) {
+//							handleCW(DECREASE_CW);
+
+							current_CW = handleCW(DECREASE_CW, current_CW, CW_min, CW_max);
+
 							current_tx_duration = data_duration;//computeTxTime(log2(num_channels_tx), packet_length * num_packets_aggregated);
-							data_notification = generateNotification(PACKET_TYPE_DATA, current_destination_id, current_tx_duration);
 							trigger_SIFS.Set(SimTime() + SIFS);
 						} else {
 							current_tx_duration = data_duration;
-							data_notification = generateNotification(PACKET_TYPE_DATA, current_destination_id, current_tx_duration);
 							// Special SIFS with MIN_VALUE_C_LANGUAGE to avoid synchronization errors
 							trigger_SIFS.Set(SimTime() + MIN_VALUE_C_LANGUAGE);
 						}
+
+						data_notification = generateNotification(PACKET_TYPE_DATA, current_destination_id, current_tx_duration);
+
 
 					} else {	// Other packet type transmission finished
 						if(save_node_logs) fprintf(node_logger.file,
@@ -1444,16 +1464,17 @@ void Node :: endBackoff(trigger_t &){
 			"%f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
 
+		data_duration = computeTxTime(int(log2(num_channels_tx)), packet_length * num_packets_aggregated);
+		ack_duration = computeTxTime(int(log2(num_channels_tx)), ack_length);
+
 		if(RTS_CTS_active) {
 
 			// COMPUTE ALL DURATIONS
 			rts_duration = computeTxTime(int(log2(num_channels_tx)), rts_length);
 			cts_duration = computeTxTime(int(log2(num_channels_tx)), cts_length);
-			data_duration = computeTxTime(int(log2(num_channels_tx)), packet_length * num_packets_aggregated);
-			ack_duration = computeTxTime(int(log2(num_channels_tx)), ack_length);
 
-			current_tx_duration = rts_duration;
 			current_nav_time = computeNavTime();
+			current_tx_duration = rts_duration;
 
 			if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Setting NAV time to %f\n",
 				SimTime(), node_id, node_state, LOG_F04, LOG_LVL4, current_nav_time);
@@ -1474,6 +1495,7 @@ void Node :: endBackoff(trigger_t &){
 		trigger_toFinishTX.Set(SimTime() + current_tx_duration);
 
 		rts_cts_id++;
+		rts_cts_sent ++;
 
 		trigger_DIFS.Cancel();	// Safety instruction
 
@@ -1541,9 +1563,13 @@ void Node :: myTXFinished(trigger_t &){
 
 			// Set CTS timeout and change state to STATE_WAIT_CTS
 			if(RTS_CTS_active) {
-				trigger_CTS_timeout.Set(SimTime() + (1 + MIN_VALUE_C_LANGUAGE) * SIFS);
+
+				trigger_CTS_timeout.Set(SimTime() + MIN_VALUE_C_LANGUAGE + SIFS);
+
 			} else {
-				trigger_CTS_timeout.Set(SimTime() + MIN_VALUE_C_LANGUAGE);
+
+				trigger_CTS_timeout.Set(SimTime() + 2*MIN_VALUE_C_LANGUAGE);
+
 			}
 
 			node_state = STATE_WAIT_CTS;
@@ -1561,9 +1587,13 @@ void Node :: myTXFinished(trigger_t &){
 
 			// Set CTS timeout and change state to STATE_WAIT_DATA
 			if(RTS_CTS_active) {
+
 				trigger_DATA_timeout.Set(SimTime() + (1 + MIN_VALUE_C_LANGUAGE) * SIFS);
+
 			} else {
-				trigger_DATA_timeout.Set(SimTime() + MIN_VALUE_C_LANGUAGE);
+
+				trigger_DATA_timeout.Set(SimTime() + 2*MIN_VALUE_C_LANGUAGE);
+
 			}
 
 			node_state = STATE_WAIT_DATA;
@@ -1959,11 +1989,11 @@ double Node :: computeNavTime(){
 
 	switch(node_state){
 		case STATE_TX_RTS:{
-			nav_time = 3*SIFS + cts_duration + data_duration + ack_duration;
+			nav_time = 3*SIFS + rts_duration + cts_duration + data_duration + ack_duration;
 			break;
 		}
 		case STATE_TX_CTS:{
-			nav_time = 2*SIFS + data_duration + ack_duration;
+			nav_time = 2*SIFS + cts_duration + data_duration + ack_duration;
 			break;
 		}
 		default:{
@@ -2815,26 +2845,39 @@ void Node :: processNack(LogicalNack logical_nack_info) {
 /************************/
 /************************/
 
-/*
- * handleCW(): increase or decrease the CW.
- * - mode: flag for indicating increase or decrease of CW
- */
-void Node :: handleCW(int mode) {
-	// http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
-	if(INCREASE_CW){
-		if(2*current_CW < CW_max) {
-			current_CW = 2*current_CW;
-		} else {
-			current_CW = CW_max;
-		}
-	} else if(DECREASE_CW){
-		current_CW = CW_min;
-	}
-
-	// Set lambda accordingly
-	double EB = (double) (current_CW-1)/2;
-	lambda =  1/(EB * SLOT_TIME);
-}
+///*
+// * handleCW(): increase or decrease the CW.
+// * - mode: flag for indicating increase or decrease of CW
+// */
+//void Node :: handleCW(int mode) {
+//	// http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
+//
+//	switch(mode){
+//
+//		case INCREASE_CW:{
+//			if(2*current_CW < CW_max) {
+//				current_CW = 2*current_CW;
+//			} else {
+//				current_CW = CW_max;
+//			}
+//			break;
+//		}
+//
+//		case DECREASE_CW:{
+//			current_CW = CW_min;
+//			break;
+//		}
+//
+//		default:{
+//			break;
+//		}
+//
+//	}
+//
+//	// Set lambda accordingly
+//	double EB = (double) (current_CW-1)/2;
+//	lambda =  1/(EB * SLOT_TIME);
+//}
 
 /*
  * handlePacketLoss(): handles a packet loss.
@@ -2851,11 +2894,15 @@ void Node :: handlePacketLoss(int type){
 		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Packet lost\n",
 						SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
 
-		handleCW(INCREASE_CW);
 		packets_lost ++;
 	} else if(type == PACKET_TYPE_CTS){
 		// TODO
+		rts_cts_lost ++;
 	}
+
+	//handleCW(INCREASE_CW);
+
+	current_CW = handleCW(INCREASE_CW, current_CW, CW_min, CW_max);
 
 }
 
@@ -2905,6 +2952,9 @@ int Node :: isPacketLost(double channel_power, Notification notification){
 
 		}
 	}
+
+	if(!RTS_CTS_active && (notification.packet_type == PACKET_TYPE_RTS
+			|| notification.packet_type == PACKET_TYPE_CTS)) loss_reason = PACKET_NOT_LOST;
 
 	return loss_reason;
 }
@@ -3420,6 +3470,7 @@ void Node :: initializeVariables() {
 	throughput = 0;
 	throughput_loss = 0;
 	packets_lost = 0;
+	rts_cts_lost = 0;
 	num_tx_init_not_possible = 0;
 
 	// Modulation data rates
@@ -3606,8 +3657,10 @@ void Node :: printOrWriteNodeStatistics(int write_or_print){
 
 	// Process statistics
 	double packets_lost_percentage = 0;
+	double rts_cts_lost_percentage = 0;
 	if (packets_sent > 0) {
 		packets_lost_percentage = double(packets_lost * 100)/double(packets_sent);
+		rts_cts_lost_percentage = double(rts_cts_lost * 100)/double(rts_cts_sent);
 	}
 	throughput = (((double)(packets_sent-packets_lost) * packet_length * num_packets_aggregated / 1000000))
 			/SimTime();
@@ -3629,6 +3682,10 @@ void Node :: printOrWriteNodeStatistics(int write_or_print){
 				// Packets sent and lost
 				printf("%s Packets sent = %d - Packets lost = %d  (%f %% lost)\n",
 						LOG_LVL2, packets_sent, packets_lost, packets_lost_percentage);
+
+				// RTS/CTS sent and lost
+				printf("%s RTS/CTS sent = %d - RTS/CTS lost = %d  (%f %% lost)\n",
+						LOG_LVL2, rts_cts_sent, rts_cts_lost, rts_cts_lost_percentage);
 
 				// Time EFFECTIVELY transmitting in a given number of channels (no losses)
 				printf("%s Time EFFECTIVELY transmitting in N channels: ", LOG_LVL3);
