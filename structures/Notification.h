@@ -98,6 +98,7 @@ struct Notification
 	int left_channel;	// Left channel used in the transmission
 	int right_channel;	// Right channel used in the transmission
 	int packet_length;	// Size of the packet to transmit
+	int modulation_id;	// Modulation being used during the transmission
 
 	// Specific transmission info (may not be checked by the others nodes)
 	TxInfo tx_info;

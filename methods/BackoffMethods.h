@@ -37,7 +37,4 @@ int handleCW(int mode, int current_CW, int CW_min, int CW_max) {
 
 	return new_CW;
 
-//	// Set lambda accordingly
-//	double EB = (double) (current_CW-1)/2;
-//	lambda =  1/(EB * SLOT_TIME);
 }

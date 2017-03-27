@@ -1,5 +1,5 @@
 #include <assert.h> 
-#include<vector>
+ #include<vector> 
 template <class T> class compcxx_array { public: 
 virtual ~compcxx_array() { for (typename std::vector<T*>::iterator i=m_elements.begin();i!=m_elements.end();i++) delete (*i); } 
 void SetSize(unsigned int n) { for(unsigned int i=0;i<n;i++)m_elements.push_back(new T); } 
