@@ -48,11 +48,12 @@
 #include <string.h>
 #include <time.h>
 
-#include "./COST/cost.h"
-#include "Node.h"
-#include "structures/Notification.h"
-#include "structures/LogicalNack.h"
-#include "structures/Wlan.h"
+#include ".././COST/cost.h"
+#include "../ListOfDefines.h"
+#include "../structures/Notification.h"
+#include "../structures/LogicalNack.h"
+#include "../structures/Wlan.h"
+#include "Node_RTS_CTS.h"
 
 /* Sequential simulation engine from where the system to be simulated is derived. */
 component Komondor : public CostSimEng {
@@ -85,7 +86,7 @@ component Komondor : public CostSimEng {
 	// Public items (to shared with the nodes)
 	public:
 
-		Node[] node_container;			// Container of nodes (i.e., APs, STAs, ...)
+		Node[] node_container;	// Container of nodes (i.e., APs, STAs, ...)
 		Wlan *wlan_container;			// Container of WLANs
 		int total_nodes_number;			// Total number of nodes
 		int total_wlans_number;			// Total number of WLANs
@@ -113,7 +114,6 @@ component Komondor : public CostSimEng {
 		double SIFS;					// Short Interframe Space (SIFS) [s]
 		double DIFS;					// DCF Interframe Space (DIFS) [s]
 		double constant_PER;			// Constant PER for successful transmissions
-		int RTS_CTS_active;				// Determines whether to use or not RTS/CTS - Yes = 1, No = 0
 
 	// Private items
 	private:
@@ -157,6 +157,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	total_nodes_number = 0;
 
 	// Generate output files
+
 	if (print_system_logs) printf("%s Creating output files\n", LOG_LVL1);
 	const char *simulation_filename_root = "output/simulation_output";
 	char *simulation_filename_remove = (char *) malloc(strlen(simulation_filename_root) + strlen(simulation_code) + 1);
@@ -183,7 +184,6 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 
 	fprintf(logger_script.file, "------------------------------------\n");
 	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s'\n", LOG_LVL1, simulation_code);
-
 	// Read system (environment) file
 	setupEnvironmentByReadingInputFile(system_input_filename);
 
@@ -455,17 +455,6 @@ void Komondor :: setupEnvironmentByReadingInputFile(char *system_filename) {
 			const char* ack_length_char = getfield(tmp, IX_ACK_LENGTH);
 			ack_length = atoi(ack_length_char);
 
-			// RTS packet length
-			tmp = strdup(line_system);
-			const char* rts_length_char = getfield(tmp, IX_RTS_LENGTH);
-			rts_length = atoi(rts_length_char);
-
-			// CTS packet length
-			tmp = strdup(line_system);
-			const char* cts_length_char = getfield(tmp, IX_CTS_LENGTH);
-			cts_length = atoi(cts_length_char);
-
-
 			// Number of packets aggregated in one transmission
 			tmp = strdup(line_system);
 			const char* num_packets_aggregated_char = getfield(tmp, IX_NUM_PACKETS_AGGREGATED);
@@ -507,10 +496,15 @@ void Komondor :: setupEnvironmentByReadingInputFile(char *system_filename) {
 			const char* constant_PER_char = getfield(tmp, IX_CONSTANT_PER);
 			constant_PER = atof(constant_PER_char);
 
-			// Constant PER for successful transmissions
+			// RTS packet length
 			tmp = strdup(line_system);
-			const char* RTS_CTS_active_char = getfield(tmp, IX_RTS_CTS_ACTIVE);
-			RTS_CTS_active = atoi(RTS_CTS_active_char);
+			const char* rts_length_char = getfield(tmp, IX_RTS_LENGTH);
+			rts_length = atoi(rts_length_char);
+
+			// CTS packet length
+			tmp = strdup(line_system);
+			const char* cts_length_char = getfield(tmp, IX_CTS_LENGTH);
+			cts_length = atoi(cts_length_char);
 
 			free(tmp);
 		}
@@ -783,7 +777,6 @@ void Komondor :: generateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].rts_length = rts_length;
 				node_container[node_ix].cts_length = cts_length;
 				node_container[node_ix].simulation_code = simulation_code;
-				node_container[node_ix].RTS_CTS_active = RTS_CTS_active;
 
 				node_ix++;
 			}
@@ -1016,7 +1009,6 @@ void Komondor :: generateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].rts_length = rts_length;
 			node_container[node_ix].cts_length = cts_length;
 			node_container[node_ix].simulation_code = simulation_code;
-			node_container[node_ix].RTS_CTS_active = RTS_CTS_active;
 
 			node_ix ++;
 			free(tmp_nodes);
@@ -1061,7 +1053,6 @@ void Komondor :: printSystemInfo(){
 		printf("%s SIFS = %f s\n", LOG_LVL3, SIFS);
 		printf("%s DIFS = %f s\n", LOG_LVL3, DIFS);
 		printf("%s Constant PER = %f\n", LOG_LVL3, constant_PER);
-		printf("%s RTS_CTS_active = %d\n", LOG_LVL3, RTS_CTS_active);
 		printf("\n");
 	}
 }

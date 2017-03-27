@@ -1,0 +1,3 @@
+clear
+.././COST/cxx KomondorSimulation_RTS_CTS.cc
+g++ -Wall -Werror -g -o KomondorSimulation_RTS_CTS KomondorSimulation_RTS_CTS.cxx
