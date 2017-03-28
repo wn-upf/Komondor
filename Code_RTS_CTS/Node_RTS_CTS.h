@@ -52,6 +52,7 @@
 #include "../ListOfDefines.h"
 
 #include "../methods/BackoffMethods.h"
+#include "../methods/TXTimeMethods.h"
 
 #include "../structures/Notification.h"
 #include "../structures/LogicalNack.h"
@@ -81,13 +82,6 @@ component Node : public TypeII{
 		void printOrWriteNodesTransmitting (int write_or_print);
 
 		// Channel
-		double computePowerReceived(double distance, double tx_power, int tx_gain, int rx_gain);
-		void updateChannelsPower(Notification notification, int update_type);
-		void getChannelOccupancyByCCA();	// depreacated (binary state of channels)
-		void getTxChannelsByChannelBonding(int channel_bonding_model, int *channels_free);
-		void computeMaxInterference(Notification notification);
-		void updateSINR(double pw_received_interest);
-		void applyInterferenceModel(Notification notification, int update_type);
 		double compute_tx_power_per_channel(double tx_power, int num_channels_tx);
 
 		// Packets
@@ -437,14 +431,17 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 				notification.tx_info.packet_id,	notification.packet_type, notification.tx_info.destination_id,
 				notification.left_channel, notification.right_channel);
 
+		// Call updatePowerReceivedPerNode() ONLY for adding power (some node started)
+		power_received_per_node = updatePowerReceivedPerNode(power_received_per_node,
+				notification, x, y, z, notification.tx_info.tx_power, tx_gain, rx_gain, central_frequency,
+				path_loss_model, SimTime(), node_logger, save_node_logs, node_id, node_state);
 		// Update the power sensed at each channel
-		// When not using RTS/CTS, just consider DATA and ACK packets
-		updateChannelsPower(notification, TX_INITIATED);
+		channel_power = updateChannelsPower(channel_power, power_received_per_node, notification, TX_INITIATED,
+				SimTime(), node_logger, save_node_logs, node_id, node_state, central_frequency,
+				num_channels_komondor, path_loss_model, cochannel_model);
 
 		// Decide action according to current state and Notification initiated
-
 		int loss_reason;	// Packet loss reason (if any)
-
 		switch(node_state){
 
 			/* STATE_SENSING:
@@ -700,7 +697,12 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 							power_received_per_node[receiving_from_node_id], convertPower(PICO_TO_DBM, max_pw_interference), max_pw_interference);
 
 					// Compute max interference (the highest one perceived in the reception channel range)
-					computeMaxInterference(notification);
+					max_pw_interference = computeMaxInterference(notification,
+							current_left_channel, current_right_channel,
+							node_state, node_id, save_node_logs, node_logger,
+							SimTime(), power_received_per_node,
+							receiving_from_node_id, channel_power);
+
 
 					// Check if the ongoing reception is affected
 					loss_reason = isPacketLost(channel_power[primary_channel], ongoing_notification);
@@ -992,7 +994,10 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 				notification.right_channel);
 
 		// Update the power sensed at each channel
-		updateChannelsPower(notification, TX_FINISHED);
+//		updateChannelsPower(notification, TX_FINISHED);
+		channel_power = updateChannelsPower(channel_power, power_received_per_node, notification, TX_FINISHED,
+				SimTime(), node_logger, save_node_logs, node_id, node_state, central_frequency,
+				num_channels_komondor, path_loss_model, cochannel_model);
 
 		switch(node_state){
 
@@ -1125,7 +1130,11 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 
 						// Check channel availability in order to send the CTS
 						double distance = computeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y, notification.tx_info.z);
-						double pw_received = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain);
+//						double pw_received = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain);
+
+						double pw_received = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain,
+								central_frequency, path_loss_model);
+
 
 						if(save_node_logs) fprintf(node_logger.file,
 							"%f;N%d;S%d;%s;%s Checking if CTS can be sent due to channel conditions: "
@@ -1277,7 +1286,11 @@ void Node :: inportMCSRequestReceived(Notification &notification){
 
 		// Compute distance and power received from transmitter
 		double distance = computeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y, notification.tx_info.z);
-		double pw_received_interest_dBm = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain);
+//		double pw_received_interest_dBm = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain);
+
+		double pw_received_interest_dBm = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain,
+				central_frequency, path_loss_model);
+
 		pw_received_interest = convertPower(DBM_TO_PICO,pw_received_interest_dBm);
 
 		// Select the modulation according to the SINR perceived corresponding to incoming transmitter
@@ -1403,13 +1416,23 @@ void Node :: endBackoff(trigger_t &){
 	printOrWriteChannelPower(WRITE_LOG);
 
 	// (DEPRECATED) Just an informative representation of channels with higher power than CCA
-	getChannelOccupancyByCCA();
+	channels_free = getChannelOccupancyByCCA(channels_free, min_channel_allowed,
+											max_channel_allowed,channel_power, current_cca);
+
 	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Channels free: ",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 	printOrWriteChannelsFree(WRITE_LOG);
 
 	// Identify the channel range to TX in depending on the channel bonding scheme and power sensed
-	getTxChannelsByChannelBonding(channel_bonding_model, channels_free);
+	channels_for_tx = getTxChannelsByChannelBonding(channels_for_tx, channel_bonding_model, channels_free,
+			min_channel_allowed, max_channel_allowed, primary_channel);
+
+	if(channels_for_tx[0] == TX_NOT_POSSIBLE){
+
+		num_tx_init_not_possible++;
+
+	}
+
 	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Channels for transmitting: ",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 	printOrWriteChannelForTx(WRITE_LOG);
@@ -1602,214 +1625,6 @@ void Node :: selectDestination(){
 	// if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s selectDestination() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
 }
 
-
-/***********************/
-/***********************/
-/*  POWER MANAGEMENT   */
-/***********************/
-/***********************/
-
-/*
- * computePowerReceived() returns the power received in a given distance from the transmitter depending on the path loss model
- * Input arguments:
- * - distance: distance between transceiver and received [m]
- * - tx_power: TX power [dBm]
- * - tx_gain: transmitter gain [dB]
- * - rx_gain: receiver gain [dB]
- * Output arguments:
- * - Power received [dBm]
- */
-double Node::computePowerReceived(double distance, double tx_power, int tx_gain, int rx_gain) {
-
-	double pw_received = 0;
-	double wavelength = 3*pow(10,8)/(central_frequency*pow(10,9));
-	double loss;
-
-	switch(path_loss_model){
-		// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
-		case PATH_LOSS_LFS:{
-			loss = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
-			pw_received = tx_power + tx_gain + rx_gain - loss;
-			break;
-		}
-		// Okumura-Hata model - Urban areas
-		case PATH_LOSS_OKUMURA_HATA:{
-			double tx_heigth = 10;		// Transmitter height [m]
-			double rx_heigth = 10;		// Receiver height [m]
-			double path_loss_A = 69.55 + 26.16 * log10(3*pow(10,8)/wavelength) - 13.82 * log10(tx_heigth);
-			double path_loss_B = 44.9 - 6.55 * log10(tx_heigth);
-			double path_loss_E = 3.2 * pow(log10(11.7554 * rx_heigth),2) - 4.97;
-			double path_loss = path_loss_A + path_loss_B * log10(distance/1000) - path_loss_E;
-			pw_received = tx_power + tx_gain + rx_gain - path_loss;
-			break;
-		}
-		// Indoor model (could suite an apartments building scenario)
-		case PATH_LOSS_INDOOR: {
-			double path_loss_factor = 5;
-			double shadowing = 9.5;
-			double obstacles = 30;
-			double walls_frequency = 5; //  One wall each 5 meters on average
-			double shadowing_at_wlan = (((double) rand())/RAND_MAX)*shadowing;
-			double obstacles_at_wlan = (((double) rand())/RAND_MAX)*obstacles;
-			double alpha = 4.4; // Propagation model
-			double path_loss = path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
-					(distance/walls_frequency)*obstacles_at_wlan;
-			pw_received = tx_power + tx_gain - path_loss; // Power in dBm
-			break;
-		}
-		// Indoor model without variability
-		case PATH_LOSS_INDOOR_2: {
-			double path_loss_factor = 5;
-			double shadowing = 9.5;
-			double obstacles = 30;
-			double walls_frequency = 5; //  One wall each 5 meters on average
-			double shadowing_at_wlan = 1/2*shadowing;
-			double obstacles_at_wlan = 1/2*obstacles;
-			double alpha = 4.4; // Propagation model
-			double path_loss = path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
-					(distance/walls_frequency)*obstacles_at_wlan;
-			pw_received = tx_power + tx_gain - path_loss; // Power in dBm
-			break;
-		}
-
-		// Residential - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
-		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-
-		// IEEE 802.11ax uses the TGn channel B path loss model for performance evaluation of simulation scenario #1
-		// with extra indoor wall and floor penetration loss.
-		case PATH_LOSS_SCENARIO_1_TGax: {
-
-			int n_walls = 10; 	// Wall frequency (n_walls walls each m)
-			int n_floors = 3; 	// Floor frequency (n_floors floors each m)
-			int L_iw = 5; 		// Penetration for a single wall (dB)
-
-			double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
-
-			int d_BP = 5;		// Break-point distance (m)
-
-			if (distance >= d_BP) {
-				loss = LFS + 35*log10(distance/d_BP) + 18.3*pow(n_floors,((n_floors+2)/(n_floors+1)) - 0.46) + L_iw*n_walls;
-			} else {
-				loss = LFS;
-			}
-
-			pw_received = tx_power + tx_gain + rx_gain - loss;
-			break;
-
-		}
-
-		// Enterprise - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
-		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-
-		// IEEE 802.11ax uses the TGn channel D path loss model for performance evaluation of simulation scenario #2
-		// with extra indoor wall and floor penetration loss.
-		case PATH_LOSS_SCENARIO_2_TGax: {
-
-			int n_walls = 2; 	// Wall frequency (n_walls walls each m)
-			int n_floors = 3; 		// Floor frequency (n_floors floors each m)
-			int L_iw = 7; 	// Penetration for a single wall (dB)
-
-			double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
-
-			int d_BP = 10;		// Break-point distance (m)
-
-			if (distance >= d_BP) {
-				loss = LFS + 35*log10(distance/d_BP) + 18.3*pow(n_floors,((n_floors+2)/(n_floors+1)) - 0.46) + L_iw*n_walls;
-			} else {
-				loss = LFS;
-			}
-
-			pw_received = tx_power + tx_gain + rx_gain - loss;
-			break;
-
-		}
-
-		// Indoor small BSSs
-		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-
-		// IEEE 802.11ax uses the TGn channel D path loss model for performance evaluation
-		// of simulation scenario #3.
-		case PATH_LOSS_SCENARIO_3_TGax: {
-
-			double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
-
-			int d_BP = 10;		// Break-point distance (m)
-
-			if (distance >= d_BP) {
-				loss = LFS + 35*log10(distance/d_BP);
-			} else {
-				loss = LFS;
-			}
-
-			pw_received = tx_power + tx_gain + rx_gain - loss;
-			break;
-		}
-
-		// Outdoor large BSS scenario
-		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-		case PATH_LOSS_SCENARIO_4_TGax: {
-
-			double h_AP = 10;		// Height of the AP in m
-			double h_STA = 1.5; 	// Height of the STA in m
-
-			double d_BP = (4 * (h_AP - 1) * (h_STA - 1) * central_frequency * pow(10,9)) / SPEED_LIGHT;
-
-
-			if (distance < d_BP && distance >= 10) {
-				loss = 22 * log10(distance) + 28 + 20  *log10(central_frequency);
-			} else if (distance >= d_BP && distance < 5000) {
-				loss = 40 * log10(distance) + 7.8 + 18 * log10(h_AP - 1) -
-						18 * log10(h_STA - 1)	+ 20 * log10(central_frequency);
-			}
-
-			pw_received = tx_power + tx_gain - loss; // Power in dBm
-			break;
-		}
-
-		// Outdoor large BSS scenario + Residential
-		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-		case PATH_LOSS_SCENARIO_4a_TGax: {
-
-//			double h_AP = 10;		// Height of the AP in m
-//			double h_STA = 1.5; 	// Height of the STA in m
-
-			if (distance < 2000 && distance >= 10) {
-				loss = 36.7 * log10(distance) + 22.7 + 26  * log10(central_frequency);
-			}
-
-			// Outdoor-to-Indoor building penetration loss
-			// TODO: important to consider specifying d_outdoor and d_indoor
-			double d_outdoor = 0;
-			double d_indoor = 0;
-			loss = loss * (d_outdoor + d_indoor) + 20 + 0.5 * d_indoor;
-
-			pw_received = tx_power + tx_gain - loss; // Power in dBm
-			break;
-		}
-
-		default:{
-			printf("Path loss model not found!\n");
-			break;
-		}
-
-	}
-	return pw_received;
-}
-
-/*
- * computeDistance(): returns the distance between 2 points
- * Input arguments:
- * - x1,y1,z1: first point position
- * - x2,y2,z2: second point position
- * Output:
- * - distance: distance [m]
- */
-double computeDistance(int x1, int y1, int z1, int x2, int y2, int z2){
-	double distance = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
-	return distance;
-}
-
-
 /**********************/
 /**********************/
 /* TX TIME MANAGEMENT */
@@ -1945,432 +1760,6 @@ double Node :: compute_tx_power_per_channel(double current_tpc, int num_channels
 	return tx_power_per_channel;
 }
 
-
-/***********************/
-/***********************/
-/* CHANNELS MANAGEMENT */
-/***********************/
-/***********************/
-
-/*
- * getBoundaryChannel()
- * Input arguments:
- * - position: flag indicating to find the first or last one in the array
- * - channels_available: range to consider
- * - total_channels_number: total number of channels
- * Output:
- * - left_tx_ch or right_tx_ch: first or last one in the array
- */
-int getBoundaryChannel(int position, int *channels_available, int total_channels_number){
-	int left_tx_ch = 0;
-	int left_tx_ch_is_set = 0;
-	int right_tx_ch = 0;
-	for(int c = 0; c < total_channels_number; c++){
-		if(channels_available[c]){
-			if(!left_tx_ch_is_set){
-				left_tx_ch = c;
-				left_tx_ch_is_set = TRUE;
-			}
-			if(right_tx_ch < c){
-				right_tx_ch = c;
-			}
-		}
-	}
-	if(position) {
-		return right_tx_ch; //LAST
-	} else {
-		return left_tx_ch; //FIRST
-	}
-}
-
-/*
- * getChannelOccupancyByCCA(): (DEPECATED) indicates the channels occupied and free in a binary way
- */
-void Node :: getChannelOccupancyByCCA(){
-
-	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-
-		if(channel_power[c] < convertPower(DBM_TO_PICO, current_cca)){
-			channels_free[c] = CHANNEL_OCCUPIED;
-		} else {
-			channels_free[c] = CHANNEL_FREE;
-		}
-	}
-}
-
-/*
- * updateChannelsPower: updates the power sensed by the node in every channel array depending on the notifications received
- * (tx start, tx end) and the cochannel model.
- * Arguments:
- * - notification: type of co-channel model applied (no co-channel interference, 20 dB mask, ...)
- * - update_type: type of power update (sum or subtract)
- */
-void Node :: updateChannelsPower(Notification notification, int update_type){
-
-	double pw_received_pico;
-
-	if(update_type == TX_FINISHED) {
-		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Decreasing channel power sensed\n",
-						SimTime(), node_id, node_state, LOG_E04, LOG_LVL3);
-		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Pre update channel state [dBm]: ",
-				SimTime(), node_id, node_state, LOG_E04, LOG_LVL4);
-
-	} else if(update_type == TX_INITIATED) {
-
-		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Increasing channel power sensed\n",
-								SimTime(), node_id, node_state, LOG_E04, LOG_LVL3);
-
-		double distance = computeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y, notification.tx_info.z);
-		double pw_received = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain);
-		pw_received_pico = convertPower(DBM_TO_PICO, pw_received);
-		power_received_per_node[notification.source_id] = pw_received_pico;
-
-		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Distance to transmitting node N%d: %f m\n",
-				SimTime(), node_id, node_state, LOG_D04, LOG_LVL4, notification.source_id, distance);
-
-		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Power received from N%d: = %f dBm (%f pW)\n",
-				SimTime(), node_id, node_state, LOG_D04, LOG_LVL4, notification.source_id,
-				convertPower(PICO_TO_DBM, pw_received_pico), pw_received_pico);
-
-		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Pre update channel state [dBm]: ",
-				SimTime(), node_id, node_state, LOG_D03, LOG_LVL4);
-
-	} else {
-		printf("ERROR: update_type %d does not exist!!!", update_type);
-	}
-
-	printOrWriteChannelPower(WRITE_LOG);
-	applyInterferenceModel(notification, update_type);
-
-	if(save_node_logs){
-
-		if(update_type == TX_INITIATED)	fprintf(node_logger.file,
-				"%f;N%d;S%d;%s;%s Post update channel state [dBm]: ",
-				SimTime(), node_id, node_state, LOG_D06, LOG_LVL4);
-
-		if(update_type == TX_FINISHED) fprintf(node_logger.file,
-				"%f;N%d;S%d;%s;%s Post update channel state [dBm]: ",
-				SimTime(), node_id, node_state, LOG_E05, LOG_LVL4);
-
-	}
-
-	printOrWriteChannelPower(WRITE_LOG);
-}
-
-/*
- * applyInterferenceModel: applies the interference model
- * Arguments:
- * - notification: type of co-channel model applied (0: no co-channel interference, 1: 20 dB mask, ...)
- * - update_type: type of power update (sum or subtract)
- */
-void Node :: applyInterferenceModel(Notification notification, int update_type){
-
-	// Total power (of interest and interference) generated only by the incoming or outgoing TX
-	double total_power[num_channels_komondor];
-	for(int i = 0; i < num_channels_komondor; i++) {
-		total_power[i] = 0;
-	}
-
-	// Direct power (power of the channels used for transmitting)
-	for(int i = notification.left_channel; i <= notification.right_channel; i++){
-		total_power[i] = power_received_per_node[notification.source_id];
-	}
-
-	// Co-channel interference power
-	switch(cochannel_model){
-
-		case COCHANNEL_NONE:{
-			// Do nothing
-			break;
-		}
-
-		// (RECOMMENDED) Boundary co-channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
-		case COCHANNEL_BOUNDARY:{
-
-			for(int c = 0; c < num_channels_komondor; c++) {
-
-				if(c < notification.left_channel || c > notification.right_channel){
-
-					if(c < notification.left_channel) {
-
-						total_power[c] += convertPower(DBM_TO_PICO,
-								convertPower(PICO_TO_DBM, power_received_per_node[notification.source_id])
-								- 20*abs(c-notification.left_channel));
-
-					} else if(c > notification.right_channel) {
-
-						total_power[c] += convertPower(DBM_TO_PICO,
-								convertPower(PICO_TO_DBM, power_received_per_node[notification.source_id])
-								- 20*abs(c-notification.right_channel));
-
-					}
-
-					if(total_power[c] < MIN_VALUE_C_LANGUAGE){
-
-						total_power[c] = 0;
-
-					}
-
-				} else {
-					// Inside TX range --> do nothing
-				}
-			}
-			break;
-		}
-		case COCHANNEL_EXTREME:{
-
-			for(int i = 0; i < num_channels_komondor; i++) {
-
-				for(int j = notification.left_channel; j <= notification.right_channel; j++){
-
-					if(i != j) {
-
-						total_power[i] += convertPower(PICO_TO_DBM, convertPower(DBM_TO_PICO,
-								power_received_per_node[notification.source_id]) - 20*abs(i-j));
-
-						if(total_power[i] < MIN_VALUE_C_LANGUAGE) total_power[i] = 0;
-
-					}
-				}
-			}
-			break;
-		}
-		default:{
-			break;
-		}
-	}
-
-	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Power to sum or subtract [dBm]: ",
-			SimTime(), node_id, node_state, LOG_D06, LOG_LVL5);
-
-	for(int i = 0; i < num_channels_komondor; i++) {
-
-		if(save_node_logs) fprintf(node_logger.file,"%f ", convertPower(PICO_TO_DBM, total_power[i]));
-
-	}
-	if(save_node_logs) fprintf(node_logger.file,"\n");
-
-	// Increase/decrease power sensed if TX started/finished
-	for(int c = 0; c < num_channels_komondor; c++){
-
-		if(update_type == TX_FINISHED) {
-
-			channel_power[c] -= total_power[c];
-
-		} else if (update_type == TX_INITIATED) {
-
-			channel_power[c] += total_power[c];
-
-		}
-	}
-
-}
-
-/*
- * getTxChannelsByChannelBonding: identifies the channels to TX in depending on the channel_bonding scheme
- * and channel_power state.
- */
-void Node :: getTxChannelsByChannelBonding(int channel_bonding_model, int *channels_free){
-
-	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-		channels_for_tx[c] = FALSE;
-	}
-
-	// I. Get left and right channels available (or free)
-	int left_free_ch = 0;
-	int left_free_ch_is_set = 0;
-	int right_free_ch = 0;
-	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-		if(channels_free[c]){
-			if(!left_free_ch_is_set){
-				left_free_ch = c;
-				left_free_ch_is_set = TRUE;
-			}
-			if(right_free_ch < c){
-				right_free_ch = c;
-			}
-		}
-	}
-
-	int num_free_ch = right_free_ch - left_free_ch + 1;
-	int num_available_ch = max_channel_allowed - min_channel_allowed + 1;
-
-	int m;				// Auxiliary variable representing a modulus
-	int left_tx_ch;		// Left channel to TX
-	int right_tx_ch;	// Right channel to TX
-
-	if(left_free_ch_is_set){
-		// Select channels to transmit depending on the sensed power
-		switch(channel_bonding_model){
-
-			// Only Primary Channel used if FREE
-			case CB_ONLY_PRIMARY:{
-				if(primary_channel >= left_free_ch && primary_channel <= right_free_ch){
-					channels_for_tx[primary_channel] = CHANNEL_OCCUPIED;
-				}
-				break;
-			}
-
-			// Aggressive SCB: if all channels are FREE, transmit. If not, generate a new backoff.
-			case CB_AGGRESIVE_SCB:{
-				int tx_possible = TRUE;
-				// If all channels are FREE, transmit. If not, generate a new backoff.
-				for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-					if(!channels_free[c]){
-						tx_possible = FALSE;
-					}
-				}
-				if(tx_possible){
-					left_tx_ch = left_free_ch;
-					right_tx_ch = right_free_ch;
-					for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-						channels_for_tx[c] = CHANNEL_OCCUPIED;
-					}
-				} else {
-					// TX not possible (code it with negative value)
-					channels_for_tx[0] = TX_NOT_POSSIBLE;
-				}
-				break;
-			}
-
-			// Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
-			case CB_LOG2_SCB:{
-				while(1){
-					// II. If num_free_ch is power of 2
-					if(fmod(log10(num_available_ch)/log10(2), 1) == 0){
-						m = primary_channel % num_available_ch;
-						left_tx_ch = primary_channel - m;
-						right_tx_ch = primary_channel + num_available_ch - m - 1;
-						// Check if tx channels are inside the free ones
-						if((left_tx_ch >= min_channel_allowed) && (right_tx_ch <= max_channel_allowed)){
-							// TX channels found!
-							break;
-						} else {
-							num_available_ch --;
-						}
-					} else{
-						num_available_ch --;
-					}
-				}
-
-				// If all channels accepted by the log2 mapping, transmit. If not, generate a new backoff.
-				int tx_possible = TRUE;
-				for(int c = left_tx_ch; c <= right_tx_ch; c++){
-					if(!channels_free[c]){
-						tx_possible = FALSE;
-					}
-				}
-				if(tx_possible){
-					for(int c = left_tx_ch; c <= right_tx_ch; c++){
-						channels_for_tx[c] = CHANNEL_OCCUPIED;
-					}
-				} else {
-					// TX not possible (code it with negative value)
-					channels_for_tx[0] = TX_NOT_POSSIBLE;
-				}
-				break;
-			}
-
-			// Aggressive DCB: TX in all the free channels contiguous to the primary channel
-			case CB_AGGRESIVE_DCB:{
-				for(int c = left_free_ch; c <= right_free_ch; c++){
-					channels_for_tx[c] = CHANNEL_OCCUPIED;
-				}
-				break;
-			}
-
-			// Log2 DCB: TX in the larger channel range allowed by the log2 mapping
-			case CB_LOG2_DCB:{
-				while(1){
-					// II. If num_free_ch is power of 2
-					if(fmod(log10(num_free_ch)/log10(2), 1) == 0){
-						m = primary_channel % num_free_ch;
-						left_tx_ch = primary_channel - m;
-						right_tx_ch = primary_channel + num_free_ch - m - 1;
-						// Check if tx channels are inside the free ones
-						if((left_tx_ch >= min_channel_allowed) && (right_tx_ch <= max_channel_allowed)){
-							// TX channels found!
-							for(int c = left_tx_ch; c <= right_tx_ch; c++){
-								channels_for_tx[c] = CHANNEL_OCCUPIED;
-							}
-							break;
-						} else {
-							num_free_ch --;
-						}
-					} else{
-						num_free_ch --;
-					}
-				}
-				break;
-			}
-			default:{
-				printf("channel_bonding_model %d is NOT VALID!\n", channel_bonding_model);
-				break;
-			}
-		}
-	} else{	// No channel is free
-
-		channels_for_tx[0] = TX_NOT_POSSIBLE;
-
-	}
-
-	if(channels_for_tx[0] == TX_NOT_POSSIBLE){
-
-		num_tx_init_not_possible++;
-
-	}
-
-
-}
-
-/*
- * updateSINR(): Updates the current_sinr parameter
- * Arguments:
- * - pw_received_interest: power received of interest
- * */
-void Node :: updateSINR(double pw_received_interest){
-
-	double sinr_db = convertPower(PICO_TO_DBM, pw_received_interest)
-						- convertPower(PICO_TO_DBM, (convertPower(DBM_TO_PICO, noise_level) + max_pw_interference));
-
-	current_sinr = convertPower(DB_TO_LINEAR, sinr_db);
-
-	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s SINR (after update) = %f dBm\n",
-			SimTime(), node_id, node_state, LOG_D04, LOG_LVL4, convertPower(LINEAR_TO_DB, current_sinr));
-}
-
-/*
- * computeMaxInterference(): computes the maximum interference perceived in the channels of interest
- * Arguments:
- * - notification: notification info
- * */
-void Node :: computeMaxInterference(Notification notification) {
-
-	max_pw_interference = 0;
-
-	for(int c = current_left_channel; c <= current_right_channel; c++){
-
-		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK){
-
-			if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Computing Max Interference (power_of_interest = %f dBm / channel_power = %f dBm)\n",
-						SimTime(), node_id, node_state, LOG_D04, LOG_LVL4,
-						convertPower(LINEAR_TO_DB, power_received_per_node[receiving_from_node_id]),
-						convertPower(LINEAR_TO_DB, channel_power[c]));
-
-
-			if(max_pw_interference <= (channel_power[c] - power_received_per_node[receiving_from_node_id])){ // power of interest!!!
-
-				max_pw_interference = channel_power[c] - power_received_per_node[receiving_from_node_id];
-				channel_max_intereference = c;
-
-			}
-
-			if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Max interference (after update) = %f dBm\n",
-						SimTime(), node_id, node_state, LOG_D04, LOG_LVL5, convertPower(PICO_TO_DBM,max_pw_interference));
-
-		}
-	}
-}
 
 /*********************/
 /*********************/
@@ -2776,7 +2165,9 @@ int Node :: isPacketLost(double channel_power, Notification notification){
 	int loss_reason = PACKET_NOT_LOST;
 	int is_packet_lost;	// Determines if the current notification has been lost (1) or not (0)
 
-	updateSINR(power_received_per_node[notification.source_id]);
+	//updateSINR(power_received_per_node[notification.source_id]);
+	current_sinr = updateSINR(pw_received_interest, noise_level, max_pw_interference,
+			save_node_logs, node_logger, SimTime(), node_id, node_state);
 
 	//is_packet_lost = applyModulationProbabilityError(notification);
 
@@ -2971,7 +2362,7 @@ void Node :: pauseBackoff(){
 }
 
 /*
- * resumeBackoff(): resumes the backoff
+ * resumeBackoff(): resumes the backoff (triggered after DIFS is completed)
  * */
 void Node :: resumeBackoff(trigger_t &){
 
@@ -3042,6 +2433,12 @@ void Node :: restartNode(){
 
 	cleanNack();
 }
+
+/************************/
+/************************/
+/*  PRINT INFORMATION   */
+/************************/
+/************************/
 
 /*
  * printNodeInfo(): prints Node info
@@ -3125,7 +2522,6 @@ void Node :: writeNodeInfo(Logger node_logger, int info_detail_level, char *head
 
 }
 
-
 /*
  * printProgressBar(): prints the progress bar of the Komondor simulation
  * Input arguments:
@@ -3142,157 +2538,6 @@ void Node :: printProgressBar(trigger_t &){
 		trigger_sim_time.Set(SimTime() + simulation_time_komondor/(100/PROGRESS_BAR_DELTA) - MIN_VALUE_C_LANGUAGE);
 	}
 	progress_bar_counter ++;
-}
-
-/*
- * initializeVariables(): initializes all the necessary variables
- */
-void Node :: initializeVariables() {
-
-	// Output file - logger
-	node_logger.save_logs = save_node_logs;
-	node_logger.file = node_logger.file;
-
-	// Arrays and other
-	channel_power = (double *) malloc(num_channels_komondor * sizeof(*channel_power));
-	num_channels_allowed = (max_channel_allowed - min_channel_allowed + 1);
-	total_time_transmitting_per_channel = (double *) malloc(num_channels_komondor
-			* sizeof(*total_time_transmitting_per_channel));
-	channels_free = (int *) malloc(num_channels_komondor * sizeof(*channels_free));
-	channels_for_tx = (int *) malloc(num_channels_komondor * sizeof(*channels_for_tx));
-	total_time_lost_per_channel = (double *) malloc(num_channels_komondor
-			* sizeof(*total_time_lost_per_channel));
-	for(int i = 0; i < num_channels_komondor; i++){
-		channel_power[i] = 0;
-		total_time_transmitting_per_channel[i] = 0;
-		channels_free[i] = FALSE;
-		channels_for_tx[i] = FALSE;
-		total_time_lost_per_channel[i] = 0;
-	}
-
-	total_time_transmitting_in_num_channels = (double *) malloc(num_channels_allowed
-			* sizeof(*total_time_transmitting_in_num_channels));
-	total_time_lost_in_num_channels = (double *) malloc(num_channels_allowed
-			* sizeof(*total_time_lost_in_num_channels));
-	for(int i = 0; i < num_channels_allowed; i++){
-		total_time_transmitting_in_num_channels[i] = 0;
-		total_time_lost_in_num_channels[i] = 0;
-	}
-
-	power_received_per_node = (double *) malloc(total_nodes_number * sizeof(*power_received_per_node));
-	nodes_transmitting = (int *) malloc(total_nodes_number * sizeof(*nodes_transmitting));
-	for(int n = 0; n < total_nodes_number; n++){
-		power_received_per_node[n] = 0;
-		nodes_transmitting[n] = FALSE;
-	}
-
-	// List of hidden nodes (1 indicates hidden nodes, 0 indicates the opposite)
-	hidden_nodes_list = (int *) malloc(total_nodes_number * sizeof(*hidden_nodes_list));
-	// Counter for the times a node was implied in a collision by hidden node
-	potential_hidden_nodes = (int *) malloc(total_nodes_number * sizeof(*potential_hidden_nodes));
-	for(int i = 0; i < total_nodes_number; i++){
-		hidden_nodes_list[i] = FALSE;
-		potential_hidden_nodes[i] = 0;
-	}
-	potential_hidden_nodes[node_id] = -1; // To indicate that the node cannot be hidden from itself
-	nacks_received = (int *) malloc(7 * sizeof(*nacks_received));
-	for(int i = 0; i < 7; i++){
-		nacks_received[i] = 0;
-	}
-
-	// Rest of variables
-	pw_received_interest = 0;
-	progress_bar_counter = 0;
-	current_left_channel =  min_channel_allowed;
-	current_right_channel = max_channel_allowed;
-	current_tpc = tpc_default;
-	current_cca = cca_default;
-	node_state = STATE_SENSING;
-	current_modulation = modulation_default;
-	current_CW = CW_min;
-	packet_id = 0;
-	rts_cts_id = 0;
-
-	if(node_type == NODE_TYPE_AP) {
-		node_is_transmitter = TRUE;
-	} else {
-		node_is_transmitter = FALSE;
-	}
-
-	// Statistics
-	packets_sent = 0;
-	throughput = 0;
-	throughput_loss = 0;
-	packets_lost = 0;
-	rts_cts_lost = 0;
-	num_tx_init_not_possible = 0;
-
-	// Modulation data rates
-
-	// Fixed data rates (CTMN - Matlab)
-	data_rate_array[0] = 81.5727 * packet_length * num_packets_aggregated;	// 1 channel
-	data_rate_array[1] = 150.8068 * packet_length * num_packets_aggregated; // 2 channels
-	data_rate_array[2] = 0;
-	data_rate_array[3] = 215.7497 * packet_length * num_packets_aggregated;	// 4 channels
-	data_rate_array[4] = 0;
-	data_rate_array[5] = 0;
-	data_rate_array[6] = 0;
-	data_rate_array[7] = 284.1716 * packet_length * num_packets_aggregated; // 8 channels
-
-	default_modulation = MODULATION_NONE;
-
-	int modulation_rates_aux[4][12] = {	// rows: modulation type, colums: number of channels (1, 2, 4, 8)
-		{4,16,24,33,49,65,73,81,98,108,122,135},
-		{8,33,49,65,98,130,146,163,195,217,244,271},
-		{17,68,102,136,204,272,306,340,408,453,510,567},
-		{34,136,204,272,408,544,613,681,817,907,1021,1134}
-	};
-
-	for(int i = 0; i < 4; i++){
-		for(int j = 0; j < 12; j++){
-			modulation_rates[i][j] = modulation_rates_aux[i][j] * pow(10,6);
-		}
-	}
-
-	coding_rate_modulation[0] = 1/double(2);
-	coding_rate_modulation[1] = 1/double(2);
-	coding_rate_modulation[2] = 3/double(4);
-	coding_rate_modulation[3] = 1/double(2);
-	coding_rate_modulation[4] = 3/double(4);
-	coding_rate_modulation[5] = 2/double(3);
-	coding_rate_modulation[6] = 3/double(4);
-	coding_rate_modulation[7] = 5/double(6);
-	coding_rate_modulation[8] = 3/double(4);
-	coding_rate_modulation[9] = 5/double(6);
-	coding_rate_modulation[10] = 3/double(4);
-	coding_rate_modulation[11] = 5/double(6);
-
-	bits_per_symbol_modulation[0] = 2;
-	bits_per_symbol_modulation[1] = 4;
-	bits_per_symbol_modulation[2] = 4;
-	bits_per_symbol_modulation[3] = 16;
-	bits_per_symbol_modulation[4] = 16;
-	bits_per_symbol_modulation[5] = 64;
-	bits_per_symbol_modulation[6] = 64;
-	bits_per_symbol_modulation[7] = 64;
-	bits_per_symbol_modulation[8] = 256;
-	bits_per_symbol_modulation[9] = 256;
-	bits_per_symbol_modulation[10] = 1024;
-	bits_per_symbol_modulation[11] = 1024;
-
-	mcs_response = (int *) malloc(4 * sizeof(int));
-	for(int n = 0; n < 4; n++){
-		mcs_response[n] = 0;
-	}
-
-	int *modulations_list = (int*)calloc(4, sizeof(int));
-	mcs_per_node = (int**)calloc(wlan.num_stas, sizeof(int*));
-	change_modulation_flag = (int *) malloc(wlan.num_stas * sizeof(int));
-	for(int n = 0; n < wlan.num_stas; n++){
-		mcs_per_node[n] = modulations_list;
-		change_modulation_flag[n] = TRUE;
-	}
-
 }
 
 /*
@@ -3570,4 +2815,161 @@ void Node :: printOrWriteNodeStatistics(int write_or_print){
 			break;
 		}
 	}
+}
+
+/*****************************/
+/*****************************/
+/*  VARIABLE INITIALISATION  */
+/*****************************/
+/*****************************/
+
+/*
+ * initializeVariables(): initializes all the necessary variables
+ */
+void Node :: initializeVariables() {
+
+	// Output file - logger
+	node_logger.save_logs = save_node_logs;
+	node_logger.file = node_logger.file;
+
+	// Arrays and other
+	channel_power = (double *) malloc(num_channels_komondor * sizeof(*channel_power));
+	num_channels_allowed = (max_channel_allowed - min_channel_allowed + 1);
+	total_time_transmitting_per_channel = (double *) malloc(num_channels_komondor
+			* sizeof(*total_time_transmitting_per_channel));
+	channels_free = (int *) malloc(num_channels_komondor * sizeof(*channels_free));
+	channels_for_tx = (int *) malloc(num_channels_komondor * sizeof(*channels_for_tx));
+	total_time_lost_per_channel = (double *) malloc(num_channels_komondor
+			* sizeof(*total_time_lost_per_channel));
+	for(int i = 0; i < num_channels_komondor; i++){
+		channel_power[i] = 0;
+		total_time_transmitting_per_channel[i] = 0;
+		channels_free[i] = FALSE;
+		channels_for_tx[i] = FALSE;
+		total_time_lost_per_channel[i] = 0;
+	}
+
+	total_time_transmitting_in_num_channels = (double *) malloc(num_channels_allowed
+			* sizeof(*total_time_transmitting_in_num_channels));
+	total_time_lost_in_num_channels = (double *) malloc(num_channels_allowed
+			* sizeof(*total_time_lost_in_num_channels));
+	for(int i = 0; i < num_channels_allowed; i++){
+		total_time_transmitting_in_num_channels[i] = 0;
+		total_time_lost_in_num_channels[i] = 0;
+	}
+
+	power_received_per_node = (double *) malloc(total_nodes_number * sizeof(*power_received_per_node));
+	nodes_transmitting = (int *) malloc(total_nodes_number * sizeof(*nodes_transmitting));
+	for(int n = 0; n < total_nodes_number; n++){
+		power_received_per_node[n] = 0;
+		nodes_transmitting[n] = FALSE;
+	}
+
+	// List of hidden nodes (1 indicates hidden nodes, 0 indicates the opposite)
+	hidden_nodes_list = (int *) malloc(total_nodes_number * sizeof(*hidden_nodes_list));
+	// Counter for the times a node was implied in a collision by hidden node
+	potential_hidden_nodes = (int *) malloc(total_nodes_number * sizeof(*potential_hidden_nodes));
+	for(int i = 0; i < total_nodes_number; i++){
+		hidden_nodes_list[i] = FALSE;
+		potential_hidden_nodes[i] = 0;
+	}
+	potential_hidden_nodes[node_id] = -1; // To indicate that the node cannot be hidden from itself
+	nacks_received = (int *) malloc(7 * sizeof(*nacks_received));
+	for(int i = 0; i < 7; i++){
+		nacks_received[i] = 0;
+	}
+
+	// Rest of variables
+	pw_received_interest = 0;
+	progress_bar_counter = 0;
+	current_left_channel =  min_channel_allowed;
+	current_right_channel = max_channel_allowed;
+	current_tpc = tpc_default;
+	current_cca = cca_default;
+	node_state = STATE_SENSING;
+	current_modulation = modulation_default;
+	current_CW = CW_min;
+	packet_id = 0;
+	rts_cts_id = 0;
+
+	if(node_type == NODE_TYPE_AP) {
+		node_is_transmitter = TRUE;
+	} else {
+		node_is_transmitter = FALSE;
+	}
+
+	// Statistics
+	packets_sent = 0;
+	throughput = 0;
+	throughput_loss = 0;
+	packets_lost = 0;
+	rts_cts_lost = 0;
+	num_tx_init_not_possible = 0;
+
+	// Modulation data rates
+
+	// Fixed data rates (CTMN - Matlab)
+	data_rate_array[0] = 81.5727 * packet_length * num_packets_aggregated;	// 1 channel
+	data_rate_array[1] = 150.8068 * packet_length * num_packets_aggregated; // 2 channels
+	data_rate_array[2] = 0;
+	data_rate_array[3] = 215.7497 * packet_length * num_packets_aggregated;	// 4 channels
+	data_rate_array[4] = 0;
+	data_rate_array[5] = 0;
+	data_rate_array[6] = 0;
+	data_rate_array[7] = 284.1716 * packet_length * num_packets_aggregated; // 8 channels
+
+	default_modulation = MODULATION_NONE;
+
+	int modulation_rates_aux[4][12] = {	// rows: modulation type, colums: number of channels (1, 2, 4, 8)
+		{4,16,24,33,49,65,73,81,98,108,122,135},
+		{8,33,49,65,98,130,146,163,195,217,244,271},
+		{17,68,102,136,204,272,306,340,408,453,510,567},
+		{34,136,204,272,408,544,613,681,817,907,1021,1134}
+	};
+
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < 12; j++){
+			modulation_rates[i][j] = modulation_rates_aux[i][j] * pow(10,6);
+		}
+	}
+
+	coding_rate_modulation[0] = 1/double(2);
+	coding_rate_modulation[1] = 1/double(2);
+	coding_rate_modulation[2] = 3/double(4);
+	coding_rate_modulation[3] = 1/double(2);
+	coding_rate_modulation[4] = 3/double(4);
+	coding_rate_modulation[5] = 2/double(3);
+	coding_rate_modulation[6] = 3/double(4);
+	coding_rate_modulation[7] = 5/double(6);
+	coding_rate_modulation[8] = 3/double(4);
+	coding_rate_modulation[9] = 5/double(6);
+	coding_rate_modulation[10] = 3/double(4);
+	coding_rate_modulation[11] = 5/double(6);
+
+	bits_per_symbol_modulation[0] = 2;
+	bits_per_symbol_modulation[1] = 4;
+	bits_per_symbol_modulation[2] = 4;
+	bits_per_symbol_modulation[3] = 16;
+	bits_per_symbol_modulation[4] = 16;
+	bits_per_symbol_modulation[5] = 64;
+	bits_per_symbol_modulation[6] = 64;
+	bits_per_symbol_modulation[7] = 64;
+	bits_per_symbol_modulation[8] = 256;
+	bits_per_symbol_modulation[9] = 256;
+	bits_per_symbol_modulation[10] = 1024;
+	bits_per_symbol_modulation[11] = 1024;
+
+	mcs_response = (int *) malloc(4 * sizeof(int));
+	for(int n = 0; n < 4; n++){
+		mcs_response[n] = 0;
+	}
+
+	int *modulations_list = (int*)calloc(4, sizeof(int));
+	mcs_per_node = (int**)calloc(wlan.num_stas, sizeof(int*));
+	change_modulation_flag = (int *) malloc(wlan.num_stas * sizeof(int));
+	for(int n = 0; n < wlan.num_stas; n++){
+		mcs_per_node[n] = modulations_list;
+		change_modulation_flag[n] = TRUE;
+	}
+
 }
