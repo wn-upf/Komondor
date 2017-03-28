@@ -3,11 +3,10 @@
 #include <stddef.h>
 
 #include "../ListOfDefines.h"
-#include "PowerManagementMethods.h"
 
-double	Random( double v=1.0)	{ return v*drand48();}
-int		Random( int v)		{ return (int)(v*drand48()); }
-double	Exponential(double mean)	{ return -mean*log(Random());}
+double	Random2( double v=1.0)	{ return v*drand48();}
+int		Random2( int v)		{ return (int)(v*drand48()); }
+double	Exponential2(double mean)	{ return -mean*log(Random2());}
 
 /*
  * computeBackoff(): computes a new backoff according to its pdf and packet generation rate.
@@ -29,7 +28,7 @@ double computeBackoff(int pdf_backoff, int current_CW){
 		}
 
 		case PDF_EXPONENTIAL:{
-			backoff_time = Exponential(1/lambda);
+			backoff_time = Exponential2(1/lambda);
 			break;
 		}
 
@@ -53,7 +52,7 @@ double computeBackoff(int pdf_backoff, int current_CW){
  * */
 int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logger node_logger,
 					int node_id, int node_state, double *channel_power,
-						int primary_channel, double current_cca){
+						int primary_channel, double current_cca_dBm, double current_cca_pico){
 
 	switch(pause_or_resume){
 
@@ -63,21 +62,20 @@ int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logge
 				SimTime, node_id, node_state, LOG_F00, LOG_LVL2, primary_channel);
 
 			if(save_node_logs) fprintf(node_logger.file,
-				"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f dBm (%f pW)\n",
-				SimTime, node_id, node_state, LOG_F00, LOG_LVL3, convertPower(PICO_TO_DBM, channel_power[primary_channel]),
-				channel_power[primary_channel]);
+				"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f pW\n",
+				SimTime, node_id, node_state, LOG_F00, LOG_LVL3, channel_power[primary_channel]);
 
-			if(channel_power[primary_channel] > convertPower(DBM_TO_PICO, current_cca)){	// CCA exceeded
+			if(channel_power[primary_channel] > current_cca_pico){	// CCA exceeded
 
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
-						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
+						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
 
 				return TRUE;
 
 			} else {	// CCA NOT exceeded
 
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
-					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
+					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
 					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
 
@@ -95,14 +93,13 @@ int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logge
 				SimTime, node_id, node_state, LOG_F00, LOG_LVL2, primary_channel);
 
 			if(save_node_logs) fprintf(node_logger.file,
-					"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f dBm (%f pW)\n",
-					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, convertPower(PICO_TO_DBM,
-							channel_power[primary_channel]), channel_power[primary_channel]);
+					"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f pW\n",
+					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, channel_power[primary_channel]);
 
-			if(channel_power[primary_channel] <= convertPower(DBM_TO_PICO, current_cca)){	// CCA NOT exceeded
+			if(channel_power[primary_channel] <= current_cca_pico){	// CCA NOT exceeded
 
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
-					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
+					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
 					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
 
@@ -111,7 +108,7 @@ int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logge
 			} else {	// CCA exceeded
 
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
-					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
+					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
 
 				return FALSE;
 
