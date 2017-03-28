@@ -113,7 +113,6 @@ component Node : public TypeII{
 		void handlePacketLoss(int type);
 
 		// Backoff
-		void handleBackoff(int pause_or_resume);
 		void pauseBackoff();
 		void resumeBackoff();
 
@@ -484,8 +483,11 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 							generateAndSendLogicalNack(notification.packet_type, notification.tx_info.packet_id,
 									notification.source_id, NODE_ID_NONE, loss_reason);
 
+
+							int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
+									node_logger, node_id, node_state, channel_power, primary_channel, current_cca);
 							// Check if node has to freeze the BO (if it is not already frozen)
-							if (node_is_transmitter) handleBackoff(PAUSE_TIMER);
+							if (node_is_transmitter && pause) pauseBackoff();
 
 						} else {	// Data packet IS NOT LOST (it can be properly received)
 
@@ -530,8 +532,10 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 						if(loss_reason == PACKET_NOT_LOST &&
 								convertPower(PICO_TO_DBM, channel_power[primary_channel]) > current_cca) { // RTS/CTS affecting my BO
 
+							int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
+									node_logger, node_id, node_state, channel_power, primary_channel, current_cca);
 							// Check if node has to freeze the BO (if it is not already frozen)
-							if (node_is_transmitter) handleBackoff(PAUSE_TIMER);
+							if (node_is_transmitter && pause) pauseBackoff();
 
 							current_nav_time = notification.tx_info.nav_time;
 							node_state = STATE_NAV;
@@ -546,8 +550,12 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 
 					} else if (notification.packet_type == PACKET_TYPE_DATA ||
 							   notification.packet_type == PACKET_TYPE_ACK){
+
+						int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
+								node_logger, node_id, node_state, channel_power, primary_channel, current_cca);
 						// Check if node has to freeze the BO (if it is not already frozen)
-						if (node_is_transmitter) handleBackoff(PAUSE_TIMER);
+						if (node_is_transmitter && pause) pauseBackoff();
+
 					}
 
 				}
@@ -996,7 +1004,10 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Attempting to restart backoff.\n",
 						SimTime(), node_id, node_state, LOG_E11, LOG_LVL3);
 
-				if (node_is_transmitter) handleBackoff(RESUME_TIMER);	// Attempt to resume Backoff
+				int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
+						node_logger, node_id, node_state, channel_power, primary_channel, current_cca);
+				// Check if node can restart the BO
+				if (node_is_transmitter && resume) trigger_DIFS.Set(SimTime() + DIFS);
 
 				break;
 			}
@@ -1783,53 +1794,6 @@ double Node::computePowerReceived(double distance, double tx_power, int tx_gain,
 
 	}
 	return pw_received;
-}
-
-/*
- * convertPower(): convert power units
- * Input arguments:
- * - conversion_type: unit conversion type
- * - power: power value
- * Output:
- * - converted_power: power converted to required unit
- */
-double convertPower(int conversion_type, double power){
-	double converted_power;
-	switch(conversion_type){
-		// pW to dBm
-		case PICO_TO_DBM:{
-			converted_power = 10 * log10(power * pow(10,-9));
-			break;
-		}
-		// dBm to pW
-		case DBM_TO_PICO:{
-			converted_power = pow(10,(power + 90)/10);
-			break;
-		}
-		// mW to dBm
-		case MILLI_TO_DBM:{
-			converted_power = 10 * log10(power * pow(10,-6));
-			break;
-		}
-		// dBm to mW (dB to linear)
-		case DBM_TO_MILLI:
-		case DB_TO_LINEAR:
-		case DB_TO_W: {
-			converted_power = pow(10,power/10);
-			break;
-		}
-		// W to dB
-		case W_TO_DB:
-		case LINEAR_TO_DB: {
-			converted_power = 10 * log10(power);
-			break;
-		}
-		default:{
-			printf("Power conversion type not found!\n");
-			break;
-		}
-	}
-	return converted_power;
 }
 
 /*
@@ -2637,8 +2601,10 @@ void Node :: navTimeout(trigger_t &){
 
 	node_state = STATE_SENSING;
 
-	// Attempt to resume the backoff
-	if (node_is_transmitter) handleBackoff(RESUME_TIMER);
+	int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
+			node_logger, node_id, node_state, channel_power, primary_channel, current_cca);
+	// Check if node can restart the BO
+	if (node_is_transmitter && resume) trigger_DIFS.Set(SimTime() + DIFS);
 
 }
 
@@ -2972,79 +2938,6 @@ int Node :: applyModulationProbabilityError(Notification notification){
 /************************/
 /************************/
 
-///*
-// * handleBackoff(): handles the backoff. It is called when backoff may be paused or resumed.
-// * Arguments:
-// * - pause_or_resume: flag for identifying if function must try to pause or resume the backoff
-// * - notification: notification info
-// * */
-//void Node :: handleBackoff(int pause_or_resume){
-//
-//	switch(pause_or_resume){
-//
-//		case PAUSE_TIMER:{
-//
-//			if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s primary_channel (#%d) affected\n",
-//				SimTime(), node_id, node_state, LOG_F00, LOG_LVL2, primary_channel);
-//
-//			if(save_node_logs) fprintf(node_logger.file,
-//				"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f dBm (%f pW)\n",
-//				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, convertPower(PICO_TO_DBM, channel_power[primary_channel]),
-//				channel_power[primary_channel]);
-//
-//			if(channel_power[primary_channel] > convertPower(DBM_TO_PICO, current_cca)){	// CCA exceeded
-//
-//				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
-//						SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
-//
-//				pauseBackoff();
-//
-//			} else {	// CCA NOT exceeded
-//
-//				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
-//					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
-//				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
-//					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
-//			}
-//			break;
-//		}
-//
-//		case RESUME_TIMER:{
-//
-//			if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Primary_channel (#%d) affected\n",
-//				SimTime(), node_id, node_state, LOG_F00, LOG_LVL2, primary_channel);
-//
-//			if(save_node_logs) fprintf(node_logger.file,
-//					"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f dBm (%f pW)\n",
-//					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, convertPower(PICO_TO_DBM,
-//							channel_power[primary_channel]), channel_power[primary_channel]);
-//
-//			if(channel_power[primary_channel] <= convertPower(DBM_TO_PICO, current_cca)){	// CCA NOT exceeded
-//
-//				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
-//					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
-//				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
-//					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
-//
-//				trigger_DIFS.Set(SimTime() + DIFS);
-//
-//			} else {	// CCA exceeded
-//
-//				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
-//					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
-//
-//			}
-//			break;
-//		}
-//
-//		default:{
-//			if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Unknown mode %d! (not resume nor pause)\n",
-//				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3, pause_or_resume);
-//			break;
-//		}
-//	}
-//}
-
 /*
  * pauseBackoff(): pauses the backoff
  * */
@@ -3140,8 +3033,10 @@ void Node :: restartNode(){
 		trigger_DIFS.Set(SimTime() + DIFS);
 		selectDestination();
 
-		// Freeze backoff immediately if primary channel is occupied
-		handleBackoff(PAUSE_TIMER);
+		int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
+				node_logger, node_id, node_state, channel_power, primary_channel, current_cca);
+		// Check if node has to freeze the BO (if it is not already frozen)
+		if (node_is_transmitter && pause) pauseBackoff();
 
 	}
 
