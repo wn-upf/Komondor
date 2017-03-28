@@ -58,6 +58,10 @@
 #include "../structures/LogicalNack.h"
 #include "../structures/Wlan.h"
 #include "../structures/Logger.h"
+#include "../methods/BackoffMethods.h"
+#include "../methods/PowerManagementMethods.h"
+#include "../methods/TXTimeMethods.h"
+#include "../methods/Modulations.h"
 
 // Node component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Node : public TypeII{
@@ -87,8 +91,6 @@ component Node : public TypeII{
 		// Packets
 		Notification generateNotification(int packet_type, int destination_id, double tx_duration);
 		void selectDestination();
-		double computeTxTime(int num_channels_used, int packet_size);
-		double computeNavTime();
 		void sendResponse();
 		void ackTimeout();
 		void ctsTimeout();
@@ -173,9 +175,6 @@ component Node : public TypeII{
 		// Data rate - modulations
 		int modulation_rates[4][12];		// Modulation rates in bps used in IEEE 802.11ax
 		int err_prob_modulation[4][12];		// BER associated to each modulation (TO BE FILLED!!)
-		int data_rate_array[8];				// Hardcoded data rates [bps] (corresponding to the CTMN Matlab code)
-		double coding_rate_modulation[12];  // Coding rate used for each modulation scheme
-		int bits_per_symbol_modulation[12]; // Bits per symbol used by each modulation
 
 		// Packets
 		int pdf_tx_time;					// Probability distribution type of the transmission time (0: exponential, 1: deterministic)
@@ -1130,7 +1129,8 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 
 						// Check channel availability in order to send the CTS
 						double distance = computeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y, notification.tx_info.z);
-//						double pw_received = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain);
+						double pw_received = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain,
+								central_frequency, path_loss_model);
 
 						double pw_received = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain,
 								central_frequency, path_loss_model);
@@ -1158,7 +1158,9 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 							current_destination_id = notification.source_id;
 
 							current_tx_duration = cts_duration;
-							current_nav_time = computeNavTime();
+
+							current_nav_time = computeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
+
 							trigger_SIFS.Set(SimTime() + SIFS); // triggers the sendResponse() function after SIFS
 
 							cts_notification = generateNotification(PACKET_TYPE_CTS, current_destination_id, current_tx_duration);
@@ -1206,7 +1208,7 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 						current_destination_id = notification.source_id;
 						current_CW = handleCW(DECREASE_CW, current_CW, CW_min, CW_max);
 
-						current_tx_duration = data_duration;//computeTxTime(log2(num_channels_tx), packet_length * num_packets_aggregated);
+						current_tx_duration = data_duration;	// This duration already computed in endBackoff
 						trigger_SIFS.Set(SimTime() + SIFS);
 
 						data_notification = generateNotification(PACKET_TYPE_DATA, current_destination_id, current_tx_duration);
@@ -1286,11 +1288,8 @@ void Node :: inportMCSRequestReceived(Notification &notification){
 
 		// Compute distance and power received from transmitter
 		double distance = computeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y, notification.tx_info.z);
-//		double pw_received_interest_dBm = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain);
-
 		double pw_received_interest_dBm = computePowerReceived(distance, notification.tx_info.tx_power, tx_gain, rx_gain,
 				central_frequency, path_loss_model);
-
 		pw_received_interest = convertPower(DBM_TO_PICO,pw_received_interest_dBm);
 
 		// Select the modulation according to the SINR perceived corresponding to incoming transmitter
@@ -1451,12 +1450,27 @@ void Node :: endBackoff(trigger_t &){
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
 
 		// COMPUTE ALL DURATIONS
-		data_duration = computeTxTime(int(log2(num_channels_tx)), packet_length * num_packets_aggregated);
-		ack_duration = computeTxTime(int(log2(num_channels_tx)), ack_length);
-		rts_duration = computeTxTime(int(log2(num_channels_tx)), rts_length);
-		cts_duration = computeTxTime(int(log2(num_channels_tx)), cts_length);
 
-		current_nav_time = computeNavTime();
+		// SERGIO: Change of paradigm (first compute rate, and then call the method)
+		int ix_mcs_per_node = current_destination_id - wlan.list_sta_id[0];
+		int ix_num_channels_used = log2(num_channels_tx);
+		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
+		current_data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1]
+			 * Mcs_array::coding_rate_array[current_modulation-1];
+
+		data_duration = computeTxTime(packet_length * num_packets_aggregated, current_data_rate, pdf_tx_time);
+		ack_duration = computeTxTime(ack_length, current_data_rate, pdf_tx_time);
+		rts_duration = computeTxTime(rts_length, current_data_rate, pdf_tx_time);
+		cts_duration = computeTxTime(cts_length, current_data_rate, pdf_tx_time);
+		// SERGIO: END
+
+
+//		data_duration = computeTxTime(int(log2(num_channels_tx)), packet_length * num_packets_aggregated);
+//		ack_duration = computeTxTime(int(log2(num_channels_tx)), ack_length);
+//		rts_duration = computeTxTime(int(log2(num_channels_tx)), rts_length);
+//		cts_duration = computeTxTime(int(log2(num_channels_tx)), cts_length);
+
+		current_nav_time = computeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
 		current_tx_duration = rts_duration;
 
 		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Setting NAV time to %f\n",
@@ -1625,90 +1639,6 @@ void Node :: selectDestination(){
 	// if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s selectDestination() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
 }
 
-/**********************/
-/**********************/
-/* TX TIME MANAGEMENT */
-/**********************/
-/**********************/
-
-/*
- * computeTxTime(): computes the transmission time (just link rate) according to the number of channels used and packet lenght
- * Input arguments:
- * - num_channels_used: number of channels (OR INDEX) used in the transmission
- * - total_bits: number of bits sent in the transmission
- */
-double Node :: computeTxTime(int ix_num_channels_used, int total_bits){
-
-	double tx_time;
-
-	// Decide current modulation and channels to be used during transmission
-
-	if(node_state == STATE_TX_RTS) {
-
-		int ix_aux = current_destination_id - wlan.list_sta_id[0];
-		// TODO: by now, dumb policy: maximum modulation and channels provided by CB model
-		current_modulation = mcs_per_node[ix_aux][ix_num_channels_used];
-		current_data_rate = modulation_rates[ix_num_channels_used][current_modulation-1]
-			 * coding_rate_modulation[current_modulation-1];
-
-	} else if(node_state == STATE_TX_CTS || node_state == STATE_TX_ACK || node_state == STATE_TX_DATA){
-
-		current_data_rate = ongoing_notification.tx_info.data_rate;
-
-	}
-
-	// Hardcoded for 1 channel
-	//current_data_rate = data_rate_array[0];
-
-	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Data rate (%d channels and modulation %d): %f Mbps\n",
-				SimTime(), node_id, node_state, LOG_Z01, LOG_LVL3, ix_num_channels_used, current_modulation, current_data_rate*pow(10,-6));
-
-	switch(pdf_tx_time){
-
-		case PDF_DETERMINISTIC:{
-			tx_time = total_bits/current_data_rate;	// 0.01234 s
-			break;
-		}
-
-		case PDF_EXPONENTIAL:{
-			tx_time = Exponential(total_bits/current_data_rate);
-			break;
-		}
-
-		default:{
-			printf("TX time model not found!\n");
-			break;
-		}
-	}
-
-	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Computed TX duration: %f s\n",
-			SimTime(), node_id, node_state, LOG_Z01, LOG_LVL3, tx_time);
-
-	return tx_time;
-
-}
-
-double Node :: computeNavTime(){
-
-	double nav_time;
-
-	switch(node_state){
-		case STATE_TX_RTS:{
-			nav_time = 3*SIFS + rts_duration + cts_duration + data_duration + ack_duration;
-			break;
-		}
-		case STATE_TX_CTS:{
-			nav_time = 2*SIFS + cts_duration + data_duration + ack_duration;
-			break;
-		}
-		default:{
-			printf("ERROR: Unreachable state\n");
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	return nav_time;
-}
 /*
  * compute_tx_power_per_channel(): computes the transmission time (just link rate) according to the number of channels used and packet lenght
  * Input arguments:
@@ -1927,8 +1857,13 @@ void Node :: sendResponse(trigger_t &){
 			break;
 		}
 	}
-
 }
+
+/*********************/
+/*********************/
+/*     TIMEOUTS      */
+/*********************/
+/*********************/
 
 /*
  * ackTimeout(): handles ACK timeout. It is called when ACK timeout is triggered.
@@ -2274,7 +2209,7 @@ int Node :: applyModulationProbabilityError(Notification notification){
 		// To avoid errors in case modulation is not set
 		if(current_modulation > 0) {
 			channels_used = (notification.right_channel - notification.left_channel) + 1;
-			M = bits_per_symbol_modulation[current_modulation-1];
+			M = Mcs_array::bits_per_symbol_modulation_array[current_modulation-1];
 			bit_rate = notification.tx_info.data_rate;
 			bw = channels_used*basic_channel_bandwidth*pow(10,6);
 			Eb_to_N0 = EbToNoise(current_sinr, bit_rate, bw, M);
@@ -2538,6 +2473,106 @@ void Node :: printProgressBar(trigger_t &){
 		trigger_sim_time.Set(SimTime() + simulation_time_komondor/(100/PROGRESS_BAR_DELTA) - MIN_VALUE_C_LANGUAGE);
 	}
 	progress_bar_counter ++;
+}
+
+/*
+ * initializeVariables(): initializes all the necessary variables
+ */
+void Node :: initializeVariables() {
+
+	// Output file - logger
+	node_logger.save_logs = save_node_logs;
+	node_logger.file = node_logger.file;
+
+	// Arrays and other
+	channel_power = (double *) malloc(num_channels_komondor * sizeof(*channel_power));
+	num_channels_allowed = (max_channel_allowed - min_channel_allowed + 1);
+	total_time_transmitting_per_channel = (double *) malloc(num_channels_komondor
+			* sizeof(*total_time_transmitting_per_channel));
+	channels_free = (int *) malloc(num_channels_komondor * sizeof(*channels_free));
+	channels_for_tx = (int *) malloc(num_channels_komondor * sizeof(*channels_for_tx));
+	total_time_lost_per_channel = (double *) malloc(num_channels_komondor
+			* sizeof(*total_time_lost_per_channel));
+	for(int i = 0; i < num_channels_komondor; i++){
+		channel_power[i] = 0;
+		total_time_transmitting_per_channel[i] = 0;
+		channels_free[i] = FALSE;
+		channels_for_tx[i] = FALSE;
+		total_time_lost_per_channel[i] = 0;
+	}
+
+	total_time_transmitting_in_num_channels = (double *) malloc(num_channels_allowed
+			* sizeof(*total_time_transmitting_in_num_channels));
+	total_time_lost_in_num_channels = (double *) malloc(num_channels_allowed
+			* sizeof(*total_time_lost_in_num_channels));
+	for(int i = 0; i < num_channels_allowed; i++){
+		total_time_transmitting_in_num_channels[i] = 0;
+		total_time_lost_in_num_channels[i] = 0;
+	}
+
+	power_received_per_node = (double *) malloc(total_nodes_number * sizeof(*power_received_per_node));
+	nodes_transmitting = (int *) malloc(total_nodes_number * sizeof(*nodes_transmitting));
+	for(int n = 0; n < total_nodes_number; n++){
+		power_received_per_node[n] = 0;
+		nodes_transmitting[n] = FALSE;
+	}
+
+	// List of hidden nodes (1 indicates hidden nodes, 0 indicates the opposite)
+	hidden_nodes_list = (int *) malloc(total_nodes_number * sizeof(*hidden_nodes_list));
+	// Counter for the times a node was implied in a collision by hidden node
+	potential_hidden_nodes = (int *) malloc(total_nodes_number * sizeof(*potential_hidden_nodes));
+	for(int i = 0; i < total_nodes_number; i++){
+		hidden_nodes_list[i] = FALSE;
+		potential_hidden_nodes[i] = 0;
+	}
+	potential_hidden_nodes[node_id] = -1; // To indicate that the node cannot be hidden from itself
+	nacks_received = (int *) malloc(7 * sizeof(*nacks_received));
+	for(int i = 0; i < 7; i++){
+		nacks_received[i] = 0;
+	}
+
+	// Rest of variables
+	pw_received_interest = 0;
+	progress_bar_counter = 0;
+	current_left_channel =  min_channel_allowed;
+	current_right_channel = max_channel_allowed;
+	current_tpc = tpc_default;
+	current_cca = cca_default;
+	node_state = STATE_SENSING;
+	current_modulation = modulation_default;
+	current_CW = CW_min;
+	packet_id = 0;
+	rts_cts_id = 0;
+
+	if(node_type == NODE_TYPE_AP) {
+		node_is_transmitter = TRUE;
+	} else {
+		node_is_transmitter = FALSE;
+	}
+
+	// Statistics
+	packets_sent = 0;
+	throughput = 0;
+	throughput_loss = 0;
+	packets_lost = 0;
+	rts_cts_lost = 0;
+	num_tx_init_not_possible = 0;
+
+	default_modulation = MODULATION_NONE;
+
+	mcs_response = (int *) malloc(4 * sizeof(int));
+	for(int n = 0; n < 4; n++){
+		mcs_response[n] = 0;
+	}
+
+	int *modulations_list = (int*)calloc(4, sizeof(int));
+	mcs_per_node = (int**)calloc(wlan.num_stas, sizeof(int*));
+	change_modulation_flag = (int *) malloc(wlan.num_stas * sizeof(int));
+	for(int n = 0; n < wlan.num_stas; n++){
+		mcs_per_node[n] = modulations_list;
+		change_modulation_flag[n] = TRUE;
+	}
+
 }
 
 /*
