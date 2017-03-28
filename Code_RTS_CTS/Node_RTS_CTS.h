@@ -58,6 +58,7 @@
 #include "../methods/BackoffMethods.h"
 #include "../methods/PowerManagementMethods.h"
 #include "../methods/TXTimeMethods.h"
+#include "../methods/Modulations.h"
 
 // Node component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Node : public TypeII{
@@ -93,8 +94,6 @@ component Node : public TypeII{
 		// Packets
 		Notification generateNotification(int packet_type, int destination_id, double tx_duration);
 		void selectDestination();
-		double computeTxTime(int num_channels_used, int packet_size);
-		double computeNavTime();
 		void sendResponse();
 		void ackTimeout();
 		void ctsTimeout();
@@ -181,9 +180,6 @@ component Node : public TypeII{
 		// Data rate - modulations
 		int modulation_rates[4][12];		// Modulation rates in bps used in IEEE 802.11ax
 		int err_prob_modulation[4][12];		// BER associated to each modulation (TO BE FILLED!!)
-		int data_rate_array[8];				// Hardcoded data rates [bps] (corresponding to the CTMN Matlab code)
-		double coding_rate_modulation[12];  // Coding rate used for each modulation scheme
-		int bits_per_symbol_modulation[12]; // Bits per symbol used by each modulation
 
 		// Packets
 		int pdf_tx_time;					// Probability distribution type of the transmission time (0: exponential, 1: deterministic)
@@ -1140,7 +1136,9 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 							current_destination_id = notification.source_id;
 
 							current_tx_duration = cts_duration;
-							current_nav_time = computeNavTime();
+
+							current_nav_time = computeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
+
 							trigger_SIFS.Set(SimTime() + SIFS); // triggers the sendResponse() function after SIFS
 
 							cts_notification = generateNotification(PACKET_TYPE_CTS, current_destination_id, current_tx_duration);
@@ -1188,7 +1186,7 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 						current_destination_id = notification.source_id;
 						current_CW = handleCW(DECREASE_CW, current_CW, CW_min, CW_max);
 
-						current_tx_duration = data_duration;//computeTxTime(log2(num_channels_tx), packet_length * num_packets_aggregated);
+						current_tx_duration = data_duration;	// This duration already computed in endBackoff
 						trigger_SIFS.Set(SimTime() + SIFS);
 
 						data_notification = generateNotification(PACKET_TYPE_DATA, current_destination_id, current_tx_duration);
@@ -1420,12 +1418,27 @@ void Node :: endBackoff(trigger_t &){
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
 
 		// COMPUTE ALL DURATIONS
-		data_duration = computeTxTime(int(log2(num_channels_tx)), packet_length * num_packets_aggregated);
-		ack_duration = computeTxTime(int(log2(num_channels_tx)), ack_length);
-		rts_duration = computeTxTime(int(log2(num_channels_tx)), rts_length);
-		cts_duration = computeTxTime(int(log2(num_channels_tx)), cts_length);
 
-		current_nav_time = computeNavTime();
+		// SERGIO: Change of paradigm (first compute rate, and then call the method)
+		int ix_mcs_per_node = current_destination_id - wlan.list_sta_id[0];
+		int ix_num_channels_used = log2(num_channels_tx);
+		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
+		current_data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1]
+			 * Mcs_array::coding_rate_array[current_modulation-1];
+
+		data_duration = computeTxTime(packet_length * num_packets_aggregated, current_data_rate, pdf_tx_time);
+		ack_duration = computeTxTime(ack_length, current_data_rate, pdf_tx_time);
+		rts_duration = computeTxTime(rts_length, current_data_rate, pdf_tx_time);
+		cts_duration = computeTxTime(cts_length, current_data_rate, pdf_tx_time);
+		// SERGIO: END
+
+
+//		data_duration = computeTxTime(int(log2(num_channels_tx)), packet_length * num_packets_aggregated);
+//		ack_duration = computeTxTime(int(log2(num_channels_tx)), ack_length);
+//		rts_duration = computeTxTime(int(log2(num_channels_tx)), rts_length);
+//		cts_duration = computeTxTime(int(log2(num_channels_tx)), cts_length);
+
+		current_nav_time = computeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
 		current_tx_duration = rts_duration;
 
 		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Setting NAV time to %f\n",
@@ -1594,91 +1607,6 @@ void Node :: selectDestination(){
 	// if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s selectDestination() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
 }
 
-
-/**********************/
-/**********************/
-/* TX TIME MANAGEMENT */
-/**********************/
-/**********************/
-
-/*
- * computeTxTime(): computes the transmission time (just link rate) according to the number of channels used and packet lenght
- * Input arguments:
- * - num_channels_used: number of channels (OR INDEX) used in the transmission
- * - total_bits: number of bits sent in the transmission
- */
-double Node :: computeTxTime(int ix_num_channels_used, int total_bits){
-
-	double tx_time;
-
-	// Decide current modulation and channels to be used during transmission
-
-	if(node_state == STATE_TX_RTS) {
-
-		int ix_aux = current_destination_id - wlan.list_sta_id[0];
-		// TODO: by now, dumb policy: maximum modulation and channels provided by CB model
-		current_modulation = mcs_per_node[ix_aux][ix_num_channels_used];
-		current_data_rate = modulation_rates[ix_num_channels_used][current_modulation-1]
-			 * coding_rate_modulation[current_modulation-1];
-
-	} else if(node_state == STATE_TX_CTS || node_state == STATE_TX_ACK || node_state == STATE_TX_DATA){
-
-		current_data_rate = ongoing_notification.tx_info.data_rate;
-
-	}
-
-	// Hardcoded for 1 channel
-	//current_data_rate = data_rate_array[0];
-
-	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Data rate (%d channels and modulation %d): %f Mbps\n",
-				SimTime(), node_id, node_state, LOG_Z01, LOG_LVL3, ix_num_channels_used, current_modulation, current_data_rate*pow(10,-6));
-
-	switch(pdf_tx_time){
-
-		case PDF_DETERMINISTIC:{
-			tx_time = total_bits/current_data_rate;	// 0.01234 s
-			break;
-		}
-
-		case PDF_EXPONENTIAL:{
-			tx_time = Exponential(total_bits/current_data_rate);
-			break;
-		}
-
-		default:{
-			printf("TX time model not found!\n");
-			break;
-		}
-	}
-
-	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Computed TX duration: %f s\n",
-			SimTime(), node_id, node_state, LOG_Z01, LOG_LVL3, tx_time);
-
-	return tx_time;
-
-}
-
-double Node :: computeNavTime(){
-
-	double nav_time;
-
-	switch(node_state){
-		case STATE_TX_RTS:{
-			nav_time = 3*SIFS + rts_duration + cts_duration + data_duration + ack_duration;
-			break;
-		}
-		case STATE_TX_CTS:{
-			nav_time = 2*SIFS + cts_duration + data_duration + ack_duration;
-			break;
-		}
-		default:{
-			printf("ERROR: Unreachable state\n");
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	return nav_time;
-}
 /*
  * compute_tx_power_per_channel(): computes the transmission time (just link rate) according to the number of channels used and packet lenght
  * Input arguments:
@@ -2324,8 +2252,13 @@ void Node :: sendResponse(trigger_t &){
 			break;
 		}
 	}
-
 }
+
+/*********************/
+/*********************/
+/*     TIMEOUTS      */
+/*********************/
+/*********************/
 
 /*
  * ackTimeout(): handles ACK timeout. It is called when ACK timeout is triggered.
@@ -2667,7 +2600,7 @@ int Node :: applyModulationProbabilityError(Notification notification){
 		// To avoid errors in case modulation is not set
 		if(current_modulation > 0) {
 			channels_used = (notification.right_channel - notification.left_channel) + 1;
-			M = bits_per_symbol_modulation[current_modulation-1];
+			M = Mcs_array::bits_per_symbol_modulation_array[current_modulation-1];
 			bit_rate = notification.tx_info.data_rate;
 			bw = channels_used*basic_channel_bandwidth*pow(10,6);
 			Eb_to_N0 = EbToNoise(current_sinr, bit_rate, bw, M);
@@ -3114,58 +3047,7 @@ void Node :: initializeVariables() {
 	rts_cts_lost = 0;
 	num_tx_init_not_possible = 0;
 
-	// Modulation data rates
-
-	// Fixed data rates (CTMN - Matlab)
-	data_rate_array[0] = 81.5727 * packet_length * num_packets_aggregated;	// 1 channel
-	data_rate_array[1] = 150.8068 * packet_length * num_packets_aggregated; // 2 channels
-	data_rate_array[2] = 0;
-	data_rate_array[3] = 215.7497 * packet_length * num_packets_aggregated;	// 4 channels
-	data_rate_array[4] = 0;
-	data_rate_array[5] = 0;
-	data_rate_array[6] = 0;
-	data_rate_array[7] = 284.1716 * packet_length * num_packets_aggregated; // 8 channels
-
 	default_modulation = MODULATION_NONE;
-
-	int modulation_rates_aux[4][12] = {	// rows: modulation type, colums: number of channels (1, 2, 4, 8)
-		{4,16,24,33,49,65,73,81,98,108,122,135},
-		{8,33,49,65,98,130,146,163,195,217,244,271},
-		{17,68,102,136,204,272,306,340,408,453,510,567},
-		{34,136,204,272,408,544,613,681,817,907,1021,1134}
-	};
-
-	for(int i = 0; i < 4; i++){
-		for(int j = 0; j < 12; j++){
-			modulation_rates[i][j] = modulation_rates_aux[i][j] * pow(10,6);
-		}
-	}
-
-	coding_rate_modulation[0] = 1/double(2);
-	coding_rate_modulation[1] = 1/double(2);
-	coding_rate_modulation[2] = 3/double(4);
-	coding_rate_modulation[3] = 1/double(2);
-	coding_rate_modulation[4] = 3/double(4);
-	coding_rate_modulation[5] = 2/double(3);
-	coding_rate_modulation[6] = 3/double(4);
-	coding_rate_modulation[7] = 5/double(6);
-	coding_rate_modulation[8] = 3/double(4);
-	coding_rate_modulation[9] = 5/double(6);
-	coding_rate_modulation[10] = 3/double(4);
-	coding_rate_modulation[11] = 5/double(6);
-
-	bits_per_symbol_modulation[0] = 2;
-	bits_per_symbol_modulation[1] = 4;
-	bits_per_symbol_modulation[2] = 4;
-	bits_per_symbol_modulation[3] = 16;
-	bits_per_symbol_modulation[4] = 16;
-	bits_per_symbol_modulation[5] = 64;
-	bits_per_symbol_modulation[6] = 64;
-	bits_per_symbol_modulation[7] = 64;
-	bits_per_symbol_modulation[8] = 256;
-	bits_per_symbol_modulation[9] = 256;
-	bits_per_symbol_modulation[10] = 1024;
-	bits_per_symbol_modulation[11] = 1024;
 
 	mcs_response = (int *) malloc(4 * sizeof(int));
 	for(int n = 0; n < 4; n++){

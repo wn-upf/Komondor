@@ -44,6 +44,7 @@
  */
 
 
+
 // Code parameters
 #define FALSE 				0			// Boolean: false
 #define TRUE 				1			// Boolean: true
@@ -150,7 +151,7 @@
 #define PROGRESS_BAR_DISPLAY 	1	// Activate progress bar
 
 // C++ macros
-#define MIN_VALUE_C_LANGUAGE	0.000001	// Minimum float value accepted by C++ language
+#define MIN_VALUE_C_LANGUAGE	0.000001	// Minimum float value printable for default by C++ language
 
 // Path-loss models
 #define PATH_LOSS_LFS 				0	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
@@ -207,21 +208,11 @@
 #define MODULATION_1024QAM_3_4	11
 #define MODULATION_1024QAM_5_6	12
 
-/*
-const int modulation_rates[4][12] = {	// rows: modulation type, columns: number of channels (1, 2, 4, 8)
-		{4,16,24,33,49,65,73,81,98,108,122,135},
-		{8,33,49,65,98,130,146,163,195,217,244,271},
-		{17,68,102,136,204,272,306,340,408,453,510,567},
-		{34,136,204,272,408,544,613,681,817,907,1021,1134}
-};
-*/
-
 // Information detail level
 #define INFO_DETAIL_LEVEL_0		0
 #define INFO_DETAIL_LEVEL_1		1
 #define INFO_DETAIL_LEVEL_2		2
 #define INFO_DETAIL_LEVEL_3		3
-
 
 
 
@@ -521,4 +512,3 @@ const int modulation_rates[4][12] = {	// rows: modulation type, columns: number 
 #define LOG_Z14 "Z14"
 #define LOG_Z15 "Z15"
 #define LOG_Z16 "Z16"
-
