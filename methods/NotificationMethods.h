@@ -177,6 +177,9 @@ void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
 
 }
 
+/*
+ * attemptToDecodePacket(): attempts to decode incoming packet according to SINR and the CE
+ */
 int attemptToDecodePacket(double current_sinr_dbm, double capture_effect_dbm, double current_cca_dbm,
 		double pw_received_interest_dbm, double constant_PER, int node_id){
 
@@ -198,8 +201,6 @@ int attemptToDecodePacket(double current_sinr_dbm, double capture_effect_dbm, do
 	packet_lost = ((double) rand() / (RAND_MAX)) < PER;
 	return packet_lost;
 }
-
-
 
 /*
  * isPacketLost(): computes notification loss according to SINR received

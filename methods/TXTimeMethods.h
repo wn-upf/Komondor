@@ -48,7 +48,6 @@ double computeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 	return tx_time;
 }
 
-
 /* computeNavTime: computes the NAV time for the RTS and CTS packets.
  *
  */

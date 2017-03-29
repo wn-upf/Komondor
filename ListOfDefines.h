@@ -271,9 +271,9 @@
 #define IX_COLLISIONS_MODEL			12
 #define IX_SIFS						13
 #define IX_CONSTANT_PER				14
-#define IX_RTS_LENGTH				15
-#define IX_CTS_LENGTH				16
-#define IX_TRAFFIC_MODEL			17
+#define IX_TRAFFIC_MODEL			15
+#define IX_RTS_LENGTH				16
+#define IX_CTS_LENGTH				17
 
 // Nodes file
 #define IX_NODE_CODE				1

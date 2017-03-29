@@ -49,10 +49,13 @@
 #include <time.h>
 
 #include ".././COST/cost.h"
+
 #include "../ListOfDefines.h"
+
 #include "../structures/Notification.h"
 #include "../structures/LogicalNack.h"
 #include "../structures/Wlan.h"
+
 #include "Node_RTS_CTS.h"
 
 /* Sequential simulation engine from where the system to be simulated is derived. */
@@ -704,7 +707,6 @@ void Komondor :: generateNodesByReadingAPsInputFile(char *nodes_filename){
 			tmp_nodes = strdup(line_nodes);
 			const char* lambda_char = getfield(tmp_nodes, IX_AP_LAMBDA);
 			double lambda = atof(lambda_char);
-
 
 			node_id_counter_in_wlan = 0;
 

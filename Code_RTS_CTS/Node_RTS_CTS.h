@@ -90,7 +90,6 @@ component Node : public TypeII{
 		void ctsTimeout();
 		void dataTimeout();
 		void navTimeout();
-		int attemptToDecodePacket();
 		void requestMCS();
 		void newPacketGenerated();
 		void trafficGenerator();
@@ -287,7 +286,7 @@ component Node : public TypeII{
 		Timer <trigger_t> trigger_CTS_timeout;			// Trigger when CTS hasn't arrived in time
 		Timer <trigger_t> trigger_DATA_timeout; 		// Trigger when DATA TX could not start due to RTS/CTS failure
 		Timer <trigger_t> trigger_NAV_timeout;  		// Trigger for the NAV
-		Timer <trigger_t> trigger_new_packet_generated; // Trigger for the NAV
+		Timer <trigger_t> trigger_new_packet_generated; // Trigger for new packets generation
 
 		// Every time the timer expires execute this
 		inport inline void endBackoff(trigger_t& t1);
@@ -462,10 +461,9 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 
 					if(notification.packet_type == PACKET_TYPE_RTS) {	// Notification COTAINS an RTS PACKET
 
-						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = updateSINR(pw_received_interest, noise_level, max_pw_interference,
 								save_node_logs, node_logger, SimTime(), node_id, node_state);
-
+						// Check if notification has been lost due to interferences or weak signal strength
 						loss_reason = isPacketLost(notification, convertPower(LINEAR_TO_DB, current_sinr),
 								capture_effect, current_cca, convertPower(PICO_TO_DBM, pw_received_interest),
 								constant_PER, hidden_nodes_list, save_node_logs, node_logger, node_id,
@@ -742,7 +740,6 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 							node_state, node_id, save_node_logs, node_logger,
 							SimTime(), power_received_per_node,
 							receiving_from_node_id, channel_power);
-
 
 					// Check if the ongoing reception is affected
 					current_sinr = updateSINR(pw_received_interest, noise_level, max_pw_interference,
@@ -1064,7 +1061,6 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 				notification.right_channel);
 
 		// Update the power sensed at each channel
-//		updateChannelsPower(notification, TX_FINISHED);
 		updateChannelsPower(channel_power, power_received_per_node, notification, TX_FINISHED,
 				SimTime(), node_logger, save_node_logs, node_id, node_state, central_frequency,
 				num_channels_komondor, path_loss_model, cochannel_model);
@@ -1152,7 +1148,6 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 						current_tx_duration += (notification.tx_info.tx_duration + SIFS);	// Add ACK time to tx_duration
 
 						// Transmission succeeded ---> decrease congestion window
-//						handleCW(DECREASE_CW);
 						current_CW = handleCW(DECREASE_CW, current_CW, CW_min, CW_max);
 						// Restart node (implicitly to STATE_SENSING)
 						restartNode();
@@ -1442,6 +1437,9 @@ void Node :: inportMCSResponseReceived(Notification &notification){
 	}
 }
 
+/*
+ * trafficGenerator(): called each time a packet is generated to start a new packet generation
+ */
 void Node :: trafficGenerator() {
 
 	double time_for_next_packet = 0;
@@ -1452,13 +1450,13 @@ void Node :: trafficGenerator() {
 
 			num_packets_in_buffer = PACKET_BUFFER_SIZE;
 
-//			if(node_is_transmitter){
-//				int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
-//						node_logger, node_id, node_state, channel_power, primary_channel,
-//						current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
-//
-//				if (resume) trigger_DIFS.Set(SimTime() + DIFS);
-//			}
+			if(node_is_transmitter){
+				int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
+						node_logger, node_id, node_state, channel_power, primary_channel,
+						current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
+
+				if (resume) trigger_DIFS.Set(SimTime() + DIFS);
+			}
 
 			break;
 		}
@@ -1485,6 +1483,9 @@ void Node :: trafficGenerator() {
 
 }
 
+/*
+ * newPacketGenerated(): triggered by trigger_new_packet_generated
+ */
 void Node :: newPacketGenerated(trigger_t &){
 
 	if(node_is_transmitter){
@@ -2097,6 +2098,7 @@ void Node :: restartNode(){
 		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s New backoff computed: %f\n",
 						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, remaining_backoff);
 
+		// Freeze backoff immediately if primary channel is occupied
 		int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
 				node_logger, node_id, node_state, channel_power, primary_channel,
 				current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
@@ -2458,9 +2460,7 @@ void Node :: initializeVariables() {
 	current_CW = CW_min;
 	packet_id = 0;
 	rts_cts_id = 0;
-
-	num_packets_in_buffer = 1;
-
+	num_packets_in_buffer = 0;
 	remaining_backoff = computeBackoff(pdf_backoff, current_CW);
 
 	if(node_type == NODE_TYPE_AP) {
