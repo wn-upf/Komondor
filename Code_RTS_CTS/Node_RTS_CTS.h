@@ -64,7 +64,6 @@
 #include "../structures/Wlan.h"
 #include "../structures/Logger.h"
 
-
 // Node component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Node : public TypeII{
 
@@ -82,10 +81,6 @@ component Node : public TypeII{
 		void printNodeInfo(int info_detail_level);
 		void writeNodeInfo(Logger node_logger, int info_detail_level, char *header_string);
 		void printOrWriteNodeStatistics(int write_or_print);
-//		void printOrWriteChannelForTx(int write_or_print);
-//		void printOrWriteChannelPower(int write_or_print);
-//		void printOrWriteChannelsFree(int write_or_print);
-//		void printOrWriteNodesTransmitting (int write_or_print);
 
 		// Packets
 		Notification generateNotification(int packet_type, int destination_id, double tx_duration);
@@ -97,6 +92,8 @@ component Node : public TypeII{
 		void navTimeout();
 		int attemptToDecodePacket();
 		void requestMCS();
+		void newPacketGenerated();
+		void trafficGenerator();
 
 		// NACK
 		void sendLogicalNack(LogicalNack logical_nack);
@@ -177,6 +174,7 @@ component Node : public TypeII{
 		int ack_length;						// ACK length [bits]
 		int rts_length;						// RTS length [bits]
 		int cts_length;						// CTS length [bits]
+		int traffic_model;					// Traffic model (0: full buffer, 1: poisson, 2: deterministic)
 
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
@@ -258,6 +256,8 @@ component Node : public TypeII{
 		double BER;							// Bit error rate (deprecated)
 		double PER;							// Packet error rate (deprecated)
 
+		int num_packets_in_buffer;
+
 	// Connections and timers
 	public:
 
@@ -278,15 +278,16 @@ component Node : public TypeII{
 		outport void outportAnswerTxModulation(Notification &notification);
 
 		// Triggers
-		Timer <trigger_t> trigger_backoff; 		// Duration of current trigger_backoff. Triggers outportSelfStartTX()
-		Timer <trigger_t> trigger_toFinishTX; 	// Duration of current notification transmission. Triggers outportSelfFinishTX()
-		Timer <trigger_t> trigger_sim_time;		// Timer for displaying the exectuion time status (progress bar)
-		Timer <trigger_t> trigger_DIFS;			// Timer for the DIFS
-		Timer <trigger_t> trigger_SIFS;			// Timer for the SIFS
-		Timer <trigger_t> trigger_ACK_timeout;	// Trigger when ACK hasn't arrived in time
-		Timer <trigger_t> trigger_CTS_timeout;	// Trigger when CTS hasn't arrived in time
-		Timer <trigger_t> trigger_DATA_timeout; // Trigger when DATA TX could not start due to RTS/CTS failure
-		Timer <trigger_t> trigger_NAV_timeout;  // Trigger for the NAV
+		Timer <trigger_t> trigger_backoff; 				// Duration of current trigger_backoff. Triggers outportSelfStartTX()
+		Timer <trigger_t> trigger_toFinishTX; 			// Duration of current notification transmission. Triggers outportSelfFinishTX()
+		Timer <trigger_t> trigger_sim_time;				// Timer for displaying the exectuion time status (progress bar)
+		Timer <trigger_t> trigger_DIFS;					// Timer for the DIFS
+		Timer <trigger_t> trigger_SIFS;					// Timer for the SIFS
+		Timer <trigger_t> trigger_ACK_timeout;			// Trigger when ACK hasn't arrived in time
+		Timer <trigger_t> trigger_CTS_timeout;			// Trigger when CTS hasn't arrived in time
+		Timer <trigger_t> trigger_DATA_timeout; 		// Trigger when DATA TX could not start due to RTS/CTS failure
+		Timer <trigger_t> trigger_NAV_timeout;  		// Trigger for the NAV
+		Timer <trigger_t> trigger_new_packet_generated; // Trigger for the NAV
 
 		// Every time the timer expires execute this
 		inport inline void endBackoff(trigger_t& t1);
@@ -298,6 +299,7 @@ component Node : public TypeII{
 		inport inline void ctsTimeout(trigger_t& t1);
 		inport inline void dataTimeout(trigger_t& t1);
 		inport inline void navTimeout(trigger_t& t1);
+		inport inline void newPacketGenerated(trigger_t& t1);
 
 		// Connect timers to methods
 		Node () {
@@ -310,6 +312,7 @@ component Node : public TypeII{
 			connect trigger_CTS_timeout.to_component,ctsTimeout;
 			connect trigger_DATA_timeout.to_component,dataTimeout;
 			connect trigger_NAV_timeout.to_component,navTimeout;
+			connect trigger_new_packet_generated.to_component,newPacketGenerated;
 		}
 };
 
@@ -350,8 +353,7 @@ void Node :: Start(){
 
 	// Start backoff procedure only if node is able to transmit
 	if(node_is_transmitter) {
-		remaining_backoff = computeBackoff(pdf_backoff, current_CW);
-		trigger_backoff.Set(SimTime() + remaining_backoff);
+		trafficGenerator();
 	} else {
 		current_destination_id = wlan.ap_id;	// TODO: for uplink traffic. Set STAs destination to the GW
 	}
@@ -482,11 +484,13 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 
 							sendLogicalNack(logical_nack);
 
-							int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
-									node_logger, node_id, node_state, channel_power, primary_channel,
-									current_cca, convertPower(DBM_TO_PICO, current_cca));
-							// Check if node has to freeze the BO (if it is not already frozen)
-							if (node_is_transmitter && pause) pauseBackoff();
+							if(node_is_transmitter){
+								int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
+										node_logger, node_id, node_state, channel_power, primary_channel,
+										current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
+								// Check if node has to freeze the BO (if it is not already frozen)
+								if (pause) pauseBackoff();
+							}
 
 						} else {	// Data packet IS NOT LOST (it can be properly received)
 
@@ -539,12 +543,13 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 						if(loss_reason == PACKET_NOT_LOST &&
 								convertPower(PICO_TO_DBM, channel_power[primary_channel]) > current_cca) { // RTS/CTS affecting my BO
 
-							int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
-									node_logger, node_id, node_state, channel_power, primary_channel,
-									current_cca, convertPower(DBM_TO_PICO, current_cca));
-
-							// Check if node has to freeze the BO (if it is not already frozen)
-							if (node_is_transmitter && pause) pauseBackoff();
+							if(node_is_transmitter){
+								int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
+										node_logger, node_id, node_state, channel_power, primary_channel,
+										current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
+								// Check if node has to freeze the BO (if it is not already frozen)
+								if (pause) pauseBackoff();
+							}
 
 							current_nav_time = notification.tx_info.nav_time;
 							node_state = STATE_NAV;
@@ -560,11 +565,13 @@ void Node :: inportSomeNodeStartTX(Notification &notification){
 					} else if (notification.packet_type == PACKET_TYPE_DATA ||
 							   notification.packet_type == PACKET_TYPE_ACK){
 
-						int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
-								node_logger, node_id, node_state, channel_power, primary_channel,
-								current_cca, convertPower(DBM_TO_PICO, current_cca));
-						// Check if node has to freeze the BO (if it is not already frozen)
-						if (node_is_transmitter && pause) pauseBackoff();
+						if(node_is_transmitter){
+							int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
+									node_logger, node_id, node_state, channel_power, primary_channel,
+									current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
+							// Check if node has to freeze the BO (if it is not already frozen)
+							if (pause) pauseBackoff();
+						}
 
 					}
 
@@ -1072,11 +1079,13 @@ void Node :: inportSomeNodeFinishTX(Notification &notification){
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Attempting to restart backoff.\n",
 						SimTime(), node_id, node_state, LOG_E11, LOG_LVL3);
 
-				int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
-						node_logger, node_id, node_state, channel_power, primary_channel,
-						current_cca, convertPower(DBM_TO_PICO, current_cca));
-				// Check if node can restart the BO
-				if (node_is_transmitter && resume) trigger_DIFS.Set(SimTime() + DIFS);
+				if(node_is_transmitter) {
+					int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
+							node_logger, node_id, node_state, channel_power, primary_channel,
+							current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
+					// Check if node can restart the BO
+					if (resume) trigger_DIFS.Set(SimTime() + DIFS);
+				}
 
 				break;
 			}
@@ -1433,6 +1442,83 @@ void Node :: inportMCSResponseReceived(Notification &notification){
 	}
 }
 
+void Node :: trafficGenerator() {
+
+	double time_for_next_packet = 0;
+
+	switch(traffic_model) {
+
+		case TRAFFIC_FULL_BUFFER:{
+
+			num_packets_in_buffer = PACKET_BUFFER_SIZE;
+
+//			if(node_is_transmitter){
+//				int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
+//						node_logger, node_id, node_state, channel_power, primary_channel,
+//						current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
+//
+//				if (resume) trigger_DIFS.Set(SimTime() + DIFS);
+//			}
+
+			break;
+		}
+
+		case TRAFFIC_POISSON:{
+			time_for_next_packet = Exponential(1/lambda);
+			trigger_new_packet_generated.Set(SimTime() + time_for_next_packet);
+			break;
+		}
+
+		case TRAFFIC_DETERMINISTIC:{
+			time_for_next_packet = 1/lambda;
+			trigger_new_packet_generated.Set(SimTime() + time_for_next_packet);
+			break;
+		}
+
+		default:{
+			printf("Wrong traffic model!\n");
+			exit(EXIT_FAILURE);
+			break;
+		}
+
+	}
+
+}
+
+void Node :: newPacketGenerated(trigger_t &){
+
+	if(node_is_transmitter){
+
+		if (num_packets_in_buffer < PACKET_BUFFER_SIZE) {
+
+			num_packets_in_buffer++;
+
+			if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s A new packet has been generated (%d/%d)\n",
+					SimTime(), node_id, node_state, LOG_F00, LOG_LVL1, num_packets_in_buffer,PACKET_BUFFER_SIZE);
+
+			// Attempt to restart BO only if node didn't have any packet before a new packet was generated
+			if(node_state == STATE_SENSING && num_packets_in_buffer == 1) {
+
+				if(trigger_backoff.Active()) remaining_backoff = trigger_backoff.GetTime() - SimTime();
+
+				int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
+						node_logger, node_id, node_state, channel_power, primary_channel,
+						current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
+
+				if (resume) trigger_DIFS.Set(SimTime() + DIFS);
+
+			}
+
+		} else {
+			// Buffer overflow - new packet is lost
+		}
+
+	}
+
+	trafficGenerator();
+
+}
+
 /*
  * endBackoff(): called when backoff finishes
  * Input arguments:
@@ -1472,7 +1558,7 @@ void Node :: endBackoff(trigger_t &){
 
 	if(channels_for_tx[0] == TX_NOT_POSSIBLE){
 
-		num_tx_init_not_possible++;
+		num_tx_init_not_possible ++;
 
 	}
 
@@ -1529,15 +1615,14 @@ void Node :: endBackoff(trigger_t &){
 
 	} else {	// Transmission IS NOT, compute a new backoff.
 
+		// Compute a new backoff and trigger a new DIFS
+		remaining_backoff = computeBackoff(pdf_backoff, current_CW);
+		trigger_DIFS.Set(SimTime() + DIFS);
 		// Remain on STATE_SENSING (redundant)
 		node_state = STATE_SENSING;
 
 		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Transmission is NOT possible\n",
 				SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
-
-		// Compute a new backoff and trigger a new DIFS
-		remaining_backoff = computeBackoff(pdf_backoff, current_CW);
-		trigger_DIFS.Set(SimTime() + DIFS);
 
 	}
 
@@ -1809,6 +1894,10 @@ void Node :: sendResponse(trigger_t &){
 			outportSelfStartTX(data_notification);
 			trigger_toFinishTX.Set(SimTime() + current_tx_duration);
 			packets_sent++;
+
+			// Remove 1 packet from the queue
+			if(traffic_model != TRAFFIC_FULL_BUFFER) num_packets_in_buffer --;
+
 			break;
 		}
 	}
@@ -1898,11 +1987,13 @@ void Node :: navTimeout(trigger_t &){
 
 	node_state = STATE_SENSING;
 
-	int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
-			node_logger, node_id, node_state, channel_power, primary_channel,
-			current_cca, convertPower(DBM_TO_PICO, current_cca));
-	// Check if node can restart the BO
-	if (node_is_transmitter && resume) trigger_DIFS.Set(SimTime() + DIFS);
+	if(node_is_transmitter){
+		int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
+				node_logger, node_id, node_state, channel_power, primary_channel,
+				current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
+
+		if (resume) trigger_DIFS.Set(SimTime() + DIFS);
+	}
 
 }
 
@@ -1998,20 +2089,19 @@ void Node :: restartNode(){
 	// Generate new BO in case of being a TX node
 	if(node_is_transmitter){
 
+		selectDestination();
+
 		// In case of being an AP
 		remaining_backoff = computeBackoff(pdf_backoff, current_CW);
 
 		if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s New backoff computed: %f\n",
 						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, remaining_backoff);
 
-		trigger_DIFS.Set(SimTime() + DIFS);
-		selectDestination();
-
-		int pause = handleBackoff(PAUSE_TIMER, SimTime(), save_node_logs,
+		int resume = handleBackoff(RESUME_TIMER, SimTime(), save_node_logs,
 				node_logger, node_id, node_state, channel_power, primary_channel,
-				current_cca, convertPower(DBM_TO_PICO, current_cca));
+				current_cca, convertPower(DBM_TO_PICO, current_cca), num_packets_in_buffer);
 		// Check if node has to freeze the BO (if it is not already frozen)
-		if (node_is_transmitter && pause) pauseBackoff();
+		if (resume) trigger_DIFS.Set(SimTime() + DIFS);
 
 	}
 
@@ -2064,6 +2154,7 @@ void Node :: printNodeInfo(int info_detail_level){
 		printf("%s rx_gain = %f dBm\n", LOG_LVL4, rx_gain);
 		printf("%s modulation_default = %d\n", LOG_LVL4, modulation_default);
 		printf("%s central_frequency = %f\n", LOG_LVL4, central_frequency);
+		printf("%s lambda = %f\n", LOG_LVL4, lambda);
 	}
 	printf("\n");
 }
@@ -2102,6 +2193,7 @@ void Node :: writeNodeInfo(Logger node_logger, int info_detail_level, char *head
 		fprintf(node_logger.file, "%s - destination_id = %d\n", header_string, destination_id);
 		fprintf(node_logger.file, "%s - tpc_default = %f dBm\n", header_string, tpc_default);
 		fprintf(node_logger.file, "%s - cca_default = %f dBm\n", header_string, cca_default);
+		fprintf(node_logger.file, "%s - lambda = %f\n", header_string, lambda);
 	}
 
 }
@@ -2367,6 +2459,10 @@ void Node :: initializeVariables() {
 	packet_id = 0;
 	rts_cts_id = 0;
 
+	num_packets_in_buffer = 1;
+
+	remaining_backoff = computeBackoff(pdf_backoff, current_CW);
+
 	if(node_type == NODE_TYPE_AP) {
 		node_is_transmitter = TRUE;
 	} else {
@@ -2375,6 +2471,7 @@ void Node :: initializeVariables() {
 
 	// Statistics
 	packets_sent = 0;
+	rts_cts_sent = 0;
 	throughput = 0;
 	throughput_loss = 0;
 	packets_lost = 0;

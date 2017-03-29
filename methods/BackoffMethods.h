@@ -18,17 +18,17 @@ double computeBackoff(int pdf_backoff, int current_CW){
 	double backoff_time;
 
 	double EB = (double) (current_CW-1)/2;
-	double lambda =  1/(EB * SLOT_TIME);
+	double lambda_bo =  1/(EB * SLOT_TIME);
 
 	switch(pdf_backoff){
 
 		case PDF_DETERMINISTIC:{
-			backoff_time = 1/lambda;
+			backoff_time = 1/lambda_bo;
 			break;
 		}
 
 		case PDF_EXPONENTIAL:{
-			backoff_time = Exponential2(1/lambda);
+			backoff_time = Exponential2(1/lambda_bo);
 			break;
 		}
 
@@ -52,7 +52,8 @@ double computeBackoff(int pdf_backoff, int current_CW){
  * */
 int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logger node_logger,
 					int node_id, int node_state, double *channel_power,
-						int primary_channel, double current_cca_dBm, double current_cca_pico){
+						int primary_channel, double current_cca_dBm, double current_cca_pico,
+						int packets_in_buffer){
 
 	switch(pause_or_resume){
 
@@ -89,43 +90,46 @@ int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logge
 
 		case RESUME_TIMER:{
 
-			if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Primary_channel (#%d) affected\n",
-				SimTime, node_id, node_state, LOG_F00, LOG_LVL2, primary_channel);
+			if(packets_in_buffer > 0) {
 
-			if(save_node_logs) fprintf(node_logger.file,
-					"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f pW\n",
-					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, channel_power[primary_channel]);
+				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Primary_channel (#%d) affected\n",
+					SimTime, node_id, node_state, LOG_F00, LOG_LVL2, primary_channel);
 
-			if(channel_power[primary_channel] <= current_cca_pico){	// CCA NOT exceeded
+				if(save_node_logs) fprintf(node_logger.file,
+						"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f pW\n",
+						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, channel_power[primary_channel]);
 
-				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
-					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
-				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
-					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
+				if(channel_power[primary_channel] <= current_cca_pico){	// CCA NOT exceeded
 
-				return TRUE;
+					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
+						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
+					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
+						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
 
-			} else {	// CCA exceeded
+					return TRUE;
 
-				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
-					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
+				} else {	// CCA exceeded
+
+					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
+						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
+
+					return FALSE;
+
+				}
+
+				break;
+			}
+
+			default:{
+
+				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Unknown mode %d! (not resume nor pause)\n",
+					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, pause_or_resume);
 
 				return FALSE;
 
+				break;
+
 			}
-
-			break;
-		}
-
-		default:{
-
-			if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Unknown mode %d! (not resume nor pause)\n",
-				SimTime, node_id, node_state, LOG_F00, LOG_LVL3, pause_or_resume);
-
-			return FALSE;
-
-			break;
-
 		}
 	}
 }

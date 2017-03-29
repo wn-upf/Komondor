@@ -136,7 +136,6 @@
 #define LINEAR_TO_DB	6	// Convert Linear to dB
 #define DB_TO_LINEAR	7	// Convert dB to Linear
 
-
 // Boundary channels
 #define FIRST_ONE_IN_ARRAY 			0	// Search first element '1' in an array
 #define LAST_ONE_IN_ARRAY			1	// Search last element '1' in an array
@@ -176,11 +175,17 @@
 #define COCHANNEL_BOUNDARY	1	// (RECOMMENDED) Boundary co-channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
 #define COCHANNEL_EXTREME	2	// Extreme co-channel interference: ALL channels used in the TX affect the rest of channels
 
+// Traffic model
+#define TRAFFIC_FULL_BUFFER			0	// Transmitters always have packets to transmit
+#define TRAFFIC_POISSON			1	// Traffic is generated randomly according to a Poisson distribution
+#define TRAFFIC_DETERMINISTIC		2	// Traffic is generated at fixed intervals
+
+#define PACKET_BUFFER_SIZE		256		// Size of the packets buffer
+
 // Protocols
 #define INCREASE_CW 1		// Command to increase Congestion Window
 #define DECREASE_CW 2		// Command to decrease Congestion Window
 #define MAX_POWER 20 		// Maximum power that can be transmitted (dBm)
-
 
 // Node type
 #define NODE_TYPE_UNKWNOW	-1	// Unknown (none) node type
@@ -268,6 +273,7 @@
 #define IX_CONSTANT_PER				14
 #define IX_RTS_LENGTH				15
 #define IX_CTS_LENGTH				16
+#define IX_TRAFFIC_MODEL			17
 
 // Nodes file
 #define IX_NODE_CODE				1
@@ -293,6 +299,7 @@
 #define IX_CHANNEL_BONDING_MODEL	21
 #define IX_MODULATION_DEFAULT		22
 #define IX_CENTRAL_FREQ				23
+#define IX_LAMBDA					24
 
 // APs file
 #define IX_AP_WLAN_CODE					1
@@ -318,7 +325,7 @@
 #define IX_AP_CHANNEL_BONDING_MODEL		21
 #define IX_AP_MODULATION_DEFAULT		22
 #define IX_AP_CENTRAL_FREQ				23
-
+#define IX_AP_LAMBDA					24
 
 
 /* *********************

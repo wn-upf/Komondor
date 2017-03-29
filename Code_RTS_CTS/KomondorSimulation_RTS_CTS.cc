@@ -1,6 +1,6 @@
 /* TODO: DEFINE copyright headers.*/
 
-/* This is just an skecth of what our Komondor headers should look like.
+/* This is just an sketch of what our Komondor headers should look like.
  *
  * Copyright (c) 2017, Universitat Pompeu Fabra.
  * All rights reserved.
@@ -114,6 +114,7 @@ component Komondor : public CostSimEng {
 		double SIFS;					// Short Interframe Space (SIFS) [s]
 		double DIFS;					// DCF Interframe Space (DIFS) [s]
 		double constant_PER;			// Constant PER for successful transmissions
+		int traffic_model;				// Traffic model (0: full buffer, 1: poisson, 2: deterministic)
 
 	// Private items
 	private:
@@ -198,7 +199,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 		printAllWlansInfo();
 		if (print_system_logs) printf("\n");
 		printf("%s Nodes generated!\n", LOG_LVL2);
-		printAllNodesInfo(INFO_DETAIL_LEVEL_0);
+		printAllNodesInfo(INFO_DETAIL_LEVEL_2);
 		if (print_system_logs) printf("\n\n");
 	}
 
@@ -506,6 +507,11 @@ void Komondor :: setupEnvironmentByReadingInputFile(char *system_filename) {
 			const char* cts_length_char = getfield(tmp, IX_CTS_LENGTH);
 			cts_length = atoi(cts_length_char);
 
+			// Traffic model
+			tmp = strdup(line_system);
+			const char* traffic_model_char = getfield(tmp, IX_TRAFFIC_MODEL);
+			traffic_model = atoi(traffic_model_char);
+
 			free(tmp);
 		}
 	}
@@ -632,9 +638,6 @@ void Komondor :: generateNodesByReadingAPsInputFile(char *nodes_filename){
 			// Min CW
 			tmp_nodes = strdup(line_nodes);
 			int CW_min = atoi(getfield(tmp_nodes, IX_AP_CW_MIN));
-			// Lambda - CW
-			double EB = (double) (CW_min-1)/2;
-			double lambda =  1/(EB * SLOT_TIME);
 
 			// Max CW
 			tmp_nodes = strdup(line_nodes);
@@ -697,6 +700,12 @@ void Komondor :: generateNodesByReadingAPsInputFile(char *nodes_filename){
 			const char* central_frequency_char = getfield(tmp_nodes, IX_AP_CENTRAL_FREQ);
 			double central_frequency = atof(central_frequency_char);
 
+			// Lambda (packet generation rate)
+			tmp_nodes = strdup(line_nodes);
+			const char* lambda_char = getfield(tmp_nodes, IX_AP_LAMBDA);
+			double lambda = atof(lambda_char);
+
+
 			node_id_counter_in_wlan = 0;
 
 			node_ix_aux = node_ix;
@@ -735,7 +744,6 @@ void Komondor :: generateNodesByReadingAPsInputFile(char *nodes_filename){
 
 				node_container[node_ix].wlan_code = wlan_container[wlan_ix].wlan_code;
 				node_container[node_ix].destination_id = NODE_ID_NONE;
-				node_container[node_ix].lambda = lambda;
 				node_container[node_ix].CW_min = CW_min;
 				node_container[node_ix].CW_max = CW_max;
 				node_container[node_ix].primary_channel = primary_channel;
@@ -776,6 +784,8 @@ void Komondor :: generateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].ack_length = ack_length;
 				node_container[node_ix].rts_length = rts_length;
 				node_container[node_ix].cts_length = cts_length;
+				node_container[node_ix].traffic_model = traffic_model;
+				node_container[node_ix].lambda = lambda;
 				node_container[node_ix].simulation_code = simulation_code;
 
 				node_ix++;
@@ -919,10 +929,6 @@ void Komondor :: generateNodesByReadingNodesInputFile(char *nodes_filename){
 			// CW min
 			tmp_nodes = strdup(line_nodes);
 			node_container[node_ix].CW_min = atoi(getfield(tmp_nodes, IX_CW_MIN));
-			// Lambda - CW
-			double EB = (double) (node_container[node_ix].CW_min-1)/2;
-			double lambda =  1/(EB * SLOT_TIME);
-			node_container[node_ix].lambda = lambda;
 
 			// CW max
 			tmp_nodes = strdup(line_nodes);
@@ -985,6 +991,11 @@ void Komondor :: generateNodesByReadingNodesInputFile(char *nodes_filename){
 			const char* central_frequency_char = getfield(tmp_nodes, IX_CENTRAL_FREQ);
 			node_container[node_ix].central_frequency = atof(central_frequency_char);
 
+			// Lambda (packet generation rate)
+			tmp_nodes = strdup(line_nodes);
+			const char* lambda_char = getfield(tmp_nodes, IX_LAMBDA);
+			node_container[node_ix].lambda = atof(lambda_char);
+
 			// System
 			node_container[node_ix].simulation_time_komondor = simulation_time_komondor;
 			node_container[node_ix].total_nodes_number = total_nodes_number;
@@ -1008,6 +1019,7 @@ void Komondor :: generateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].ack_length = ack_length;
 			node_container[node_ix].rts_length = rts_length;
 			node_container[node_ix].cts_length = cts_length;
+			node_container[node_ix].traffic_model = traffic_model;
 			node_container[node_ix].simulation_code = simulation_code;
 
 			node_ix ++;
@@ -1044,6 +1056,7 @@ void Komondor :: printSystemInfo(){
 		printf("%s ack_length = %d bits\n", LOG_LVL3, ack_length);
 		printf("%s cts_length = %d bits\n", LOG_LVL3, cts_length);
 		printf("%s rts_length = %d bits\n", LOG_LVL3, rts_length);
+		printf("%s traffic_model = %d\n", LOG_LVL3, traffic_model);
 		printf("%s num_packets_aggregated = %d\n", LOG_LVL3, num_packets_aggregated);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 		printf("%s capture_effect = %f\n", LOG_LVL3, capture_effect);
