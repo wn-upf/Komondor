@@ -7,22 +7,24 @@
 /*
  * selectMCSResponse(): select the proper MCS of transmitter per number of channels
  */
-void selectMCS(int *mcs_response, double pw_received_interest_dBm) {
+void selectMCS(int *mcs_response, double pw_received_interest) {
+
+	double pw_received_interest_dbm = convertPower(PICO_TO_DBM, pw_received_interest);
 
 	for (int ch_num_ix = 0; ch_num_ix < 4; ch_num_ix ++){	// For 1, 2, 4 and 8 channels
 
-		if(pw_received_interest_dBm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_FORBIDDEN; }
-		else if (pw_received_interest_dBm >= -82 + (ch_num_ix*3) && pw_received_interest_dBm < -79 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_BPSK_1_2;}
-		else if (pw_received_interest_dBm >= -79 + (ch_num_ix*3) && pw_received_interest_dBm < -77 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_1_2;}
-		else if (pw_received_interest_dBm >= -77 + (ch_num_ix*3) && pw_received_interest_dBm < -74 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_3_4;}
-		else if (pw_received_interest_dBm >= -74 + (ch_num_ix*3) && pw_received_interest_dBm < -70 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_16QAM_1_2;}
-		else if (pw_received_interest_dBm >= -70 + (ch_num_ix*3) && pw_received_interest_dBm < -66 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_16QAM_3_4;}
-		else if (pw_received_interest_dBm >= -66 + (ch_num_ix*3) && pw_received_interest_dBm < -65 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_2_3;}
-		else if (pw_received_interest_dBm >= -65 + (ch_num_ix*3) && pw_received_interest_dBm < -64 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_3_4;}
-		else if (pw_received_interest_dBm >= -64 + (ch_num_ix*3) && pw_received_interest_dBm < -59 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_5_6;}
-		else if (pw_received_interest_dBm >= -59 + (ch_num_ix*3) && pw_received_interest_dBm < -57 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_256QAM_3_4;}
-		else if (pw_received_interest_dBm >= -57 + (ch_num_ix*3) && pw_received_interest_dBm < -54 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_256QAM_5_6;}
-		else if (pw_received_interest_dBm >= -54 + (ch_num_ix*3) && pw_received_interest_dBm < -52 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_1024QAM_3_4;}
+		if(pw_received_interest_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_FORBIDDEN; }
+		else if (pw_received_interest_dbm >= -82 + (ch_num_ix*3) && pw_received_interest_dbm < -79 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_BPSK_1_2;}
+		else if (pw_received_interest_dbm >= -79 + (ch_num_ix*3) && pw_received_interest_dbm < -77 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_1_2;}
+		else if (pw_received_interest_dbm >= -77 + (ch_num_ix*3) && pw_received_interest_dbm < -74 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_3_4;}
+		else if (pw_received_interest_dbm >= -74 + (ch_num_ix*3) && pw_received_interest_dbm < -70 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_16QAM_1_2;}
+		else if (pw_received_interest_dbm >= -70 + (ch_num_ix*3) && pw_received_interest_dbm < -66 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_16QAM_3_4;}
+		else if (pw_received_interest_dbm >= -66 + (ch_num_ix*3) && pw_received_interest_dbm < -65 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_2_3;}
+		else if (pw_received_interest_dbm >= -65 + (ch_num_ix*3) && pw_received_interest_dbm < -64 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_3_4;}
+		else if (pw_received_interest_dbm >= -64 + (ch_num_ix*3) && pw_received_interest_dbm < -59 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_5_6;}
+		else if (pw_received_interest_dbm >= -59 + (ch_num_ix*3) && pw_received_interest_dbm < -57 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_256QAM_3_4;}
+		else if (pw_received_interest_dbm >= -57 + (ch_num_ix*3) && pw_received_interest_dbm < -54 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_256QAM_5_6;}
+		else if (pw_received_interest_dbm >= -54 + (ch_num_ix*3) && pw_received_interest_dbm < -52 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_1024QAM_3_4;}
 		else { mcs_response[ch_num_ix] = MODULATION_1024QAM_5_6;}
 
 	}

@@ -62,7 +62,8 @@ struct TxInfo
 	double rts_duration;
 	double cts_duration;
 
-	double tx_power;			// Transmission power in [dBm]
+	double tx_power;			// Transmission power in [pW]
+	double tx_gain;				// Transmission gain [linear ratio]
 	double data_rate; 			// Rate at which data is transmitted
 	int *modulation_schemes;	// Modulation scheme used
 	int x;						// X position of source node
@@ -71,7 +72,8 @@ struct TxInfo
 	double nav_time;			// RTS/CTS NAV time
 
 	void printTxInfo(void){
-		printf("packet_id = %d - destination_id = %d - tx_duration = %f - tx_power = %f - position = (%d, %d, %d)\n",
+		printf("packet_id = %d - destination_id = %d - tx_duration = %f - tx_power = %f pw"
+				" - position = (%d, %d, %d)\n",
 				packet_id, destination_id, tx_duration, tx_power, x, y, z);
 	}
 
@@ -99,6 +101,7 @@ struct Notification
 	int right_channel;	// Right channel used in the transmission
 	int packet_length;	// Size of the packet to transmit
 	int modulation_id;	// Modulation being used during the transmission
+	double timestampt;
 
 	// Specific transmission info (may not be checked by the others nodes)
 	TxInfo tx_info;

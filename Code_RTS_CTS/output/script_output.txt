@@ -1,45 +1,138 @@
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
-<<<<<<< HEAD
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
+------------------------------------
+ KOMONDOR SIMULATION 'antonios_pollas'
   - System configuration: 
-    · total_nodes_number = 4
-    · total_nodes_number = 4
-    · num_channels_komondor = 8
+    · total_nodes_number = 6
+    · total_nodes_number = 6
+    · num_channels_komondor = 4
     · basic_channel_bandwidth = 20.000000
-    · pdf_backoff = 1
-    · pdf_tx_time = 1
+    · pdf_backoff = 0
+    · pdf_tx_time = 0
     · packet_length = 12000 bits
     · ack_length = 112 bits
     · num_packets_aggregated = 64
     · path_loss_model = 0
     · capture_effect = 10.000000
-    · noise_level = -100.000000 dBm
+    · noise_level = 0.100000 dBm
     · cochannel_model = 0
     · collisions_model = 1
     · SIFS = 0.000016 s
@@ -55,11 +148,16 @@
     · - num_stas: 1
     · - ap_id: 2
     · - list of STAs IDs: 3  
+    · WLAN C:
+    · - wlan_id: 2
+    · - num_stas: 1
+    · - ap_id: 4
+    · - list of STAs IDs: 5  
   - Nodes generated!
     · Node AP_A info:
     · - node_id = 0
     · - node_type = 0
-    · - position = (-100, 0, 0)
+    · - position = (0, 0, 0)
     · - primary_channel = 0
     · - min_channel_allowed = 0
     · - max_channel_allowed = 0
@@ -67,7 +165,7 @@
     · Node STA_A1 info:
     · - node_id = 1
     · - node_type = 1
-    · - position = (100, 0, 0)
+    · - position = (1, 0, 0)
     · - primary_channel = 0
     · - min_channel_allowed = 0
     · - max_channel_allowed = 0
@@ -75,43 +173,61 @@
     · Node AP_B info:
     · - node_id = 2
     · - node_type = 0
-    · - position = (700, 0, 0)
+    · - position = (2, 0, 0)
     · - primary_channel = 0
     · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
+    · - max_channel_allowed = 1
     · - channel_bonding_model = 4
     · Node STA_B1 info:
     · - node_id = 3
     · - node_type = 1
-    · - position = (900, 0, 0)
+    · - position = (3, 0, 0)
     · - primary_channel = 0
     · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
+    · - max_channel_allowed = 1
+    · - channel_bonding_model = 4
+    · Node AP_C info:
+    · - node_id = 4
+    · - node_type = 0
+    · - position = (4, 0, 0)
+    · - primary_channel = 1
+    · - min_channel_allowed = 1
+    · - max_channel_allowed = 1
+    · - channel_bonding_model = 4
+    · Node STA_C1 info:
+    · - node_id = 5
+    · - node_type = 1
+    · - position = (5, 0, 0)
+    · - primary_channel = 1
+    · - min_channel_allowed = 1
+    · - max_channel_allowed = 1
     · - channel_bonding_model = 4
  STATISTICS:
-  - Total number of packets sent = 22
-  - Node #0 (AP_A) Throughput = 0.768000
+  - Total number of packets sent = 1613
+  - Node #0 (AP_A) Throughput = 31257600.000000
   - Node #1 (STA_A1) Throughput = 0.000000
-  - Node #2 (AP_B) Throughput = 16.128000
+  - Node #2 (AP_B) Throughput = 31027200.000000
   - Node #3 (STA_B1) Throughput = 0.000000
-  - AVERAGE TPT = 8.448000
+  - Node #4 (AP_C) Throughput = 61593600.000000
+  - Node #5 (STA_C1) Throughput = 0.000000
+  - AVERAGE TPT = 41292800.000000
   - MIN VAL = 0.000000
-  - MAX VAL = 16.128000
+  - MAX VAL = 61593600.000000
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
   - System configuration: 
-    · total_nodes_number = 4
-    · total_nodes_number = 4
-    · num_channels_komondor = 8
+    · total_nodes_number = 6
+    · total_nodes_number = 6
+    · num_channels_komondor = 4
     · basic_channel_bandwidth = 20.000000
-    · pdf_backoff = 1
-    · pdf_tx_time = 1
+    · pdf_backoff = 0
+    · pdf_tx_time = 0
     · packet_length = 12000 bits
     · ack_length = 112 bits
     · num_packets_aggregated = 64
     · path_loss_model = 0
     · capture_effect = 10.000000
-    · noise_level = -100.000000 dBm
+    · noise_level = 0.100000 dBm
     · cochannel_model = 0
     · collisions_model = 1
     · SIFS = 0.000016 s
@@ -127,11 +243,16 @@
     · - num_stas: 1
     · - ap_id: 2
     · - list of STAs IDs: 3  
+    · WLAN C:
+    · - wlan_id: 2
+    · - num_stas: 1
+    · - ap_id: 4
+    · - list of STAs IDs: 5  
   - Nodes generated!
     · Node AP_A info:
     · - node_id = 0
     · - node_type = 0
-    · - position = (-100, 0, 0)
+    · - position = (0, 0, 0)
     · - primary_channel = 0
     · - min_channel_allowed = 0
     · - max_channel_allowed = 0
@@ -139,7 +260,7 @@
     · Node STA_A1 info:
     · - node_id = 1
     · - node_type = 1
-    · - position = (100, 0, 0)
+    · - position = (1, 0, 0)
     · - primary_channel = 0
     · - min_channel_allowed = 0
     · - max_channel_allowed = 0
@@ -147,784 +268,55 @@
     · Node AP_B info:
     · - node_id = 2
     · - node_type = 0
-    · - position = (700, 0, 0)
+    · - position = (2, 0, 0)
     · - primary_channel = 0
     · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
+    · - max_channel_allowed = 1
     · - channel_bonding_model = 4
     · Node STA_B1 info:
     · - node_id = 3
     · - node_type = 1
-    · - position = (900, 0, 0)
+    · - position = (3, 0, 0)
     · - primary_channel = 0
     · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
+    · - max_channel_allowed = 1
+    · - channel_bonding_model = 4
+    · Node AP_C info:
+    · - node_id = 4
+    · - node_type = 0
+    · - position = (4, 0, 0)
+    · - primary_channel = 1
+    · - min_channel_allowed = 1
+    · - max_channel_allowed = 1
+    · - channel_bonding_model = 4
+    · Node STA_C1 info:
+    · - node_id = 5
+    · - node_type = 1
+    · - position = (5, 0, 0)
+    · - primary_channel = 1
+    · - min_channel_allowed = 1
+    · - max_channel_allowed = 1
     · - channel_bonding_model = 4
  STATISTICS:
-  - Total number of packets sent = 22
-  - Node #0 (AP_A) Throughput = 0.768000
+  - Total number of packets sent = 1613
+  - Node #0 (AP_A) Throughput = 31257600.000000
   - Node #1 (STA_A1) Throughput = 0.000000
-  - Node #2 (AP_B) Throughput = 16.128000
+  - Node #2 (AP_B) Throughput = 31027200.000000
   - Node #3 (STA_B1) Throughput = 0.000000
-  - AVERAGE TPT = 8.448000
+  - Node #4 (AP_C) Throughput = 61593600.000000
+  - Node #5 (STA_C1) Throughput = 0.000000
+  - AVERAGE TPT = 41292800.000000
   - MIN VAL = 0.000000
-  - MAX VAL = 16.128000
+  - MAX VAL = 61593600.000000
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION '1'
-=======
- KOMONDOR SIMULATION 'sim'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION 'sim'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION 'sim'
+ KOMONDOR SIMULATION 'antonios_pollas'
 ------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
-------------------------------------
- KOMONDOR SIMULATION 'sim'
->>>>>>> sergio
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-  - System configuration: 
-    · total_nodes_number = 4
-    · total_nodes_number = 4
-    · num_channels_komondor = 8
-    · basic_channel_bandwidth = 20.000000
-    · pdf_backoff = 1
-    · pdf_tx_time = 1
-    · packet_length = 12000 bits
-    · ack_length = 112 bits
-    · num_packets_aggregated = 64
-    · path_loss_model = 0
-    · capture_effect = 10.000000
-    · noise_level = -100.000000 dBm
-    · cochannel_model = 0
-    · collisions_model = 1
-    · SIFS = 0.000016 s
-    · DIFS = 0.000034 s
-  - Wlans generated!
-    · WLAN A:
-    · - wlan_id: 0
-    · - num_stas: 1
-    · - ap_id: 0
-    · - list of STAs IDs: 1  
-    · WLAN B:
-    · - wlan_id: 1
-    · - num_stas: 1
-    · - ap_id: 2
-    · - list of STAs IDs: 3  
-  - Nodes generated!
-    · Node AP_A info:
-    · - node_id = 0
-    · - node_type = 0
-    · - position = (-100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_A1 info:
-    · - node_id = 1
-    · - node_type = 1
-    · - position = (100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node AP_B info:
-    · - node_id = 2
-    · - node_type = 0
-    · - position = (700, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_B1 info:
-    · - node_id = 3
-    · - node_type = 1
-    · - position = (900, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
- STATISTICS:
-  - Total number of packets sent = 22
-  - Node #0 (AP_A) Throughput = 0.768000
-  - Node #1 (STA_A1) Throughput = 0.000000
-  - Node #2 (AP_B) Throughput = 16.128000
-  - Node #3 (STA_B1) Throughput = 0.000000
-  - AVERAGE TPT = 8.448000
-  - MIN VAL = 0.000000
-  - MAX VAL = 16.128000
-------------------------------------
- KOMONDOR SIMULATION '1'
-  - System configuration: 
-    · total_nodes_number = 4
-    · total_nodes_number = 4
-    · num_channels_komondor = 8
-    · basic_channel_bandwidth = 20.000000
-    · pdf_backoff = 1
-    · pdf_tx_time = 1
-    · packet_length = 12000 bits
-    · ack_length = 112 bits
-    · num_packets_aggregated = 64
-    · path_loss_model = 0
-    · capture_effect = 10.000000
-    · noise_level = -100.000000 dBm
-    · cochannel_model = 0
-    · collisions_model = 1
-    · SIFS = 0.000016 s
-    · DIFS = 0.000034 s
-  - Wlans generated!
-    · WLAN A:
-    · - wlan_id: 0
-    · - num_stas: 1
-    · - ap_id: 0
-    · - list of STAs IDs: 1  
-    · WLAN B:
-    · - wlan_id: 1
-    · - num_stas: 1
-    · - ap_id: 2
-    · - list of STAs IDs: 3  
-  - Nodes generated!
-    · Node AP_A info:
-    · - node_id = 0
-    · - node_type = 0
-    · - position = (-100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_A1 info:
-    · - node_id = 1
-    · - node_type = 1
-    · - position = (100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node AP_B info:
-    · - node_id = 2
-    · - node_type = 0
-    · - position = (700, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_B1 info:
-    · - node_id = 3
-    · - node_type = 1
-    · - position = (900, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
- STATISTICS:
-  - Total number of packets sent = 0
-  - Node #0 (AP_A) Throughput = 0.000000
-  - Node #1 (STA_A1) Throughput = 0.000000
-  - Node #2 (AP_B) Throughput = 0.000000
-  - Node #3 (STA_B1) Throughput = 0.000000
-  - AVERAGE TPT = 0.000000
-  - MIN VAL = 0.000000
-  - MAX VAL = 0.000000
-------------------------------------
- KOMONDOR SIMULATION '1'
-  - System configuration: 
-    · total_nodes_number = 4
-    · total_nodes_number = 4
-    · num_channels_komondor = 8
-    · basic_channel_bandwidth = 20.000000
-    · pdf_backoff = 1
-    · pdf_tx_time = 1
-    · packet_length = 12000 bits
-    · ack_length = 112 bits
-    · num_packets_aggregated = 64
-    · path_loss_model = 0
-    · capture_effect = 10.000000
-    · noise_level = -100.000000 dBm
-    · cochannel_model = 0
-    · collisions_model = 1
-    · SIFS = 0.000016 s
-    · DIFS = 0.000034 s
-  - Wlans generated!
-    · WLAN A:
-    · - wlan_id: 0
-    · - num_stas: 1
-    · - ap_id: 0
-    · - list of STAs IDs: 1  
-    · WLAN B:
-    · - wlan_id: 1
-    · - num_stas: 1
-    · - ap_id: 2
-    · - list of STAs IDs: 3  
-  - Nodes generated!
-    · Node AP_A info:
-    · - node_id = 0
-    · - node_type = 0
-    · - position = (-100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_A1 info:
-    · - node_id = 1
-    · - node_type = 1
-    · - position = (100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node AP_B info:
-    · - node_id = 2
-    · - node_type = 0
-    · - position = (700, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_B1 info:
-    · - node_id = 3
-    · - node_type = 1
-    · - position = (900, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
- STATISTICS:
-  - Total number of packets sent = 0
-  - Node #0 (AP_A) Throughput = 0.000000
-  - Node #1 (STA_A1) Throughput = 0.000000
-  - Node #2 (AP_B) Throughput = 0.000000
-  - Node #3 (STA_B1) Throughput = 0.000000
-  - AVERAGE TPT = 0.000000
-  - MIN VAL = 0.000000
-  - MAX VAL = 0.000000
-------------------------------------
- KOMONDOR SIMULATION '1'
-  - System configuration: 
-    · total_nodes_number = 4
-    · total_nodes_number = 4
-    · num_channels_komondor = 8
-    · basic_channel_bandwidth = 20.000000
-    · pdf_backoff = 1
-    · pdf_tx_time = 1
-    · packet_length = 12000 bits
-    · ack_length = 112 bits
-    · num_packets_aggregated = 64
-    · path_loss_model = 0
-    · capture_effect = 10.000000
-    · noise_level = -100.000000 dBm
-    · cochannel_model = 0
-    · collisions_model = 1
-    · SIFS = 0.000016 s
-    · DIFS = 0.000034 s
-  - Wlans generated!
-    · WLAN A:
-    · - wlan_id: 0
-    · - num_stas: 1
-    · - ap_id: 0
-    · - list of STAs IDs: 1  
-    · WLAN B:
-    · - wlan_id: 1
-    · - num_stas: 1
-    · - ap_id: 2
-    · - list of STAs IDs: 3  
-  - Nodes generated!
-    · Node AP_A info:
-    · - node_id = 0
-    · - node_type = 0
-    · - position = (-100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_A1 info:
-    · - node_id = 1
-    · - node_type = 1
-    · - position = (100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node AP_B info:
-    · - node_id = 2
-    · - node_type = 0
-    · - position = (700, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_B1 info:
-    · - node_id = 3
-    · - node_type = 1
-    · - position = (900, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
- STATISTICS:
-  - Total number of packets sent = 0
-  - Node #0 (AP_A) Throughput = 0.000000
-  - Node #1 (STA_A1) Throughput = 0.000000
-  - Node #2 (AP_B) Throughput = 0.000000
-  - Node #3 (STA_B1) Throughput = 0.000000
-  - AVERAGE TPT = 0.000000
-  - MIN VAL = 0.000000
-  - MAX VAL = 0.000000
-------------------------------------
- KOMONDOR SIMULATION '1'
-  - System configuration: 
-    · total_nodes_number = 4
-    · total_nodes_number = 4
-    · num_channels_komondor = 8
-    · basic_channel_bandwidth = 20.000000
-    · pdf_backoff = 1
-    · pdf_tx_time = 1
-    · packet_length = 12000 bits
-    · ack_length = 112 bits
-    · num_packets_aggregated = 64
-    · path_loss_model = 0
-    · capture_effect = 10.000000
-    · noise_level = -100.000000 dBm
-    · cochannel_model = 0
-    · collisions_model = 1
-    · SIFS = 0.000016 s
-    · DIFS = 0.000034 s
-  - Wlans generated!
-    · WLAN A:
-    · - wlan_id: 0
-    · - num_stas: 1
-    · - ap_id: 0
-    · - list of STAs IDs: 1  
-    · WLAN B:
-    · - wlan_id: 1
-    · - num_stas: 1
-    · - ap_id: 2
-    · - list of STAs IDs: 3  
-  - Nodes generated!
-    · Node AP_A info:
-    · - node_id = 0
-    · - node_type = 0
-    · - position = (-100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_A1 info:
-    · - node_id = 1
-    · - node_type = 1
-    · - position = (100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node AP_B info:
-    · - node_id = 2
-    · - node_type = 0
-    · - position = (700, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_B1 info:
-    · - node_id = 3
-    · - node_type = 1
-    · - position = (900, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
- STATISTICS:
-  - Total number of packets sent = 0
-  - Node #0 (AP_A) Throughput = 0.000000
-  - Node #1 (STA_A1) Throughput = 0.000000
-  - Node #2 (AP_B) Throughput = 0.000000
-  - Node #3 (STA_B1) Throughput = 0.000000
-  - AVERAGE TPT = 0.000000
-  - MIN VAL = 0.000000
-  - MAX VAL = 0.000000
-------------------------------------
- KOMONDOR SIMULATION '1'
-  - System configuration: 
-    · total_nodes_number = 4
-    · total_nodes_number = 4
-    · num_channels_komondor = 8
-    · basic_channel_bandwidth = 20.000000
-    · pdf_backoff = 1
-    · pdf_tx_time = 1
-    · packet_length = 12000 bits
-    · ack_length = 112 bits
-    · num_packets_aggregated = 64
-    · path_loss_model = 0
-    · capture_effect = 10.000000
-    · noise_level = -100.000000 dBm
-    · cochannel_model = 0
-    · collisions_model = 1
-    · SIFS = 0.000016 s
-    · DIFS = 0.000034 s
-  - Wlans generated!
-    · WLAN A:
-    · - wlan_id: 0
-    · - num_stas: 1
-    · - ap_id: 0
-    · - list of STAs IDs: 1  
-    · WLAN B:
-    · - wlan_id: 1
-    · - num_stas: 1
-    · - ap_id: 2
-    · - list of STAs IDs: 3  
-  - Nodes generated!
-    · Node AP_A info:
-    · - node_id = 0
-    · - node_type = 0
-    · - position = (-100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_A1 info:
-    · - node_id = 1
-    · - node_type = 1
-    · - position = (100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node AP_B info:
-    · - node_id = 2
-    · - node_type = 0
-    · - position = (700, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_B1 info:
-    · - node_id = 3
-    · - node_type = 1
-    · - position = (900, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
- STATISTICS:
-  - Total number of packets sent = 193
-  - Node #0 (AP_A) Throughput = 0.076800
-  - Node #1 (STA_A1) Throughput = 0.000000
-  - Node #2 (AP_B) Throughput = 14.745600
-  - Node #3 (STA_B1) Throughput = 0.000000
-  - AVERAGE TPT = 7.411200
-  - MIN VAL = 0.000000
-  - MAX VAL = 14.745600
-------------------------------------
- KOMONDOR SIMULATION '1'
-  - System configuration: 
-    · total_nodes_number = 4
-    · total_nodes_number = 4
-    · num_channels_komondor = 8
-    · basic_channel_bandwidth = 20.000000
-    · pdf_backoff = 1
-    · pdf_tx_time = 1
-    · packet_length = 12000 bits
-    · ack_length = 112 bits
-    · num_packets_aggregated = 64
-    · path_loss_model = 0
-    · capture_effect = 10.000000
-    · noise_level = -100.000000 dBm
-    · cochannel_model = 0
-    · collisions_model = 1
-    · SIFS = 0.000016 s
-    · DIFS = 0.000034 s
-  - Wlans generated!
-    · WLAN A:
-    · - wlan_id: 0
-    · - num_stas: 1
-    · - ap_id: 0
-    · - list of STAs IDs: 1  
-    · WLAN B:
-    · - wlan_id: 1
-    · - num_stas: 1
-    · - ap_id: 2
-    · - list of STAs IDs: 3  
-  - Nodes generated!
-    · Node AP_A info:
-    · - node_id = 0
-    · - node_type = 0
-    · - position = (-100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_A1 info:
-    · - node_id = 1
-    · - node_type = 1
-    · - position = (100, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node AP_B info:
-    · - node_id = 2
-    · - node_type = 0
-    · - position = (700, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
-    · Node STA_B1 info:
-    · - node_id = 3
-    · - node_type = 1
-    · - position = (900, 0, 0)
-    · - primary_channel = 0
-    · - min_channel_allowed = 0
-    · - max_channel_allowed = 0
-    · - channel_bonding_model = 4
- STATISTICS:
-  - Total number of packets sent = 193
-  - Node #0 (AP_A) Throughput = 0.076800
-  - Node #1 (STA_A1) Throughput = 0.000000
-  - Node #2 (AP_B) Throughput = 14.745600
-  - Node #3 (STA_B1) Throughput = 0.000000
-  - AVERAGE TPT = 7.411200
-  - MIN VAL = 0.000000
-  - MAX VAL = 14.745600
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
-------------------------------------
- KOMONDOR SIMULATION '1'
+ KOMONDOR SIMULATION 'antonios_pollas'

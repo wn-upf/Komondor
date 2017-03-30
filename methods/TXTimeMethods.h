@@ -24,6 +24,8 @@ double computeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 
 	double tx_time;
 
+//	data_rate = 81.5727 * 12000 * 64;
+
 	switch(pdf_tx_time){
 
 		case PDF_DETERMINISTIC:{

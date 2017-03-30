@@ -13,22 +13,40 @@ double	Exponential2(double mean)	{ return -mean*log(Random2());}
  * Output:
  * - backoff_time: generated backoff
  * */
-double computeBackoff(int pdf_backoff, int current_CW){
+double computeBackoff(int pdf_backoff, int current_CW, int backoff_type){
 
 	double backoff_time;
-
 	double EB = (double) (current_CW-1)/2;
 	double lambda_bo =  1/(EB * SLOT_TIME);
 
 	switch(pdf_backoff){
 
 		case PDF_DETERMINISTIC:{
-			backoff_time = 1/lambda_bo;
+
+			if(backoff_type == BACKOFF_SLOTTED) {
+
+				backoff_time = (rand() % current_CW + 1) * SLOT_TIME;
+
+			} else if(backoff_type == BACKOFF_CONTINUOUS) {
+
+				backoff_time = 1/lambda_bo;
+
+			}
+
 			break;
 		}
 
 		case PDF_EXPONENTIAL:{
-			backoff_time = Exponential2(1/lambda_bo);
+
+			if(backoff_type == BACKOFF_SLOTTED) {
+
+				backoff_time = round(Exponential2(EB)) * SLOT_TIME;
+
+			} else if(backoff_type == BACKOFF_CONTINUOUS) {
+
+				backoff_time = Exponential2(1/lambda_bo);
+
+			}
 			break;
 		}
 
@@ -43,6 +61,39 @@ double computeBackoff(int pdf_backoff, int current_CW){
 }
 
 /*
+ * computeRemainingBackoff():
+ * */
+double computeRemainingBackoff(int backoff_type, double remaining_backoff, double SimTime){
+
+	double updatedBO;
+
+	switch(backoff_type){
+
+		case BACKOFF_SLOTTED: {
+			updatedBO = round((remaining_backoff - SimTime)/SLOT_TIME) * SLOT_TIME;
+			break;
+		}
+
+		case BACKOFF_CONTINUOUS: {
+			updatedBO = remaining_backoff - SimTime;
+			break;
+		}
+
+		default:{
+			printf("Backoff type not found!\n");
+			exit(EXIT_FAILURE);
+			break;
+		}
+
+	}
+
+	return updatedBO;
+
+}
+
+
+
+/*
  * handleBackoff(): handles the backoff. It is called when backoff may be paused or resumed.
  * Arguments:
  * - pause_or_resume: flag for identifying if function must try to pause or resume the backoff
@@ -52,7 +103,7 @@ double computeBackoff(int pdf_backoff, int current_CW){
  * */
 int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logger node_logger,
 					int node_id, int node_state, double *channel_power,
-						int primary_channel, double current_cca_dBm, double current_cca_pico,
+						int primary_channel, double current_cca,
 						int packets_in_buffer){
 
 	switch(pause_or_resume){
@@ -66,17 +117,17 @@ int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logge
 				"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f pW\n",
 				SimTime, node_id, node_state, LOG_F00, LOG_LVL3, channel_power[primary_channel]);
 
-			if(channel_power[primary_channel] > current_cca_pico){	// CCA exceeded
+			if(channel_power[primary_channel] > current_cca){	// CCA exceeded
 
-				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
-						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
+				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f pW) exceeded\n",
+						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
 
 				return TRUE;
 
 			} else {	// CCA NOT exceeded
 
-				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
-					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
+				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f pW) NOT exceeded\n",
+					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
 				if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
 					SimTime, node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
 
@@ -99,10 +150,10 @@ int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logge
 						"%f;N%d;S%d;%s;%s Power sensed in primary channel:  %f pW\n",
 						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, channel_power[primary_channel]);
 
-				if(channel_power[primary_channel] <= current_cca_pico){	// CCA NOT exceeded
+				if(channel_power[primary_channel] <= current_cca){	// CCA NOT exceeded
 
-					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) NOT exceeded\n",
-						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
+					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f pW) NOT exceeded\n",
+						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
 					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s primary_channel (#%d) NOT affected\n",
 						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, primary_channel);
 
@@ -110,8 +161,8 @@ int handleBackoff(int pause_or_resume, double SimTime, int save_node_logs, Logge
 
 				} else {	// CCA exceeded
 
-					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f dBm) exceeded\n",
-						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca_dBm);
+					if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s CCA (%f pW) exceeded\n",
+						SimTime, node_id, node_state, LOG_F00, LOG_LVL3, current_cca);
 
 					return FALSE;
 

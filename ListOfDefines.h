@@ -103,6 +103,7 @@
 #define PACKET_LOST_SINR_PROB			5	// Packet lost due to SINR probability
 #define PACKET_ACK_LOST					6	// ACK lost
 #define PACKET_LOST_RX_IN_NAV			7	// Received a packet when being in NAV state
+#define PACKET_LOST_BO_COLLISION		8
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1
@@ -121,6 +122,10 @@
 // Timers
 #define PAUSE_TIMER		0	// Try to pause a timer (e.g. backoff)
 #define RESUME_TIMER	1	// Try to resume timer
+
+// Backoff types
+#define BACKOFF_SLOTTED		0
+#define BACKOFF_CONTINUOUS	1
 
 // CCA
 #define CCA_NOT_EXCEEDED	0	// CCA is not exceeded (primary channel is free)
@@ -142,15 +147,16 @@
 #define NUM_OPTIONS_CHANNEL_LENGTH	4	// Number of options of channel lengths (1, 2, 4, 8)
 
 // Channel free - occupied
-#define CHANNEL_FREE		0
-#define CHANNEL_OCCUPIED	1
+#define CHANNEL_OCCUPIED	0
+#define CHANNEL_FREE		1
 
 // Progress bar
 #define PROGRESS_BAR_DELTA		5	// Amount of percentage between two progress bar indicators
 #define PROGRESS_BAR_DISPLAY 	1	// Activate progress bar
 
 // C++ macros
-#define MIN_VALUE_C_LANGUAGE	0.000001	// Minimum float value printable for default by C++ language
+#define MIN_VALUE_C_LANGUAGE			0.000001			// Minimum float value printable for default by C++ language
+#define MIN_DOUBLE_VALUE_KOMONDOR		0.000000000000001	// Minimum value accepted by Komondor
 
 // Path-loss models
 #define PATH_LOSS_LFS 				0	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
@@ -219,8 +225,6 @@
 #define INFO_DETAIL_LEVEL_2		2
 #define INFO_DETAIL_LEVEL_3		3
 
-
-
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
  * ************************************************
@@ -272,8 +276,9 @@
 #define IX_SIFS						13
 #define IX_CONSTANT_PER				14
 #define IX_TRAFFIC_MODEL			15
-#define IX_RTS_LENGTH				16
-#define IX_CTS_LENGTH				17
+#define IX_BO_TYPE					16
+#define IX_RTS_LENGTH				17
+#define IX_CTS_LENGTH				18
 
 // Nodes file
 #define IX_NODE_CODE				1
