@@ -1,7 +1,50 @@
+/* This is just an sketch of what our Komondor headers should look like.
+ *
+ * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the Institute nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *
+ * -----------------------------------------------------------------
+ *
+ * Author  : Sergio Barrachina-Muñoz and Francesc Wilhelmi
+ * Created : 2016-12-05
+ * Updated : $Date: 2017/03/20 10:32:36 $
+ *           $Revision: 1.0 $
+ *
+ * -----------------------------------------------------------------
+ * File description:
+ *
+ * - Bla bla bla...
+ */
+
 #include <stddef.h>
 #include <math.h>
 
-#include "../ListOfDefines.h"
+#include "../list_of_macros.h"
 
 /***********************/
 /***********************/
@@ -10,46 +53,39 @@
 /***********************/
 
 /*
- * convertPower(): convert power units
- * Input arguments:
- * - conversion_type: unit conversion type
- * - power: power value
- * Output:
- * - converted_power: power converted to required unit
- */
-double convertPower(int conversion_type, double power){
+ * ConvertPower(): convert power units
+ **/
+double ConvertPower(int conversion_type, double power_magnitude_in){
 
   double converted_power = 0;
 
-  printf("power = %f\n", power); ERROR HERE IN VALGRIND USE OF UNITIALISED VALUE!!!!
-
   switch(conversion_type){
     // pW to dBm
-    case PICO_TO_DBM:{
-      converted_power = 10 * log10(power * pow(10,-9));
+    case PW_TO_DBM:{
+      converted_power = 10 * log10(power_magnitude_in * pow(10,-9));
       break;
     }
     // dBm to pW
-    case DBM_TO_PICO:{
-      converted_power = pow(10,(power + 90)/10);
+    case DBM_TO_PW:{
+      converted_power = pow(10,(power_magnitude_in + 90)/10);
       break;
     }
     // mW to dBm
-    case MILLI_TO_DBM:{
-      converted_power = 10 * log10(power * pow(10,-6));
+    case MW_TO_DBM:{
+      converted_power = 10 * log10(power_magnitude_in * pow(10,-6));
       break;
     }
     // dBm to mW (dB to linear)
-    case DBM_TO_MILLI:
+    case DBM_TO_MW:
     case DB_TO_LINEAR:
-    case DB_TO_W: {
-      converted_power = pow(10,power/10);
+    case DBW_TO_W: {
+      converted_power = pow(10,power_magnitude_in/10);
       break;
     }
-    // W to dB
-    case W_TO_DB:
+    // W to dBW
+    case W_TO_DBW:
     case LINEAR_TO_DB: {
-      converted_power = 10 * log10(power);
+      converted_power = 10 * log10(power_magnitude_in);
       break;
     }
     default:{
@@ -61,35 +97,22 @@ double convertPower(int conversion_type, double power){
 }
 
 /*
- * computeDistance(): returns the distance between 2 points
- * Input arguments:
- * - x1,y1,z1: first point position
- * - x2,y2,z2: second point position
- * Output:
- * - distance: distance [m]
- */
-double computeDistance(int x1, int y1, int z1, int x2, int y2, int z2){
+ * ComputeDistance(): returns the distance between 2 points
+ **/
+double ComputeDistance(int x1, int y1, int z1, int x2, int y2, int z2){
   double distance = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
   return distance;
 }
 
 /*
- * computePowerReceived() returns the power received in a given distance from the transmitter depending on the path loss model
- * Input arguments:
- * - distance: distance between transceiver and received [m]
-* - tx_power: TX power [dBm]
- * - tx_gain: transmitter gain [dB]
- * - rx_gain: receiver gain [dB]
- * Output arguments:
- * - Power received [dBm]
- */
-double computePowerReceived(double distance, double tx_power, double tx_gain, double rx_gain,
+ * ComputePowerReceived() returns the power received in a given distance from the transmitter depending on the path loss model
+ **/
+double ComputePowerReceived(double distance, double tx_power, double tx_gain, double rx_gain,
 		double central_frequency, int path_loss_model) {
 
-
-	double tx_power_dbm = convertPower(PICO_TO_DBM, tx_power);
-	double tx_gain_db = convertPower(LINEAR_TO_DB, tx_gain);
-	double rx_gain_db = convertPower(LINEAR_TO_DB, rx_gain);
+	double tx_power_dbm = ConvertPower(PW_TO_DBM, tx_power);
+	double tx_gain_db = ConvertPower(LINEAR_TO_DB, tx_gain);
+	double rx_gain_db = ConvertPower(LINEAR_TO_DB, rx_gain);
 	double pw_received_dbm;
 	double wavelength = (double) SPEED_LIGHT/central_frequency;
 	double loss;
@@ -265,18 +288,15 @@ double computePowerReceived(double distance, double tx_power, double tx_gain, do
 
 	}
 
-	double pw_received = convertPower(DBM_TO_PICO, pw_received_dbm);
+	double pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
 
 	return pw_received;
 }
 
 /*
- * compute_tx_power_per_channel(): computes the transmission time (just link rate) according to the number of channels used and packet lenght
- * Input arguments:
- * - current_tpc: number of channels (OR INDEX) used in the transmission
- * - num_channels_tx: num_channels_tx of bits sent in the transmission
- */
-double computeTxPowerPerChannel(double current_tpc, int num_channels_tx){
+ * ComputeTxPowerPerChannel(): computes power sent per channel
+ **/
+double ComputeTxPowerPerChannel(double current_tpc, int num_channels_tx){
 
 	double tx_power_per_channel = current_tpc;
 
@@ -298,19 +318,19 @@ double computeTxPowerPerChannel(double current_tpc, int num_channels_tx){
 /***********************/
 
 /*
- * getChannelOccupancyByCCA(): indicates the channels occupied and free in a binary way
+ * GetChannelOccupancyByCCA(): indicates the channels occupied and free in a binary way
  */
-void getChannelOccupancyByCCA(int *channels_free, int min_channel_allowed, int max_channel_allowed,
-    double *channel_power, double current_cca, double *timestampt_channel_becomes_free,
-	double SimTime, double DIFS){
+void GetChannelOccupancyByCCA(int *channels_free, int min_channel_allowed, int max_channel_allowed,
+    double *channel_power, double cca, double *timestampt_channel_becomes_free, double sim_time,
+	double difs){
 
 	double time_channel_has_been_free;	// Time channel has been free since last P(ch) > CCA
 
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 
-		time_channel_has_been_free = SimTime - timestampt_channel_becomes_free[c];
+		time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
 
-		if(channel_power[c] < current_cca && time_channel_has_been_free > DIFS){
+		if(channel_power[c] < cca && time_channel_has_been_free > difs){
 
 		  channels_free[c] = CHANNEL_FREE;
 
@@ -320,41 +340,29 @@ void getChannelOccupancyByCCA(int *channels_free, int min_channel_allowed, int m
 
 		}
 	}
-
 }
 
-void updatePowerReceivedPerNode(double *power_received_per_node, Notification notification,
-    int x, int y, int z, double rx_gain, double central_frequency, int path_loss_model,
-	double SimTime, Logger node_logger, int save_node_logs, int node_id, int node_state) {
+/*
+ * UpdatePowerSensedPerNode: updates the power sensed comming from each node
+ **/
+void UpdatePowerSensedPerNode(double *power_received_per_node, Notification notification,
+    int x, int y, int z, double rx_gain, double central_frequency, int path_loss_model) {
 
-	double distance = computeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
+	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
 			notification.tx_info.z);
 
-	double pw_received = computePowerReceived(distance, notification.tx_info.tx_power,
+	double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
 			notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
 
 	power_received_per_node[notification.source_id] = pw_received;
 
-	if(save_node_logs) fprintf(node_logger.file,
-		"%f;N%d;S%d;%s;%s Distance to transmitting node N%d: %f m\n",
-		SimTime, node_id, node_state, LOG_D04, LOG_LVL4, notification.source_id, distance);
-
-	if(save_node_logs) fprintf(node_logger.file,
-		"%f;N%d;S%d;%s;%s Power received from ANTONIOS POLLAS N%d: = %f dBm (%f pW)\n",
-		SimTime, node_id, node_state, LOG_D04, LOG_LVL4, notification.source_id,
-		convertPower(PICO_TO_DBM, pw_received), pw_received);
-
 }
 
 /*
- * applyInterferenceModel: applies the interference model
- * Arguments:
- * - notification: type of co-channel model applied (0: no co-channel interference, 1: 20 dB mask, ...)
- * - update_type: type of power update (sum or subtract)
- */
-void applyInterferenceModel(double *total_power, Notification notification, Logger node_logger,
-    int save_node_logs,  int num_channels_komondor, double *power_received_per_node,
-    int node_id, int node_state, double SimTime, int cochannel_model){
+ * ApplyCochannelInterferenceModel: applies a cochannel interference model
+ **/
+void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, Notification notification,
+		int num_channels_komondor, double *power_received_per_node){
 
 	// Direct power (power of the channels used for transmitting)
 	for(int i = notification.left_channel; i <= notification.right_channel; i++){
@@ -385,14 +393,14 @@ void applyInterferenceModel(double *total_power, Notification notification, Logg
 					if(c < notification.left_channel) {
 
 						pw_loss_db = 20 * abs(c-notification.left_channel);
-						total_power_dbm = convertPower(PICO_TO_DBM, pw_rx_node) - pw_loss_db;
-						total_power[c] += convertPower(DBM_TO_PICO, total_power_dbm);
+						total_power_dbm = ConvertPower(PW_TO_DBM, pw_rx_node) - pw_loss_db;
+						total_power[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					} else if(c > notification.right_channel) {
 
 						pw_loss_db = 20 * abs(c-notification.right_channel);
-						total_power_dbm = convertPower(PICO_TO_DBM, pw_rx_node) - pw_loss_db;
-						total_power[c] += convertPower(DBM_TO_PICO, total_power_dbm);
+						total_power_dbm = ConvertPower(PW_TO_DBM, pw_rx_node) - pw_loss_db;
+						total_power[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					}
 
@@ -418,8 +426,8 @@ void applyInterferenceModel(double *total_power, Notification notification, Logg
 					if(c != j) {
 
 						pw_loss_db = 20 * abs(c-j);
-						total_power_dbm = convertPower(PICO_TO_DBM, pw_rx_node) - pw_loss_db;
-						total_power[c] += convertPower(DBM_TO_PICO, total_power_dbm);
+						total_power_dbm = ConvertPower(PW_TO_DBM, pw_rx_node) - pw_loss_db;
+						total_power[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 						if(total_power[c] < MIN_DOUBLE_VALUE_KOMONDOR) total_power[c] = 0;
 
@@ -430,124 +438,64 @@ void applyInterferenceModel(double *total_power, Notification notification, Logg
 		}
 
 		default:{
+			printf("ERROR: Unkown cochannel model!");
+			exit(EXIT_FAILURE);
 			break;
 		}
 	}
+}
 
-	if(save_node_logs) fprintf(node_logger.file,
-			"\n%f;N%d;S%d;%s;%s Power to sum or subtract [dBm]: ",
-			SimTime, node_id, node_state, LOG_D06, LOG_LVL5);
+/*
+ * UpdateChannelsPower: updates the aggergated power sensed by the node in every channel
+ **/
+void UpdateChannelsPower(double *channel_power, double *power_received_per_node, Notification notification,
+    int update_type, double central_frequency, int num_channels_komondor, int path_loss_model, int cochannel_model){
 
-	for(int i = 0; i < num_channels_komondor; i++) {
-
-		if(save_node_logs) fprintf(node_logger.file,
-				"%f ", convertPower(PICO_TO_DBM, total_power[i]));
-
+	if(update_type != TX_FINISHED && update_type != TX_INITIATED) {
+		printf("ERROR: update_type %d does not exist!!!", update_type);
+		exit(EXIT_FAILURE);
 	}
 
-	if(save_node_logs) fprintf(node_logger.file,"\n");
+	// Total power [pW] (of interest and interference) generated only by the incoming or outgoing TX
+	double *total_power;
+	total_power = (double *) malloc(num_channels_komondor * sizeof(*total_power));
 
+	for(int i = 0; i < num_channels_komondor; i++) {
+		total_power[i] = 0;
+	}
+
+	ApplyCochannelInterferenceModel(cochannel_model, total_power, notification, num_channels_komondor,
+				power_received_per_node);
+
+	// Increase/decrease power sensed if TX started/finished
+	for(int c = 0; c < num_channels_komondor; c++){
+
+		if(update_type == TX_FINISHED) channel_power[c] -= total_power[c];
+
+		else if (update_type == TX_INITIATED) channel_power[c] += total_power[c];
+
+	}
 }
 
 /*
- * updateChannelsPower: updates the power sensed by the node in every channel array depending on the notifications received
- * (tx start, tx end) and the cochannel model.
- * Arguments:
- * - notification: type of co-channel model applied (no co-channel interference, 20 dB mask, ...)
- * - update_type: type of power update (sum or subtract)
- */
-void updateChannelsPower(double *channel_power, double *power_received_per_node, Notification notification,
-    int update_type,double SimTime, Logger node_logger, int save_node_logs, int node_id, int node_state,
-    double central_frequency, int num_channels_komondor, int path_loss_model, int cochannel_model){
+ * UpdateSINR(): Updates the SINR
+ **/
+double UpdateSINR(double pw_received_interest, double noise_level, double max_pw_interference){
 
-  if(update_type == TX_FINISHED) {
+	double pw_rx_interest_dbm = ConvertPower(PW_TO_DBM, pw_received_interest);
+	double inter_plus_noise = noise_level + max_pw_interference;
+	double interf_plus_noise_dbm = ConvertPower(PW_TO_DBM, inter_plus_noise);
+	double sinr_db = pw_rx_interest_dbm - interf_plus_noise_dbm;
+	double sinr = ConvertPower(DB_TO_LINEAR, sinr_db);
 
-    if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Decreasing channel power sensed\n",
-            SimTime, node_id, node_state, LOG_E04, LOG_LVL3);
-    if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Pre update channel state [dBm]: ",
-        SimTime, node_id, node_state, LOG_E04, LOG_LVL4);
-
-  } else if(update_type == TX_INITIATED) {
-
-    if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Increasing channel power sensed\n",
-                SimTime, node_id, node_state, LOG_E04, LOG_LVL3);
-    if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Pre update channel state [dBm]: ",
-        SimTime, node_id, node_state, LOG_D03, LOG_LVL4);
-
-  } else {
-
-    printf("ERROR: update_type %d does not exist!!!", update_type);
-
-  }
-
-  // Total power [pW] (of interest and interference) generated only by the incoming or outgoing TX
-  double *total_power;
-  total_power = (double *) malloc(num_channels_komondor * sizeof(*total_power));
-
-  for(int i = 0; i < num_channels_komondor; i++) {
-    total_power[i] = 0;
-  }
-
-  applyInterferenceModel(total_power, notification, node_logger, save_node_logs, num_channels_komondor,
-		  power_received_per_node, node_id, node_state, SimTime, cochannel_model);
-
-  // Increase/decrease power sensed if TX started/finished
-  for(int c = 0; c < num_channels_komondor; c++){
-
-    if(update_type == TX_FINISHED) {
-
-      channel_power[c] -= total_power[c];
-
-    } else if (update_type == TX_INITIATED) {
-
-      channel_power[c] += total_power[c];
-
-    }
-  }
-
-  if(save_node_logs){
-
-    if(update_type == TX_INITIATED)  fprintf(node_logger.file,
-        "%f;N%d;S%d;%s;%s Post update channel state [dBm]: ",
-        SimTime, node_id, node_state, LOG_D06, LOG_LVL4);
-
-    if(update_type == TX_FINISHED) fprintf(node_logger.file,
-        "%f;N%d;S%d;%s;%s Post update channel state [dBm]: ",
-        SimTime, node_id, node_state, LOG_E05, LOG_LVL4);
-
-  }
-
+	return sinr;
 }
 
 /*
- * updateSINR(): Updates the current_sinr parameter
- * Arguments:
- * - pw_received_interest: power received of interest
- * */
-double updateSINR(double pw_received_interest, double noise_level, double max_pw_interference,
-    int save_node_logs, Logger *node_logger, double SimTime, int node_id, int node_state){
-
-  double pw_rx_interest_dbm = convertPower(PICO_TO_DBM, pw_received_interest);
-
-  double inter_plus_noise = noise_level + max_pw_interference;
-
-  double interf_plus_noise_dbm = convertPower(PICO_TO_DBM, inter_plus_noise);
-
-  double sinr_db = pw_rx_interest_dbm - interf_plus_noise_dbm;
-
-  double sinr = convertPower(DB_TO_LINEAR, sinr_db);
-
-  return sinr;
-}
-
-/*
- * computeMaxInterference(): computes the maximum interference perceived in the channels of interest
- * Arguments:
- * - notification: notification info
- * */
-double computeMaxInterference(Notification notification, int current_left_channel, int current_right_channel,
-    int node_state, int node_id, int save_node_logs, Logger node_logger, double SimTime,
-    double *power_received_per_node, int receiving_from_node_id, double *channel_power) {
+ * ComputeMaxInterference(): computes the maximum interference perceived in the channels of interest
+ **/
+double ComputeMaxInterference(Notification notification, int current_left_channel, int current_right_channel,
+    int node_state, double *power_received_per_node, int receiving_from_node_id, double *channel_power) {
 
 	double max_pw_interference = 0;
 
@@ -555,25 +503,12 @@ double computeMaxInterference(Notification notification, int current_left_channe
 
 		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK){
 
-			if(save_node_logs) fprintf(node_logger.file,
-			"%f;N%d;S%d;%s;%s Computing Max Interference (power_of_interest = %f dBm "
-			"/ channel_power = %f dBm)\n",
-			SimTime, node_id, node_state, LOG_D04, LOG_LVL4,
-			convertPower(PICO_TO_DBM, power_received_per_node[receiving_from_node_id]),
-			convertPower(PICO_TO_DBM, channel_power[c]));
-
 			if(max_pw_interference <=
-					(channel_power[c] - power_received_per_node[receiving_from_node_id])){ // power of interest!!!
+					(channel_power[c] - power_received_per_node[receiving_from_node_id])){
 
 				max_pw_interference = channel_power[c] - power_received_per_node[receiving_from_node_id];
 
 			}
-
-			if(save_node_logs) fprintf(node_logger.file,
-					"%f;N%d;S%d;%s;%s Max interference (after update) = %f dBm\n",
-					SimTime, node_id, node_state, LOG_D04, LOG_LVL5,
-					convertPower(PICO_TO_DBM,max_pw_interference));
-
 		}
 	}
 
@@ -581,10 +516,10 @@ double computeMaxInterference(Notification notification, int current_left_channe
 }
 
 /*
- * getTxChannelsByChannelBonding: identifies the channels to TX in depending on the channel_bonding scheme
+ * GetTxChannelsByChannelBonding: identifies the channels to TX in depending on the channel_bonding scheme
  * and channel_power state.
- */
-void getTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_model, int *channels_free,
+ **/
+void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_model, int *channels_free,
     int min_channel_allowed, int max_channel_allowed, int primary_channel){
 
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
@@ -743,10 +678,35 @@ void getTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 }
 
 /*
- * printOrWriteChannelPower: prints (or writes) the channel_power array representing the power sensed by
+ * UpdateTimestamptChannelFreeAgain: updates the timestamp at which channels became free again
+ **/
+void UpdateTimestamptChannelFreeAgain(double *timestampt_channel_becomes_free, double *channel_power,
+		double current_cca, int num_channels_komondor, double sim_time) {
+
+	for(int i = 0; i < num_channels_komondor; i ++){
+		if(channel_power[i] > current_cca) {
+
+			timestampt_channel_becomes_free[i] = -1;
+
+		} else if(timestampt_channel_becomes_free[i] == -1){
+
+			timestampt_channel_becomes_free[i] = sim_time;
+
+		}
+	}
+}
+
+/**********************/
+/**********************/
+/* PRINTING FUNCTIONS */
+/**********************/
+/**********************/
+
+/*
+ * PrintOrWriteChannelPower: prints (or writes) the channel_power array representing the power sensed by
  * the node in each subchannel.
  */
-void printOrWriteChannelPower(int write_or_print, int save_node_logs, Logger node_logger,
+void PrintOrWriteChannelPower(int write_or_print, int save_node_logs, Logger node_logger,
 	int print_node_logs, int *channels_free, double *channel_power, int num_channels_komondor){
 
 	switch(write_or_print){
@@ -754,7 +714,7 @@ void printOrWriteChannelPower(int write_or_print, int save_node_logs, Logger nod
 			if(print_node_logs){
 				printf("channel_power [dBm]: ");
 				for(int c = 0; c < num_channels_komondor; c++){
-					printf("%f  ", convertPower(PICO_TO_DBM, channel_power[c]));
+					printf("%f  ", ConvertPower(PW_TO_DBM, channel_power[c]));
 				}
 				printf("\n");
 			}
@@ -762,7 +722,7 @@ void printOrWriteChannelPower(int write_or_print, int save_node_logs, Logger nod
 		}
 		case WRITE_LOG:{
 			for(int c = 0; c < num_channels_komondor; c++){
-				if(save_node_logs) fprintf(node_logger.file, "%f  ", convertPower(PICO_TO_DBM, channel_power[c]));
+				if(save_node_logs) fprintf(node_logger.file, "%f  ", ConvertPower(PW_TO_DBM, channel_power[c]));
 			}
 			if(save_node_logs)  fprintf(node_logger.file, "\n");
 			break;
@@ -773,7 +733,7 @@ void printOrWriteChannelPower(int write_or_print, int save_node_logs, Logger nod
 /*
  * printOrWriteChannelsFree: prints (or writes) the channels_free array representing the channels that are free.
  */
-void printOrWriteChannelsFree(int write_or_print,
+void PrintOrWriteChannelsFree(int write_or_print,
 		int save_node_logs, int print_node_logs, Logger node_logger,
 		int num_channels_komondor, int *channels_free){
 
@@ -801,7 +761,7 @@ void printOrWriteChannelsFree(int write_or_print,
 /*
  * printOrWriteNodesTransmitting: prints (or writes) the array representing the transmitting nodes.
  */
-void printOrWriteNodesTransmitting(int write_or_print,
+void PrintOrWriteNodesTransmitting(int write_or_print,
 		int save_node_logs, int print_node_logs, Logger node_logger, int total_nodes_number,
 		int *nodes_transmitting){
 
@@ -831,7 +791,7 @@ void printOrWriteNodesTransmitting(int write_or_print,
 /*
  * printOrWriteChannelForTx: prints (or writes) the channels_for_tx array representing the channels used for TX
  */
-void printOrWriteChannelForTx(int write_or_print,
+void PrintOrWriteChannelForTx(int write_or_print,
 		int save_node_logs, int print_node_logs, Logger node_logger,
 		int num_channels_komondor, int *channels_for_tx){
 
@@ -856,25 +816,6 @@ void printOrWriteChannelForTx(int write_or_print,
 			break;
 		}
 	}
-}
-
-void updateTimestamptChannelFree(double *timestampt_channel_becomes_free, double *channel_power,
-		double current_cca, int num_channels_komondor, double SimTime) {
-
-
-	for(int i = 0; i < num_channels_komondor; i ++){
-		if(channel_power[i] > current_cca) {
-
-			timestampt_channel_becomes_free[i] = -1;
-
-		} else if(timestampt_channel_becomes_free[i] == -1){
-
-			timestampt_channel_becomes_free[i] = SimTime;
-
-		}
-
-	}
-
 }
 
 
