@@ -58,8 +58,8 @@ struct LogicalNack
 	int node_id_a;		// TODO: update definition - Old comment: "(other uses may be) Hidden node that started the transmission"
 	int node_id_b;		// TODO: update definition - Old comment: "Hidden node causing the collision"
 
-	double ber;			// Bit error rate
-	double sinr;		// Signal to noise plus interference ratio
+	double BER;			// Bit error rate
+	double SINR;		// Signal to noise plus interference ratio
 
 	void printNackInfo(void){
 		printf("source_id = %d - packet_id = %d - loss_reason = %d - node_id_a = %d - node_id_b = %d\n",

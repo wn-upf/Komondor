@@ -49,14 +49,16 @@
 #include <algorithm>
 #include <stddef.h>
 
+#include "../methods/BackoffMethods.h"
+#include "../methods/PowerManagementMethods.h"
+#include "../methods/TXTimeMethods.h"
+#include "../methods/AuxiliaryMethods.h"
+#include "../methods/ModulationsMethods.h"
+#include "../methods/Modulations.h"
+
 #include "../ListOfDefines.h"
-#include "../methods/auxiliary_methods.h"
-#include "../methods/backoff_methods.h"
-#include "../methods/modulations.h"
-#include "../methods/modulations_methods.h"
-#include "../methods/notification_methods.h"
-#include "../methods/power_channel_methods.h"
-#include "../methods/time_methods.h"
+#include "../methods/NotificationMethods.h"
+
 #include "../structures/Notification.h"
 #include "../structures/LogicalNack.h"
 #include "../structures/Wlan.h"

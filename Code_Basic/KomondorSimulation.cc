@@ -51,9 +51,10 @@
 #include ".././COST/cost.h"
 
 #include "../ListOfDefines.h"
-#include "../structures/logical_nack.h"
-#include "../structures/notification.h"
-#include "../structures/wlan.h"
+
+#include "../structures/Notification.h"
+#include "../structures/LogicalNack.h"
+#include "../structures/Wlan.h"
 
 #include "Node.h"
 

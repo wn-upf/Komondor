@@ -48,8 +48,8 @@
 #ifndef _AUX_WLAN_
 #define _AUX_WLAN_
 
-#include "../list_of_macros.h"
-#include "logger.h"
+#include "../ListOfDefines.h"
+#include "Logger.h"
 
 // WLAN info
 struct Wlan

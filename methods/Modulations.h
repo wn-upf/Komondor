@@ -1,3 +1,4 @@
+
 /* This is just an sketch of what our Komondor headers should look like.
  *
  * Copyright (c) 2017, Universitat Pompeu Fabra.
@@ -57,7 +58,6 @@ struct Mcs_array {
 //		{34 * pow(10,6),136 * pow(10,6),204 * pow(10,6),272 * pow(10,6),408 * pow(10,6),544 * pow(10,6),613 * pow(10,6),
 //				681 * pow(10,6),817 * pow(10,6),907 * pow(10,6),1021 * pow(10,6),1134 * pow(10,6)}};
 
-// HARDCODED FOR VALIDATING PURPOSES
 const double Mcs_array::mcs_array[4][12] = {	// rows: modulation type, colums: number of channels (1, 2, 4, 8)
 		{4 * pow(10,6),16 * pow(10,6),24 * pow(10,6),33 * pow(10,6),49 * pow(10,6),65 * pow(10,6),73 * pow(10,6),81 * pow(10,6),
 				98 * pow(10,6),108 * pow(10,6),122 * pow(10,6),81.5727  * 12000  * 64},

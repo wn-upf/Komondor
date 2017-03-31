@@ -132,18 +132,18 @@
 #define CCA_EXCEEDED		1	// CCA is exceeded
 
 // Power units conversion
-#define PW_TO_DBM		0	// Convert pW to dBm
-#define DBM_TO_PW		1	// Convert dBm to pW
-#define MW_TO_DBM		2	// Convert mW to dBm
-#define DBM_TO_MW		3	// Convert dBm to mW
-#define W_TO_DBW		4	// Convert W to dBW
-#define DBW_TO_W		5	// Convert dBW to W
+#define PICO_TO_DBM		0	// Convert pW to dBm
+#define DBM_TO_PICO		1	// Convert dBm to pW
+#define MILLI_TO_DBM	2	// Convert mW to dBm
+#define DBM_TO_MILLI	3	// Convert dBm to mW
+#define W_TO_DB			4	// Convert W to dB
+#define DB_TO_W			5	// Convert dB to W
 #define LINEAR_TO_DB	6	// Convert Linear to dB
 #define DB_TO_LINEAR	7	// Convert dB to Linear
 
 // Boundary channels
-#define FIRST_TRUE_IN_ARRAY 			0	// Search first element '1' in an array
-#define LAST_TRUE_IN_ARRAY			1	// Search last element '1' in an array
+#define FIRST_ONE_IN_ARRAY 			0	// Search first element '1' in an array
+#define LAST_ONE_IN_ARRAY			1	// Search last element '1' in an array
 #define NUM_OPTIONS_CHANNEL_LENGTH	4	// Number of options of channel lengths (1, 2, 4, 8)
 
 // Channel free - occupied
