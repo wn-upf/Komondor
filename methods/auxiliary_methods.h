@@ -160,3 +160,9 @@ int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size){
 		}
 	}
 }
+
+double RandomDouble(double min, double max)
+{
+    double f = (double)rand() / RAND_MAX;
+    return min + f * (max - min);
+}

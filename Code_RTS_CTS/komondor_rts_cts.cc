@@ -642,11 +642,11 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 			// AP position
 			tmp_nodes = strdup(line_nodes);
-			int x = atoi(GetField(tmp_nodes, IX_AP_POSITION_X));
+			double x = atof(GetField(tmp_nodes, IX_AP_POSITION_X));
 			tmp_nodes = strdup(line_nodes);
-			int y = atoi(GetField(tmp_nodes, IX_AP_POSITION_Y));
+			double y = atof(GetField(tmp_nodes, IX_AP_POSITION_Y));
 			tmp_nodes = strdup(line_nodes);
-			int z = atoi(GetField(tmp_nodes, IX_AP_POSITION_Z));
+			double z = atof(GetField(tmp_nodes, IX_AP_POSITION_Z));
 
 			// Min CW
 			tmp_nodes = strdup(line_nodes);
@@ -756,9 +756,9 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 					sprintf(node_code, "%s_%s_%d", wlan_container[wlan_ix].wlan_code, "STA", node_ix);
 					node_container[node_ix].node_code = node_code;
 
-					node_container[node_ix].x = rand()%((x+max_distance_sta)-(x-max_distance_sta) + 1) + (x-max_distance_sta);
-					node_container[node_ix].y = rand()%((y+max_distance_sta)-(y-max_distance_sta) + 1) + (y-max_distance_sta);
-					node_container[node_ix].z = rand()%((z+max_distance_sta)-(z-max_distance_sta) + 1) + (z-max_distance_sta);
+					node_container[node_ix].x = RandomDouble(x-max_distance_sta, x + max_distance_sta);
+					node_container[node_ix].y = RandomDouble(y-max_distance_sta, y + max_distance_sta);
+					node_container[node_ix].z = RandomDouble(z-max_distance_sta, z + max_distance_sta);
 
 				}
 
@@ -941,11 +941,11 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 
 			// Position
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].x = atoi(GetField(tmp_nodes, IX_POSITION_X));
+			node_container[node_ix].x = atof(GetField(tmp_nodes, IX_POSITION_X));
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].y = atoi(GetField(tmp_nodes, IX_POSITION_Y));
+			node_container[node_ix].y = atof(GetField(tmp_nodes, IX_POSITION_Y));
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].z = atoi(GetField(tmp_nodes, IX_POSITION_Z));
+			node_container[node_ix].z = atof(GetField(tmp_nodes, IX_POSITION_Z));
 
 			// CW min
 			tmp_nodes = strdup(line_nodes);

@@ -104,9 +104,9 @@ component Node : public TypeII{
 
 		// Specific to a node
 		int node_id; 				// Node identifier
-		int x;						// X position coordinate
-		int y;						// Y position coordinate
-		int z;						// Z position coordinate
+		double x;						// X position coordinate
+		double y;						// Y position coordinate
+		double z;						// Z position coordinate
 		char *node_code;			// Name of the Node (only for information displaying purposes)
 		int node_type;				// Node type (e.g., AP, STA, ...)
 		int destination_id;			// Destination node id (for nodes not belonging to any WLAN)
@@ -1515,14 +1515,15 @@ void Node :: EndBackoff(trigger_t &){
 	// Pick one receiver from the pool of potential receivers
 	SelectDestination();
 
-	PrintOrWriteChannelPower(WRITE_LOG, save_node_logs,
-			node_logger, print_node_logs, channels_free, channel_power, num_channels_komondor);
+	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Selected destination: N%d\n",
+				SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, current_destination_id);
 
 	GetChannelOccupancyByCCA(channels_free, min_channel_allowed, max_channel_allowed,
 			channel_power, current_cca, timestampt_channel_becomes_free, SimTime(), DIFS);
 
 	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Channels free: ",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+
 	PrintOrWriteChannelsFree(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
 			num_channels_komondor, channels_free);
 
@@ -1695,8 +1696,8 @@ void Node :: MyTxFinished(trigger_t &){
  */
 void Node :: RequestMCS(){
 
-	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s RequestMCS()\n",
-				SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
+	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s RequestMCS() to N%d\n",
+				SimTime(), node_id, node_state, LOG_G00, LOG_LVL1, current_destination_id);
 
 	// Only one channel required (logically!)
 	// Receiver is able to determine the power received when transmitter uses more than one channel by its own
@@ -2084,8 +2085,6 @@ void Node :: RestartNode(){
 	// Generate new BO in case of being a TX node
 	if(node_is_transmitter){
 
-		SelectDestination();
-
 		// In case of being an AP
 		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw, backoff_type);
 
@@ -2120,7 +2119,7 @@ void Node :: PrintNodeInfo(int info_detail_level){
 	printf("%s Node %s info:\n", LOG_LVL3, node_code);
 	printf("%s node_id = %d\n", LOG_LVL4, node_id);
 	printf("%s node_type = %d\n", LOG_LVL4, node_type);
-	printf("%s position = (%d, %d, %d)\n", LOG_LVL4, x, y, z);
+	printf("%s position = (%.2f, %.2f, %.2f)\n", LOG_LVL4, x, y, z);
 	printf("%s primary_channel = %d\n", LOG_LVL4, primary_channel);
 	printf("%s min_channel_allowed = %d\n", LOG_LVL4, min_channel_allowed);
 	printf("%s max_channel_allowed = %d\n", LOG_LVL4, max_channel_allowed);
@@ -2168,7 +2167,7 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, char *head
 	fprintf(node_logger.file, "%s Node %s info:\n", header_string, node_code);
 	fprintf(node_logger.file, "%s - node_id = %d\n", header_string, node_id);
 	fprintf(node_logger.file, "%s - node_type = %d\n", header_string, node_type);
-	fprintf(node_logger.file, "%s - position = (%d, %d, %d)\n", header_string, x, y, z);
+	fprintf(node_logger.file, "%s - position = (%.2f, %.2f, %.2f)\n", header_string, x, y, z);
 	fprintf(node_logger.file, "%s - primary_channel = %d\n", header_string, primary_channel);
 	fprintf(node_logger.file, "%s - min_channel_allowed = %d\n", header_string, min_channel_allowed);
 	fprintf(node_logger.file, "%s - max_channel_allowed = %d\n", header_string, max_channel_allowed);
