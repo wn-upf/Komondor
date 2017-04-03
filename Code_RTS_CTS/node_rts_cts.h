@@ -53,7 +53,6 @@
 #include "../methods/auxiliary_methods.h"
 #include "../methods/power_channel_methods.h"
 #include "../methods/backoff_methods.h"
-#include "../methods/modulations.h"
 #include "../methods/modulations_methods.h"
 #include "../methods/notification_methods.h"
 #include "../methods/time_methods.h"
@@ -1528,8 +1527,15 @@ void Node :: EndBackoff(trigger_t &){
 			num_channels_komondor, channels_free);
 
 	// Identify the channel range to TX in depending on the channel bonding scheme and power sensed
+
+	//	GetTxChannelsByChannelBonding(channels_for_tx, channel_bonding_model, channels_free,
+//			min_channel_allowed, max_channel_allowed, primary_channel);
+
+	int ix_mcs_per_node = current_destination_id - wlan.list_sta_id[0];
+
 	GetTxChannelsByChannelBonding(channels_for_tx, channel_bonding_model, channels_free,
-			min_channel_allowed, max_channel_allowed, primary_channel);
+			min_channel_allowed, max_channel_allowed, primary_channel,
+			mcs_per_node, ix_mcs_per_node);
 
 	if(channels_for_tx[0] == TX_NOT_POSSIBLE){
 
@@ -1557,8 +1563,6 @@ void Node :: EndBackoff(trigger_t &){
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
 
 		// COMPUTE ALL DURATIONS
-
-		int ix_mcs_per_node = current_destination_id - wlan.list_sta_id[0];
 		int ix_num_channels_used = log2(num_channels_tx);
 
 		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];

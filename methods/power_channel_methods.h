@@ -46,6 +46,8 @@
 
 #include "../list_of_macros.h"
 
+#include "modulations.h"
+
 /***********************/
 /***********************/
 /*  POWER MANAGEMENT   */
@@ -520,13 +522,15 @@ double ComputeMaxInterference(Notification notification, int current_left_channe
  * and channel_power state.
  **/
 void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_model, int *channels_free,
-    int min_channel_allowed, int max_channel_allowed, int primary_channel){
+    int min_channel_allowed, int max_channel_allowed, int primary_channel, int **mcs_per_node,
+	int ix_mcs_per_node){
 
+	// Reset channels for transmitting
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 		channels_for_tx[c] = FALSE;
 	}
 
-	// I. Get left and right channels available (or free)
+	// Get left and right channels available (or free)
 	int left_free_ch = 0;
 	int left_free_ch_is_set = 0;
 	int right_free_ch = 0;
@@ -548,9 +552,9 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 
 	int num_free_ch = right_free_ch - left_free_ch + 1;
 	int num_available_ch = max_channel_allowed - min_channel_allowed + 1;
-	int m;        // Auxiliary variable representing a modulus
-	int left_tx_ch;    // Left channel to TX
-	int right_tx_ch;  // Right channel to TX
+	int log2_modulus;	// Auxiliary variable representing a modulus
+	int left_tx_ch;		// Left channel to TX
+	int right_tx_ch; 	// Right channel to TX
 
 	if(left_free_ch_is_set){
 
@@ -561,7 +565,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 			case CB_ONLY_PRIMARY:{
 
 				if(primary_channel >= left_free_ch && primary_channel <= right_free_ch){
-					channels_for_tx[primary_channel] = CHANNEL_OCCUPIED;
+					channels_for_tx[primary_channel] = TRUE;
 				}
 				break;
 			}
@@ -581,7 +585,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 					left_tx_ch = left_free_ch;
 					right_tx_ch = right_free_ch;
 					for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-						channels_for_tx[c] = CHANNEL_OCCUPIED;
+						channels_for_tx[c] = TRUE;
 					}
 				} else {
 					// TX not possible (code it with negative value)
@@ -596,9 +600,9 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 				while(1){
 					// II. If num_free_ch is power of 2
 					if(fmod(log10(num_available_ch)/log10(2), 1) == 0){
-						m = primary_channel % num_available_ch;
-						left_tx_ch = primary_channel - m;
-						right_tx_ch = primary_channel + num_available_ch - m - 1;
+						log2_modulus = primary_channel % num_available_ch;
+						left_tx_ch = primary_channel - log2_modulus;
+						right_tx_ch = primary_channel + num_available_ch - log2_modulus - 1;
 						// Check if tx channels are inside the free ones
 						if((left_tx_ch >= min_channel_allowed) && (right_tx_ch <= max_channel_allowed)){
 							// TX channels found!
@@ -622,7 +626,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 				}
 				if(tx_possible){
 					for(int c = left_tx_ch; c <= right_tx_ch; c++){
-						channels_for_tx[c] = CHANNEL_OCCUPIED;
+						channels_for_tx[c] = TRUE;
 					}
 				} else {
 					// TX not possible (code it with negative value)
@@ -633,43 +637,121 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 
 			// Aggressive DCB: TX in all the free channels contiguous to the primary channel
 			case CB_AGGRESIVE_DCB:{
+
 				for(int c = left_free_ch; c <= right_free_ch; c++){
-					channels_for_tx[c] = CHANNEL_OCCUPIED;
+					channels_for_tx[c] = TRUE;
 				}
-			break;
+				break;
 			}
 
 			// Log2 DCB: TX in the larger channel range allowed by the log2 mapping
 			case CB_LOG2_DCB:{
+
 				while(1){
-					// II. If num_free_ch is power of 2
+
+					// If num_free_ch is power of 2
 					if(fmod(log10(num_free_ch)/log10(2), 1) == 0){
-						m = primary_channel % num_free_ch;
-						left_tx_ch = primary_channel - m;
-						right_tx_ch = primary_channel + num_free_ch - m - 1;
+
+						log2_modulus = primary_channel % num_free_ch;
+						left_tx_ch = primary_channel - log2_modulus;
+						right_tx_ch = primary_channel + num_free_ch - log2_modulus - 1;
+
 						// Check if tx channels are inside the free ones
 						if((left_tx_ch >= min_channel_allowed) && (right_tx_ch <= max_channel_allowed)){
-						  // TX channels found!
-						  for(int c = left_tx_ch; c <= right_tx_ch; c++){
-							channels_for_tx[c] = TRUE;
-						  }
-						  break;
+
+							// Security check for ensuring picked range is free
+							int range_is_free = TRUE;
+							for(int c = left_tx_ch; c <= right_tx_ch; c++){
+								if(!channels_free[c]){
+									range_is_free = FALSE;
+									break;
+								}
+							}
+
+							if (range_is_free){
+
+								for(int c = left_tx_ch; c <= right_tx_ch; c++){
+									channels_for_tx[c] = TRUE;
+								}
+
+								break;
+							} else {
+							  num_free_ch --;
+							}
 						} else {
 						  num_free_ch --;
 						}
+
 					} else{
 						num_free_ch --;
 					}
 				}
+
 				break;
 			}
 
+			// Log2 DCB with optimal MCS: picks the channel range + MCS providing max throughput
+			case CB_LOG2_DCB_OPTIMAL_MCS:{
+
+				int num_channels = 0;
+				int modulation = 0;
+				int modulation_num_channels_ix = 0;
+				double max_throughput = 0;
+				double aux_throughput = 0;
+
+				while(num_free_ch > 0){
+
+					// If num_free_ch is power of 2
+					if(fmod(log10(num_free_ch)/log10(2), 1) == 0){
+
+						log2_modulus = primary_channel % num_free_ch;
+						left_tx_ch = primary_channel - log2_modulus;
+						right_tx_ch = primary_channel + num_free_ch - log2_modulus - 1;
+						num_channels = right_tx_ch - left_tx_ch + 1;
+						modulation_num_channels_ix = (int) log2(num_channels);
+
+						// Check if tx channels are inside the free ones
+						if((left_tx_ch >= min_channel_allowed) && (right_tx_ch <= max_channel_allowed)){
+
+							// Security check for ensuring picked range is free
+							int range_is_free = TRUE;
+							for(int c = left_tx_ch; c <= right_tx_ch; c++){
+								if(!channels_free[c]){
+									range_is_free = FALSE;
+									break;
+								}
+							}
+
+							if (range_is_free){
+
+								/* MCS optimization */
+								modulation = mcs_per_node[ix_mcs_per_node][modulation_num_channels_ix];
+								aux_throughput = Mcs_array::mcs_array[modulation_num_channels_ix][modulation-1];
+
+								if(aux_throughput > max_throughput){
+									// TX channels found!
+									for(int c = left_tx_ch; c <= right_tx_ch; c++){
+									channels_for_tx[c] = TRUE;
+									}
+								}
+							}
+						}
+						num_free_ch --;
+					} else {
+						num_free_ch --;
+					}
+				}
+
+				break;
+				}
+
 			default:{
 				printf("channel_bonding_model %d is NOT VALID!\n", channel_bonding_model);
+				exit(EXIT_FAILURE);
 				break;
 			}
 		}
-	} else{  // No channel is free
+	} else {  // No channel is free
 
 	channels_for_tx[0] = TX_NOT_POSSIBLE;
 

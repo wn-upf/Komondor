@@ -170,11 +170,12 @@
 #define PATH_LOSS_SCENARIO_4a_TGax	8	// IEEE 802.11ax Scenario 4a (outdoor BSS + residential)
 
 // Channel bonding model
-#define CB_ONLY_PRIMARY		0	// Only Primary Channel used if FREE
-#define CB_AGGRESIVE_SCB	1	// Aggressive SCB: if all channels are FREE, transmit. If not, generate a new backoff.
-#define CB_LOG2_SCB			2	// Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
-#define CB_AGGRESIVE_DCB	3	// Aggressive DCB: TX in all the free channels contiguous to the primary channel
-#define CB_LOG2_DCB			4	// Log2 DCB: TX in the larger channel range allowed by the log2 mapping
+#define CB_ONLY_PRIMARY				0	// Only Primary Channel used if FREE
+#define CB_AGGRESIVE_SCB			1	// Aggressive SCB: if all channels are FREE, transmit. If not, generate a new backoff.
+#define CB_LOG2_SCB					2	// Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
+#define CB_AGGRESIVE_DCB			3	// Aggressive DCB: TX in all the free channels contiguous to the primary channel
+#define CB_LOG2_DCB					4	// Log2 DCB: TX in the larger channel range allowed by the log2 mapping
+#define CB_LOG2_DCB_OPTIMAL_MCS		5	// Log2 DCB with optimal MCS: picks the channel range + MCS providing max throughput
 
 // Co-channel interference model
 #define COCHANNEL_NONE		0	// No co-channel interference
