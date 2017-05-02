@@ -171,7 +171,7 @@ component Node : public TypeII{
 		int rts_length;						// RTS length [bits]
 		int cts_length;						// CTS length [bits]
 		int traffic_model;					// Traffic model (0: full buffer, 1: poisson, 2: deterministic)
-		int backoff_type;				// Type of Backoff (0: Slotted 1: Continuous)
+		int backoff_type;					// Type of Backoff (0: Slotted 1: Continuous)
 
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
@@ -245,7 +245,7 @@ component Node : public TypeII{
 		int channel_max_interference;		// Channel of maximum interference detected in range of interest [pW]
 		int *nodes_transmitting;			// IDs of the nodes which are transmitting to any destination
 		double *power_received_per_node;	// Power received from each node in the network [pW]
-		double power_rx_interest;		// Power received from a TX destined to the node [pW]
+		double power_rx_interest;			// Power received from a TX destined to the node [pW]
 		int receiving_from_node_id;			// ID of the node that is transmitting to the node (-1 if node is not receiing)
 		int receiving_packet_id;			// ID of the notification that is being transmitted to me
 		int *hidden_nodes_list;				// Store nodes that for sure are hidden (1 indicates that node "i" is hidden)
@@ -1528,10 +1528,6 @@ void Node :: EndBackoff(trigger_t &){
 			num_channels_komondor, channels_free);
 
 	// Identify the channel range to TX in depending on the channel bonding scheme and power sensed
-
-	//	GetTxChannelsByChannelBonding(channels_for_tx, channel_bonding_model, channels_free,
-//			min_channel_allowed, max_channel_allowed, primary_channel);
-
 	int ix_mcs_per_node = current_destination_id - wlan.list_sta_id[0];
 
 	GetTxChannelsByChannelBonding(channels_for_tx, channel_bonding_model, channels_free,
@@ -1765,7 +1761,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, d
 	notification.timestampt = SimTime();
 
 	TxInfo tx_info;
-	tx_info.setSizeOfMCS(4);
+	tx_info.SetSizeOfMCS(4);
 
 	tx_info.packet_id = packet_id;
 	tx_info.destination_id = destination_id;
@@ -2131,7 +2127,7 @@ void Node :: PrintNodeInfo(int info_detail_level){
 		printf("%s wlan id = %d\n", LOG_LVL5, wlan.wlan_id);
 		printf("%s wlan AP id = %d\n", LOG_LVL5, wlan.ap_id);
 		printf("%s STAs in WLAN (%d): ", LOG_LVL5, wlan.num_stas);
-		wlan.printStaIds();
+		wlan.PrintStaIds();
 	}
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
@@ -2175,7 +2171,7 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, char *head
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_0){
 
-		wlan.writeWlanInfo(node_logger, header_string);
+		wlan.WriteWlanInfo(node_logger, header_string);
 
 	}
 
@@ -2470,6 +2466,7 @@ void Node :: InitializeVariables() {
 	rts_cts_id = 0;
 	num_packets_in_buffer = 0;
 	remaining_backoff = ComputeBackoff(pdf_backoff, current_cw, backoff_type);
+
 	if(node_type == NODE_TYPE_AP) {
 		node_is_transmitter = TRUE;
 	} else {
@@ -2525,7 +2522,7 @@ void Node :: InitializeVariables() {
 	null_tx_info.tx_power = 0;
 	null_tx_info.tx_gain = 0;
 	null_tx_info.data_rate = 0;
-	null_tx_info.setSizeOfMCS(4);
+	null_tx_info.SetSizeOfMCS(4);
 	null_tx_info.x = 0;
 	null_tx_info.y = 0;
 	null_tx_info.z = 0;

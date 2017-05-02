@@ -52,7 +52,7 @@ struct Logger
 	FILE *file;			// File for writting logs
 	char *head_string;	// Header string (to be passed as argument when it is needed to write info from other class or component)
 
-	void setVoidHeadString(){
+	void SetVoidHeadString(){
 
 		head_string = (char *) malloc(INTEGER_SIZE);
 		sprintf(head_string, "%s", " ");

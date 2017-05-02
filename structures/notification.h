@@ -71,16 +71,16 @@ struct TxInfo
 	int z;						// Z position of source node
 	double nav_time;			// RTS/CTS NAV time
 
-	void printTxInfo(void){
+	void PrintTxInfo(void){
 		printf("packet_id = %d - destination_id = %d - tx_duration = %f - tx_power = %f pw"
 				" - position = (%d, %d, %d)\n",
 				packet_id, destination_id, tx_duration, tx_power, x, y, z);
 	}
 
 	/*
-	 * setSizeOfMCS(): sets the size of the array modulation_schemes
+	 * SetSizeOfMCS(): sets the size of the array modulation_schemes
 	 */
-	void setSizeOfMCS(int channels_groups){
+	void SetSizeOfMCS(int channels_groups){
 
 		modulation_schemes = (int *) malloc(channels_groups * sizeof(*modulation_schemes));
 
@@ -106,11 +106,11 @@ struct Notification
 	// Specific transmission info (may not be checked by the others nodes)
 	TxInfo tx_info;
 
-	void printNotification(void){
+	void PrintNotification(void){
 		printf("source_id = %d - packet_type = %d - left_channel = %d - right_channel = %d - pkt_length = %d -",
 				source_id, packet_type, left_channel, right_channel, packet_length);
 		printf("tx_info: ");
-		tx_info.printTxInfo();
+		tx_info.PrintTxInfo();
 	}
 };
 

@@ -11,9 +11,9 @@ template <class T> class compcxx_functor {public:
 void Connect(compcxx_component&_c, T _f){ c.push_back(&_c); f.push_back(_f); } 
 protected: std::vector<compcxx_component*>c; std::vector<T> f; }; 
 class compcxx_component { public: 
-typedef void  (compcxx_component::*Node_outportSelfStartTX_f_t)(Notification &notification);
-typedef void  (compcxx_component::*Node_outportSelfFinishTX_f_t)(Notification &notification);
-typedef void  (compcxx_component::*Node_outportSendLogicalNack_f_t)(LogicalNack &logical_nack_info);
-typedef void  (compcxx_component::*Node_outportAskForTxModulation_f_t)(Notification &notification);
-typedef void  (compcxx_component::*Node_outportAnswerTxModulation_f_t)(Notification &notification);
+typedef void  (compcxx_component::*Node_OutportSelfStartTX_f_t)(Notification &notification);
+typedef void  (compcxx_component::*Node_OutportSelfFinishTX_f_t)(Notification &notification);
+typedef void  (compcxx_component::*Node_OutportSendLogicalNack_f_t)(LogicalNack &logical_nack);
+typedef void  (compcxx_component::*Node_OutportAskForTxModulation_f_t)(Notification &notification);
+typedef void  (compcxx_component::*Node_OutportAnswerTxModulation_f_t)(Notification &notification);
 };

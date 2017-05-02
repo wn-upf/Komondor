@@ -634,7 +634,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 		} else {
 
 			ap_generated = 0;
-			wlan_container[wlan_ix].setSizeOfSTAsArray(wlan_container[wlan_ix].num_stas);
+			wlan_container[wlan_ix].SetSizeOfSTAsArray(wlan_container[wlan_ix].num_stas);
 
 			// Max distance AP - STA
 			char* tmp_nodes = strdup(line_nodes);
@@ -878,7 +878,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 
 		int num_stas_in_wlan = GetNumOfNodes(nodes_filename, NODE_TYPE_STA, wlan_container[w].wlan_code);
 		wlan_container[w].num_stas = num_stas_in_wlan;
-		wlan_container[w].setSizeOfSTAsArray(num_stas_in_wlan);
+		wlan_container[w].SetSizeOfSTAsArray(num_stas_in_wlan);
 	}
 
 
@@ -1145,7 +1145,7 @@ void Komondor :: PrintAllNodesInfo(int info_detail_level){
 void Komondor :: PrintAllWlansInfo(){
 
 	for(int w = 0; w < total_wlans_number; w++){
-		wlan_container[w].printWlanInfo();
+		wlan_container[w].PrintWlanInfo();
 	}
 }
 
@@ -1157,7 +1157,7 @@ void Komondor :: PrintAllWlansInfo(){
 void Komondor :: WriteAllWlansInfo(Logger logger, char *header_string){
 
 	for(int w = 0; w < total_wlans_number; w++){
-		wlan_container[w].writeWlanInfo(logger, header_string);
+		wlan_container[w].WriteWlanInfo(logger, header_string);
 	}
 }
 

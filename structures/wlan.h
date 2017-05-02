@@ -61,9 +61,9 @@ struct Wlan
 	int *list_sta_id;	// List of STAs IDs belonging to the WLAN
 
 	/*
-	 * setSizeOfSTAsArray(): sets the size of the array list_sta_id
+	 * SetSizeOfSTAsArray(): sets the size of the array list_sta_id
 	 */
-	void setSizeOfSTAsArray(int num_stas){
+	void SetSizeOfSTAsArray(int num_stas){
 
 		list_sta_id = (int *) malloc(num_stas * sizeof(*list_sta_id));
 
@@ -73,9 +73,9 @@ struct Wlan
 	}
 
 	/*
-	 * printStaIds(): prints the list of STAs IDs belonging to the WLAN
+	 * PrintStaIds(): prints the list of STAs IDs belonging to the WLAN
 	 */
-	void printStaIds(){
+	void PrintStaIds(){
 
 		for(int s = 0; s < num_stas; s++){
 			printf("%d  ", list_sta_id[s]);
@@ -83,13 +83,12 @@ struct Wlan
 		printf("\n");
 	}
 
-
 	/*
-	 * writeStaIds(): writes STAs list of IDs in a given file
+	 * WriteStaIds(): writes STAs list of IDs in a given file
 	 * Input arguments:
 	 * - logger: logger containing the file to write on
 	 */
-	void writeStaIds(Logger logger){
+	void WriteStaIds(Logger logger){
 
 		if (logger.save_logs){
 			for(int s = 0; s < num_stas; s++){
@@ -99,25 +98,25 @@ struct Wlan
 	}
 
 	/*
-	 * printWlanInfo(): prints general WLAN info
+	 * PrintWlanInfo(): prints general WLAN info
 	 */
-	void printWlanInfo(){
+	void PrintWlanInfo(){
 
 		printf("%s WLAN %s:\n", LOG_LVL3, wlan_code);
 		printf("%s wlan_id: %d\n", LOG_LVL4, wlan_id);
 		printf("%s num_stas: %d\n", LOG_LVL4, num_stas);
 		printf("%s ap_id: %d\n", LOG_LVL4, ap_id);
 		printf("%s list of STAs IDs: ", LOG_LVL4);
-		printStaIds();
+		PrintStaIds();
 	}
 
 	/*
-	 * writeWlanInfo(): writes general WLAN info in a given file
+	 * WriteWlanInfo(): writes general WLAN info in a given file
 	 * Input arguments:
 	 * - logger: logger containing the file to write on
 	 * - header_string: header string
 	 */
-	void writeWlanInfo(Logger logger, char *header_string){
+	void WriteWlanInfo(Logger logger, char *header_string){
 
 		if(header_string == NULL){
 			header_string = (char *) malloc(1);
@@ -130,7 +129,7 @@ struct Wlan
 			fprintf(logger.file, "%s - num_stas: %d\n", header_string, num_stas);
 			fprintf(logger.file, "%s - ap_id: %d\n", header_string, ap_id);
 			fprintf(logger.file, "%s - list of STAs IDs: ", header_string);
-			writeStaIds(logger);
+			WriteStaIds(logger);
 			fprintf(logger.file, "\n");
 		}
 	}
