@@ -339,12 +339,11 @@ void Node :: Start(){
 		output_log_file = fopen(own_file_path, "at");
 		node_logger.save_logs = save_node_logs;
 		node_logger.file = output_log_file;
-		node_logger.setVoidHeadString();
+		node_logger.SetVoidHeadString();
 	}
 
 	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Start()\n",
 			SimTime(), node_id, STATE_UNKNOWN, LOG_B00, LOG_LVL1);
-
 
 	// Write node info
 	header_string = (char *) malloc(LOG_HEADER_NODE_SIZE * sizeof(*header_string));
@@ -2473,7 +2472,6 @@ void Node :: InitializeVariables() {
 		node_is_transmitter = FALSE;
 	}
 
-
 	current_tpc = tpc_default;
 	current_cca = cca_default;
 	channel_max_intereference = 0;
@@ -2545,7 +2543,5 @@ void Node :: InitializeVariables() {
 	packets_lost = 0;
 	rts_cts_lost = 0;
 	num_tx_init_not_possible = 0;
-
-
 
 }

@@ -737,6 +737,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 				// Node type, node code, and position
 				if(!ap_generated){
+
 					node_container[node_ix].node_type = NODE_TYPE_AP;
 					wlan_container[wlan_ix].ap_id = node_ix;
 					char *node_code = (char *) malloc(strlen(wlan_container[wlan_ix].wlan_code) + INTEGER_SIZE + 1);

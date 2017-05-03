@@ -475,12 +475,14 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 			// capture_effect
 			tmp = strdup(line_system);
 			const char* capture_effect_char = GetField(tmp, IX_CAPTURE_EFFECT);
-			capture_effect = atof(capture_effect_char);
+			double capture_effect_dbm = atof(capture_effect_char);
+			capture_effect = ConvertPower(LINEAR_TO_DB, capture_effect_dbm);
 
 			// Noise level
 			tmp = strdup(line_system);
 			const char* noise_level_char = GetField(tmp, IX_NOISE_LEVEL);
-			noise_level = atof(noise_level_char);
+			double noise_level_dbm = atof(noise_level_char);
+			noise_level = ConvertPower(DBM_TO_PW, noise_level_dbm);
 
 			// Co-channel model
 			tmp = strdup(line_system);
@@ -500,8 +502,8 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 
 			// Constant PER for successful transmissions
 			tmp = strdup(line_system);
-			const char* constant_per_char = GetField(tmp, IX_CONSTANT_PER);
-			constant_per = atof(constant_per_char);
+			const char* constant_PER_char = GetField(tmp, IX_CONSTANT_PER);
+			constant_per = atof(constant_PER_char);
 
 			// Traffic model
 			tmp = strdup(line_system);
@@ -630,19 +632,19 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 			// AP position
 			tmp_nodes = strdup(line_nodes);
-			int x = atoi(GetField(tmp_nodes, IX_AP_POSITION_X));
+			double x = atof(GetField(tmp_nodes, IX_AP_POSITION_X));
 			tmp_nodes = strdup(line_nodes);
-			int y = atoi(GetField(tmp_nodes, IX_AP_POSITION_Y));
+			double y = atof(GetField(tmp_nodes, IX_AP_POSITION_Y));
 			tmp_nodes = strdup(line_nodes);
-			int z = atoi(GetField(tmp_nodes, IX_AP_POSITION_Z));
+			double z = atof(GetField(tmp_nodes, IX_AP_POSITION_Z));
 
 			// Min CW
 			tmp_nodes = strdup(line_nodes);
-			int CW_min = atoi(GetField(tmp_nodes, IX_AP_CW_MIN));
+			int min_cw = atoi(GetField(tmp_nodes, IX_AP_CW_MIN));
 
 			// Max CW
 			tmp_nodes = strdup(line_nodes);
-			int CW_max = atoi(GetField(tmp_nodes, IX_AP_CW_MAX));
+			int max_cw = atoi(GetField(tmp_nodes, IX_AP_CW_MAX));
 
 			// Primary channel
 			tmp_nodes = strdup(line_nodes);
@@ -658,35 +660,43 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 			// Min TPC
 			tmp_nodes = strdup(line_nodes);
-			double tpc_min = atoi(GetField(tmp_nodes, IX_AP_TPC_MIN));
+			double tpc_min_dbm = atof(GetField(tmp_nodes, IX_AP_TPC_MIN));
+			double tpc_min = ConvertPower(DBM_TO_PW, tpc_min_dbm);
 
 			// Default TPC
 			tmp_nodes = strdup(line_nodes);
-			double tpc_default = atoi(GetField(tmp_nodes, IX_AP_TPC_DEFAULT));
+			double tpc_default_dbm = atof(GetField(tmp_nodes, IX_AP_TPC_DEFAULT));
+			double tpc_default = ConvertPower(DBM_TO_PW, tpc_default_dbm);
 
 			// Max TPC
 			tmp_nodes = strdup(line_nodes);
-			double tpc_max = atoi(GetField(tmp_nodes, IX_AP_TPC_MAX));
+			double tpc_max_dbm = atof(GetField(tmp_nodes, IX_AP_TPC_MAX));
+			double tpc_max = ConvertPower(DBM_TO_PW, tpc_max_dbm);
 
 			// Min CCA
 			tmp_nodes = strdup(line_nodes);
-			double cca_min = atoi(GetField(tmp_nodes, IX_AP_CCA_MIN));
+			double cca_min_dbm = atoi(GetField(tmp_nodes, IX_AP_CCA_MIN));
+			double cca_min = ConvertPower(DBM_TO_PW, cca_min_dbm);
 
 			// Default CCA
 			tmp_nodes = strdup(line_nodes);
-			double cca_default = atoi(GetField(tmp_nodes, IX_AP_CCA_DEFAULT));
+			double cca_default_dbm = atoi(GetField(tmp_nodes, IX_AP_CCA_DEFAULT));
+			double cca_default = ConvertPower(DBM_TO_PW, cca_default_dbm);
 
 			// Max CCA
 			tmp_nodes = strdup(line_nodes);
-			double cca_max = atoi(GetField(tmp_nodes, IX_AP_CCA_MAX));
+			double cca_max_dbm = atoi(GetField(tmp_nodes, IX_AP_CCA_MAX));
+			double cca_max = ConvertPower(DBM_TO_PW, cca_max_dbm);
 
 			// TX gain
 			tmp_nodes = strdup(line_nodes);
-			double tx_gain = atoi(GetField(tmp_nodes, IX_AP_TX_GAIN));
+			double tx_gain_db = atoi(GetField(tmp_nodes, IX_AP_TX_GAIN));
+			double tx_gain = ConvertPower(DB_TO_LINEAR, tx_gain_db);
 
 			// RX gain
 			tmp_nodes = strdup(line_nodes);
-			double rx_gain = atoi(GetField(tmp_nodes, IX_AP_RX_GAIN));
+			double rx_gain_db = atoi(GetField(tmp_nodes, IX_AP_RX_GAIN));
+			double rx_gain = ConvertPower(DB_TO_LINEAR, rx_gain_db);
 
 			// Channel bonding model
 			tmp_nodes = strdup(line_nodes);
@@ -699,7 +709,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 			// Central frequency in GHz (e.g. 2.4)
 			tmp_nodes = strdup(line_nodes);
 			const char* central_frequency_char = GetField(tmp_nodes, IX_AP_CENTRAL_FREQ);
-			double central_frequency = atof(central_frequency_char);
+			double central_frequency = atof(central_frequency_char) * pow(10,9);
 
 			// Lambda (packet generation rate)
 			tmp_nodes = strdup(line_nodes);
@@ -717,6 +727,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 				// Node type, node code, and position
 				if(!ap_generated){
+
 					node_container[node_ix].node_type = NODE_TYPE_AP;
 					wlan_container[wlan_ix].ap_id = node_ix;
 					char *node_code = (char *) malloc(strlen(wlan_container[wlan_ix].wlan_code) + INTEGER_SIZE + 1);
@@ -736,17 +747,17 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 					sprintf(node_code, "%s_%s_%d", wlan_container[wlan_ix].wlan_code, "STA", node_ix);
 					node_container[node_ix].node_code = node_code;
 
-					node_container[node_ix].x = rand()%((x+max_distance_sta)-(x-max_distance_sta) + 1) + (x-max_distance_sta);
-					node_container[node_ix].y = rand()%((y+max_distance_sta)-(y-max_distance_sta) + 1) + (y-max_distance_sta);
-					node_container[node_ix].z = rand()%((z+max_distance_sta)-(z-max_distance_sta) + 1) + (z-max_distance_sta);
+					node_container[node_ix].x = RandomDouble(x-max_distance_sta, x + max_distance_sta);
+					node_container[node_ix].y = RandomDouble(y-max_distance_sta, y + max_distance_sta);
+					node_container[node_ix].z = RandomDouble(z-max_distance_sta, z + max_distance_sta);
 
 				}
 
 				node_container[node_ix].wlan_code = wlan_container[wlan_ix].wlan_code;
 				node_container[node_ix].destination_id = NODE_ID_NONE;
 				node_container[node_ix].lambda = lambda;
-				node_container[node_ix].CW_min = CW_min;
-				node_container[node_ix].CW_max = CW_max;
+				node_container[node_ix].min_cw = min_cw;
+				node_container[node_ix].max_cw = max_cw;
 				node_container[node_ix].primary_channel = primary_channel;
 				node_container[node_ix].min_channel_allowed = min_channel_allowed;
 				node_container[node_ix].max_channel_allowed = max_channel_allowed;
@@ -919,19 +930,19 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 
 			// Position
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].x = atoi(GetField(tmp_nodes, IX_POSITION_X));
+			node_container[node_ix].x = atof(GetField(tmp_nodes, IX_POSITION_X));
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].y = atoi(GetField(tmp_nodes, IX_POSITION_Y));
+			node_container[node_ix].y = atof(GetField(tmp_nodes, IX_POSITION_Y));
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].z = atoi(GetField(tmp_nodes, IX_POSITION_Z));
+			node_container[node_ix].z = atof(GetField(tmp_nodes, IX_POSITION_Z));
 
 			// CW min
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].CW_min = atoi(GetField(tmp_nodes, IX_CW_MIN));
+			node_container[node_ix].min_cw = atoi(GetField(tmp_nodes, IX_CW_MIN));
 
 			// CW max
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].CW_max = atoi(GetField(tmp_nodes, IX_CW_MAX));
+			node_container[node_ix].max_cw = atoi(GetField(tmp_nodes, IX_CW_MAX));
 
 			// Primary channel
 			tmp_nodes = strdup(line_nodes);
@@ -947,35 +958,43 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 
 			// Min TPC
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].tpc_min = atoi(GetField(tmp_nodes, IX_TPC_MIN));
+			double tpc_min_dbm = atof(GetField(tmp_nodes, IX_TPC_MIN));
+			node_container[node_ix].tpc_min = ConvertPower(DBM_TO_PW, tpc_min_dbm);
 
 			// Default TPC
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].tpc_default = atoi(GetField(tmp_nodes, IX_TPC_DEFAULT));
+			double tpc_default_dbm = atof(GetField(tmp_nodes, IX_TPC_DEFAULT));
+			node_container[node_ix].tpc_default = ConvertPower(DBM_TO_PW, tpc_default_dbm);
 
 			// Max TPC
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].tpc_max = atoi(GetField(tmp_nodes, IX_TPC_MAX));
+			double tpc_max_dbm = atof(GetField(tmp_nodes, IX_TPC_MAX));
+			node_container[node_ix].tpc_max = ConvertPower(DBM_TO_PW, tpc_max_dbm);
 
 			// Min CCA
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].cca_min = atoi(GetField(tmp_nodes, IX_CCA_MIN));
+			double cca_min_dbm = atoi(GetField(tmp_nodes, IX_CCA_MIN));
+			node_container[node_ix].cca_min = ConvertPower(DBM_TO_PW, cca_min_dbm);
 
 			// Default CCA
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].cca_default = atoi(GetField(tmp_nodes, IX_CCA_DEFAULT));
+			double cca_default_dbm = atoi(GetField(tmp_nodes, IX_CCA_DEFAULT));
+			node_container[node_ix].cca_default = ConvertPower(DBM_TO_PW, cca_default_dbm);
 
 			// Max CCA
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].cca_max = atoi(GetField(tmp_nodes, IX_CCA_MAX));
+			double cca_max_dbm = atoi(GetField(tmp_nodes, IX_CCA_MAX));
+			node_container[node_ix].cca_max = ConvertPower(DBM_TO_PW, cca_max_dbm);
 
 			// TX gain
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].tx_gain = atoi(GetField(tmp_nodes, IX_TX_GAIN));
+			double tx_gain_db = atoi(GetField(tmp_nodes, IX_TX_GAIN));
+			node_container[node_ix].tx_gain = ConvertPower(DB_TO_LINEAR, tx_gain_db);
 
 			// RX gain
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].rx_gain = atoi(GetField(tmp_nodes, IX_AP_RX_GAIN));
+			double rx_gain_db = atoi(GetField(tmp_nodes, IX_RX_GAIN));
+			node_container[node_ix].rx_gain = ConvertPower(DB_TO_LINEAR, rx_gain_db);
 
 			// Channel bonding model
 			tmp_nodes = strdup(line_nodes);
@@ -988,7 +1007,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			// Central frequency in GHz (e.g. 2.4)
 			tmp_nodes = strdup(line_nodes);
 			const char* central_frequency_char = GetField(tmp_nodes, IX_CENTRAL_FREQ);
-			node_container[node_ix].central_frequency = atof(central_frequency_char);
+			node_container[node_ix].central_frequency = atof(central_frequency_char) * pow(10,9);
 
 			// Lambda (packet generation rate)
 			tmp_nodes = strdup(line_nodes);
@@ -1056,8 +1075,9 @@ void Komondor :: PrintSystemInfo(){
 		printf("%s backoff_type = %d\n", LOG_LVL3, backoff_type);
 		printf("%s num_packets_aggregated = %d\n", LOG_LVL3, num_packets_aggregated);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
-		printf("%s capture_effect = %f\n", LOG_LVL3, capture_effect);
-		printf("%s noise_level = %f dBm\n", LOG_LVL3, noise_level);
+		printf("%s capture_effect = %f [linear] (%f dB)\n", LOG_LVL3, capture_effect, ConvertPower(LINEAR_TO_DB, capture_effect));
+		printf("%s noise_level = %f pW (%f dBm)\n",
+				LOG_LVL3, noise_level, ConvertPower(PW_TO_DBM, noise_level));
 		printf("%s cochannel_model = %d\n", LOG_LVL3, cochannel_model);
 		printf("%s collisions_model = %d\n", LOG_LVL3, collisions_model);
 		printf("%s SIFS = %f s\n", LOG_LVL3, SIFS);

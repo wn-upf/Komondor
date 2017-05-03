@@ -151,8 +151,8 @@ component Node : public TypeII{
 		double SIFS;						// SIFS [s]
 		double DIFS;						// DIFS [s]
 		double central_frequency;			// Central frequency (GHz)
-		int CW_min;							// Backoff minimum Contention Window
-		int CW_max;							// Backoff maximum Contention Window
+		int min_cw;							// Backoff minimum Contention Window
+		int max_cw;							// Backoff maximum Contention Window
 		int pdf_backoff;					// Probability distribution type of the backoff (0: exponential, 1: deterministic)
 		int path_loss_model;				// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 
@@ -884,7 +884,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						current_tx_duration += (notification.tx_info.tx_duration + SIFS);	// Add ACK time to tx_duration
 
 						// Transmission succeeded ---> decrease congestion window
-						current_CW = HandleCongestionWindow(DECREASE_CW, current_CW, CW_min, CW_max);
+						current_CW = HandleCongestionWindow(DECREASE_CW, current_CW, min_cw, max_cw);
 						// Restart node (implicitly to STATE_SENSING)
 						RestartNode();
 
@@ -1065,10 +1065,10 @@ void Node :: TrafficGenerator() {
 	switch(traffic_model) {
 
 		case TRAFFIC_FULL_BUFFER:{
-
 			num_packets_in_buffer = PACKET_BUFFER_SIZE;
 
 			if(node_is_transmitter){
+
 				int resume = HandleBackoff(RESUME_TIMER, channel_power, primary_channel, current_cca,
 						num_packets_in_buffer);
 
@@ -1475,7 +1475,7 @@ void Node :: AckTimeout(trigger_t &){
 
 	if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Packet lost\n",
 					SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
-	current_CW = HandleCongestionWindow(INCREASE_CW, current_CW, CW_min, CW_max);
+	current_CW = HandleCongestionWindow(INCREASE_CW, current_CW, min_cw, max_cw);
 
 	RestartNode();
 
@@ -1614,8 +1614,8 @@ void Node :: PrintNodeInfo(int info_detail_level){
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
 		printf("%s lambda = %f packets/s\n", LOG_LVL4, lambda);
-		printf("%s CW_min = %d\n", LOG_LVL4, CW_min);
-		printf("%s CW_max = %d\n", LOG_LVL4, CW_max);
+		printf("%s min_cw = %d\n", LOG_LVL4, min_cw);
+		printf("%s max_cw = %d\n", LOG_LVL4, max_cw);
 		printf("%s destination_id = %d\n", LOG_LVL4, destination_id);
 		printf("%s tpc_min = %f dBm\n", LOG_LVL4, tpc_min);
 		printf("%s tpc_default = %f dBm\n", LOG_LVL4, tpc_default);
@@ -1660,8 +1660,8 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, char *head
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
 		fprintf(node_logger.file, "%s - lambda = %f packets/s\n", header_string, lambda);
-		fprintf(node_logger.file, "%s - CW_min = %d\n", header_string, CW_min);
-		fprintf(node_logger.file, "%s - CW_max = %d\n", header_string, CW_max);
+		fprintf(node_logger.file, "%s - min_cw = %d\n", header_string, min_cw);
+		fprintf(node_logger.file, "%s - max_cw = %d\n", header_string, max_cw);
 		fprintf(node_logger.file, "%s - destination_id = %d\n", header_string, destination_id);
 		fprintf(node_logger.file, "%s - tpc_default = %f dBm\n", header_string, tpc_default);
 		fprintf(node_logger.file, "%s - cca_default = %f dBm\n", header_string, cca_default);
@@ -1918,7 +1918,7 @@ void Node :: InitializeVariables() {
 	current_cca = cca_default;
 	node_state = STATE_SENSING;
 	current_modulation = modulation_default;
-	current_CW = CW_min;
+	current_CW = min_cw;
 	packet_id = 0;
 	num_packets_in_buffer = 0;
 	remaining_backoff = ComputeBackoff(pdf_backoff, current_CW, backoff_type);
@@ -1929,65 +1929,14 @@ void Node :: InitializeVariables() {
 		node_is_transmitter = FALSE;
 	}
 
-	// Statistics
-	packets_sent = 0;
-	throughput = 0;
-	throughput_loss = 0;
-	packets_lost = 0;
-	num_tx_init_not_possible = 0;
+	current_tpc = tpc_default;
+	current_cca = cca_default;
+	channel_max_intereference = 0;
 
-	// Modulation data rates
-
-	// Fixed data rates (CTMN - Matlab)
-	data_rate_array[0] = 81.5727 * packet_length * num_packets_aggregated;	// 1 channel
-	data_rate_array[1] = 150.8068 * packet_length * num_packets_aggregated; // 2 channels
-	data_rate_array[2] = 0;
-	data_rate_array[3] = 215.7497 * packet_length * num_packets_aggregated;	// 4 channels
-	data_rate_array[4] = 0;
-	data_rate_array[5] = 0;
-	data_rate_array[6] = 0;
-	data_rate_array[7] = 284.1716 * packet_length * num_packets_aggregated; // 8 channels
+	data_duration = 0;
+	ack_duration = 0;
 
 	default_modulation = MODULATION_NONE;
-
-	int modulation_rates_aux[4][12] = {	// rows: modulation type, colums: number of channels (1, 2, 4, 8)
-		{4,16,24,33,49,65,73,81,98,108,122,135},
-		{8,33,49,65,98,130,146,163,195,217,244,271},
-		{17,68,102,136,204,272,306,340,408,453,510,567},
-		{34,136,204,272,408,544,613,681,817,907,1021,1134}
-	};
-
-	for(int i = 0; i < 4; i++){
-		for(int j = 0; j < 12; j++){
-			modulation_rates[i][j] = modulation_rates_aux[i][j] * pow(10,6);
-		}
-	}
-
-	coding_rate_modulation[0] = 1/double(2);
-	coding_rate_modulation[1] = 1/double(2);
-	coding_rate_modulation[2] = 3/double(4);
-	coding_rate_modulation[3] = 1/double(2);
-	coding_rate_modulation[4] = 3/double(4);
-	coding_rate_modulation[5] = 2/double(3);
-	coding_rate_modulation[6] = 3/double(4);
-	coding_rate_modulation[7] = 5/double(6);
-	coding_rate_modulation[8] = 3/double(4);
-	coding_rate_modulation[9] = 5/double(6);
-	coding_rate_modulation[10] = 3/double(4);
-	coding_rate_modulation[11] = 5/double(6);
-
-	bits_per_symbol_modulation[0] = 2;
-	bits_per_symbol_modulation[1] = 4;
-	bits_per_symbol_modulation[2] = 4;
-	bits_per_symbol_modulation[3] = 16;
-	bits_per_symbol_modulation[4] = 16;
-	bits_per_symbol_modulation[5] = 64;
-	bits_per_symbol_modulation[6] = 64;
-	bits_per_symbol_modulation[7] = 64;
-	bits_per_symbol_modulation[8] = 256;
-	bits_per_symbol_modulation[9] = 256;
-	bits_per_symbol_modulation[10] = 1024;
-	bits_per_symbol_modulation[11] = 1024;
 
 	mcs_response = (int *) malloc(4 * sizeof(int));
 	for(int n = 0; n < 4; n++){
@@ -1995,11 +1944,52 @@ void Node :: InitializeVariables() {
 	}
 
 	int *modulations_list = (int*)calloc(4, sizeof(int));
+
 	mcs_per_node = (int**)calloc(wlan.num_stas, sizeof(int*));
 	change_modulation_flag = (int *) malloc(wlan.num_stas * sizeof(int));
 	for(int n = 0; n < wlan.num_stas; n++){
 		mcs_per_node[n] = modulations_list;
 		change_modulation_flag[n] = TRUE;
 	}
+
+	/* NULL notification for Valgrind issues */
+	Notification null_notification;
+
+	null_notification.source_id = -1;
+	null_notification.packet_type = -1;
+	null_notification.left_channel = -1;
+	null_notification.right_channel = -1;
+	null_notification.packet_length = -1;
+	null_notification.modulation_id = -1;
+	null_notification.timestampt = -1;
+
+	TxInfo null_tx_info;
+
+	null_tx_info.packet_id = -1;
+	null_tx_info.destination_id = -1;
+	null_tx_info.tx_duration = -1;
+	null_tx_info.data_duration = 0;
+	null_tx_info.ack_duration = 0;
+	null_tx_info.tx_power = 0;
+	null_tx_info.tx_gain = 0;
+	null_tx_info.data_rate = 0;
+	null_tx_info.SetSizeOfMCS(4);
+	null_tx_info.x = 0;
+	null_tx_info.y = 0;
+	null_tx_info.z = 0;
+	null_tx_info.nav_time = 0;
+
+	null_notification.tx_info = null_tx_info;
+
+	data_notification = null_notification;
+	ack_notification= null_notification;
+	ongoing_notification = null_notification;
+
+	// Statistics
+	packets_sent = 0;
+	throughput = 0;
+	throughput_loss = 0;
+	packets_lost = 0;
+	num_tx_init_not_possible = 0;
 
 }
