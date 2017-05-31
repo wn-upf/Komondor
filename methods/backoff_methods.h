@@ -58,7 +58,7 @@ double	Exponential2(double mean)	{ return -mean*log(Random2());}
 double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
 
 	double backoff_time;
-	double expected_backoff = (double) (congestion_window-1)/2;
+	double expected_backoff = (double) (congestion_window-1)/2;	// [slots]
 	double lambda_backoff =  1/(expected_backoff * SLOT_TIME);
 
 	switch(pdf_backoff){
@@ -67,7 +67,9 @@ double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
 
 			if(backoff_type == BACKOFF_SLOTTED) {
 
-				backoff_time = (rand() % congestion_window + 1) * SLOT_TIME;
+				// backoff_time = (rand() % congestion_window + 1) * SLOT_TIME; TODO: Uniform???
+				// backoff_time = expected_backoff * SLOT_TIME;	// [s]
+				backoff_time = 1;	// HARDCODED [s]
 
 			} else if(backoff_type == BACKOFF_CONTINUOUS) {
 

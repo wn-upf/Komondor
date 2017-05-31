@@ -532,7 +532,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 
 	// Get left and right channels available (or free)
 	int left_free_ch = 0;
-	int left_free_ch_is_set = 0;
+	int left_free_ch_is_set = 0;	// True if left channel could be set true
 	int right_free_ch = 0;
 
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
