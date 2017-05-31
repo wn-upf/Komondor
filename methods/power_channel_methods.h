@@ -503,7 +503,8 @@ double ComputeMaxInterference(Notification notification, int current_left_channe
 
 	for(int c = current_left_channel; c <= current_right_channel; c++){
 
-		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK){
+		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK
+				|| node_state == STATE_RX_RTS || node_state == STATE_RX_CTS || node_state == STATE_SENSING){
 
 			if(max_pw_interference <=
 					(channel_power[c] - power_received_per_node[receiving_from_node_id])){
@@ -516,6 +517,8 @@ double ComputeMaxInterference(Notification notification, int current_left_channe
 
 	return max_pw_interference;
 }
+
+
 
 /*
  * GetTxChannelsByChannelBonding: identifies the channels to TX in depending on the channel_bonding scheme

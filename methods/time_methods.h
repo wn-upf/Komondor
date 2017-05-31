@@ -80,6 +80,10 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 		}
 	}
 
+	// TODO: THIS IS HARDCODED
+	tx_time = 1;
+	// END HARCODED
+
 	return tx_time;
 }
 

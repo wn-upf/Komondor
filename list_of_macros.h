@@ -157,6 +157,7 @@
 // C++ macros
 #define MIN_VALUE_C_LANGUAGE			0.000001			// Minimum float value printable for default by C++ language
 #define MIN_DOUBLE_VALUE_KOMONDOR		0.000000000000001	// Minimum value accepted by Komondor
+#define PICO_SECOND						0.000000000001		//
 
 // Path-loss models
 #define PATH_LOSS_LFS 				0	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
