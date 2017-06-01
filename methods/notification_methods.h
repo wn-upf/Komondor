@@ -81,7 +81,7 @@ void ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int 
 	if(node_a == node_id ||  node_b == node_id){		// If node IMPLIED in the NACK
 
 		if(save_node_logs) fprintf(node_logger.file,
-				"%.12f;N%d;S%d;%s;%s I am implied in the NACK with packet id #%d\n",
+				"%.15f;N%d;S%d;%s;%s I am implied in the NACK with packet id #%d\n",
 				sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.packet_id);
 
 		// Sum new loss reason to corresponding type (for statistics purposes)
@@ -91,7 +91,7 @@ void ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int 
 
 			case PACKET_LOST_DESTINATION_TX:{	// Destination was already transmitting when the packet transmission was attempted
 
-				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Destination N%d was transmitting!s\n",
+				if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Destination N%d was transmitting!s\n",
 						sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
 				// Add receiver to hidden nodes list ("I was not listening to him!")
@@ -103,7 +103,7 @@ void ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int 
 			case PACKET_LOST_LOW_SIGNAL:{	// Signal strength is not enough to be decoded (less than capture effect)
 
 				if(save_node_logs) fprintf(node_logger.file,
-						"%.12f;N%d;S%d;%s;%s Power received in destination N%d is less than the required capture effect!\n",
+						"%.15f;N%d;S%d;%s;%s Power received in destination N%d is less than the required capture effect!\n",
 						sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
 				break;
@@ -112,7 +112,7 @@ void ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int 
 			case PACKET_LOST_INTERFERENCE:{ 	// There are interference signals making node not comply with the capture effect
 
 				if(save_node_logs) fprintf(node_logger.file,
-						"%.12f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
+						"%.15f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
 						sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
 				// Increase the number of times of POTENTIAL hidden nodes with the current transmitting nodes
@@ -128,7 +128,7 @@ void ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int 
 			case PACKET_LOST_PURE_COLLISION:{	// Two nodes transmitting to same destination with signal strengths enough to be decoded
 
 				if(save_node_logs) fprintf(node_logger.file,
-					"%.12f;N%d;S%d;%s;%s Pure collision detected at destination %d! %d was transmitting and %d appeared\n",
+					"%.15f;N%d;S%d;%s;%s Pure collision detected at destination %d! %d was transmitting and %d appeared\n",
 					sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id,
 					node_a, node_b);
 
@@ -148,7 +148,7 @@ void ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int 
 				if(node_a == node_id) {
 
 					if(save_node_logs) fprintf(node_logger.file,
-							"%.12f;N%d;S%d;%s;%s Destination N%d already receiving from N%d and N%d transmitted with not enough"
+							"%.15f;N%d;S%d;%s;%s Destination N%d already receiving from N%d and N%d transmitted with not enough"
 							" power to be decoded\n",
 							sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id, node_a, node_b);
 
@@ -160,7 +160,7 @@ void ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int 
 
 			case PACKET_LOST_SINR_PROB:{	// Packet lost due to SINR probability (deprecated)
 
-				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Packet lost due to the BER (%f) "
+				if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Packet lost due to the BER (%f) "
 						"associated to the current SINR (%f dB)\n", sim_time, node_id, node_state, LOG_H02, LOG_LVL2,
 						logical_nack.ber, ConvertPower(LINEAR_TO_DB, logical_nack.sinr));
 
@@ -168,14 +168,14 @@ void ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int 
 			}
 
 			case PACKET_LOST_RX_IN_NAV:{			// Packet lost because node was in NAV
-				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Packet lost due to NAV\n",
+				if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Packet lost due to NAV\n",
 						sim_time, node_id, node_state, LOG_H02, LOG_LVL2);
 
 				break;
 			}
 
 			case PACKET_LOST_BO_COLLISION:{
-				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Packet lost due to Slotted Backoff\n",
+				if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Packet lost due to Slotted Backoff\n",
 						sim_time, node_id, node_state, LOG_H02, LOG_LVL2);
 
 				break;
@@ -183,7 +183,7 @@ void ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int 
 
 			default:{
 
-				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Unknown reason for packet loss\n",
+				if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Unknown reason for packet loss\n",
 						sim_time, node_id, node_state, LOG_H02, LOG_LVL2);
 				exit(EXIT_FAILURE);
 				break;

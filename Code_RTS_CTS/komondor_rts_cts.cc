@@ -126,9 +126,11 @@ component Komondor : public CostSimEng {
 		int print_system_logs;			// Flag for activating the printing of system logs
 		char *simulation_code;			// Komondor simulation code
 		FILE *simulation_output_file;	// File for the output logs (including statistics)
-		FILE *script_output_file;		// File for the whole input files included in the script
+		FILE *script_output_file;		// File for the whole input files included in the script TODO
+		FILE *script_output_file_csv;	// File for the CSV script output
 		Logger logger_simulation;		// Logger for the simulation output file
-		Logger logger_script;			// Logger for the script file (containing 1+ simulations)
+		Logger logger_script;			// Logger for the script file (containing 1+ simulations) Readable version
+		Logger logger_script_csv;		// Logger for the script file in CSV format
 
 		// Auxiliar variables
 		int first_line_skiped_flag;		// Flag for skipping first informative line of input file
@@ -186,9 +188,19 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	logger_simulation.save_logs = SAVE_LOG;
 	logger_simulation.file = simulation_output_file;
 
+	// Script output (Readable)
 	script_output_file = fopen(script_output_filename,"at");	// Script output is removed when script is executed
 	logger_script.save_logs = SAVE_LOG;
 	logger_script.file = script_output_file;
+
+	// Script output (CSV format)
+	char *script_output_filename_root = script_output_filename;
+	script_output_filename_root[strlen(script_output_filename_root)-4] = 0;
+	char *script_output_csv_filename = (char *) malloc(strlen(script_output_filename) + 4);
+	sprintf(script_output_csv_filename, "%s_csv.txt", script_output_filename);
+	script_output_file_csv = fopen(script_output_csv_filename,"at");	// Script output is removed when script is executed
+	logger_script_csv.save_logs = SAVE_LOG;
+	logger_script_csv.file = script_output_file_csv;
 
 	fprintf(logger_script.file, "------------------------------------\n");
 	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s'\n", LOG_LVL1, simulation_code);
@@ -306,15 +318,32 @@ void Komondor :: Stop(){
 					node_container[m].node_code, node_container[m].throughput);
 			avg_throughput += node_container[m].throughput;
 			if(node_container[m].node_type == NODE_TYPE_AP){
+
 				transmitting_nodes ++;
+
+				// Fill CSV script output: Simulation	WLAN	Throughput [Mbps]	Lost packets
+				// TODO: complete CSV output parameters
+				fprintf(logger_script_csv.file, "%s,", simulation_code);					// Smiluation code
+				fprintf(logger_script_csv.file, "%d,", node_container[m].wlan.wlan_id);		// WLAN ID
+				fprintf(logger_script_csv.file, "%s,", node_container[m].wlan.wlan_code);	// WLAN code
+				fprintf(logger_script_csv.file, "%d,", node_container[m].node_id);			// Node ID
+				fprintf(logger_script_csv.file, "%s,", node_container[m].node_code);		// Node code
+				fprintf(logger_script_csv.file, "%f,", node_container[m].throughput);		// Throughput
+				fprintf(logger_script_csv.file, "%d,", node_container[m].packets_sent);		// Packets sent
+				fprintf(logger_script_csv.file, "%d", node_container[m].packets_lost);		// Packets lost
+				fprintf(logger_script_csv.file, "\n");										// End of line
 			}
 			if(node_container[m].throughput > max_trhoughput) max_trhoughput = node_container[m].throughput;
 			if(node_container[m].throughput < min_trhoughput) min_trhoughput = node_container[m].throughput;
+
+
 		}
 		avg_throughput = avg_throughput/transmitting_nodes;
 		fprintf(logger_script.file, "%s AVERAGE TPT = %f\n", LOG_LVL2, avg_throughput);
 		fprintf(logger_script.file, "%s MIN VAL = %f\n", LOG_LVL2, min_trhoughput);
 		fprintf(logger_script.file, "%s MAX VAL = %f\n", LOG_LVL2, max_trhoughput);
+
+
 	}
 
 	fclose(script_output_file);
@@ -327,6 +356,8 @@ void Komondor :: Stop(){
  * InputChecker(): checks that input is set in proper format and values are acceptable
  */
 void Komondor :: InputChecker(){
+
+	// TODO: system channels vs. WLANs channels must match
 
 	// Auxiliary arrays
 	int nodes_ids[total_nodes_number];
@@ -1286,13 +1317,13 @@ int Komondor :: GetNumOfNodes(char *nodes_filename, int node_type, char *wlan_co
 /**********/
 int main(int argc, char *argv[]){
 
-	printf("\n");
-	printf("*************************************************************************************\n");
-	printf("%s KOMONDOR wireless network simulator\n", LOG_LVL1);
-	printf("%s Copyright (C) 2017-2022, and GNU GPL'd, by Sergio Barrachina & Francisco Wilhelmi.\n", LOG_LVL1);
-	printf("%s GitHub repository: https://github.com/wn-upf/Komondor\n", LOG_LVL2);
-	printf("*************************************************************************************\n");
-	printf("\n\n");
+//	printf("\n");
+//	printf("*************************************************************************************\n");
+//	printf("%s KOMONDOR wireless network simulator\n", LOG_LVL1);
+//	printf("%s Copyright (C) 2017-2022, and GNU GPL'd, by Sergio Barrachina & Francisco Wilhelmi.\n", LOG_LVL1);
+//	printf("%s GitHub repository: https://github.com/wn-upf/Komondor\n", LOG_LVL2);
+//	printf("*************************************************************************************\n");
+//	printf("\n\n");
 
 	// Input variables
 	char *system_input_filename;

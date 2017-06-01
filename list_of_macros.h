@@ -151,13 +151,15 @@
 #define CHANNEL_FREE		1
 
 // Progress bar
-#define PROGRESS_BAR_DELTA		5	// Amount of percentage between two progress bar indicators
+#define PROGRESS_BAR_DELTA		10	// Amount of percentage between two progress bar indicators
 #define PROGRESS_BAR_DISPLAY 	1	// Activate progress bar
 
 // C++ macros
 #define MIN_VALUE_C_LANGUAGE			0.000001			// Minimum float value printable for default by C++ language
 #define MIN_DOUBLE_VALUE_KOMONDOR		0.000000000000001	// Minimum value accepted by Komondor
-#define PICO_SECOND						0.000000000001		//
+#define PICO_SECOND						0.000000000001		// Pico second [s]
+#define FEMTO_SECOND					0.000000000000001	// Femto second [s]
+#define MAX_DIFFERENCE_SAME_TIME		100 * FEMTO_SECOND	// Max. difference for considering that two events occur at the same time
 
 // Path-loss models
 #define PATH_LOSS_LFS 				0	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
