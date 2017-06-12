@@ -101,7 +101,7 @@ double ConvertPower(int conversion_type, double power_magnitude_in){
 /*
  * ComputeDistance(): returns the distance between 2 points
  **/
-double ComputeDistance(int x1, int y1, int z1, int x2, int y2, int z2){
+double ComputeDistance(double x1, double y1, double z1, double x2, double y2, double z2){
   double distance = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
   return distance;
 }
@@ -348,7 +348,7 @@ void GetChannelOccupancyByCCA(int *channels_free, int min_channel_allowed, int m
  * UpdatePowerSensedPerNode: updates the power sensed comming from each node
  **/
 void UpdatePowerSensedPerNode(double *power_received_per_node, Notification notification,
-    int x, int y, int z, double rx_gain, double central_frequency, int path_loss_model) {
+    double x, double y, double z, double rx_gain, double central_frequency, int path_loss_model) {
 
 	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
 			notification.tx_info.z);
@@ -472,11 +472,19 @@ void UpdateChannelsPower(double *channel_power, double *power_received_per_node,
 	// Increase/decrease power sensed if TX started/finished
 	for(int c = 0; c < num_channels_komondor; c++){
 
-		if(update_type == TX_FINISHED) channel_power[c] -= total_power[c];
+		if(update_type == TX_FINISHED) {
+
+			channel_power[c] -= total_power[c];
+
+			// Avoid near-zero negative values
+			if (channel_power[c] < 0) channel_power[c] = FEMTO_VALUE;
+
+		}
 
 		else if (update_type == TX_INITIATED) channel_power[c] += total_power[c];
 
 	}
+
 }
 
 /*
@@ -792,7 +800,7 @@ void UpdateTimestamptChannelFreeAgain(double *timestampt_channel_becomes_free, d
  * the node in each subchannel.
  */
 void PrintOrWriteChannelPower(int write_or_print, int save_node_logs, Logger node_logger,
-	int print_node_logs, int *channels_free, double *channel_power, int num_channels_komondor){
+	int print_node_logs, double *channel_power, int num_channels_komondor){
 
 	switch(write_or_print){
 		case PRINT_LOG:{

@@ -125,6 +125,7 @@ component Komondor : public CostSimEng {
 		int save_system_logs;			// Flag for activating the log writting of the Komondor system
 		int print_system_logs;			// Flag for activating the printing of system logs
 		char *simulation_code;			// Komondor simulation code
+		char *nodes_input_filename;		// Filename of the nodes (AP or Deterministic Nodes) input CSV
 		FILE *simulation_output_file;	// File for the output logs (including statistics)
 		FILE *script_output_file;		// File for the whole input files included in the script TODO
 		FILE *script_output_file_csv;	// File for the CSV script output
@@ -151,13 +152,14 @@ component Komondor : public CostSimEng {
  */
 void Komondor :: Setup(double sim_time_console, int save_system_logs_console, int save_node_logs_console,
 		int print_system_logs_console, int print_node_logs_console, char *system_input_filename,
-		char *nodes_input_filename, char *script_output_filename, char *simulation_code_console){
+		char *nodes_input_filename_console, char *script_output_filename, char *simulation_code_console){
 
 	simulation_time_komondor = sim_time_console;
 	save_node_logs = save_node_logs_console;
 	save_system_logs = save_system_logs_console;
 	print_node_logs = print_node_logs_console;
 	print_system_logs = print_system_logs_console;
+	nodes_input_filename = nodes_input_filename_console;
 	simulation_code = (char *) malloc((strlen(simulation_code_console) + 1) * sizeof(*simulation_code));
 	sprintf(simulation_code, "%s", simulation_code_console);
 	total_nodes_number = 0;
@@ -197,7 +199,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	char *script_output_filename_root = script_output_filename;
 	script_output_filename_root[strlen(script_output_filename_root)-4] = 0;
 	char *script_output_csv_filename = (char *) malloc(strlen(script_output_filename) + 4);
-	sprintf(script_output_csv_filename, "%s_csv.txt", script_output_filename);
+	sprintf(script_output_csv_filename, "%s_csv.csv", script_output_filename);
 	script_output_file_csv = fopen(script_output_csv_filename,"at");	// Script output is removed when script is executed
 	logger_script_csv.save_logs = SAVE_LOG;
 	logger_script_csv.file = script_output_file_csv;
@@ -313,6 +315,17 @@ void Komondor :: Stop(){
 		double min_trhoughput = 10000;
 		double max_trhoughput = -1000;
 		int transmitting_nodes = 0;
+
+		// If csv file is empty, add header
+		fseek(logger_script_csv.file, 0, SEEK_END);
+		unsigned long len = (unsigned long)ftell(logger_script_csv.file);
+		printf("length = %lu", len);
+		if (len == 0) {
+			fprintf(logger_script_csv.file, "filename;sim_code;wlan_id;wlan_code;node_id;node_code;throughput[Mbps];"
+											"packets_sent;packets_lost;rts_cts_sent;rts_cts_lost\n");
+		}
+
+
 		for(int m=0; m < total_nodes_number; m++){
 			fprintf(logger_script.file, "%s Node #%d (%s) Throughput = %f\n", LOG_LVL2, m,
 					node_container[m].node_code, node_container[m].throughput);
@@ -321,16 +334,18 @@ void Komondor :: Stop(){
 
 				transmitting_nodes ++;
 
-				// Fill CSV script output: Simulation	WLAN	Throughput [Mbps]	Lost packets
-				// TODO: complete CSV output parameters
-				fprintf(logger_script_csv.file, "%s,", simulation_code);					// Smiluation code
-				fprintf(logger_script_csv.file, "%d,", node_container[m].wlan.wlan_id);		// WLAN ID
-				fprintf(logger_script_csv.file, "%s,", node_container[m].wlan.wlan_code);	// WLAN code
-				fprintf(logger_script_csv.file, "%d,", node_container[m].node_id);			// Node ID
-				fprintf(logger_script_csv.file, "%s,", node_container[m].node_code);		// Node code
-				fprintf(logger_script_csv.file, "%f,", node_container[m].throughput);		// Throughput
-				fprintf(logger_script_csv.file, "%d,", node_container[m].packets_sent);		// Packets sent
-				fprintf(logger_script_csv.file, "%d", node_container[m].packets_lost);		// Packets lost
+				// Fill CSV script output
+				fprintf(logger_script_csv.file, "%s;", nodes_input_filename);				// Smiluation code
+				fprintf(logger_script_csv.file, "%s;", simulation_code);					// Smiluation code
+				fprintf(logger_script_csv.file, "%d;", node_container[m].wlan.wlan_id);		// WLAN ID
+				fprintf(logger_script_csv.file, "%s;", node_container[m].wlan.wlan_code);	// WLAN code
+				fprintf(logger_script_csv.file, "%d;", node_container[m].node_id);			// Node ID
+				fprintf(logger_script_csv.file, "%s;", node_container[m].node_code);		// Node code
+				fprintf(logger_script_csv.file, "%f;", node_container[m].throughput * pow(10,-6));	// Throughput [Mbps]
+				fprintf(logger_script_csv.file, "%d;", node_container[m].packets_sent);		// Packets sent
+				fprintf(logger_script_csv.file, "%d;", node_container[m].packets_lost);		// Packets lost
+				fprintf(logger_script_csv.file, "%d;", node_container[m].rts_cts_sent);		// RTS packets sent
+				fprintf(logger_script_csv.file, "%d", node_container[m].rts_cts_lost);		// RTS packets lost
 				fprintf(logger_script_csv.file, "\n");										// End of line
 			}
 			if(node_container[m].throughput > max_trhoughput) max_trhoughput = node_container[m].throughput;
@@ -1423,6 +1438,7 @@ int main(int argc, char *argv[]){
 	// Generate Komondor component
 	Komondor test;
 	test.Seed = seed;
+	srand(seed); // Needed for ensuring randomness dependency on seed
 	test.StopTime(sim_time);
 	test.Setup(sim_time, save_system_logs, save_node_logs, print_system_logs, print_node_logs,
 			system_input_filename, nodes_input_filename, script_output_filename, simulation_code);

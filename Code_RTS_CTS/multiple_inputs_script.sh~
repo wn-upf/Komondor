@@ -28,8 +28,11 @@ do
 	echo ""
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim${executing_ix} 1 0 0 0 100 500
+	./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim${executing_ix} 1 0 0 0 10 500
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo ""
 done
+echo ""
 echo 'SCRIPT FINISHED: OUTUP FILE SAVED IN /output/script_output.txt'
+echo ""
+echo ""

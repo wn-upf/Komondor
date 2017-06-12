@@ -119,10 +119,6 @@
 #define PACKET_TYPE_RTS				4		// RTS type
 #define PACKET_TYPE_CTS				5		// CTS type
 
-// Timers
-#define PAUSE_TIMER		0	// Try to pause a timer (e.g. backoff)
-#define RESUME_TIMER	1	// Try to resume timer
-
 // Backoff types
 #define BACKOFF_SLOTTED		0
 #define BACKOFF_CONTINUOUS	1
@@ -155,11 +151,22 @@
 #define PROGRESS_BAR_DISPLAY 	1	// Activate progress bar
 
 // C++ macros
-#define MIN_VALUE_C_LANGUAGE			0.000001			// Minimum float value printable for default by C++ language
-#define MIN_DOUBLE_VALUE_KOMONDOR		0.000000000000001	// Minimum value accepted by Komondor
-#define PICO_SECOND						0.000000000001		// Pico second [s]
-#define FEMTO_SECOND					0.000000000000001	// Femto second [s]
-#define MAX_DIFFERENCE_SAME_TIME		100 * FEMTO_SECOND	// Max. difference for considering that two events occur at the same time
+#define MIN_VALUE_C_LANGUAGE		0.000001				// Minimum float value printable for default by C++ language
+#define MIN_DOUBLE_VALUE_KOMONDOR	0.000000000000001		// Minimum value accepted by Komondor
+#define MILLI_VALUE					0.001					// Milli value (10^-3)
+#define MICRO_VALUE					0.000001				// Micro value (10^-6)
+#define NANO_VALUE					0.000000001				// Nano value (10^-9)
+#define PICO_VALUE					0.000000000001			// Pico value (10^-12)
+#define FEMTO_VALUE					0.000000000000001		// Femto value (10^-15)
+#define ATTO_VALUE					0.000000000000000001	// Atto value (10^-18)
+
+
+// Timers
+#define PAUSE_TIMER					0					// Try to pause a timer (e.g. backoff)
+#define RESUME_TIMER				1					// Try to resume timer
+#define MAX_NUM_RAND_TIME			1000				// Max. number of time rand values
+#define MAX_DIFFERENCE_SAME_TIME	MAX_NUM_RAND_TIME * FEMTO_VALUE	// Max. difference for considering that two events occur at the same time
+#define TIME_OUT_EXTRA_TIME			FEMTO_VALUE	// TO is triggered when exceeded TIME_OUT_EXTRA_TIME
 
 // Path-loss models
 #define PATH_LOSS_LFS 				0	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx

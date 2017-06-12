@@ -26,7 +26,7 @@ do
 	echo ""
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./VaquitaSimulation ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} sim${executing_ix} 1.0 500
+	./VaquitaSimulation ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} sim${executing_ix} 1 500
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo ""
 done

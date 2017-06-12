@@ -67,9 +67,8 @@ double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
 
 			if(backoff_type == BACKOFF_SLOTTED) {
 
-				// backoff_time = (rand() % congestion_window + 1) * SLOT_TIME; TODO: Uniform???
-				// backoff_time = expected_backoff * SLOT_TIME;	// [s]
-				backoff_time = 1;	// HARDCODED [s]
+				int num_slots = rand() % congestion_window + 1; // Num slots in [1, CW]
+				backoff_time = num_slots * SLOT_TIME;
 
 			} else if(backoff_type == BACKOFF_CONTINUOUS) {
 
@@ -113,7 +112,37 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff, doubl
 	switch(backoff_type){
 
 		case BACKOFF_SLOTTED: {
-			updated_remaining_backoff = round((remaining_backoff - sim_time)/SLOT_TIME) * SLOT_TIME;
+
+
+			double dif = remaining_backoff - sim_time;
+
+			// double num_remaining_slots = dif / SLOT_TIME;
+
+			// printf("num_remaining_slots = %.15f\n", num_remaining_slots);
+
+			// No puede haber remaining no múltiples de SLOT_TIME
+//			if (fmod(remaining_backoff - sim_time, SLOT_TIME) != 0) {
+//				printf("-------------------\n");
+//				printf(" - remaining_backoff = %.15f\n"
+//						" - sim_time = %.15f\n"
+//						" - dif = %.15f\n"
+//						" - fmod = %.15f\n"
+//						" - ceil = %f\n",
+//						remaining_backoff, sim_time,
+//						dif, fmod(dif, SLOT_TIME),
+//						ceil((dif)/SLOT_TIME));
+//				printf("Pol·las\n");
+//			}
+
+
+			int closest_slot = round(dif / SLOT_TIME);
+
+			if(fabs(dif - closest_slot * SLOT_TIME) < MAX_DIFFERENCE_SAME_TIME){
+				updated_remaining_backoff = closest_slot * SLOT_TIME;
+			} else {
+				updated_remaining_backoff = ceil(dif/SLOT_TIME) * SLOT_TIME;
+			}
+
 			break;
 		}
 
@@ -202,6 +231,9 @@ int HandleCongestionWindow(int increase_or_decrease, int current_cw, int min_cw,
 		}
 
 	}
+
+	// TODO: HARDCODED!
+	updated_cw = current_cw;
 
 	return updated_cw;
 
