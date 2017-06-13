@@ -50,7 +50,9 @@ public class nodes_deterministic_generator {
     static String DICTIONARY[] = {"A","B","C","D","E","F","G","H","I","J","K","L",
     "M","N","O","P","Q","R","S","T","U","W","X","Y","Z",
     "AA","BA","CA","DA","EA","FA","GA","HA","IA","JA","KA","LA",
-    "MA","NA","OA","PA","QA","RA","SA","TA","UA","WA","XA","YA","ZA"};
+    "MA","NA","OA","PA","QA","RA","SA","TA","UA","WA","XA","YA","ZA",
+    "AB","BB","CB","DB","EB","FB","GB","HB","IB","JB","KB","LB",
+    "MB","NB","OB","PB","QB","RB","SB","TB","UB","WB","XB","YB","ZB"};
 
     // FIXED PARAMETERS
     /* Automatically generated
