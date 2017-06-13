@@ -79,6 +79,7 @@
 #define STATE_WAIT_CTS	10	// Waiting CTS packet
 #define STATE_WAIT_DATA	11	// Waiting Data after CTS
 #define STATE_NAV		12	// Virtual Carrier Sense (process only RTS and CTS)
+#define STATE_SLEEP		13	// Virtual Carrier Sense (process only RTS and CTS)
 
 // Logs
 #define PRINT_LOG				0	// Print logs per console
@@ -165,8 +166,8 @@
 #define PAUSE_TIMER					0					// Try to pause a timer (e.g. backoff)
 #define RESUME_TIMER				1					// Try to resume timer
 #define MAX_NUM_RAND_TIME			1000				// Max. number of time rand values
-#define MAX_DIFFERENCE_SAME_TIME	MAX_NUM_RAND_TIME * FEMTO_VALUE	// Max. difference for considering that two events occur at the same time
-#define TIME_OUT_EXTRA_TIME			FEMTO_VALUE	// TO is triggered when exceeded TIME_OUT_EXTRA_TIME
+#define MAX_DIFFERENCE_SAME_TIME	MAX_NUM_RAND_TIME * PICO_VALUE	// Max. difference for considering that two events occur at the same time
+#define TIME_OUT_EXTRA_TIME			PICO_VALUE	// TO is triggered when exceeded TIME_OUT_EXTRA_TIME
 
 // Path-loss models
 #define PATH_LOSS_LFS 				0	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx

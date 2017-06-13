@@ -81,7 +81,7 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 	}
 
 	// TODO: THIS IS HARDCODED
-	tx_time = 100 * MICRO_VALUE;
+	// tx_time = 100 * MICRO_VALUE;
 	// END HARCODED
 
 	return tx_time;
