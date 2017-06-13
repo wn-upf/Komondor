@@ -1,3 +1,2 @@
-wlan_code,AP_x [m],AP_y [m],AP_z [m],min_sta_number,max_sta_number,max_distance_sta,primary_channel,min_channel_allowed,max_channel_allowed,Cwmin,Cwmax,tpc_min(dBm),tpc_default(dBm),tpc_max(dBm),cca_min(dBm),cca_default(dBm),cca_max(dBm),tx_antenna_gain,rx_antenna_gain,channel_bonding_model,modulation_default,central_frequency (GHz)
-LG,0,0,0,1,2,5,0,0,0,16,1024,0,15,20,-90,-82,-80,0,0,4,0,2.4
-LG2,1,21,1,1,2,5,0,0,0,16,1024,0,15,20,-90,-82,-80,0,0,4,0,2.4
+wlan_code,AP_x [m],AP_y [m],AP_z [m],min_sta_number,max_sta_number,max_distance_sta,primary_channel,min_channel_allowed,max_channel_allowed,Cwmin,Cwmax,tpc_min(dBm),tpc_default(dBm),tpc_max(dBm),cca_min(dBm),cca_default(dBm),cca_max(dBm),tx_antenna_gain,rx_antenna_gain,channel_bonding_model,modulation_default,central_frequency (GHz),lambda
+A,0,0,0,20,20,5,0,0,4,16,16,0,15,20,-90,-82,-80,0,0,4,0,2.4,1
