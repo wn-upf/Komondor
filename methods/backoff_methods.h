@@ -101,6 +101,10 @@ double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
 		}
 	}
 
+	// HARDCODED BY SERGIO TO TEST
+	// backoff_time = SLOT_TIME;
+	// END OF HARDCODING
+
 	return backoff_time;
 }
 
@@ -161,6 +165,9 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff, doubl
 
 	}
 
+	if (remaining_backoff == 0.0) updated_remaining_backoff = 0;
+
+	printf("updated = %f\n", updated_remaining_backoff);
 	return updated_remaining_backoff;
 }
 
