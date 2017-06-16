@@ -59,6 +59,9 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 
 	double tx_time;
 
+	// TODO: hardcoding rate to match CTMN analysis (MU for one channel)
+	data_rate = pow(10,6);
+
 	switch(pdf_tx_time){
 
 		case PDF_DETERMINISTIC:{
@@ -81,7 +84,7 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 	}
 
 	// TODO: THIS IS HARDCODED
-	// tx_time = 100 * MICRO_VALUE;
+	// tx_time = 1000 * MICRO_VALUE;
 	// END HARCODED
 
 	return tx_time;

@@ -326,13 +326,15 @@ void GetChannelOccupancyByCCA(int *channels_free, int min_channel_allowed, int m
     double *channel_power, double cca, double *timestampt_channel_becomes_free, double sim_time,
 	double difs){
 
-	double time_channel_has_been_free;	// Time channel has been free since last P(ch) > CCA
+	// double time_channel_has_been_free;	// Time channel has been free since last P(ch) > CCA
 
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 
-		time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
+		// time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
 
-		if(channel_power[c] < cca && time_channel_has_been_free > difs){
+		// if(channel_power[c] < cca && time_channel_has_been_free > difs){
+
+		if(channel_power[c] < cca){
 
 		  channels_free[c] = CHANNEL_FREE;
 
@@ -511,7 +513,7 @@ double ComputeMaxInterference(Notification notification, int current_left_channe
 
 	for(int c = current_left_channel; c <= current_right_channel; c++){
 
-		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK
+		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK || node_state == STATE_NAV
 				|| node_state == STATE_RX_RTS || node_state == STATE_RX_CTS || node_state == STATE_SENSING){
 
 			if(max_pw_interference <=

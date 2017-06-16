@@ -67,8 +67,10 @@ double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
 
 			if(backoff_type == BACKOFF_SLOTTED) {
 
-				int num_slots = rand() % congestion_window + 1; // Num slots in [1, CW]
+				int num_slots = rand() % congestion_window; // Num slots in [0, CW-1]
 				backoff_time = num_slots * SLOT_TIME;
+
+				// printf("num_slots = %d\n", num_slots);
 
 			} else if(backoff_type == BACKOFF_CONTINUOUS) {
 

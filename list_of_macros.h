@@ -148,7 +148,7 @@
 #define CHANNEL_FREE		1
 
 // Progress bar
-#define PROGRESS_BAR_DELTA		10	// Amount of percentage between two progress bar indicators
+#define PROGRESS_BAR_DELTA		25	// Amount of percentage between two progress bar indicators
 #define PROGRESS_BAR_DISPLAY 	1	// Activate progress bar
 
 // C++ macros

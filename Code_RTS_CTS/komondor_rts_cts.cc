@@ -277,12 +277,20 @@ void Komondor :: Stop(){
 
 	int total_packets_sent = 0;
 	double total_throughput = 0;
+	int total_rts_lost_slotted_bo = 0;
+	int total_rts_cts_sent = 0;
+	double total_prob_slotted_bo_collision = 0;
+	int total_num_tx_init_not_possible = 0;
 
 	for(int m=0; m < total_nodes_number; m++){
 
 		if( node_container[m].node_type == NODE_TYPE_AP){
 			total_packets_sent += node_container[m].packets_sent;
 			total_throughput += node_container[m].throughput;
+			total_rts_lost_slotted_bo += node_container[m].rts_lost_slotted_bo;
+			total_rts_cts_sent += node_container[m].rts_cts_sent;
+			total_prob_slotted_bo_collision += node_container[m].prob_slotted_bo_collision;
+			total_num_tx_init_not_possible += node_container[m].num_tx_init_not_possible;
 		}
 	}
 
@@ -292,8 +300,27 @@ void Komondor :: Stop(){
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL2, total_throughput * pow(10,-6));
 		printf("%s Average number of packets sent per WLAN = %d\n", LOG_LVL2, (total_packets_sent/total_wlans_number));
 		printf("%s Average throughput per WLAN = %.2f Mbps\n", LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number));
+
 		printf("\n\n");
 	}
+
+	// Sergio: just to keep track of the average througput even when not asking for system results
+	printf("\n");
+	printf("- Average throughput per WLAN = %f Mbps\n", (total_throughput * pow(10,-6)/total_wlans_number));
+	printf("- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_packets_sent/ (double) total_wlans_number));
+	printf("- Average number of RTS packets lost due to slotted BO = %.2f (%.2f %% loss)\n",
+			(double) total_rts_lost_slotted_bo/(double) total_wlans_number,
+			((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
+
+	printf("\n");
+	printf("------- FOR COMPARING TO BIANCCI -------\n");
+	printf("- Prob. collision by slotted BO = %f\n", total_prob_slotted_bo_collision / total_wlans_number);
+	printf("- Aggregate throughput = %f Mbps\n", total_throughput * pow(10,-6));
+	printf("- Aggregate number of transmission not possible = %d\n", total_num_tx_init_not_possible);
+	printf("----------------------------------------\n");
+
+
+	printf("\n");
 
 	if (save_system_logs) {
 
@@ -357,8 +384,6 @@ void Komondor :: Stop(){
 		fprintf(logger_script.file, "%s AVERAGE TPT = %f\n", LOG_LVL2, avg_throughput);
 		fprintf(logger_script.file, "%s MIN VAL = %f\n", LOG_LVL2, min_trhoughput);
 		fprintf(logger_script.file, "%s MAX VAL = %f\n", LOG_LVL2, max_trhoughput);
-
-
 	}
 
 	fclose(script_output_file);
