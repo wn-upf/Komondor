@@ -111,7 +111,10 @@ double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
 /*
  * computeRemainingBackoff(): computes the remaining backoff after some even happens
  * */
-double ComputeRemainingBackoff(int backoff_type, double remaining_backoff, double sim_time){
+double ComputeRemainingBackoff(int backoff_type, double remaining_backoff){
+
+//	printf("----------------------------------\n");
+//	printf("remaining_backoff = %f\n", remaining_backoff);
 
 	double updated_remaining_backoff;
 
@@ -119,41 +122,21 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff, doubl
 
 		case BACKOFF_SLOTTED: {
 
+			int closest_slot = round(remaining_backoff / SLOT_TIME);
+//			printf("- closest_slot = %d\n", closest_slot);
 
-			double dif = remaining_backoff - sim_time;
-
-			// double num_remaining_slots = dif / SLOT_TIME;
-
-			// printf("num_remaining_slots = %.15f\n", num_remaining_slots);
-
-			// No puede haber remaining no múltiples de SLOT_TIME
-//			if (fmod(remaining_backoff - sim_time, SLOT_TIME) != 0) {
-//				printf("-------------------\n");
-//				printf(" - remaining_backoff = %.15f\n"
-//						" - sim_time = %.15f\n"
-//						" - dif = %.15f\n"
-//						" - fmod = %.15f\n"
-//						" - ceil = %f\n",
-//						remaining_backoff, sim_time,
-//						dif, fmod(dif, SLOT_TIME),
-//						ceil((dif)/SLOT_TIME));
-//				printf("Pol·las\n");
-//			}
-
-
-			int closest_slot = round(dif / SLOT_TIME);
-
-			if(fabs(dif - closest_slot * SLOT_TIME) < MAX_DIFFERENCE_SAME_TIME){
+			if(fabs(remaining_backoff - closest_slot * SLOT_TIME) < MAX_DIFFERENCE_SAME_TIME){
 				updated_remaining_backoff = closest_slot * SLOT_TIME;
 			} else {
-				updated_remaining_backoff = ceil(dif/SLOT_TIME) * SLOT_TIME;
+				updated_remaining_backoff = ceil(remaining_backoff/SLOT_TIME) * SLOT_TIME;
 			}
 
 			break;
 		}
 
 		case BACKOFF_CONTINUOUS: {
-			updated_remaining_backoff = remaining_backoff - sim_time;
+
+			updated_remaining_backoff = remaining_backoff;
 			break;
 		}
 
@@ -165,9 +148,8 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff, doubl
 
 	}
 
-	if (remaining_backoff == 0.0) updated_remaining_backoff = 0;
+//	printf("updated = %f (%d)\n", updated_remaining_backoff, (int) (updated_remaining_backoff/ SLOT_TIME));
 
-	printf("updated = %f\n", updated_remaining_backoff);
 	return updated_remaining_backoff;
 }
 
