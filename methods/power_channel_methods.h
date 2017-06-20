@@ -350,7 +350,8 @@ void GetChannelOccupancyByCCA(int *channels_free, int min_channel_allowed, int m
  * UpdatePowerSensedPerNode: updates the power sensed comming from each node
  **/
 void UpdatePowerSensedPerNode(double *power_received_per_node, Notification notification,
-    double x, double y, double z, double rx_gain, double central_frequency, int path_loss_model) {
+    double x, double y, double z, double rx_gain, double central_frequency, int path_loss_model,
+	int start_or_finish) {
 
 	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
 			notification.tx_info.z);
@@ -358,7 +359,16 @@ void UpdatePowerSensedPerNode(double *power_received_per_node, Notification noti
 	double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
 			notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
 
-	power_received_per_node[notification.source_id] = pw_received;
+	if (start_or_finish == TX_INITIATED) {
+
+		power_received_per_node[notification.source_id] = pw_received;
+
+	} else if(start_or_finish == TX_FINISHED){
+
+		power_received_per_node[notification.source_id] = 0;
+
+	}
+
 
 }
 
@@ -479,7 +489,7 @@ void UpdateChannelsPower(double *channel_power, double *power_received_per_node,
 			channel_power[c] -= total_power[c];
 
 			// Avoid near-zero negative values
-			if (channel_power[c] < 0) channel_power[c] = FEMTO_VALUE;
+			if (channel_power[c] < 0.01) channel_power[c] = 0;
 
 		}
 

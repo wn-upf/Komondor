@@ -546,8 +546,8 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 			// capture_effect
 			tmp = strdup(line_system);
 			const char* capture_effect_char = GetField(tmp, IX_CAPTURE_EFFECT);
-			double capture_effect_dbm = atof(capture_effect_char);
-			capture_effect = ConvertPower(LINEAR_TO_DB, capture_effect_dbm);
+			double capture_effect_db = atof(capture_effect_char);
+			capture_effect = ConvertPower(DB_TO_LINEAR, capture_effect_db);
 
 			// Noise level
 			tmp = strdup(line_system);

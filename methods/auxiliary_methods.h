@@ -108,7 +108,7 @@ void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, in
 		case PRINT_LOG:{
 			if(print_node_logs){
 				for(int c = 0; c < list_size; c++){
-					printf("%f  ", list[c]);
+					printf("%.2f  ", list[c]);
 				}
 				printf("\n");
 			}
@@ -116,7 +116,7 @@ void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, in
 		}
 		case WRITE_LOG:{
 			for(int c = 0; c < list_size; c++){
-				 if(save_node_logs)  fprintf(node_logger.file, "%f  ", list[c]);
+				 if(save_node_logs)  fprintf(node_logger.file, "%.2f  ", list[c]);
 			}
 			if(save_node_logs)  fprintf(node_logger.file, "\n");
 			break;

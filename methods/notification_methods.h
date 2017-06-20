@@ -251,7 +251,7 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
 	double per;
 
 	// Try to decode when power received is greater than CCA
-	if(sinr < capture_effect && power_rx_interest > cca) {
+	if(sinr < capture_effect || power_rx_interest < cca) {
 
 		per = 1;
 
@@ -275,6 +275,15 @@ int IsPacketLost(Notification notification, double sinr, double capture_effect, 
 	int is_packet_lost;	// Determines if the current notification has been lost (1) or not (0)
 
 	//is_packet_lost = applyModulationProbabilityError(notification);
+
+//	if(node_id == 0) {
+//		printf("caputa = %f (%f dB)\n", capture_effect,  ConvertPower(LINEAR_TO_DB, capture_effect));
+//		printf("N%d: sinr = %f (%f dB) - P_st = %f (%f dBm)\n",
+//					node_id,
+//					sinr, ConvertPower(LINEAR_TO_DB, sinr),
+//					power_rx_interest, ConvertPower(PW_TO_DBM,power_rx_interest));
+//	}
+
 
 	is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per,
 			node_id);
