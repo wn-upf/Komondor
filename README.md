@@ -1,8 +1,8 @@
-# VaquitaSimulator
+# KomondorSimulator
 
-To run Vaquita simulator, just build the project by using the build_local script and then execute it by doing:
+To run Komondor simulator, just build the project by using the build_local script and then execute it by doing:
 
-$ ./VaquitaSimulation.cc SIM_TIME SEED
+$ ./Komondor.cc SIM_TIME SEED
 
 Where SIM_TIME is the simulation time and SEED is the random seed you wish to use.
 
