@@ -161,6 +161,18 @@ int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size){
 	}
 }
 
+int GetNumberOfSpecificElementInArray(int value, int* array, int list_size){
+
+	int num = 0;
+
+	for(int i=0; i<list_size; i++){
+		if(array[i]==value) num++;
+	}
+
+	return num;
+
+}
+
 double RandomDouble(double min, double max)
 {
     double f = (double)rand() / RAND_MAX;

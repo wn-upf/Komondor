@@ -733,9 +733,15 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 								if(!node_is_transmitter) {
 
+									// Sergio 18/09/2017:
+									// NAV is no longer valid. It cannot be decoded due to interferences.
+									// Wait MAX_DIFFERENCE_SAME_TIME to detect more transmissions sent at the "same" time
+									// Trigger the restart then.
+
 									trigger_NAV_timeout.Cancel();
 									time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
-									trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
+									// trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
+									trigger_restart_sta.Set(fix_time_offset(time_to_trigger,13,12));
 
 								} else {
 
@@ -745,9 +751,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								// EOF HandleSlottedBackoffCollision();
 
 								if(save_node_logs) fprintf(node_logger.file,
-									"%.15f;N%d;S%d;%s;%s RTS cannot be decoded -> Sending NACK corresponding to BO collision to N%d\n",
+									"%.15f;N%d;S%d;%s;%s RTS cannot be decoded (SINR = %f dB) -> Sending NACK corresponding to BO collision to N%d\n",
 									SimTime(), node_id, node_state, LOG_D16, LOG_LVL5,
-									notification.source_id);
+									ConvertPower(LINEAR_TO_DB, current_sinr), notification.source_id);
 
 								LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type,
 									notification.tx_info.packet_id, node_id, notification.source_id,
@@ -1040,7 +1046,6 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							if(!node_is_transmitter) {
 
 								trigger_NAV_timeout.Cancel();
-
 								trigger_NAV_timeout.Set(SimTime());
 
 							} else {
@@ -1062,7 +1067,6 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								NODE_ID_NONE, loss_reason, BER, current_sinr);
 
 						SendLogicalNack(logical_nack);
-
 
 						RestartNode(FALSE);
 					}
@@ -1794,8 +1798,8 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 
 	if(notification.tx_info.destination_id == node_id) {	// If node IS THE DESTINATION
 
-//		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS request received from %d\n",
-//				SimTime(), node_id, node_state, LOG_F00, LOG_LVL1, notification.source_id);
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS request received from N%d\n",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL1, notification.source_id);
 
 		// Compute distance and power received from transmitter
 		double distance = ComputeDistance(x, y, z, notification.tx_info.x,
@@ -1805,19 +1809,21 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 				notification.tx_info.tx_power, tx_gain, rx_gain,
 				central_frequency, path_loss_model);
 
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s I am at distance: %.2f m (sensing P_rx = %.2f dBm)\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL2,
+						distance, ConvertPower(PW_TO_DBM, power_rx_interest));
+
+
 		// Select the modulation according to the SINR perceived corresponding to incoming transmitter
 		SelectMCSResponse(mcs_response, power_rx_interest);
 
-//		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s mcs_response: ",
-//			SimTime(), node_id, node_state, LOG_F00, LOG_LVL5);
-//
-//		PrintOrWriteArrayInt(mcs_response, 4, WRITE_LOG, save_node_logs,
-//				print_node_logs, node_logger);
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s mcs_response for 1, 2, 4 and 8 channels: ",
+			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3);
+
+		PrintOrWriteArrayInt(mcs_response, 4, WRITE_LOG, save_node_logs,
+						print_node_logs, node_logger);
 
 		// Fill and send MCS response
-//		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Answering MCS\n",
-//								SimTime(), node_id, node_state, LOG_F00, LOG_LVL1);
-
 		Notification response_mcs  = GenerateNotification(PACKET_TYPE_MCS_RESPONSE,
 				notification.source_id, TX_DURATION_NONE);
 
@@ -1838,23 +1844,26 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 	if(notification.tx_info.destination_id == node_id) {	// If node IS THE DESTINATION
 
 
-//		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportMCSResponseReceived()\n",
-//				SimTime(), node_id, node_state, LOG_F00, LOG_LVL1);
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportMCSResponseReceived()\n",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL1);
 
 		int ix_aux = current_destination_id - wlan.list_sta_id[0];	// Auxiliary index for correcting the node id offset
 
-//		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS per number of channels: ",
-//				SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS per number of channels: ",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
+
+		printf("- N%d MCS per number of channels: ", node_id);
 
 		// Set receiver modulation to the received one
 		for (int i = 0; i < NUM_OPTIONS_CHANNEL_LENGTH; i++){
 
 			mcs_per_node[ix_aux][i] = notification.tx_info.modulation_schemes[i];
-
-//			if(save_node_logs) fprintf(node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
+			if(save_node_logs) fprintf(node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
+			printf("%d ", mcs_per_node[ix_aux][i]);
 		}
 
 		if(save_node_logs) fprintf(node_logger.file, "\n");
+		printf("\n");
 
 		// TODO: ADD LOGIC TO HANDLE WRONG SITUATIONS (cannot transmit over none of the channel combinations)
 		if(mcs_per_node[ix_aux][0] == -1) {
@@ -2002,7 +2011,13 @@ void Node :: EndBackoff(trigger_t &){
 	for(int n = 0; n < wlan.num_stas; n++) {
 		current_destination_id = wlan.list_sta_id[n];
 		// Receive the possible MCS to be used for each number of channels
-		if (change_modulation_flag[n]) RequestMCS();
+		if (change_modulation_flag[n]) {
+
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Requesting MCS to N%d\n",
+				SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, current_destination_id);
+
+			RequestMCS();
+		}
 	}
 
 	// Pick one receiver from the pool of potential receivers
@@ -2059,6 +2074,12 @@ void Node :: EndBackoff(trigger_t &){
 		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
 
 		current_data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1];
+
+//		if(save_node_logs) fprintf(node_logger.file,
+//				"%.15f;N%d;S%d;%s;%s Modulation for STA N%d: %d (rate %.2f Mbps)\n",
+//				SimTime(), node_id, node_state, LOG_F04, LOG_LVL3,
+//				current_destination_id, current_modulation, current_data_rate * pow(10,-6));
+
 
 		data_duration = ComputeTxTime(packet_length * num_packets_aggregated, current_data_rate, pdf_tx_time);
 		ack_duration = ComputeTxTime(ack_length, current_data_rate, pdf_tx_time);

@@ -161,7 +161,6 @@
 #define FEMTO_VALUE					0.000000000000001		// Femto value (10^-15)
 #define ATTO_VALUE					0.000000000000000001	// Atto value (10^-18)
 
-
 // Timers
 #define PAUSE_TIMER					0					// Try to pause a timer (e.g. backoff)
 #define RESUME_TIMER				1					// Try to resume timer
@@ -182,11 +181,12 @@
 
 // Channel bonding model
 #define CB_ONLY_PRIMARY				0	// Only Primary Channel used if FREE
-#define CB_AGGRESIVE_SCB			1	// Aggressive SCB: if all channels are FREE, transmit. If not, generate a new backoff.
-#define CB_LOG2_SCB					2	// Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
-#define CB_AGGRESIVE_DCB			3	// Aggressive DCB: TX in all the free channels contiguous to the primary channel
-#define CB_LOG2_DCB					4	// Log2 DCB: TX in the larger channel range allowed by the log2 mapping
-#define CB_LOG2_DCB_OPTIMAL_MCS		5	// Log2 DCB with optimal MCS: picks the channel range + MCS providing max throughput
+#define CB_SCB						1	// SCB: if all channels are FREE, transmit. If not, generate a new backoff.
+#define CB_SCB_LOG2					2	// Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
+#define CB_ALWAYS_MAX				3	// Always-max (DCB): TX in all the free channels contiguous to the primary channel
+#define CB_ALWAYS_MAX_LOG2			4	// Log2 Always-max (DCB): TX in the larger channel range allowed by the log2 mapping
+#define CB_ALWAYS_MAX_LOG2_MCS		5	// Log2 Always-max (DCB) with optimal MCS: picks the channel range + MCS providing max throughput
+#define CB_PROB_UNIFORM_LOG2		6	// Log2 probabilistic uniform: pick with same probabilty any available channel range
 
 // Co-channel interference model
 #define COCHANNEL_NONE		0	// No co-channel interference
