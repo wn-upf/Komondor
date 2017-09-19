@@ -56,7 +56,11 @@ public class Nodes_rectangular_generator {
         "AA", "BA", "CA", "DA", "EA", "FA", "GA", "HA", "IA", "JA", "KA", "LA",
         "MA", "NA", "OA", "PA", "QA", "RA", "SA", "TA", "UA", "WA", "XA", "YA", "ZA",
         "AB", "BB", "CB", "DB", "EB", "FB", "GB", "HB", "IB", "JB", "KB", "LB",
-        "MB", "NB", "OB", "PB", "QB", "RB", "SB", "TB", "UB", "WB", "XB", "YB", "ZB"};
+        "MB", "NB", "OB", "PB", "QB", "RB", "SB", "TB", "UB", "WB", "XB", "YB", "ZB",
+        "AC", "BC", "CC", "DC", "EC", "FC", "GC", "HC", "IC", "JC", "KC", "LC",
+        "MC", "NC", "OC", "PC", "QC", "RC", "SC", "TC", "UC", "WC", "XC", "YC", "ZC",
+        "AD", "BD", "CD", "DD", "ED", "FD", "GD", "HD", "ID", "JD", "KD", "LD",
+        "MD", "ND", "OD", "PD", "QD", "RD", "SD", "TD", "UD", "WD", "XD", "YD", "ZD"};
 
     static final String CSV_SEPARATOR = ";";
 
@@ -66,9 +70,9 @@ public class Nodes_rectangular_generator {
      */
     public static void input_attributes(String input_path) throws FileNotFoundException, IOException {
 
-        System.out.println("input_path: " + input_path);
-
         String line;
+
+        System.out.println("Reading input file...");
 
         try (BufferedReader br = new BufferedReader(new FileReader(input_path))) {
             while ((line = br.readLine()) != null) {
@@ -136,7 +140,7 @@ public class Nodes_rectangular_generator {
         String ap_code;
         String[] list_sta_code = null;
         int primary_channel;
-        int num_channels_allowed;
+        int num_channels_allowed_ix;
         int min_ch_allowed = 0;
         int max_ch_allowed = 0;
         boolean wlan_80211ax;   // Legacy or IEEE 802.11 ax
@@ -147,6 +151,8 @@ public class Nodes_rectangular_generator {
         boolean aps_separated;
 
         for (int w = 0; w < num_wlans; w++) {
+
+            System.out.println("Setting WLAN " + w + "/" + num_wlans);
 
             wlan_id = wlan_counter;
             wlan_code = DICTIONARY[wlan_counter];
@@ -161,7 +167,9 @@ public class Nodes_rectangular_generator {
             // Channel allocation
             primary_channel = ThreadLocalRandom.current().nextInt(0, c_sys_width);
 
-            num_channels_allowed = ThreadLocalRandom.current().nextInt(0, log(c_sys_width, 2));
+            num_channels_allowed_ix = ThreadLocalRandom.current().nextInt(0, log(c_sys_width, 2) + 1);
+
+            System.out.println("num_channels_allowed: " + num_channels_allowed_ix);
 
             switch (c_sys_width) {
 
@@ -172,80 +180,59 @@ public class Nodes_rectangular_generator {
 
                 case 2: {
 
-                    switch (num_channels_allowed) {
-
-                        case 1: {
-                            min_ch_allowed = primary_channel;
-                            max_ch_allowed = primary_channel;
-                        }
-
-                        case 2: {
-                            min_ch_allowed = 0;
-                            max_ch_allowed = 1;
-                        }
+                    if (num_channels_allowed_ix == 0) {
+                        min_ch_allowed = primary_channel;
+                        max_ch_allowed = primary_channel;
+                    } else if (num_channels_allowed_ix == 1) {
+                        min_ch_allowed = 0;
+                        max_ch_allowed = 1;
                     }
                 }
 
                 case 4: {
 
-                    switch (num_channels_allowed) {
+                    if (num_channels_allowed_ix == 0) {
+                        min_ch_allowed = primary_channel;
+                        max_ch_allowed = primary_channel;
 
-                        case 1: {
-                            min_ch_allowed = primary_channel;
+                    } else if (num_channels_allowed_ix == 1) {
+                        if (primary_channel % 2 == 1) {
+                            min_ch_allowed = primary_channel - 1;
                             max_ch_allowed = primary_channel;
+                        } else {
+                            min_ch_allowed = primary_channel;
+                            max_ch_allowed = primary_channel + 1;
                         }
-
-                        case 2: {
-
-                            if (primary_channel % 2 == 1) {
-                                min_ch_allowed = primary_channel - 1;
-                                max_ch_allowed = primary_channel;
-                            } else {
-                                min_ch_allowed = primary_channel;
-                                max_ch_allowed = primary_channel + 1;
-                            }
-                        }
-
-                        case 4: {
-                            min_ch_allowed = 0;
-                            max_ch_allowed = 3;
-                        }
+                    } else if (num_channels_allowed_ix == 2) {
+                        min_ch_allowed = 0;
                     }
+                    max_ch_allowed = 3;
                 }
 
                 case 8: {
 
-                    switch (num_channels_allowed) {
-
-                        case 1: {
-                            min_ch_allowed = primary_channel;
+                    if (num_channels_allowed_ix == 0) {
+                        min_ch_allowed = primary_channel;
+                        max_ch_allowed = primary_channel;
+                    } else if (num_channels_allowed_ix == 1) {
+                        if (primary_channel % 2 == 1) {
+                            min_ch_allowed = primary_channel - 1;
                             max_ch_allowed = primary_channel;
+                        } else {
+                            min_ch_allowed = primary_channel;
+                            max_ch_allowed = primary_channel + 1;
                         }
-
-                        case 2: {
-                            if (primary_channel % 2 == 1) {
-                                min_ch_allowed = primary_channel - 1;
-                                max_ch_allowed = primary_channel;
-                            } else {
-                                min_ch_allowed = primary_channel;
-                                max_ch_allowed = primary_channel + 1;
-                            }
-                        }
-
-                        case 4: {
-                            if (primary_channel > 3) {	// primary in channel range 4-7
-                                min_ch_allowed = 4;
-                                max_ch_allowed = 7;
-                            } else { // primary in channel range 0-3
-                                min_ch_allowed = 0;
-                                max_ch_allowed = 3;
-                            }
-                        }
-
-                        case 8: {
-                            min_ch_allowed = 0;
+                    } else if (num_channels_allowed_ix == 2) {
+                        if (primary_channel > 3) {	// primary in channel range 4-7
+                            min_ch_allowed = 4;
                             max_ch_allowed = 7;
+                        } else { // primary in channel range 0-3
+                            min_ch_allowed = 0;
+                            max_ch_allowed = 3;
                         }
+                    } else if (num_channels_allowed_ix == 3) {
+                        min_ch_allowed = 0;
+                        max_ch_allowed = 7;
                     }
                 }
             }
@@ -294,6 +281,8 @@ public class Nodes_rectangular_generator {
     public static void genearate_file(String csv_filepath_output)
             throws UnsupportedEncodingException, FileNotFoundException, IOException {
 
+        System.out.println("Generating simulation file...");
+
         File fileTemp = new File(csv_filepath_output);
         if (fileTemp.exists()) {
             fileTemp.delete();
@@ -302,7 +291,7 @@ public class Nodes_rectangular_generator {
         Writer fw = new FileWriter(csv_filepath_output, true);
         BufferedWriter bw = new BufferedWriter(fw);
         PrintWriter out = new PrintWriter(bw);
-        
+
         String line;
         int line_ix = 0;
         int node_type = 0;
@@ -335,10 +324,8 @@ public class Nodes_rectangular_generator {
                 + "modulation_default" + CSV_SEPARATOR
                 + "central_freq (GHz)" + CSV_SEPARATOR
                 + "lambda";
-        
-        
 
-        System.out.println(csv_header_line);
+        // System.out.println(csv_header_line);
         out.println(csv_header_line);
 
         for (int w = 0; w < num_wlans; w++) {
@@ -350,9 +337,8 @@ public class Nodes_rectangular_generator {
             line = getCompleteLine(wlan.ap_code, node_type, wlan.wlan_code, wlan.x,
                     wlan.y, wlan.z, wlan.primary_channel, wlan.min_ch_allowed,
                     wlan.max_ch_allowed, wlan.channel_bonding_model);
-            
 
-            System.out.println(line);
+            // System.out.println(line);
             out.println(line);
 
             node_type = 1;
@@ -370,14 +356,15 @@ public class Nodes_rectangular_generator {
                         wlan.min_ch_allowed, wlan.max_ch_allowed,
                         wlan.channel_bonding_model);
 
-                System.out.println(line);
+                // System.out.println(line);
                 out.println(line);
             }
 
         }
-        
+
         out.close();
 
+        System.out.println("File saved in " + csv_filepath_output);
     }
 
     static String getCompleteLine(String node_code, int node_type,
@@ -422,11 +409,14 @@ public class Nodes_rectangular_generator {
 
     public static void main(String args[]) throws IOException {
 
-        // String input_path = args[0]
-        String input_path = "input_template_rectangular.csv";
+        String input_path = args[0];
+        // String input_path = "input_template_rectangular.csv";
 
-        // String input_path = args[1]
-        String output_path = "output_rectangular.csv";
+        System.out.println("input_path: " + input_path);
+
+        String output_path = args[1];
+        // String output_path = "output_rectangular.csv";
+        System.out.println("output_path: " + output_path);
 
         input_attributes(input_path);
 

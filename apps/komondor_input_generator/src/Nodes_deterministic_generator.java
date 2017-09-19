@@ -15,9 +15,9 @@ import java.io.Writer;
  */
 /**
  *
- * @author Antonios
+ * @author Sergio Barrachina-Munoz (sergio.barrachina@upf.edu)
  */
-public class nodes_deterministic_generator {
+public class Nodes_deterministic_generator {
 
     // USER PARAMETERS
     /* Variable
@@ -187,7 +187,7 @@ public class nodes_deterministic_generator {
                             + num_stas[stas_ix] + DEFAULT_SEPARATOR
                             + cong_win[cw_ix]);
 
-                    filename_suffix = "_" + file_ix + "_"
+                    filename_suffix = "_"
                             + "w" + num_wlans[wlan_ix] + "_"
                             + "s" + num_stas[stas_ix] + "_"
                             + "cw" + cong_win[cw_ix] + ".csv";
