@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import static java.lang.Double.max;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -73,11 +72,14 @@ public class Nodes_rectangular_generator {
         String line;
 
         System.out.println("Reading input file...");
+        
+        boolean first_line_skipped = false;
 
         try (BufferedReader br = new BufferedReader(new FileReader(input_path))) {
             while ((line = br.readLine()) != null) {
-                if (line.contains("//")) {
+                if (!first_line_skipped) {
                     // It is a comment --> do nothing
+                    first_line_skipped = true;
                 } else {
 
                     String[] node_info = line.split(CSV_SEPARATOR);

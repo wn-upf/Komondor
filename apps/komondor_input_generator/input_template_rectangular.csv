@@ -1,2 +1,2 @@
 //map_width;map_heigth;M;N_MIN;N_MAX;d_min_AP_AP;d_min_AP_STA;d_max_AP_STA;legacy_ratio;c_sys_width;cont_wind;destination_id;tpc_min;tpc_default;tpc_max;cca_min;cca_default;cca_max;tx_antenna_gain;rx_antenna_gain;channel_bonding;modulation_default;central_freq;lambda
-100;100;10;1;1;5;1;3;0.5;8;32;-1;15;15;15;-82;-82;-82;0;0;5;0;2.4;10000
+100;100;30;1;10;7;1;5;0.5;8;32;-1;15;15;15;-82;-82;-82;0;0;5;0;2.4;10000
