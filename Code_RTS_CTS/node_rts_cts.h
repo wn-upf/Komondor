@@ -190,6 +190,7 @@ component Node : public TypeII{
 		double throughput;									// Throughput [Mbps]
 		double throughput_loss;								// Throughput of lost packets [Mbps]
 		int packets_lost;									// Own packets that have been collided or lost
+		int *num_trials_tx_per_num_channels;					// Number of txs trials per number of channels
 		int rts_cts_lost;
 		int *nacks_received;								// Counter of the type of Nacks received
 		int num_tx_init_tried;								// Number of TX initiations tried (whenever transmitter try to acces the channel)
@@ -2032,18 +2033,18 @@ void Node :: EndBackoff(trigger_t &){
 	GetChannelOccupancyByCCA(channels_free, min_channel_allowed, max_channel_allowed,
 			channel_power, current_cca, timestampt_channel_becomes_free, SimTime(), DIFS);
 
-//	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free: ",
-//			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
-//
-//	PrintOrWriteChannelsFree(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
-//			num_channels_komondor, channels_free);
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free: ",
+			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+
+	PrintOrWriteChannelsFree(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
+			num_channels_komondor, channels_free);
 
 	// Identify the channel range to TX in depending on the channel bonding scheme and free channels
 	int ix_mcs_per_node = current_destination_id - wlan.list_sta_id[0];
 
 	GetTxChannelsByChannelBonding(channels_for_tx, channel_bonding_model, channels_free,
 			min_channel_allowed, max_channel_allowed, primary_channel,
-			mcs_per_node, ix_mcs_per_node);
+			mcs_per_node, ix_mcs_per_node, num_channels_komondor);
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting: ",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
@@ -2063,6 +2064,8 @@ void Node :: EndBackoff(trigger_t &){
 		current_right_channel = GetFirstOrLastTrueElemOfArray(LAST_TRUE_IN_ARRAY, channels_for_tx, num_channels_komondor);
 
 		int num_channels_tx = current_right_channel - current_left_channel + 1;
+
+		num_trials_tx_per_num_channels[(int)log2(num_channels_tx)]++;
 
 		if(save_node_logs) fprintf(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
@@ -3079,6 +3082,20 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				}
 				printf("\n");
 
+				// Time tx trials in each number of channels
+				printf("%s Number of tx trials per number of channels:", LOG_LVL3);
+				for(int n = 0; n < num_channels_komondor; n++){
+
+					printf("\n%s - %d: %d (%.2f %%)",
+							LOG_LVL3, (int) pow(2,n),
+							num_trials_tx_per_num_channels[n],
+							(((double) num_trials_tx_per_num_channels[n] * 100) / (double) packets_sent));
+
+					if((int) pow(2,n) == num_channels_komondor) break;
+				}
+				printf("\n");
+
+
 				// Number of TX initiations that have been not possible due to channel state and DCB model
 				printf("%s num_tx_init_not_possible = %d\n", LOG_LVL2, num_tx_init_not_possible);
 
@@ -3210,6 +3227,9 @@ void Node :: InitializeVariables() {
 			* sizeof(*total_time_lost_per_channel));
 	timestampt_channel_becomes_free = (double *) malloc(num_channels_komondor
 			* sizeof(*timestampt_channel_becomes_free));
+
+	num_trials_tx_per_num_channels = (int *) malloc(num_channels_komondor
+			* sizeof(*num_trials_tx_per_num_channels));
 
 	for(int i = 0; i < num_channels_komondor; i++){
 		channel_power[i] = 0;

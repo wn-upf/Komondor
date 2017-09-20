@@ -546,9 +546,7 @@ double ComputeMaxInterference(Notification notification, int current_left_channe
  **/
 void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_model, int *channels_free,
     int min_channel_allowed, int max_channel_allowed, int primary_channel, int **mcs_per_node,
-	int ix_mcs_per_node){
-
-	int num_channels_system = sizeof(channels_free)/sizeof(channels_free[0]);
+	int ix_mcs_per_node, int num_channels_system){
 
 	// Reset channels for transmitting
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
@@ -601,7 +599,6 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 		}
 	}
 
-
 	// Check primary and 3 secondaries
 	if(num_channels_system > 3){
 		if(primary_channel > 3){	// primary in channel range 4-7
@@ -626,6 +623,11 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 		}
 		if(all_channels_free_in_range) possible_channel_ranges_ixs[3] = TRUE;
 	}
+
+//	for(int n = 0; n < 4; n++){
+//		printf("%d ", possible_channel_ranges_ixs[n]);
+//	}
+//	printf("\n");
 
 
 
@@ -722,7 +724,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 			// TODO: (skectch) check if it is valid!
 			case CB_ALWAYS_MAX_LOG2:{
 
-				int ch_range_ix = GetNumberOfSpecificElementInArray(TRUE, possible_channel_ranges_ixs, 4);
+				int ch_range_ix = GetNumberOfSpecificElementInArray(1, possible_channel_ranges_ixs, 4);
 
 				switch(ch_range_ix){
 
@@ -732,6 +734,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 					}
 
 					case 2:{
+
 						channels_for_tx[primary_channel] = TRUE;
 						if(primary_channel % 2 == 1){	// If primary is odd
 							channels_for_tx[primary_channel - 1] = TRUE;
@@ -739,6 +742,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 							channels_for_tx[primary_channel + 1] = TRUE;
 						}
 						break;
+
 					}
 
 					case 3:{
@@ -838,11 +842,9 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 			// Log2 probabilistic uniform: pick with same probabilty any available channel range
 			case CB_PROB_UNIFORM_LOG2:{
 
-				int ch_range_ix = GetNumberOfSpecificElementInArray(TRUE, possible_channel_ranges_ixs, 4);
+				int ch_range_ix = GetNumberOfSpecificElementInArray(1, possible_channel_ranges_ixs, 4);
 
-				int random_value = rand() % (ch_range_ix + 1);	// 1 to ch_range_ix
-
-				printf("ch_range_ix = %d", ch_range_ix);
+				int random_value = 1 + rand() % (ch_range_ix);	// 1 to ch_range_ix
 
 				switch(ch_range_ix){
 
