@@ -159,8 +159,8 @@ component Node : public TypeII{
 		double SIFS;						// SIFS [s]
 		double DIFS;						// DIFS [s]
 		double central_frequency;			// Central frequency (Hz)
-		int min_cw;							// Backoff minimum Contention Window
-		int max_cw;							// Backoff maximum Contention Window
+		int cw_min;							// Backoff minimum Contention Window
+		int cw_stage_max;							// Backoff maximum Contention Window
 		int pdf_backoff;					// Probability distribution type of the backoff (0: exponential, 1: deterministic)
 		int path_loss_model;				// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 
@@ -177,6 +177,7 @@ component Node : public TypeII{
 		int cts_length;						// CTS length [bits]
 		int traffic_model;					// Traffic model (0: full buffer, 1: poisson, 2: deterministic)
 		int backoff_type;					// Type of Backoff (0: Slotted 1: Continuous)
+		int cw_adaptation;					// CW adaptation (0: constant, 1: bineary exponential backoff)
 
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
@@ -243,7 +244,8 @@ component Node : public TypeII{
 
 		int default_modulation;				// Default MCS identifier
 		double current_data_rate;			// Data rate being used currently
-		int current_cw;						// Congestion Window being used currently
+		int cw_current;						// Contention Window being used currently
+		int cw_stage_current;				// Current CW stage
 
 		double data_duration;
 		double ack_duration;
@@ -1524,7 +1526,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 			/* STATE_RX_ACK:
 			 * - If node IS the destination and ACK packet transmission finished:
-			 *   * decrease congestion window and restart node
+			 *   * decrease contention window and restart node
 			 *   * state = STATE_SENSING (implicit on restart)
 			 * - If node IS NOT the destination: do nothing
 			 */
@@ -1543,8 +1545,10 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						current_tx_duration += (notification.tx_info.tx_duration + SIFS);	// Add ACK time to tx_duration
 
-						// Transmission succeeded ---> decrease congestion window
-						current_cw = HandleCongestionWindow(DECREASE_CW, current_cw, min_cw, max_cw);
+						// Sergio on 20/09/2017:
+						// - Transmission succeeded ---> reset CW if binary exponential backoff is implemented
+						HandleContentionWindow(
+								cw_adaptation, RESET_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
 
 						// Restart node (implicitly to STATE_SENSING)
 
@@ -1687,7 +1691,9 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						// Generate and send DATA to transmitter after SIFS
 						current_destination_id = notification.source_id;
-						current_cw = HandleCongestionWindow(DECREASE_CW, current_cw, min_cw, max_cw);
+
+						// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
+						// cw_current = HandleContentionWindow(RESET_CW, cw_current, cw_min, cw_stage_max);
 
 
 						current_tx_duration = data_duration;	// This duration already computed in EndBackoff
@@ -2159,7 +2165,7 @@ void Node :: EndBackoff(trigger_t &){
 		num_tx_init_not_possible ++;
 
 		// Compute a new backoff and trigger a new DIFS
-		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw, backoff_type);
+		remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
 		// time_to_trigger = SimTime() + DIFS;
 		// trigger_start_backoff.Set(round_to_digits(time_to_trigger,15));
 		// Remain on STATE_SENSING (redundant)
@@ -2514,13 +2520,15 @@ void Node :: AckTimeout(trigger_t &){
 					SimTime(), node_id, node_state, LOG_D17, LOG_LVL4,
 					packet_id);
 
-	current_cw = HandleCongestionWindow(INCREASE_CW, current_cw, min_cw, max_cw);
+	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
+	HandleContentionWindow(
+				cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
 
 	RestartNode(TRUE);
 }
 
 /*
- * CtsTimeout(): handles ACK timeout. It is called when ACK timeout is triggered.
+ * CtsTimeout(): handles CTS timeout. It is called when CTS timeout is triggered (after sending RTS).
  */
 void Node :: CtsTimeout(trigger_t &){
 
@@ -2532,7 +2540,9 @@ void Node :: CtsTimeout(trigger_t &){
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s CTS TIMEOUT! RTS-CTS packet lost\n",
 					SimTime(), node_id, node_state, LOG_D17, LOG_LVL2);
 
-	current_cw = HandleCongestionWindow(INCREASE_CW, current_cw, min_cw, max_cw);
+	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
+	HandleContentionWindow(
+			cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
 
 	// RestartNode(TRUE);
 
@@ -2562,7 +2572,7 @@ void Node :: CtsTimeout(trigger_t &){
 		trigger_end_backoff.Cancel(); // Cancel BO timeout for safety
 
 		// In case of being an AP
-		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw, backoff_type);
+		remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
 
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f.\n",
 								SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, remaining_backoff);
@@ -2593,7 +2603,7 @@ void Node :: CtsTimeout(trigger_t &){
 }
 
 /*
- * DataTimeout(): handles ACK timeout. It is called when ACK timeout is triggered.
+ * DataTimeout(): handles Data timeout. It is called when data timeout (after sending CTS) is triggered.
  */
 void Node :: DataTimeout(trigger_t &){
 
@@ -2603,7 +2613,8 @@ void Node :: DataTimeout(trigger_t &){
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
 					SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
 
-	current_cw = HandleCongestionWindow(INCREASE_CW, current_cw, min_cw, max_cw);
+	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
+	// cw_current = HandleContentionWindow(INCREASE_CW, cw_current, cw_min, cw_stage_max);
 
 	RestartNode(TRUE);
 }
@@ -2800,7 +2811,7 @@ void Node :: RestartNode(int called_by_time_out){
 		trigger_end_backoff.Cancel(); // Cancel BO timeout for safety
 
 		// In case of being an AP
-		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw, backoff_type);
+		remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
 
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Starting DIFS. New backoff computed: %f\n",
 						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, remaining_backoff);
@@ -2900,7 +2911,7 @@ void Node :: PrintNodeInfo(int info_detail_level){
 	printf("%s min_channel_allowed = %d\n", LOG_LVL4, min_channel_allowed);
 	printf("%s max_channel_allowed = %d\n", LOG_LVL4, max_channel_allowed);
 	printf("%s channel_bonding_model = %d\n", LOG_LVL4, channel_bonding_model);
-	printf("%s min_cw = %d\n", LOG_LVL4, min_cw);
+	printf("%s cw_min = %d\n", LOG_LVL4, cw_min);
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_0){
 		printf("%s wlan:\n", LOG_LVL4);
@@ -2913,8 +2924,8 @@ void Node :: PrintNodeInfo(int info_detail_level){
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
 		printf("%s lambda = %f packets/s\n", LOG_LVL4, lambda);
-		printf("%s min_cw = %d\n", LOG_LVL4, min_cw);
-		printf("%s max_cw = %d\n", LOG_LVL4, max_cw);
+		printf("%s cw_min = %d\n", LOG_LVL4, cw_min);
+		printf("%s cw_stage_max = %d\n", LOG_LVL4, cw_stage_max);
 		printf("%s destination_id = %d\n", LOG_LVL4, destination_id);
 		printf("%s tpc_min = %f pW (%f dBm)\n", LOG_LVL4, tpc_min, ConvertPower(PW_TO_DBM, tpc_min));
 		printf("%s tpc_default = %f pW (%f dBm)\n", LOG_LVL4, tpc_default, ConvertPower(PW_TO_DBM, tpc_default));
@@ -2958,8 +2969,8 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, char *head
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
 		fprintf(node_logger.file, "%s - lambda = %f packets/s\n", header_string, lambda);
-		fprintf(node_logger.file, "%s - min_cw = %d\n", header_string, min_cw);
-		fprintf(node_logger.file, "%s - max_cw = %d\n", header_string, max_cw);
+		fprintf(node_logger.file, "%s - cw_min = %d\n", header_string, cw_min);
+		fprintf(node_logger.file, "%s - cw_stage_max = %d\n", header_string, cw_stage_max);
 		fprintf(node_logger.file, "%s - destination_id = %d\n", header_string, destination_id);
 		fprintf(node_logger.file, "%s - tpc_default = %f pW\n", header_string, tpc_default);
 		fprintf(node_logger.file, "%s - cca_default = %f pW\n", header_string, cca_default);
@@ -3279,7 +3290,8 @@ void Node :: InitializeVariables() {
 
 	node_state = STATE_SENSING;
 	current_modulation = modulation_default;
-	current_cw = min_cw;
+	cw_current = cw_min;
+	cw_stage_current = 0;
 	packet_id = 0;
 	rts_cts_id = 0;
 	num_packets_in_buffer = 0;
@@ -3287,7 +3299,7 @@ void Node :: InitializeVariables() {
 
 	if(node_type == NODE_TYPE_AP) {
 		node_is_transmitter = TRUE;
-		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw, backoff_type);
+		remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
 		// printf("N%d remaining_backoff = %.15f\n", node_id, remaining_backoff);
 
 		// HARDCODED BY SERGIO TO TEST

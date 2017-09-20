@@ -201,8 +201,8 @@
 #define PACKET_BUFFER_SIZE		256		// Size of the packets buffer
 
 // Protocols
-#define INCREASE_CW 1		// Command to increase Congestion Window
-#define DECREASE_CW 2		// Command to decrease Congestion Window
+#define INCREASE_CW 1		// Command to increase contention window
+#define RESET_CW 2	// Command to reset the contention window
 #define MAX_POWER 20 		// Maximum power that can be transmitted (dBm)
 
 // Node type
@@ -291,6 +291,7 @@
 #define IX_BO_TYPE					16
 #define IX_RTS_LENGTH				17
 #define IX_CTS_LENGTH				18
+#define IX_CW_ADAPTATION			19
 
 // Nodes file
 #define IX_NODE_CODE				1
@@ -304,7 +305,7 @@
 #define IX_MIN_CH_ALLOWED			9
 #define IX_MAX_CH_ALLOWED			10
 #define IX_CW_MIN					11
-#define IX_CW_MAX					12
+#define IX_CW_STAGE_MAX				12
 #define IX_TPC_MIN					13
 #define IX_TPC_DEFAULT				14
 #define IX_TPC_MAX					15
@@ -330,7 +331,7 @@
 #define IX_AP_MIN_CH_ALLOWED			9
 #define IX_AP_MAX_CH_ALLOWED			10
 #define IX_AP_CW_MIN					11
-#define IX_AP_CW_MAX					12
+#define IX_AP_CW_STAGE_MAX				12
 #define IX_AP_TPC_MIN					13
 #define IX_AP_TPC_DEFAULT				14
 #define IX_AP_TPC_MAX					15

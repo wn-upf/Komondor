@@ -55,10 +55,10 @@ double	Exponential2(double mean)	{ return -mean*log(Random2());}
 /*
  * ComputeBackoff(): computes a new backoff
  * */
-double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
+double ComputeBackoff(int pdf_backoff, int cw, int backoff_type){
 
 	double backoff_time;
-	double expected_backoff = (double) (congestion_window-1)/2;	// [slots]
+	double expected_backoff = (double) (cw-1)/2;	// [slots]
 	double lambda_backoff =  1/(expected_backoff * SLOT_TIME);
 
 	switch(pdf_backoff){
@@ -67,7 +67,7 @@ double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
 
 			if(backoff_type == BACKOFF_SLOTTED) {
 
-				int num_slots = rand() % congestion_window; // Num slots in [0, CW-1]
+				int num_slots = rand() % cw; // Num slots in [0, CW-1]
 				backoff_time = num_slots * SLOT_TIME;
 
 				// printf("num_slots = %d\n", num_slots);
@@ -191,41 +191,54 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 }
 
 /*
- * HandleCongestionWindow(): increase or decrease the congestion window.
+ * HandleCongestionWindow(): increase or decrease the contention window.
  **/
-int HandleCongestionWindow(int increase_or_decrease, int current_cw, int min_cw, int max_cw) {
+void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int* cw_current, int cw_min,
+		int *cw_stage_current, int cw_stage_max) {
+
+//	printf("- cw_current = %d - cw_min = %d - cw_stage_current = %d - cw_stage_max = %d\n",
+//			*cw_current, cw_min, *cw_stage_current, cw_stage_max);
 
 	// http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
 
-	int updated_cw;
+	if(cw_adaptation == TRUE){
 
-	switch(increase_or_decrease){
+		switch(increase_or_reset){
 
-		case INCREASE_CW:{
-			if(2*current_cw < max_cw) {
-				updated_cw = 2*current_cw;
-			} else {
-				updated_cw = max_cw;
+				case INCREASE_CW:{
+
+					if(*cw_stage_current < cw_stage_max){
+
+						*cw_stage_current = *cw_stage_current + 1;
+						*cw_current = cw_min * pow(2, *cw_stage_current);
+
+					}
+
+					break;
+				}
+
+				case RESET_CW:{
+
+					*cw_stage_current = 0;
+					*cw_current = cw_min;
+
+					break;
+
+				}
+
+				default:{
+					printf("Unknown operation on contention window!");
+					exit(EXIT_FAILURE);
+					break;
+				}
+
 			}
-			break;
-		}
 
-		case DECREASE_CW:{
-			updated_cw = min_cw;
-			break;
-		}
+	} else {
 
-		default:{
-			printf("Unknown operation on congestion window!");
-			exit(EXIT_FAILURE);
-			break;
-		}
+		// Constant CW
+		// - do nothing: keep cw
 
 	}
-
-	// TODO: HARDCODED!
-	updated_cw = current_cw;
-
-	return updated_cw;
 
 }

@@ -118,6 +118,7 @@ component Komondor : public CostSimEng {
 		double constant_per;			// Constant PER for successful transmissions
 		int traffic_model;				// Traffic model (0: full buffer, 1: poisson, 2: deterministic)
 		int backoff_type;				// Type of Backoff (0: Slotted 1: Continuous)
+		int cw_adaptation;				// CW adaptation (0: constant, 1: bineary exponential backoff)
 
 	// Private items
 	private:
@@ -596,6 +597,12 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 			const char* backoff_type_char = GetField(tmp, IX_BO_TYPE);
 			backoff_type = atoi(backoff_type_char);
 
+			// Backoff type
+			tmp = strdup(line_system);
+			const char* cw_adaptation_char = GetField(tmp, IX_CW_ADAPTATION);
+			cw_adaptation = atoi(cw_adaptation_char);
+
+
 			free(tmp);
 		}
 	}
@@ -721,11 +728,11 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 			// Min CW
 			tmp_nodes = strdup(line_nodes);
-			int min_cw = atoi(GetField(tmp_nodes, IX_AP_CW_MIN));
+			int cw_min = atoi(GetField(tmp_nodes, IX_AP_CW_MIN));
 
 			// Max CW
 			tmp_nodes = strdup(line_nodes);
-			int max_cw = atoi(GetField(tmp_nodes, IX_AP_CW_MAX));
+			int cw_stage_max = atoi(GetField(tmp_nodes, IX_AP_CW_STAGE_MAX));
 
 			// Primary channel
 			tmp_nodes = strdup(line_nodes);
@@ -836,8 +843,8 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 				node_container[node_ix].wlan_code = wlan_container[wlan_ix].wlan_code;
 				node_container[node_ix].destination_id = NODE_ID_NONE;
-				node_container[node_ix].min_cw = min_cw;
-				node_container[node_ix].max_cw = max_cw;
+				node_container[node_ix].cw_min = cw_min;
+				node_container[node_ix].cw_stage_max = cw_stage_max;
 				node_container[node_ix].primary_channel = primary_channel;
 				node_container[node_ix].min_channel_allowed = min_channel_allowed;
 				node_container[node_ix].max_channel_allowed = max_channel_allowed;
@@ -878,6 +885,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].cts_length = cts_length;
 				node_container[node_ix].traffic_model = traffic_model;
 				node_container[node_ix].backoff_type = backoff_type;
+				node_container[node_ix].cw_adaptation = cw_adaptation;
 				node_container[node_ix].lambda = lambda;
 				node_container[node_ix].simulation_code = simulation_code;
 
@@ -1021,11 +1029,11 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 
 			// CW min
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].min_cw = atoi(GetField(tmp_nodes, IX_CW_MIN));
+			node_container[node_ix].cw_min = atoi(GetField(tmp_nodes, IX_CW_MIN));
 
 			// CW max
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].max_cw = atoi(GetField(tmp_nodes, IX_CW_MAX));
+			node_container[node_ix].cw_stage_max = atoi(GetField(tmp_nodes, IX_CW_STAGE_MAX));
 
 			// Primary channel
 			tmp_nodes = strdup(line_nodes);
@@ -1122,6 +1130,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].cts_length = cts_length;
 			node_container[node_ix].traffic_model = traffic_model;
 			node_container[node_ix].backoff_type = backoff_type;
+			node_container[node_ix].cw_adaptation = cw_adaptation;
 			node_container[node_ix].simulation_code = simulation_code;
 
 			node_ix ++;
@@ -1160,6 +1169,7 @@ void Komondor :: printSystemInfo(){
 		printf("%s rts_length = %d bits\n", LOG_LVL3, rts_length);
 		printf("%s traffic_model = %d\n", LOG_LVL3, traffic_model);
 		printf("%s backoff_type = %d\n", LOG_LVL3, backoff_type);
+		printf("%s cw_adaptation = %d\n", LOG_LVL3, cw_adaptation);
 		printf("%s num_packets_aggregated = %d\n", LOG_LVL3, num_packets_aggregated);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 		printf("%s capture_effect = %f [linear] (%f dB)\n", LOG_LVL3, capture_effect, ConvertPower(LINEAR_TO_DB, capture_effect));
