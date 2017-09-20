@@ -2075,10 +2075,10 @@ void Node :: EndBackoff(trigger_t &){
 
 		current_data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1];
 
-//		if(save_node_logs) fprintf(node_logger.file,
-//				"%.15f;N%d;S%d;%s;%s Modulation for STA N%d: %d (rate %.2f Mbps)\n",
-//				SimTime(), node_id, node_state, LOG_F04, LOG_LVL3,
-//				current_destination_id, current_modulation, current_data_rate * pow(10,-6));
+		if(save_node_logs) fprintf(node_logger.file,
+					"%.15f;N%d;S%d;%s;%s Transmitting in %d channels using modulation %d (%.2f Mbps) \n",
+					SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
+					(int) pow(2,ix_num_channels_used), current_modulation, current_data_rate * pow(10,-6));
 
 
 		data_duration = ComputeTxTime(packet_length * num_packets_aggregated, current_data_rate, pdf_tx_time);
@@ -2089,6 +2089,12 @@ void Node :: EndBackoff(trigger_t &){
 		current_tx_duration = rts_duration;
 		current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
 		current_nav_time = round_to_digits(current_nav_time, 6);
+
+		if(save_node_logs) fprintf(node_logger.file,
+					"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
+					SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
+					rts_duration, current_nav_time);
+
 		/*
 		 * IMPORTANT: to avoid synchronization problems in Slotted BO, we put a
 		 * random time epsilon trigger before sending the channel occupancy notification.
@@ -2108,7 +2114,7 @@ void Node :: EndBackoff(trigger_t &){
 			current_nav_time -= time_rand_value;
 
 			if(save_node_logs) fprintf(node_logger.file,
-				"%.15f;N%d;S%d;%s;%s time_rand_value = %.12f\n",
+				"%.15f;N%d;S%d;%s;%s time_rand_value = %.12f s\n",
 				SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
 				time_rand_value);
 		}
@@ -2134,7 +2140,13 @@ void Node :: EndBackoff(trigger_t &){
 		}
 
 		time_to_trigger = SimTime() + current_tx_duration;
-		trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,0,6));
+
+		if(save_node_logs) fprintf(node_logger.file,
+			"%.15f;N%d;S%d;%s;%s time_to_trigger = %.12f s - fix_time_offset = %.12f s\n",
+			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
+			time_to_trigger, fix_time_offset(time_to_trigger,13,12));
+
+		trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,13,12));
 		rts_cts_id++;
 		rts_cts_sent ++;
 		trigger_start_backoff.Cancel();	// Safety instruction
@@ -2433,7 +2445,7 @@ void Node :: SendResponsePacket(trigger_t &){
 			// trigger_toFinishTX.Set(SimTime() + current_tx_duration);
 			// time_to_trigger = truncate_Sergio(SimTime() + FEMTO_VALUE,12) + current_tx_duration;
 			time_to_trigger = SimTime() + current_tx_duration;
-			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,0,6));
+			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,13,12));
 
 			if(save_node_logs) fprintf(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s truncate_Sergio = %.12f - current_tx_duration = %.12f - trigger_toFinishTX = %.12f\n",
@@ -2450,7 +2462,7 @@ void Node :: SendResponsePacket(trigger_t &){
 			outportSelfStartTX(cts_notification);
 
 			time_to_trigger = SimTime() + current_tx_duration;
-			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,0,6));
+			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,13,12));
 			break;
 		}
 
@@ -2460,7 +2472,7 @@ void Node :: SendResponsePacket(trigger_t &){
 					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3);
 			outportSelfStartTX(data_notification);
 			time_to_trigger = SimTime() + current_tx_duration;
-			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,0,6));
+			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,13,12));
 			packets_sent++;
 			if(save_node_logs) fprintf(node_logger.file,
 					"%.15f;N%d;S%d;%s;%s Data TX will be finished in %.12f\n",
@@ -3023,56 +3035,60 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				printf("%s num_tx_init_tried = %d - num_tx_init_not_possible = %d (%.2f %% failed)\n",
 						LOG_LVL2, num_tx_init_tried, num_tx_init_not_possible, tx_init_failure_percentage);
 
-//				// Time EFFECTIVELY transmitting in a given number of channels (no losses)
-//				printf("%s Time EFFECTIVELY transmitting in N channels:", LOG_LVL3);
-//				for(int n = 0; n < num_channels_allowed; n++){
-//					printf("\n%s - %d: %f",
-//							LOG_LVL3, (int) pow(2,n), total_time_transmitting_in_num_channels[n] -
-//							total_time_lost_in_num_channels[n]);
-//				}
-//				printf("\n");
+				// Time EFFECTIVELY transmitting in a given number of channels (no losses)
+				printf("%s Time EFFECTIVELY transmitting in N channels:", LOG_LVL3);
+				for(int n = 0; n < num_channels_allowed; n++){
+					printf("\n%s - %d: %f s (%.2f %%)",
+							LOG_LVL3, (int) pow(2,n),
+							total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n],
+							((total_time_transmitting_in_num_channels[n] -
+									total_time_lost_in_num_channels[n])) * 100 /SimTime());
 
-//				// Time EFFECTIVELY transmitting in each of the channels (no losses)
-//				printf("%s Time EFFECTIVELY transmitting in each channel:", LOG_LVL3);
-//				double time_effectively_txing;
-//				for(int c = 0; c < num_channels_komondor; c++){
-//
-//					time_effectively_txing = total_time_transmitting_per_channel[c] -
-//							total_time_lost_per_channel[c];
-//
-//					printf("\n%s - %d = %.2f s (%.2f %%)",
-//							LOG_LVL3, c, time_effectively_txing,
-//							(time_effectively_txing * 100 /SimTime()));
-//				}
-//				printf("\n");
+					if((int) pow(2,n) == num_channels_komondor) break;
+				}
+				printf("\n");
+
+				// Time EFFECTIVELY transmitting in each of the channels (no losses)
+				printf("%s Time EFFECTIVELY transmitting in each channel:", LOG_LVL3);
+				double time_effectively_txing;
+				for(int c = 0; c < num_channels_komondor; c++){
+
+					time_effectively_txing = total_time_transmitting_per_channel[c] -
+							total_time_lost_per_channel[c];
+
+					printf("\n%s - %d = %.2f s (%.2f %%)",
+							LOG_LVL3, c, time_effectively_txing,
+							(time_effectively_txing * 100 /SimTime()));
+				}
+				printf("\n");
 
 				// Time LOST transmitting in a given number of channels
-//				printf("%s Time LOST transmitting in N channels:", LOG_LVL3);
-//				for(int n = 0; n < num_channels_allowed; n++){
-//					printf("\n%s - %d: %f",
-//							LOG_LVL3, (int) pow(2,n), total_time_lost_in_num_channels[n]);
-//				}
-//				printf("\n");
+				printf("%s Time LOST transmitting in N channels:", LOG_LVL3);
+				for(int n = 0; n < num_channels_allowed; n++){
+					printf("\n%s - %d: %f",
+							LOG_LVL3, n, total_time_lost_in_num_channels[n]);
+				}
+				printf("\n");
 
-//				// Time LOST transmitting in each of the channels
-//				printf("%s Time LOST transmitting in each channel:", LOG_LVL3);
-//				for(int c = 0; c < num_channels_komondor; c++){
-//					printf("\n%s - %d = %.2f s (%.2f %%)",
-//						LOG_LVL3, c, total_time_lost_per_channel[c],
-//						(total_time_lost_per_channel[c] * 100 / SimTime()));
-//				}
-//				printf("\n");
+				// Time LOST transmitting in each of the channels
+				printf("%s Time LOST transmitting in each channel:", LOG_LVL3);
+				for(int c = 0; c < num_channels_komondor; c++){
+					printf("\n%s - %d = %.2f s (%.2f %%)",
+						LOG_LVL3, c, total_time_lost_per_channel[c],
+						(total_time_lost_per_channel[c] * 100 / SimTime()));
+				}
+				printf("\n");
 
 				// Number of TX initiations that have been not possible due to channel state and DCB model
-//				printf("%s num_tx_init_not_possible = %d\n", LOG_LVL2, num_tx_init_not_possible);
+				printf("%s num_tx_init_not_possible = %d\n", LOG_LVL2, num_tx_init_not_possible);
 
 				// Hidden nodes
-				// printf("%s Total number of hidden nodes: %d\n", LOG_LVL2, hidden_nodes_number);
-//				printf("%s Hidden nodes list: ", LOG_LVL2);
-//				for(int i = 0; i < total_nodes_number; i++){
-//					printf("%d  ", hidden_nodes_list[i]);
-//				}
-//				printf("\n");
+				printf("%s Total number of hidden nodes: %d\n", LOG_LVL2, hidden_nodes_number);
+				printf("%s Hidden nodes list: ", LOG_LVL2);
+				for(int i = 0; i < total_nodes_number; i++){
+					printf("%d  ", hidden_nodes_list[i]);
+				}
+				printf("\n");
 
 				printf("%s Times a node was implied in a collision by hidden node: ",LOG_LVL2);
 				for(int i=0; i < total_nodes_number; i++) {

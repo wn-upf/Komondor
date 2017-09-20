@@ -60,7 +60,7 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 	double tx_time;
 
 	// TODO: hardcoding rate to match CTMN analysis (MU for one channel)
-	// - data_rate = pow(10,6);
+	data_rate = pow(10,6);
 
 	switch(pdf_tx_time){
 
