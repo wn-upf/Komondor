@@ -347,59 +347,71 @@ void GetChannelOccupancyByCCA(int *channels_free, int min_channel_allowed, int m
 }
 
 /*
- * UpdatePowerSensedPerNode: updates the power sensed comming from each node
+ * UpdatePowerSensedPerNode: updates the power sensed comming from each node in the primary channel
+ * Sergio on 22/09/2017: power of interest counted only if transmission implies the primary channel
  **/
-void UpdatePowerSensedPerNode(double *power_received_per_node, Notification notification,
+void UpdatePowerSensedPerNode(int primary_channel, double *power_received_per_node, Notification notification,
     double x, double y, double z, double rx_gain, double central_frequency, int path_loss_model,
 	int start_or_finish) {
 
-	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
-			notification.tx_info.z);
+	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
 
-	double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
-			notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
+		double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
+					notification.tx_info.z);
 
-	if (start_or_finish == TX_INITIATED) {
+		double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
+				notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
 
-		power_received_per_node[notification.source_id] = pw_received;
+		if (start_or_finish == TX_INITIATED) {
 
-	} else if(start_or_finish == TX_FINISHED){
+			power_received_per_node[notification.source_id] = pw_received;
 
+		} else if(start_or_finish == TX_FINISHED){
+
+			power_received_per_node[notification.source_id] = 0;
+
+		}
+
+	} else {
 		power_received_per_node[notification.source_id] = 0;
-
 	}
-
-
 }
 
 /*
- * ApplyCochannelInterferenceModel: applies a cochannel interference model
+ * ApplyAdjacentChannelInterferenceModel: applies a cochannel interference model
  **/
-void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, Notification notification,
-		int num_channels_komondor, double *power_received_per_node){
+void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
+		int adjacent_channel_model, double *total_power, Notification notification,
+		int num_channels_komondor, double rx_gain, double central_frequency, int path_loss_model){
+
+	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
+		notification.tx_info.z);
+
+	double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
+		notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
+
+
 
 	// Direct power (power of the channels used for transmitting)
 	for(int i = notification.left_channel; i <= notification.right_channel; i++){
 
-		total_power[i] = power_received_per_node[notification.source_id];
+		total_power[i] = pw_received;
 
 	}
 
-	double pw_rx_node = power_received_per_node[notification.source_id];
 	double pw_loss_db;
 	double total_power_dbm;
 
 	// Co-channel interference power
-	switch(cochannel_model){
+	switch(adjacent_channel_model){
 
-		case COCHANNEL_NONE:{
+		case ADJACENT_CHANNEL_NONE:{
 			// Do nothing
 			break;
 		}
 
 		// (RECOMMENDED) Boundary co-channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
-		case COCHANNEL_BOUNDARY:{
-
+		case ADJACENT_CHANNEL_BOUNDARY:{
 			for(int c = 0; c < num_channels_komondor; c++) {
 
 				if(c < notification.left_channel || c > notification.right_channel){
@@ -407,13 +419,13 @@ void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, N
 					if(c < notification.left_channel) {
 
 						pw_loss_db = 20 * abs(c-notification.left_channel);
-						total_power_dbm = ConvertPower(PW_TO_DBM, pw_rx_node) - pw_loss_db;
+						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
 						total_power[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					} else if(c > notification.right_channel) {
 
 						pw_loss_db = 20 * abs(c-notification.right_channel);
-						total_power_dbm = ConvertPower(PW_TO_DBM, pw_rx_node) - pw_loss_db;
+						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
 						total_power[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					}
@@ -431,7 +443,7 @@ void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, N
 			break;
 		}
 
-		case COCHANNEL_EXTREME:{
+		case ADJACENT_CHANNEL_EXTREME:{
 
 			for(int c = 0; c < num_channels_komondor; c++) {
 
@@ -440,7 +452,7 @@ void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, N
 					if(c != j) {
 
 						pw_loss_db = 20 * abs(c-j);
-						total_power_dbm = ConvertPower(PW_TO_DBM, pw_rx_node) - pw_loss_db;
+						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
 						total_power[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 						if(total_power[c] < MIN_DOUBLE_VALUE_KOMONDOR) total_power[c] = 0;
@@ -462,24 +474,25 @@ void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, N
 /*
  * UpdateChannelsPower: updates the aggergated power sensed by the node in every channel
  **/
-void UpdateChannelsPower(double *channel_power, double *power_received_per_node, Notification notification,
-    int update_type, double central_frequency, int num_channels_komondor, int path_loss_model, int cochannel_model){
+void UpdateChannelsPower(double x, double y, double z, double *channel_power, Notification notification,
+    int update_type, double central_frequency, int num_channels_komondor, int path_loss_model,
+	double rx_gain, int adjacent_channel_model){
+
 
 	if(update_type != TX_FINISHED && update_type != TX_INITIATED) {
 		printf("ERROR: update_type %d does not exist!!!", update_type);
 		exit(EXIT_FAILURE);
 	}
 
-	// Total power [pW] (of interest and interference) generated only by the incoming or outgoing TX
+	// Total power [pW] (of interest and interference) generated ONLY by the incoming or outgoing TX
 	double *total_power;
 	total_power = (double *) malloc(num_channels_komondor * sizeof(*total_power));
-
 	for(int i = 0; i < num_channels_komondor; i++) {
 		total_power[i] = 0;
 	}
 
-	ApplyCochannelInterferenceModel(cochannel_model, total_power, notification, num_channels_komondor,
-				power_received_per_node);
+	ApplyAdjacentChannelInterferenceModel(x, y , z, adjacent_channel_model, total_power, notification,
+			num_channels_komondor, rx_gain, central_frequency, path_loss_model);
 
 	// Increase/decrease power sensed if TX started/finished
 	for(int c = 0; c < num_channels_komondor; c++){
@@ -496,6 +509,7 @@ void UpdateChannelsPower(double *channel_power, double *power_received_per_node,
 		else if (update_type == TX_INITIATED) channel_power[c] += total_power[c];
 
 	}
+
 
 }
 
@@ -516,26 +530,26 @@ double UpdateSINR(double pw_received_interest, double noise_level, double max_pw
 /*
  * ComputeMaxInterference(): computes the maximum interference perceived in the channels of interest
  **/
-double ComputeMaxInterference(Notification notification, int current_left_channel, int current_right_channel,
-    int node_state, double *power_received_per_node, int receiving_from_node_id, double *channel_power) {
+void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intereference,
+	Notification notification, int current_left_channel, int current_right_channel,
+	int node_state, double *power_received_per_node, int receiving_from_node_id, double *channel_power) {
 
-	double max_pw_interference = 0;
+	*max_pw_interference = 0;
 
 	for(int c = current_left_channel; c <= current_right_channel; c++){
 
 		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK || node_state == STATE_NAV
 				|| node_state == STATE_RX_RTS || node_state == STATE_RX_CTS || node_state == STATE_SENSING){
 
-			if(max_pw_interference <=
+			if(*max_pw_interference <=
 					(channel_power[c] - power_received_per_node[receiving_from_node_id])){
 
-				max_pw_interference = channel_power[c] - power_received_per_node[receiving_from_node_id];
+				*max_pw_interference = channel_power[c] - power_received_per_node[receiving_from_node_id];
+				*channel_max_intereference = c;
 
 			}
 		}
 	}
-
-	return max_pw_interference;
 }
 
 

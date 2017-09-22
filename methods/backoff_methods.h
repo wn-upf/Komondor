@@ -159,13 +159,13 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff){
 int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channel, double cca,
 	int packets_in_buffer){
 
-	int handle_success = FALSE;
+	int resume_backoff = FALSE;
 
 	switch(pause_or_resume){
 
 		case PAUSE_TIMER:{
 
-			if(channel_power[primary_channel] > cca) handle_success = TRUE;
+			if(channel_power[primary_channel] > cca) resume_backoff = TRUE;
 			break;
 
 		}
@@ -173,7 +173,7 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 		case RESUME_TIMER:{
 
 			if(packets_in_buffer > 0) {
-				if(channel_power[primary_channel] <= cca) handle_success =  TRUE;
+				if(channel_power[primary_channel] <= cca) resume_backoff =  TRUE;
 			}
 			break;
 
@@ -187,7 +187,7 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 		}
 	}
 
-	return handle_success;
+	return resume_backoff;
 }
 
 /*

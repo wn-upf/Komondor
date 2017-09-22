@@ -111,7 +111,7 @@ component Komondor : public CostSimEng {
 		int path_loss_model;			// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 		double capture_effect;			// Capture effect threshold [linear ratio]
 		double noise_level;				// Environment noise [pW]
-		int cochannel_model;			// Co-channel interference model
+		int adjacent_channel_model;			// Co-channel interference model
 		int collisions_model;			// Collisions model
 		double SIFS;					// Short Interframe Space (SIFS) [s]
 		double DIFS;					// DCF Interframe Space (DIFS) [s]
@@ -558,8 +558,8 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 
 			// Co-channel model
 			tmp = strdup(line_system);
-			const char* cochannel_model_char = GetField(tmp, IX_COCHANNEL_MODEL);
-			cochannel_model = atof(cochannel_model_char);
+			const char* adjacent_channel_model_char = GetField(tmp, IX_COCHANNEL_MODEL);
+			adjacent_channel_model = atof(adjacent_channel_model_char);
 
 			// Collisions model
 			tmp = strdup(line_system);
@@ -868,7 +868,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].print_node_logs = print_node_logs;
 				node_container[node_ix].basic_channel_bandwidth = basic_channel_bandwidth;
 				node_container[node_ix].num_channels_komondor = num_channels_komondor;
-				node_container[node_ix].cochannel_model = cochannel_model;
+				node_container[node_ix].adjacent_channel_model = adjacent_channel_model;
 				node_container[node_ix].default_destination_id = NODE_ID_NONE;
 				node_container[node_ix].noise_level = noise_level;
 				node_container[node_ix].SIFS = SIFS;
@@ -1114,7 +1114,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].print_node_logs = print_node_logs;
 			node_container[node_ix].basic_channel_bandwidth = basic_channel_bandwidth;
 			node_container[node_ix].num_channels_komondor = num_channels_komondor;
-			node_container[node_ix].cochannel_model = cochannel_model;
+			node_container[node_ix].adjacent_channel_model = adjacent_channel_model;
 			node_container[node_ix].default_destination_id = NODE_ID_NONE;
 			node_container[node_ix].noise_level = noise_level;
 			node_container[node_ix].SIFS = SIFS;
@@ -1175,7 +1175,7 @@ void Komondor :: printSystemInfo(){
 		printf("%s capture_effect = %f [linear] (%f dB)\n", LOG_LVL3, capture_effect, ConvertPower(LINEAR_TO_DB, capture_effect));
 		printf("%s noise_level = %f pW (%f dBm)\n",
 				LOG_LVL3, noise_level, ConvertPower(PW_TO_DBM, noise_level));
-		printf("%s cochannel_model = %d\n", LOG_LVL3, cochannel_model);
+		printf("%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
 		printf("%s collisions_model = %d\n", LOG_LVL3, collisions_model);
 		printf("%s SIFS = %f s\n", LOG_LVL3, SIFS);
 		printf("%s DIFS = %f s\n", LOG_LVL3, DIFS);
@@ -1203,7 +1203,7 @@ void Komondor :: WriteSystemInfo(Logger logger){
 	fprintf(logger.file, "%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 	fprintf(logger.file, "%s capture_effect = %f\n", LOG_LVL3, capture_effect);
 	fprintf(logger.file, "%s noise_level = %f dBm\n", LOG_LVL3, noise_level);
-	fprintf(logger.file, "%s cochannel_model = %d\n", LOG_LVL3, cochannel_model);
+	fprintf(logger.file, "%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
 	fprintf(logger.file, "%s collisions_model = %d\n", LOG_LVL3, collisions_model);
 	fprintf(logger.file, "%s SIFS = %f s\n", LOG_LVL3, SIFS);
 	fprintf(logger.file, "%s DIFS = %f s\n", LOG_LVL3, DIFS);

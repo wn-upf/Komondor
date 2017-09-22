@@ -105,6 +105,7 @@
 #define PACKET_ACK_LOST					6	// ACK lost
 #define PACKET_LOST_RX_IN_NAV			7	// Received a packet when being in NAV state
 #define PACKET_LOST_BO_COLLISION		8
+#define PACKET_LOST_OUTSIDE_CH_RANGE	9	// Packet was transmitted outside the primary channel of the receiver
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1
@@ -188,14 +189,14 @@
 #define CB_ALWAYS_MAX_LOG2_MCS		5	// Log2 Always-max (DCB) with optimal MCS: picks the channel range + MCS providing max throughput
 #define CB_PROB_UNIFORM_LOG2		6	// Log2 probabilistic uniform: pick with same probabilty any available channel range
 
-// Co-channel interference model
-#define COCHANNEL_NONE		0	// No co-channel interference
-#define COCHANNEL_BOUNDARY	1	// (RECOMMENDED) Boundary co-channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
-#define COCHANNEL_EXTREME	2	// Extreme co-channel interference: ALL channels used in the TX affect the rest of channels
+// Adjacent channel interference model
+#define ADJACENT_CHANNEL_NONE		0	// No adjacent channel interference
+#define ADJACENT_CHANNEL_BOUNDARY	1	// (RECOMMENDED) Boundary adjacent channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
+#define ADJACENT_CHANNEL_EXTREME	2	// Extreme adjacent channel interference: ALL channels used in the TX affect the rest of channels
 
 // Traffic model
 #define TRAFFIC_FULL_BUFFER			0	// Transmitters always have packets to transmit
-#define TRAFFIC_POISSON			1	// Traffic is generated randomly according to a Poisson distribution
+#define TRAFFIC_POISSON				1	// Traffic is generated randomly according to a Poisson distribution
 #define TRAFFIC_DETERMINISTIC		2	// Traffic is generated at fixed intervals
 
 #define PACKET_BUFFER_SIZE		256		// Size of the packets buffer

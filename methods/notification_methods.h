@@ -268,7 +268,7 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
 /*
  * IsPacketLost(): computes notification loss according to SINR received
  **/
-int IsPacketLost(Notification notification, double sinr, double capture_effect, double cca,
+int IsPacketLost(int primary_channel, Notification notification, double sinr, double capture_effect, double cca,
 		double power_rx_interest, double constant_per, int *hidden_nodes_list, int node_id){
 
 	int loss_reason = PACKET_NOT_LOST;
@@ -284,27 +284,38 @@ int IsPacketLost(Notification notification, double sinr, double capture_effect, 
 //					power_rx_interest, ConvertPower(PW_TO_DBM,power_rx_interest));
 //	}
 
+	// Check if primary channel is involved
 
-	is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per,
-			node_id);
+	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
 
-	if (is_packet_lost) {
+		is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per,
+					node_id);
 
-		if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
+		if (is_packet_lost) {
 
-			loss_reason = PACKET_LOST_LOW_SIGNAL;
-			hidden_nodes_list[notification.source_id] = TRUE;
+			if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
 
-		} else if (sinr < capture_effect){	// Capture effect not accomplished
+				loss_reason = PACKET_LOST_LOW_SIGNAL;
+				hidden_nodes_list[notification.source_id] = TRUE;
 
-			loss_reason = PACKET_LOST_INTERFERENCE;
+			} else if (sinr < capture_effect){	// Capture effect not accomplished
 
-		} else {	// Incoming packet lost due to PER
+				loss_reason = PACKET_LOST_INTERFERENCE;
 
-			loss_reason = PACKET_LOST_SINR_PROB;
+			} else {	// Incoming packet lost due to PER
 
+				loss_reason = PACKET_LOST_SINR_PROB;
+
+			}
 		}
+
+	} else{
+
+		loss_reason = PACKET_LOST_OUTSIDE_CH_RANGE;
+
 	}
+
+
 
 	return loss_reason;
 

@@ -149,7 +149,7 @@ component Node : public TypeII{
 		// Channel
 		int basic_channel_bandwidth;		// Channel unit bandwidth [Hz]
 		int num_channels_komondor;			// Number of subchannels composing the whole channel
-		int cochannel_model;				// Co-channel interference model (definition of models in function UpdateChannelsPower())
+		int adjacent_channel_model;			// Adjacent channel interference model (definition of models in function UpdateChannelsPower())
 
 		// Transmissions
 		int default_destination_id;			// Current destination node ID
@@ -241,6 +241,9 @@ component Node : public TypeII{
 
 		// Last notification that made the node change state or reamin in NAV. It is used for detecting simultaneous events.
 		Notification nav_notification;
+
+		// Noise notification for detecting BO collisions at SENSING state
+		Notification noise_notification;
 
 		int default_modulation;				// Default MCS identifier
 		double current_data_rate;			// Data rate being used currently
@@ -459,7 +462,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //				notification.left_channel, notification.right_channel);
 
 		// Call UpdatePowerSensedPerNode() ONLY for adding power (some node started)
-		UpdatePowerSensedPerNode(power_received_per_node, notification, x, y, z,
+		UpdatePowerSensedPerNode(primary_channel, power_received_per_node, notification, x, y, z,
 				rx_gain, central_frequency, path_loss_model, TX_INITIATED);
 
 //		if(save_node_logs) fprintf(node_logger.file,
@@ -470,15 +473,15 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //						channel_power, num_channels_komondor);
 
 		// Update the power sensed at each channel
-		UpdateChannelsPower(channel_power, power_received_per_node, notification, TX_INITIATED,
-				central_frequency, num_channels_komondor, path_loss_model, cochannel_model);
+		UpdateChannelsPower(x, y, z, channel_power, notification, TX_INITIATED,
+				central_frequency, num_channels_komondor, path_loss_model, rx_gain, adjacent_channel_model);
 
-//		if(save_node_logs) fprintf(node_logger.file,
-//					"%.15f;N%d;S%d;%s;%s START Channel after updating: ",
-//					SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
-//
-//		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-//						channel_power, num_channels_komondor);
+		if(save_node_logs) fprintf(node_logger.file,
+					"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
+					SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
+
+		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+						channel_power, num_channels_komondor);
 
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, channel_power,
 				current_cca, num_channels_komondor, SimTime());
@@ -500,8 +503,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					// Update power received of interest
 					power_rx_interest = power_received_per_node[notification.source_id];
 
+					current_left_channel = notification.left_channel;
+					current_right_channel = notification.right_channel;
+
 					// Compute max interference (the highest one perceived in the reception channel range)
-					max_pw_interference = ComputeMaxInterference(notification, current_left_channel, current_right_channel,
+					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+							notification, current_left_channel, current_right_channel,
 							node_state, power_received_per_node, notification.source_id, channel_power);
 
 					if(save_node_logs) fprintf(node_logger.file,
@@ -510,7 +517,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					if(save_node_logs) fprintf(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm\n",
-							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
+							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+							channel_max_intereference,
 							ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
 							ConvertPower(PW_TO_DBM, power_rx_interest),
 							ConvertPower(PW_TO_DBM, max_pw_interference));
@@ -519,8 +527,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
+						if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s SINR = %.2f dBm\n",
+							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+							ConvertPower(PW_TO_DBM, current_sinr));
+
 						// Check if notification has been lost due to interferences or weak signal strength
-						loss_reason = IsPacketLost(notification, current_sinr, capture_effect, current_cca,
+						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
@@ -597,20 +609,21 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						power_rx_interest = power_received_per_node[notification.source_id];
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-						max_pw_interference = ComputeMaxInterference(notification, current_left_channel, current_right_channel,
+						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+								notification, current_left_channel, current_right_channel,
 								node_state, power_received_per_node, notification.source_id, channel_power);
 
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
 						if(save_node_logs) fprintf(node_logger.file,
-							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm, sinr = %f dB\n",
+							"%.15f;N%d;S%d;%s;%s Pmax_int[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm, sinr = %f dB\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							channel_max_intereference, ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
 							ConvertPower(PW_TO_DBM, power_rx_interest),
 							ConvertPower(PW_TO_DBM, max_pw_interference),
 							ConvertPower(LINEAR_TO_DB,current_sinr));
 
-						loss_reason = IsPacketLost(notification, current_sinr, capture_effect, current_cca,
+						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason == PACKET_NOT_LOST) { // RTS/CTS can be decoded
@@ -659,6 +672,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								"%.15f;N%d;S%d;%s;%s RTS/CTS sent from N%d could not be decoded for reason %d\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
 								notification.source_id, loss_reason);
+
+							noise_notification = notification;
 
 							// Check if DIFS or BO must be stopped
 							if(node_is_transmitter){
@@ -714,7 +729,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							power_rx_interest = power_received_per_node[notification.source_id];
 
 							// Compute max interference (the highest one perceived in the reception channel range)
-							max_pw_interference = ComputeMaxInterference(notification, current_left_channel, current_right_channel,
+							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+									notification, current_left_channel, current_right_channel,
 									node_state, power_received_per_node, notification.source_id, channel_power);
 
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
@@ -727,7 +743,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								ConvertPower(PW_TO_DBM, max_pw_interference));
 
 							// Check if notification has been lost due to interferences or weak signal strength
-							loss_reason = IsPacketLost(notification, current_sinr, capture_effect, current_cca,
+							loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 									power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 							if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
@@ -859,7 +875,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// Check if it can be decoded to update NAV time if required
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-							loss_reason = IsPacketLost(notification, current_sinr, capture_effect, current_cca,
+							loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 									power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 							if (loss_reason == PACKET_NOT_LOST &&
@@ -949,10 +965,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					// Check if ongoing notification has been lost due to interferences caused by new transmission
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-					loss_reason = IsPacketLost(notification, current_sinr, capture_effect, current_cca,
+					loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 							power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
-					if(loss_reason != PACKET_NOT_LOST) {	// If ongoing data packet IS LOST
+					if(loss_reason != PACKET_NOT_LOST
+							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If ongoing data packet IS LOST
 
 							// Pure collision (two nodes transmitting to me with enough power)
 							if(save_node_logs) fprintf(node_logger.file,
@@ -1012,33 +1029,36 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.tx_info.destination_id);
 
 					// Compute max interference (the highest one perceived in the reception channel range)
-					max_pw_interference = ComputeMaxInterference(notification, current_left_channel, current_right_channel,
+					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+							notification, current_left_channel, current_right_channel,
 							node_state, power_received_per_node, receiving_from_node_id, channel_power);
 
 					// Check if the ongoing reception is affected
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
 					if(save_node_logs) fprintf(node_logger.file,
-						"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm\n",
+						"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm - current_sinr = %.2f dBm\n",
 						SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
 						ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
 						ConvertPower(PW_TO_DBM, power_rx_interest),
-						ConvertPower(PW_TO_DBM, max_pw_interference));
+						ConvertPower(PW_TO_DBM, max_pw_interference),
+						ConvertPower(PW_TO_DBM, current_sinr));
 
-					loss_reason = IsPacketLost(notification, current_sinr, capture_effect, current_cca,
+					loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 							power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
-					if(loss_reason != PACKET_NOT_LOST) { 	// If ongoing packet reception IS LOST
+					if(loss_reason != PACKET_NOT_LOST
+							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE) { 	// If ongoing packet reception IS LOST
 
 						// Collision by hidden node
 						if(save_node_logs) fprintf(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Collision by interferences!\n",
 								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
 
-						if(save_node_logs) fprintf(node_logger.file,
-								"%.15f;N%d;S%d;%s;%s notification.timestampt = %.9f - incoming_notification.timestampt = %.9f\n",
-								SimTime(), node_id, node_state, LOG_D19, LOG_LVL5,
-								notification.timestampt, incoming_notification.timestampt);
+//						if(save_node_logs) fprintf(node_logger.file,
+//								"%.15f;N%d;S%d;%s;%s notification.timestampt = %.9f - incoming_notification.timestampt = %.9f\n",
+//								SimTime(), node_id, node_state, LOG_D19, LOG_LVL5,
+//								notification.timestampt, incoming_notification.timestampt);
 
 						// If two or more packets sent at the same time
 						if(fabs(notification.timestampt - incoming_notification.timestampt) < MAX_DIFFERENCE_SAME_TIME){
@@ -1099,16 +1119,18 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					if(notification.packet_type == PACKET_TYPE_ACK){	// ACK packet transmission started
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-						max_pw_interference = ComputeMaxInterference(notification, current_left_channel, current_right_channel,
+						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+								notification, current_left_channel, current_right_channel,
 								node_state, power_received_per_node, receiving_from_node_id, channel_power);
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-						loss_reason = IsPacketLost(notification, current_sinr, capture_effect, current_cca,
+						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
-						if(loss_reason != PACKET_NOT_LOST) {	// If ACK packet IS LOST, send logical Nack
+						if(loss_reason != PACKET_NOT_LOST
+								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE) {	// If ACK packet IS LOST, send logical Nack
 
 							if(save_node_logs) fprintf(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
@@ -1182,7 +1204,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						power_rx_interest = power_received_per_node[notification.source_id];
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-						max_pw_interference = ComputeMaxInterference(notification, current_left_channel, current_right_channel,
+						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+								notification, current_left_channel, current_right_channel,
 								node_state, power_received_per_node, receiving_from_node_id, channel_power);
 
 						// Check if notification has been lost due to interferences or weak signal strength
@@ -1196,10 +1219,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							ConvertPower(PW_TO_DBM, power_rx_interest), power_rx_interest, ConvertPower(PW_TO_DBM, max_pw_interference),
 //							max_pw_interference);
 
-						loss_reason = IsPacketLost(notification, current_sinr, capture_effect, current_cca,
+						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
-						if(loss_reason != PACKET_NOT_LOST) {	// If CTS packet IS LOST, send logical Nack
+						if(loss_reason != PACKET_NOT_LOST
+								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If CTS packet IS LOST, send logical Nack
 
 							if(save_node_logs) fprintf(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
@@ -1276,16 +1300,18 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					if(notification.packet_type == PACKET_TYPE_DATA){	// DATA packet transmission started
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-						max_pw_interference = ComputeMaxInterference(notification, current_left_channel, current_right_channel,
+						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+								notification, current_left_channel, current_right_channel,
 								node_state, power_received_per_node, receiving_from_node_id, channel_power);
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-						loss_reason = IsPacketLost(notification, current_sinr, capture_effect, current_cca,
+						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
-						if(loss_reason != PACKET_NOT_LOST) {	// If DATA packet IS LOST, send logical Nack
+						if(loss_reason != PACKET_NOT_LOST
+							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If DATA packet IS LOST, send logical Nack
 
 							if(save_node_logs) fprintf(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
@@ -1390,8 +1416,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 //				channel_power, num_channels_komondor);
 
 		// Update the power sensed at each channel
-		UpdateChannelsPower(channel_power, power_received_per_node, notification, TX_FINISHED,
-				central_frequency, num_channels_komondor, path_loss_model, cochannel_model);
+		UpdateChannelsPower(x, y, z, channel_power, notification, TX_FINISHED,
+				central_frequency, num_channels_komondor, path_loss_model, rx_gain, adjacent_channel_model);
 
 //		if(save_node_logs) fprintf(node_logger.file,
 //			"%.15f;N%d;S%d;%s;%s Channel after updating: ",
@@ -1401,7 +1427,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 //						channel_power, num_channels_komondor);
 
 		// Call UpdatePowerSensedPerNode() ONLY for adding power (some node started)
-		UpdatePowerSensedPerNode(power_received_per_node, notification, x, y, z,
+		UpdatePowerSensedPerNode(primary_channel, power_received_per_node, notification, x, y, z,
 				rx_gain, central_frequency, path_loss_model, TX_FINISHED);
 
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, channel_power,
@@ -1416,37 +1442,41 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 				if(node_is_transmitter) {
 
-					int resume = HandleBackoff(RESUME_TIMER, channel_power, primary_channel, current_cca,
-							num_packets_in_buffer);
+					// If BO is paused
+					if(!trigger_end_backoff.Active()){
 
-					if(save_node_logs) fprintf(node_logger.file,
-						"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm (%f)\n",
-						SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-						0, ConvertPower(PW_TO_DBM, channel_power[0]), channel_power[0]);
+						int resume = HandleBackoff(RESUME_TIMER, channel_power, primary_channel, current_cca,
+								num_packets_in_buffer);
 
-					if(save_node_logs) fprintf(node_logger.file,
-						"%.15f;N%d;S%d;%s;%s power_received_per_node = ",
-						SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
+						if(save_node_logs) fprintf(node_logger.file,
+							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm (%f)\n",
+							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+							primary_channel, ConvertPower(PW_TO_DBM, channel_power[primary_channel]), channel_power[primary_channel]);
 
-					PrintOrWriteArrayDouble(power_received_per_node, 12, WRITE_LOG, save_node_logs,
-							FALSE, node_logger);
+						if(save_node_logs) fprintf(node_logger.file,
+							"%.15f;N%d;S%d;%s;%s power_received_per_node in primary = ",
+							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
 
-					// Check if node can restart the BO
-					if (resume) {
+						PrintOrWriteArrayDouble(power_received_per_node, total_nodes_number, WRITE_LOG, save_node_logs,
+								FALSE, node_logger);
 
-						// TODO: Check if BO is paused
+						// Check if node can restart the BO
+						if (resume) {
 
-						// time_to_trigger = SimTime() + DIFS;
-						time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration + DIFS;
+							// TODO: Check if BO is paused
 
-						trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
+							// time_to_trigger = SimTime() + DIFS;
+							time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration + DIFS;
 
-						if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS started.\n",
-													SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
+							trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 
-					} else {
-						if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS cannot be started.\n",
-							SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
+							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS started.\n",
+														SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
+
+						} else {
+							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS cannot be started.\n",
+								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
+						}
 					}
 				}
 
@@ -2029,6 +2059,9 @@ void Node :: EndBackoff(trigger_t &){
 
 	// Pick one receiver from the pool of potential receivers
 	SelectDestination();
+
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Trying to start TX to STA N%d\n",
+				SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, current_destination_id);
 
 //	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Selected destination: N%d\n",
 //				SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, current_destination_id);
@@ -3076,22 +3109,22 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				}
 				printf("\n");
 
-				// Time LOST transmitting in a given number of channels
-				printf("%s Time LOST transmitting in N channels:", LOG_LVL3);
-				for(int n = 0; n < num_channels_allowed; n++){
-					printf("\n%s - %d: %f",
-							LOG_LVL3, n, total_time_lost_in_num_channels[n]);
-				}
-				printf("\n");
-
-				// Time LOST transmitting in each of the channels
-				printf("%s Time LOST transmitting in each channel:", LOG_LVL3);
-				for(int c = 0; c < num_channels_komondor; c++){
-					printf("\n%s - %d = %.2f s (%.2f %%)",
-						LOG_LVL3, c, total_time_lost_per_channel[c],
-						(total_time_lost_per_channel[c] * 100 / SimTime()));
-				}
-				printf("\n");
+//				// Time LOST transmitting in a given number of channels
+//				printf("%s Time LOST transmitting in N channels:", LOG_LVL3);
+//				for(int n = 0; n < num_channels_allowed; n++){
+//					printf("\n%s - %d: %f",
+//							LOG_LVL3, n, total_time_lost_in_num_channels[n]);
+//				}
+//				printf("\n");
+//
+//				// Time LOST transmitting in each of the channels
+//				printf("%s Time LOST transmitting in each channel:", LOG_LVL3);
+//				for(int c = 0; c < num_channels_komondor; c++){
+//					printf("\n%s - %d = %.2f s (%.2f %%)",
+//						LOG_LVL3, c, total_time_lost_per_channel[c],
+//						(total_time_lost_per_channel[c] * 100 / SimTime()));
+//				}
+//				printf("\n");
 
 				// Time tx trials in each number of channels
 				printf("%s Number of tx trials per number of channels:", LOG_LVL3);
@@ -3110,18 +3143,18 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Number of TX initiations that have been not possible due to channel state and DCB model
 				printf("%s num_tx_init_not_possible = %d\n", LOG_LVL2, num_tx_init_not_possible);
 
-				// Hidden nodes
-				printf("%s Total number of hidden nodes: %d\n", LOG_LVL2, hidden_nodes_number);
-				printf("%s Hidden nodes list: ", LOG_LVL2);
-				for(int i = 0; i < total_nodes_number; i++){
-					printf("%d  ", hidden_nodes_list[i]);
-				}
-				printf("\n");
-
-				printf("%s Times a node was implied in a collision by hidden node: ",LOG_LVL2);
-				for(int i=0; i < total_nodes_number; i++) {
-					printf("%d ", potential_hidden_nodes[i]);
-				}
+//				// Hidden nodes
+//				printf("%s Total number of hidden nodes: %d\n", LOG_LVL2, hidden_nodes_number);
+//				printf("%s Hidden nodes list: ", LOG_LVL2);
+//				for(int i = 0; i < total_nodes_number; i++){
+//					printf("%d  ", hidden_nodes_list[i]);
+//				}
+//				printf("\n");
+//
+//				printf("%s Times a node was implied in a collision by hidden node: ",LOG_LVL2);
+//				for(int i=0; i < total_nodes_number; i++) {
+//					printf("%d ", potential_hidden_nodes[i]);
+//				}
 
 				printf("\n\n");
 			}
@@ -3249,6 +3282,7 @@ void Node :: InitializeVariables() {
 		channels_for_tx[i] = FALSE;
 		total_time_lost_per_channel[i] = 0;
 		timestampt_channel_becomes_free[i] = 0;
+		num_trials_tx_per_num_channels[i] = 0;
 	}
 
 	total_time_transmitting_in_num_channels = (double *) malloc(num_channels_allowed
@@ -3313,7 +3347,7 @@ void Node :: InitializeVariables() {
 
 	current_tpc = tpc_default;
 	current_cca = cca_default;
-	channel_max_intereference = 0;
+	channel_max_intereference = primary_channel;
 
 	data_duration = 0;
 	ack_duration = 0;
