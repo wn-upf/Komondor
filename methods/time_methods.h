@@ -111,7 +111,6 @@ double ComputeNavTime(int node_state, double rts_duration, double cts_duration, 
 
 			// CTS duration taking into account due to trigger is set at the very begining of the CTS reception
 			nav_time = 2 * sifs + cts_duration + data_duration + ack_duration;
-
 			break;
 		}
 

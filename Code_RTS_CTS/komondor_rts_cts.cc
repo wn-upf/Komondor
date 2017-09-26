@@ -276,7 +276,7 @@ void Komondor :: Start(){
  */
 void Komondor :: Stop(){
 
-	int total_packets_sent = 0;
+	int total_data_packets_sent = 0;
 	double total_throughput = 0;
 	int total_rts_lost_slotted_bo = 0;
 	int total_rts_cts_sent = 0;
@@ -286,7 +286,7 @@ void Komondor :: Stop(){
 	for(int m=0; m < total_nodes_number; m++){
 
 		if( node_container[m].node_type == NODE_TYPE_AP){
-			total_packets_sent += node_container[m].packets_sent;
+			total_data_packets_sent += node_container[m].data_packets_sent;
 			total_throughput += node_container[m].throughput;
 			total_rts_lost_slotted_bo += node_container[m].rts_lost_slotted_bo;
 			total_rts_cts_sent += node_container[m].rts_cts_sent;
@@ -297,9 +297,9 @@ void Komondor :: Stop(){
 
 	if (print_system_logs) {
 		printf("\n%s General Statistics:\n", LOG_LVL1);
-		printf("%s Total number of packets sent = %d\n", LOG_LVL2, total_packets_sent);
+		printf("%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL2, total_throughput * pow(10,-6));
-		printf("%s Average number of packets sent per WLAN = %d\n", LOG_LVL2, (total_packets_sent/total_wlans_number));
+		printf("%s Average number of packets sent per WLAN = %d\n", LOG_LVL2, (total_data_packets_sent/total_wlans_number));
 		printf("%s Average throughput per WLAN = %.2f Mbps\n", LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number));
 
 		printf("\n\n");
@@ -308,7 +308,7 @@ void Komondor :: Stop(){
 	// Sergio: just to keep track of the average througput even when not asking for system results
 	printf("\n");
 	printf("- Average throughput per WLAN = %f Mbps\n", (total_throughput * pow(10,-6)/total_wlans_number));
-	printf("- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_packets_sent/ (double) total_wlans_number));
+	printf("- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_data_packets_sent/ (double) total_wlans_number));
 	printf("- Average number of RTS packets lost due to slotted BO = %.2f (%.2f %% loss)\n",
 			(double) total_rts_lost_slotted_bo/(double) total_wlans_number,
 			((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
@@ -327,10 +327,10 @@ void Komondor :: Stop(){
 
 		// Simulation log file
 		fprintf(logger_simulation.file, "%s STATISTICS:\n", LOG_LVL1);
-		fprintf(logger_simulation.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_packets_sent);
-		fprintf(logger_simulation.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_packets_sent);
+		fprintf(logger_simulation.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
+		fprintf(logger_simulation.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
 		fprintf(logger_simulation.file, "%s Total throughput = %f\n", LOG_LVL2, total_throughput);
-		fprintf(logger_simulation.file, "%s Average number of packets sent = %d\n", LOG_LVL2, (total_packets_sent/total_nodes_number));
+		fprintf(logger_simulation.file, "%s Average number of packets sent = %d\n", LOG_LVL2, (total_data_packets_sent/total_nodes_number));
 		fprintf(logger_simulation.file, "%s Average throughput = %f\n", LOG_LVL2, (total_throughput/total_nodes_number));
 		fprintf(logger_simulation.file, "\n");
 
@@ -338,7 +338,7 @@ void Komondor :: Stop(){
 
 		// Script file (for several simulations in one)
 		fprintf(logger_script.file, "%s STATISTICS:\n", LOG_LVL1);
-		fprintf(logger_script.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_packets_sent);
+		fprintf(logger_script.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
 		double avg_throughput = 0;
 		double min_trhoughput = 10000;
 		double max_trhoughput = -1000;
@@ -350,7 +350,7 @@ void Komondor :: Stop(){
 		printf("length = %lu", len);
 		if (len == 0) {
 			fprintf(logger_script_csv.file, "filename;sim_code;wlan_id;wlan_code;node_id;node_code;throughput[Mbps];"
-											"packets_sent;packets_lost;rts_cts_sent;rts_cts_lost\n");
+											"data_packets_sent;data_packets_lost;rts_cts_sent;rts_cts_lost\n");
 		}
 
 
@@ -370,8 +370,8 @@ void Komondor :: Stop(){
 				fprintf(logger_script_csv.file, "%d;", node_container[m].node_id);			// Node ID
 				fprintf(logger_script_csv.file, "%s;", node_container[m].node_code);		// Node code
 				fprintf(logger_script_csv.file, "%f;", node_container[m].throughput * pow(10,-6));	// Throughput [Mbps]
-				fprintf(logger_script_csv.file, "%d;", node_container[m].packets_sent);		// Packets sent
-				fprintf(logger_script_csv.file, "%d;", node_container[m].packets_lost);		// Packets lost
+				fprintf(logger_script_csv.file, "%d;", node_container[m].data_packets_sent);		// Packets sent
+				fprintf(logger_script_csv.file, "%d;", node_container[m].data_packets_lost);		// Packets lost
 				fprintf(logger_script_csv.file, "%d;", node_container[m].rts_cts_sent);		// RTS packets sent
 				fprintf(logger_script_csv.file, "%d", node_container[m].rts_cts_lost);		// RTS packets lost
 				fprintf(logger_script_csv.file, "\n");										// End of line

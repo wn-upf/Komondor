@@ -182,7 +182,7 @@ component Node : public TypeII{
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
 
-		int packets_sent;
+		int data_packets_sent;
 		int rts_cts_sent;
 		double *total_time_transmitting_per_channel;		// Time transmitting per channel;
 		double *total_time_transmitting_in_num_channels;	// Time transmitting in (ix 0: 1 channel, ix 1: 2 channels...)
@@ -190,8 +190,8 @@ component Node : public TypeII{
 		double *total_time_lost_in_num_channels;			// Time transmitting in (ix 0: 1 channel, ix 1: 2 channels...) unsuccessfully
 		double throughput;									// Throughput [Mbps]
 		double throughput_loss;								// Throughput of lost packets [Mbps]
-		int packets_lost;									// Own packets that have been collided or lost
-		int *num_trials_tx_per_num_channels;					// Number of txs trials per number of channels
+		int data_packets_lost;									// Own packets that have been collided or lost
+		int *num_trials_tx_per_num_channels;				// Number of txs trials per number of channels
 		int rts_cts_lost;
 		int *nacks_received;								// Counter of the type of Nacks received
 		int num_tx_init_tried;								// Number of TX initiations tried (whenever transmitter try to acces the channel)
@@ -242,8 +242,8 @@ component Node : public TypeII{
 		// Last notification that made the node change state or reamin in NAV. It is used for detecting simultaneous events.
 		Notification nav_notification;
 
-		// Noise notification for detecting BO collisions at SENSING state
-		Notification noise_notification;
+		// NAV notification sent in a different primary channel. Store it for detecting BO collisions when using CB.
+		Notification outrange_nav_notification;
 
 		int default_modulation;				// Default MCS identifier
 		double current_data_rate;			// Data rate being used currently
@@ -537,6 +537,16 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
+							// Check if lost due to BO collision
+							if(loss_reason == PACKET_LOST_INTERFERENCE){
+
+								if(fabs(outrange_nav_notification.timestampt - notification.timestampt)
+										< MAX_DIFFERENCE_SAME_TIME){
+									loss_reason = PACKET_LOST_BO_COLLISION;
+								}
+
+							}
+
 							if(save_node_logs) fprintf(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
 									SimTime(), node_id, node_state, LOG_D15, LOG_LVL4, notification.tx_info.packet_id,
@@ -664,6 +674,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
 								trigger_NAV_timeout.GetTime());
 
+							if(save_node_logs) fprintf(node_logger.file,
+								"%.15f;N%d;S%d;%s;%s current_nav_time = %.12f\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4,
+								current_nav_time);
+
 							node_state = STATE_NAV;
 
 						} else { // RTS/CTS cannot be decoded.
@@ -673,7 +688,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
 								notification.source_id, loss_reason);
 
-							noise_notification = notification;
+							// Save NAV notifcation for comparing timestamps in case of need
+							outrange_nav_notification = notification;
 
 							// Check if DIFS or BO must be stopped
 							if(node_is_transmitter){
@@ -1465,13 +1481,17 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 							// TODO: Check if BO is paused
 
-							// time_to_trigger = SimTime() + DIFS;
-							time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration + DIFS;
+							// Sergio on 26/09/2017. EIFS vs NAV.
+							// - To identify if previous packet lost to trigger the EIFS
+							// - If not, just resume the backoff
+
+							time_to_trigger = SimTime() + DIFS;
+							// time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration + DIFS;
 
 							trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 
-							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS started.\n",
-														SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
+//							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS started.\n",
+//														SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
 
 						} else {
 							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS cannot be started.\n",
@@ -2156,17 +2176,16 @@ void Node :: EndBackoff(trigger_t &){
 			current_nav_time -= time_rand_value;
 
 			if(save_node_logs) fprintf(node_logger.file,
-				"%.15f;N%d;S%d;%s;%s time_rand_value = %.12f s\n",
+				"%.15f;N%d;S%d;%s;%s time_rand_value = %.12f s - corrected NAV time = %.12f s\n",
 				SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
-				time_rand_value);
+				time_rand_value, current_nav_time);
 		}
 
 //		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Setting NAV time from %.12f to %.12f\n",
 //			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
 //			(current_nav_time + time_rand_value), current_nav_time);
 
-		rts_notification = GenerateNotification(PACKET_TYPE_RTS,
-				current_destination_id, current_tx_duration);
+		rts_notification = GenerateNotification(PACKET_TYPE_RTS, current_destination_id, current_tx_duration);
 
 //		if(save_node_logs) fprintf(node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s Transmission of RTS #%d started\n",
@@ -2515,7 +2534,7 @@ void Node :: SendResponsePacket(trigger_t &){
 			outportSelfStartTX(data_notification);
 			time_to_trigger = SimTime() + current_tx_duration;
 			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,13,12));
-			packets_sent++;
+			data_packets_sent++;
 			if(save_node_logs) fprintf(node_logger.file,
 					"%.15f;N%d;S%d;%s;%s Data TX will be finished in %.12f\n",
 					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3,
@@ -2547,7 +2566,7 @@ void Node :: AckTimeout(trigger_t &){
 	}
 
 	handlePacketLoss(PACKET_TYPE_DATA, total_time_lost_in_num_channels, total_time_lost_per_channel,
-			packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
+			data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d lost\n",
 					SimTime(), node_id, node_state, LOG_D17, LOG_LVL4,
@@ -2566,7 +2585,7 @@ void Node :: AckTimeout(trigger_t &){
 void Node :: CtsTimeout(trigger_t &){
 
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
-			packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
+			data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
 						SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
@@ -2641,7 +2660,7 @@ void Node :: CtsTimeout(trigger_t &){
 void Node :: DataTimeout(trigger_t &){
 
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
-			packets_lost, rts_cts_lost, current_right_channel, current_left_channel, current_tx_duration);
+			data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel, current_tx_duration);
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
 					SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
@@ -2689,7 +2708,7 @@ void Node :: NavTimeout(trigger_t &){
 				"%.15f;N%d;S%d;%s;%s New DIFS cannot be started\n",
 				SimTime(), node_id, node_state, LOG_D17, LOG_LVL3);
 
-			printf("- %.12f; N%d cannot start DIFS\n", SimTime(), node_id);
+			// printf("- %.12f; N%d cannot start DIFS\n", SimTime(), node_id);
 		}
 
 	} else {
@@ -3036,20 +3055,20 @@ void Node :: PrintProgressBar(trigger_t &){
 void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 
 	// Process statistics
-	double packets_lost_percentage = 0;
+	double data_packets_lost_percentage = 0;
 	double rts_cts_lost_percentage = 0;
 	double tx_init_failure_percentage = 0;
 	double rts_lost_bo_percentage = 0;
 
 	tx_init_failure_percentage = double(num_tx_init_not_possible * 100)/double(num_tx_init_tried);
 
-	if (packets_sent > 0) {
-		packets_lost_percentage = double(packets_lost * 100)/double(packets_sent);
+	if (data_packets_sent > 0) {
+		data_packets_lost_percentage = double(data_packets_lost * 100)/double(data_packets_sent);
 		rts_cts_lost_percentage = double(rts_cts_lost * 100)/double(rts_cts_sent);
 		rts_lost_bo_percentage = double(rts_lost_slotted_bo *100)/double(rts_cts_sent);
 		prob_slotted_bo_collision = rts_lost_bo_percentage / 100;
 	}
-	throughput = (((double)(packets_sent-packets_lost) * packet_length * num_packets_aggregated))
+	throughput = (((double)(data_packets_sent-data_packets_lost) * packet_length * num_packets_aggregated))
 			/ SimTime();
 	int hidden_nodes_number = 0;
 	for(int i = 0; i < total_nodes_number; i++){
@@ -3066,10 +3085,6 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Throughput
 				printf("%s Throughput = %f Mbps\n", LOG_LVL2, throughput * pow(10,-6));
 
-				// Packets sent and lost
-				printf("%s Packets sent = %d - Packets lost = %d  (%.2f %% lost)\n",
-						LOG_LVL2, packets_sent, packets_lost, packets_lost_percentage);
-
 				// RTS/CTS sent and lost
 				printf("%s RTS/CTS sent = %d - RTS/CTS lost = %d  (%.2f %% lost)\n",
 						LOG_LVL2, rts_cts_sent, rts_cts_lost, rts_cts_lost_percentage);
@@ -3077,6 +3092,10 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// RTS/CTS sent and lost
 				printf("%s RTS lost due to slotted BO = %d (%.2f %%)\n",
 						LOG_LVL3, rts_lost_slotted_bo, rts_lost_bo_percentage);
+
+				// Data packets sent and lost
+				printf("%s Data packets sent = %d - Data packets lost = %d  (%.2f %% lost)\n",
+						LOG_LVL2, data_packets_sent, data_packets_lost, data_packets_lost_percentage);
 
 				// Number of trials to transmit
 				printf("%s num_tx_init_tried = %d - num_tx_init_not_possible = %d (%.2f %% failed)\n",
@@ -3133,7 +3152,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					printf("\n%s - %d: %d (%.2f %%)",
 							LOG_LVL3, (int) pow(2,n),
 							num_trials_tx_per_num_channels[n],
-							(((double) num_trials_tx_per_num_channels[n] * 100) / (double) packets_sent));
+							(((double) num_trials_tx_per_num_channels[n] * 100) / (double) (data_packets_sent+1)));
 
 					if((int) pow(2,n) == num_channels_komondor) break;
 				}
@@ -3170,16 +3189,16 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Throughput = %f Mbps\n",
 							SimTime(), node_id, node_state, LOG_C02, LOG_LVL2, throughput * pow(10,-6));
 
-					// Packets sent and lost
+					// Data packets sent and lost
 					fprintf(node_logger.file,
-							"%.15f;N%d;S%d;%s;%s Packets sent: %d\n",
-							SimTime(), node_id, node_state, LOG_C03, LOG_LVL2, packets_sent);
+							"%.15f;N%d;S%d;%s;%s Data packets sent: %d\n",
+							SimTime(), node_id, node_state, LOG_C03, LOG_LVL2, data_packets_sent);
 					fprintf(node_logger.file,
-							"%.15f;N%d;S%d;%s;%s Packets lost: %d\n",
-							SimTime(), node_id, node_state, LOG_C04, LOG_LVL2, packets_lost);
+							"%.15f;N%d;S%d;%s;%s Data packets lost: %d\n",
+							SimTime(), node_id, node_state, LOG_C04, LOG_LVL2, data_packets_lost);
 					fprintf(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Loss ratio: %f\n",
-							SimTime(), node_id, node_state, LOG_C05, LOG_LVL2, packets_lost_percentage);
+							SimTime(), node_id, node_state, LOG_C05, LOG_LVL2, data_packets_lost_percentage);
 
 					// Time EFFECTIVELY transmitting in a given number of channels (no losses)
 					fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Time EFFECTIVELY transmitting in N channels: ",
@@ -3409,11 +3428,11 @@ void Node :: InitializeVariables() {
 
 
 	// Statistics
-	packets_sent = 0;
+	data_packets_sent = 0;
 	rts_cts_sent = 0;
 	throughput = 0;
 	throughput_loss = 0;
-	packets_lost = 0;
+	data_packets_lost = 0;
 	rts_cts_lost = 0;
 	num_tx_init_not_possible = 0;
 	num_tx_init_tried = 0;
