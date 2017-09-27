@@ -773,6 +773,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									// Wait MAX_DIFFERENCE_SAME_TIME to detect more transmissions sent at the "same" time
 									// Trigger the restart then.
 
+									// Sergio on 27/09/2017. Review this case
+									if(save_node_logs) fprintf(node_logger.file,
+										"%.15f;N%d;S%d;%s;%s RTS from my AP CANNOT be decoded\n",
+										SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
+
 									trigger_NAV_timeout.Cancel();
 									time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
 									// trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
@@ -802,6 +807,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 										"%.15f;N%d;S%d;%s;%s Reception of RTS %d from N%d CAN be started (SINR = %f dB)\n",
 										SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.tx_info.packet_id,
 										notification.source_id, ConvertPower(LINEAR_TO_DB, current_sinr));
+
+								trigger_NAV_timeout.Cancel();
 
 								// Change state and update receiving info
 								data_duration = notification.tx_info.data_duration;
@@ -873,7 +880,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 								trigger_NAV_timeout.Cancel();
 
-								time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
+								// Sergio on 27/09/2017
+								// - An AP must wait EIFS after the last packet of external RTSs collisions is finished.
+
+								time_to_trigger =
+										SimTime() + MAX_DIFFERENCE_SAME_TIME + SIFS +
+										notification.tx_info.cts_duration + DIFS;
 
 								trigger_wait_collisions.Set(fix_time_offset(time_to_trigger,13,12));
 
@@ -1614,8 +1626,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 				} else {	// Node IS NOT THE DESTINATION
 
 					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
-							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, notification.tx_info.packet_id,
-							notification.source_id);
+							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, incoming_notification.tx_info.packet_id,
+							incoming_notification.source_id);
 				}
 
 				break;
@@ -1715,8 +1727,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 				} else {	// Node IS NOT THE DESTINATION
 
 					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
-							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, notification.tx_info.packet_id,
-							notification.source_id);
+							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, incoming_notification.tx_info.packet_id,
+							incoming_notification.source_id);
 				}
 
 				break;
@@ -1768,8 +1780,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 				} else {	// Node IS NOT THE DESTINATION
 
 					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
-							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, notification.tx_info.packet_id,
-							notification.source_id);
+							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, incoming_notification.tx_info.packet_id,
+							incoming_notification.source_id);
 				}
 
 				break;
@@ -2253,7 +2265,11 @@ void Node :: MyTxFinished(trigger_t &){
 			Notification notification = GenerateNotification(PACKET_TYPE_RTS, current_destination_id, TX_DURATION_NONE);
 			outportSelfFinishTX(notification);
 
+			// Sergio on 27/09/2017:
+			// - Modify timeout time after sending RTS. It should simply be SIFS + TIME_OUT_EXTRA_TIME
+
 			// time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration + DIFS + TIME_OUT_EXTRA_TIME;
+			// time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration + DIFS;
 			time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration + DIFS;
 
 			trigger_CTS_timeout.Set(fix_time_offset(time_to_trigger,13,12));
@@ -2626,8 +2642,9 @@ void Node :: CtsTimeout(trigger_t &){
 		// In case of being an AP
 		remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f.\n",
-								SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, remaining_backoff);
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f (%.0f slots).\n",
+								SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
+								remaining_backoff, remaining_backoff/SLOT_TIME);
 
 		// FRANKY
 		remaining_backoff += SLOT_TIME;
@@ -2865,8 +2882,9 @@ void Node :: RestartNode(int called_by_time_out){
 		// In case of being an AP
 		remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Starting DIFS. New backoff computed: %f\n",
-						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3, remaining_backoff);
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Starting DIFS. New backoff computed: %f (%.0f slots).\n",
+						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
+						remaining_backoff, remaining_backoff/SLOT_TIME);
 
 		// FRANKY
 		remaining_backoff += SLOT_TIME;
@@ -2906,7 +2924,10 @@ void Node :: RestartNode(int called_by_time_out){
 }
 
 void Node:: CallSensing(trigger_t &){
+
 	node_state = STATE_SENSING;
+
+
 }
 
 // Starts saving logs from a given initial value
@@ -3152,7 +3173,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					printf("\n%s - %d: %d (%.2f %%)",
 							LOG_LVL3, (int) pow(2,n),
 							num_trials_tx_per_num_channels[n],
-							(((double) num_trials_tx_per_num_channels[n] * 100) / (double) (data_packets_sent+1)));
+							(((double) num_trials_tx_per_num_channels[n] * 100) / (double) (rts_cts_sent)));
 
 					if((int) pow(2,n) == num_channels_komondor) break;
 				}
