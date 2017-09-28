@@ -293,6 +293,7 @@
 #define IX_RTS_LENGTH				17
 #define IX_CTS_LENGTH				18
 #define IX_CW_ADAPTATION			19
+#define IX_PIFS_ACTIVATION			20
 
 // Nodes file
 #define IX_NODE_CODE				1
