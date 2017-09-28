@@ -150,6 +150,7 @@ component Node : public TypeII{
 		int basic_channel_bandwidth;		// Channel unit bandwidth [Hz]
 		int num_channels_komondor;			// Number of subchannels composing the whole channel
 		int adjacent_channel_model;			// Adjacent channel interference model (definition of models in function UpdateChannelsPower())
+		int pifs_activated;					// PIFS mechanism activation
 
 		// Transmissions
 		int default_destination_id;			// Current destination node ID
@@ -158,6 +159,7 @@ component Node : public TypeII{
 		int channel_max_intereference;		// Channel of interest suffering maximum interference
 		double SIFS;						// SIFS [s]
 		double DIFS;						// DIFS [s]
+		double PIFS;						// PIFS [s]
 		double central_frequency;			// Central frequency (Hz)
 		int cw_min;							// Backoff minimum Contention Window
 		int cw_stage_max;							// Backoff maximum Contention Window
@@ -2101,8 +2103,8 @@ void Node :: EndBackoff(trigger_t &){
 	// Identify free channels
 	num_tx_init_tried ++;
 
-	GetChannelOccupancyByCCA(channels_free, min_channel_allowed, max_channel_allowed,
-			channel_power, current_cca, timestampt_channel_becomes_free, SimTime(), DIFS);
+	GetChannelOccupancyByCCA(pifs_activated, channels_free, min_channel_allowed, max_channel_allowed,
+			channel_power, current_cca, timestampt_channel_becomes_free, SimTime(), PIFS);
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free: ",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
@@ -3111,15 +3113,15 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 						LOG_LVL2, rts_cts_sent, rts_cts_lost, rts_cts_lost_percentage);
 
 				// RTS/CTS sent and lost
-				printf("%s RTS lost due to slotted BO = %d (%.2f %%)\n",
+				printf("%s RTS lost due to slotted BO = %d (%f %%)\n",
 						LOG_LVL3, rts_lost_slotted_bo, rts_lost_bo_percentage);
 
 				// Data packets sent and lost
-				printf("%s Data packets sent = %d - Data packets lost = %d  (%.2f %% lost)\n",
+				printf("%s Data packets sent = %d - Data packets lost = %d  (%f %% lost)\n",
 						LOG_LVL2, data_packets_sent, data_packets_lost, data_packets_lost_percentage);
 
 				// Number of trials to transmit
-				printf("%s num_tx_init_tried = %d - num_tx_init_not_possible = %d (%.2f %% failed)\n",
+				printf("%s num_tx_init_tried = %d - num_tx_init_not_possible = %d (%f %% failed)\n",
 						LOG_LVL2, num_tx_init_tried, num_tx_init_not_possible, tx_init_failure_percentage);
 
 				// Time EFFECTIVELY transmitting in a given number of channels (no losses)

@@ -115,10 +115,12 @@ component Komondor : public CostSimEng {
 		int collisions_model;			// Collisions model
 		double SIFS;					// Short Interframe Space (SIFS) [s]
 		double DIFS;					// DCF Interframe Space (DIFS) [s]
+		double PIFS;					// Point coordination function (PCF) Interframe Space (PIFS) [s]
 		double constant_per;			// Constant PER for successful transmissions
 		int traffic_model;				// Traffic model (0: full buffer, 1: poisson, 2: deterministic)
 		int backoff_type;				// Type of Backoff (0: Slotted 1: Continuous)
 		int cw_adaptation;				// CW adaptation (0: constant, 1: bineary exponential backoff)
+		int pifs_activated;				// PIFS mechanism activation
 
 	// Private items
 	private:
@@ -571,6 +573,7 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 			const char* sifs_char = GetField(tmp, IX_SIFS);
 			SIFS = atof(sifs_char) * pow(10,-6);
 			DIFS = SIFS + (2 * SLOT_TIME);
+			PIFS = SIFS + SLOT_TIME;
 
 			// Constant PER for successful transmissions
 			tmp = strdup(line_system);
@@ -597,11 +600,15 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 			const char* backoff_type_char = GetField(tmp, IX_BO_TYPE);
 			backoff_type = atoi(backoff_type_char);
 
-			// Backoff type
+			// Contention window adaptation
 			tmp = strdup(line_system);
 			const char* cw_adaptation_char = GetField(tmp, IX_CW_ADAPTATION);
 			cw_adaptation = atoi(cw_adaptation_char);
 
+			// PIFS mechanism activation
+			tmp = strdup(line_system);
+			const char* pifs_activated_char = GetField(tmp, IX_PIFS_ACTIVATION);
+			pifs_activated = atoi(pifs_activated_char);
 
 			free(tmp);
 		}
@@ -873,6 +880,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].noise_level = noise_level;
 				node_container[node_ix].SIFS = SIFS;
 				node_container[node_ix].DIFS = DIFS;
+				node_container[node_ix].PIFS = PIFS;
 				node_container[node_ix].constant_per = constant_per;
 				node_container[node_ix].central_frequency = central_frequency;
 				node_container[node_ix].pdf_backoff = pdf_backoff;
@@ -886,6 +894,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].traffic_model = traffic_model;
 				node_container[node_ix].backoff_type = backoff_type;
 				node_container[node_ix].cw_adaptation = cw_adaptation;
+				node_container[node_ix].pifs_activated = pifs_activated;
 				node_container[node_ix].lambda = lambda;
 				node_container[node_ix].simulation_code = simulation_code;
 
@@ -1119,6 +1128,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].noise_level = noise_level;
 			node_container[node_ix].SIFS = SIFS;
 			node_container[node_ix].DIFS = DIFS;
+			node_container[node_ix].PIFS = PIFS;
 			node_container[node_ix].constant_per = constant_per;
 			node_container[node_ix].pdf_backoff = pdf_backoff;
 			node_container[node_ix].path_loss_model = path_loss_model;
@@ -1131,6 +1141,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].traffic_model = traffic_model;
 			node_container[node_ix].backoff_type = backoff_type;
 			node_container[node_ix].cw_adaptation = cw_adaptation;
+			node_container[node_ix].pifs_activated = pifs_activated;
 			node_container[node_ix].simulation_code = simulation_code;
 
 			node_ix ++;
@@ -1170,6 +1181,7 @@ void Komondor :: printSystemInfo(){
 		printf("%s traffic_model = %d\n", LOG_LVL3, traffic_model);
 		printf("%s backoff_type = %d\n", LOG_LVL3, backoff_type);
 		printf("%s cw_adaptation = %d\n", LOG_LVL3, cw_adaptation);
+		printf("%s pifs_activated = %d\n", LOG_LVL3, pifs_activated);
 		printf("%s num_packets_aggregated = %d\n", LOG_LVL3, num_packets_aggregated);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 		printf("%s capture_effect = %f [linear] (%f dB)\n", LOG_LVL3, capture_effect, ConvertPower(LINEAR_TO_DB, capture_effect));
@@ -1179,6 +1191,7 @@ void Komondor :: printSystemInfo(){
 		printf("%s collisions_model = %d\n", LOG_LVL3, collisions_model);
 		printf("%s SIFS = %f s\n", LOG_LVL3, SIFS);
 		printf("%s DIFS = %f s\n", LOG_LVL3, DIFS);
+		printf("%s PIFS = %f s\n", LOG_LVL3, PIFS);
 		printf("%s Constant PER = %f\n", LOG_LVL3, constant_per);
 		printf("\n");
 	}
@@ -1207,6 +1220,7 @@ void Komondor :: WriteSystemInfo(Logger logger){
 	fprintf(logger.file, "%s collisions_model = %d\n", LOG_LVL3, collisions_model);
 	fprintf(logger.file, "%s SIFS = %f s\n", LOG_LVL3, SIFS);
 	fprintf(logger.file, "%s DIFS = %f s\n", LOG_LVL3, DIFS);
+	fprintf(logger.file, "%s PIFS = %f s\n", LOG_LVL3, PIFS);
 }
 
 /*

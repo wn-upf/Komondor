@@ -322,28 +322,54 @@ double ComputeTxPowerPerChannel(double current_tpc, int num_channels_tx){
 /*
  * GetChannelOccupancyByCCA(): indicates the channels occupied and free in a binary way
  */
-void GetChannelOccupancyByCCA(int *channels_free, int min_channel_allowed, int max_channel_allowed,
+void GetChannelOccupancyByCCA(int pifs_activated, int *channels_free, int min_channel_allowed, int max_channel_allowed,
     double *channel_power, double cca, double *timestampt_channel_becomes_free, double sim_time,
-	double difs){
+	double pifs){
 
-	// double time_channel_has_been_free;	// Time channel has been free since last P(ch) > CCA
+	switch(pifs_activated){
 
-	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
+		case TRUE:{
 
-		// time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
+			double time_channel_has_been_free;	// Time channel has been free since last P(ch) > CCA
 
-		// if(channel_power[c] < cca && time_channel_has_been_free > difs){
+			for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 
-		if(channel_power[c] < cca){
+				time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
 
-		  channels_free[c] = CHANNEL_FREE;
+				if(channel_power[c] < cca && time_channel_has_been_free > pifs){
 
-		} else {
+				  channels_free[c] = CHANNEL_FREE;
 
-		  channels_free[c] = CHANNEL_OCCUPIED;
+				} else {
+
+				  channels_free[c] = CHANNEL_OCCUPIED;
+
+				}
+			}
+
+			break;
 
 		}
+
+		case FALSE:{
+
+			for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
+
+					if(channel_power[c] < cca){
+
+					  channels_free[c] = CHANNEL_FREE;
+
+					} else {
+
+					  channels_free[c] = CHANNEL_OCCUPIED;
+
+					}
+				}
+
+			break;
+		}
 	}
+
 }
 
 /*
