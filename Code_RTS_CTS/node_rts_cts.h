@@ -665,7 +665,10 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							current_nav_time = notification.tx_info.nav_time;
 
-							time_to_trigger = SimTime() + current_nav_time + TIME_OUT_EXTRA_TIME;
+							// SERGIO on 28/09/2017:
+							// - Ensure NAV TO finishes at same time (or before) than other's WLAN ACK transmission.
+							// time_to_trigger = SimTime() + current_nav_time + TIME_OUT_EXTRA_TIME;
+							time_to_trigger = SimTime() + current_nav_time - TIME_OUT_EXTRA_TIME;
 
 							// SERGIO_TRIGGER
 							// trigger_NAV_timeout.Set(round_to_digits(time_to_trigger,12));
@@ -2164,7 +2167,10 @@ void Node :: EndBackoff(trigger_t &){
 
 		current_tx_duration = rts_duration;
 		current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
-		current_nav_time = round_to_digits(current_nav_time, 6);
+
+
+		// current_nav_time = round_to_digits(current_nav_time, 6);
+		current_nav_time = fix_time_offset(current_nav_time,13,12);
 
 		if(save_node_logs) fprintf(node_logger.file,
 					"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
@@ -2185,7 +2191,9 @@ void Node :: EndBackoff(trigger_t &){
 
 			time_rand_value = (double) rand_number * MAX_DIFFERENCE_SAME_TIME/MAX_NUM_RAND_TIME; // in [FEMTO_SECOND, MAX_DIFFERENCE_SAME_TIME]
 
-			time_rand_value = round_to_digits(time_rand_value, 15);
+			// Sergio on 28/09/2017
+			// time_rand_value = round_to_digits(time_rand_value, 15);
+			time_rand_value = fix_time_offset(time_rand_value,13,12);
 
 			current_nav_time -= time_rand_value;
 

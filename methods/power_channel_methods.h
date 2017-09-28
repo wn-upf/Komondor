@@ -123,8 +123,24 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx (UNITS ARE NOT IN SI!)
 	case PATH_LOSS_LFS:{
 
-		loss = 32.4 + 20 * log10(central_frequency * pow(10,-6)) + 20 * log10(distance * pow(10,-3));
-		pw_received_dbm = tx_power_dbm - loss;
+//		loss = 32.4 + 20 * log10(central_frequency * pow(10,-6)) + 20 * log10(distance * pow(10,-3));
+//		pw_received_dbm = tx_power_dbm - loss;
+//
+//		printf("------------------------------------------------------\n");
+//		printf("OLD\n");
+//		printf("- loss = %f\n", loss);
+//		printf("- pw_received_dbm = %f\n", pw_received_dbm);
+
+		// Sergio on 28/09/2017 to match specific SFCTMN
+		loss = 20 * log10(distance) + 20 * log10(central_frequency) + 20 * log10((4*M_PI)/((double) (SPEED_LIGHT)));
+
+		pw_received_dbm = tx_power_dbm + ConvertPower(LINEAR_TO_DB, rx_gain) +
+				ConvertPower(LINEAR_TO_DB, tx_gain) - loss;
+
+//		printf("NEW\n");
+//		printf("- rx_gain = %f\n", rx_gain);
+//		printf("- loss = %f\n", loss);
+//		printf("- pw_received_dbm = %f\n", pw_received_dbm);
 
 		break;
 	}
