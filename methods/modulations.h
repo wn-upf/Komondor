@@ -45,6 +45,8 @@ struct Mcs_array {
    static const double mcs_array[4][12];
    static const double coding_rate_array[12];
    static const int bits_per_symbol_modulation_array[12];
+   static const int modulation_bits[12];
+   static const double coding_rates[12];
 };
 
 
@@ -70,7 +72,7 @@ struct Mcs_array {
 //				681 * pow(10,6),817 * pow(10,6),907 * pow(10,6),1021 * pow(10,6),1134 * pow(10,6)}};
 
 // Sergio on 28/09/2017:
-// - HARDCODED FOR VALIDATING PURPOSES v2. WITH ADJUSTED RATES :)
+// - HARDCODED FOR VALIDATING PURPOSES v2. WITH ADJUSTED RATES MATCHING SFCTMN :)
 const double Mcs_array::mcs_array[4][12] = {	// columns: modulation type, rows: number of channels (1, 2, 4, 8)
 		{4 * pow(10,6),16 * pow(10,6),24 * pow(10,6),33 * pow(10,6),49 * pow(10,6),65 * pow(10,6),73 * pow(10,6),81 * pow(10,6),
 				98 * pow(10,6),108 * pow(10,6),122 * pow(10,6), 63148000},
@@ -86,6 +88,88 @@ const double Mcs_array::coding_rate_array[12] = {1/double(2), 1/double(2), 3/dou
 		3/double(4), 2/double(3), 3/double(4), 5/double(6), 3/double(4), 5/double(6), 3/double(4), 5/double(6)};
 
 const int Mcs_array::bits_per_symbol_modulation_array[12] = {2, 4, 4, 16, 16, 64, 64, 64, 256, 256, 1024, 1024};
+
+// Sergio on 5 Oct 2017
+// - Include MCS indeces corresponding to IEEE 802.11ax
+const int Mcs_array::modulation_bits[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
+		1,	// MCS 0
+		2,	// MCS 1
+		2,	// MCS 2
+		4,	// MCS 3
+		4,	// MCS 4
+		6,	// MCS 5
+		6,	// MCS 6
+		6,	// MCS 7
+		8,	// MCS 8
+		8,	// MCS 9
+		10,	// MCS 10
+		10	// MCS 11
+};
+
+const double Mcs_array::coding_rates[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
+		1/double(2),	// MCS 0
+		1/double(2),	// MCS 1
+		3/double(4),	// MCS 2
+		1/double(2),	// MCS 3
+		3/double(4),	// MCS 4
+		1/double(2),	// MCS 5
+		2/double(3),	// MCS 6
+		3/double(4),	// MCS 7
+		3/double(4),	// MCS 8
+		5/double(6),	// MCS 9
+		3/double(4),	// MCS 10
+		5/double(6)		// MCS 11
+};
+
+// Sergio on 5 Oct 2017: include number of subcarriers in the IEEE 802.11ax
+int getNumberSubcarriers(int num_channels){
+
+	int num_subcarriers;
+
+	switch(num_channels){
+
+// 		Channels widths smaller than 20 MHz!?!?!? Discuss with Boris
+//
+//		case 2.5:{
+//			return 26;
+//		}
+//
+//		case 5:{
+//			return 52;
+//		}
+//
+//		case 10:{
+//			return 102;
+//		}
+
+		// 1 channel - 20 MHz
+		case 1:{
+			num_subcarriers = 234;
+			break;
+		}
+
+		// 2 channels - 40 MHz
+		case 2:{
+			num_subcarriers = 468;
+			break;
+		}
+
+		// 4 channels - 80 MHz
+		case 4:{
+			num_subcarriers = 980;
+			break;
+		}
+
+		// 8 channels - 160 MHz
+		case 8:{
+			num_subcarriers = 1960;
+			break;
+		}
+
+	}
+
+	return num_subcarriers;
+}
 
 
 

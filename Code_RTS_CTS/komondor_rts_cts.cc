@@ -811,6 +811,13 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 			const char* lambda_char = GetField(tmp_nodes, IX_AP_LAMBDA);
 			double lambda = atof(lambda_char);
 
+			// IEEE protocol type
+			tmp_nodes = strdup(line_nodes);
+			const char* ieee_protocol_char = GetField(tmp_nodes, IX_AP_IEEE_PROTOCOL_TYPE);
+			double ieee_protocol = atof(ieee_protocol_char);
+
+
+
 			node_id_counter_in_wlan = 0;
 
 			node_ix_aux = node_ix;
@@ -896,6 +903,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].cw_adaptation = cw_adaptation;
 				node_container[node_ix].pifs_activated = pifs_activated;
 				node_container[node_ix].lambda = lambda;
+				node_container[node_ix].ieee_protocol = ieee_protocol;
 				node_container[node_ix].simulation_code = simulation_code;
 
 				node_ix++;
@@ -1113,6 +1121,13 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			tmp_nodes = strdup(line_nodes);
 			const char* lambda_char = GetField(tmp_nodes, IX_LAMBDA);
 			node_container[node_ix].lambda = atof(lambda_char);
+
+			// IEEE protocol type
+			tmp_nodes = strdup(line_nodes);
+			const char* ieee_protocol_char = GetField(tmp_nodes, IX_IEEE_PROTOCOL_TYPE);
+			node_container[node_ix].ieee_protocol = atof(ieee_protocol_char);
+
+
 
 			// System
 			node_container[node_ix].simulation_time_komondor = simulation_time_komondor;

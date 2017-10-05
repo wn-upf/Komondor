@@ -560,11 +560,7 @@ void UpdateChannelsPower(double x, double y, double z, double *channel_power, No
  **/
 double UpdateSINR(double pw_received_interest, double noise_level, double max_pw_interference){
 
-	double pw_rx_interest_dbm = ConvertPower(PW_TO_DBM, pw_received_interest);
-	double inter_plus_noise = noise_level + max_pw_interference;
-	double interf_plus_noise_dbm = ConvertPower(PW_TO_DBM, inter_plus_noise);
-	double sinr_db = pw_rx_interest_dbm - interf_plus_noise_dbm;
-	double sinr = ConvertPower(DB_TO_LINEAR, sinr_db);
+	double sinr = pw_received_interest / (max_pw_interference + noise_level);
 
 	return sinr;
 }
@@ -573,20 +569,19 @@ double UpdateSINR(double pw_received_interest, double noise_level, double max_pw
  * ComputeMaxInterference(): computes the maximum interference perceived in the channels of interest
  **/
 void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intereference,
-	Notification notification, int current_left_channel, int current_right_channel,
-	int node_state, double *power_received_per_node, int receiving_from_node_id, double *channel_power) {
+	Notification notification_interest, int node_state, double *power_received_per_node, double *channel_power) {
 
 	*max_pw_interference = 0;
 
-	for(int c = current_left_channel; c <= current_right_channel; c++){
+	for(int c = notification_interest.left_channel; c <= notification_interest.right_channel; c++){
 
 		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK || node_state == STATE_NAV
 				|| node_state == STATE_RX_RTS || node_state == STATE_RX_CTS || node_state == STATE_SENSING){
 
 			if(*max_pw_interference <=
-					(channel_power[c] - power_received_per_node[receiving_from_node_id])){
+					(channel_power[c] - power_received_per_node[notification_interest.source_id])){
 
-				*max_pw_interference = channel_power[c] - power_received_per_node[receiving_from_node_id];
+				*max_pw_interference = channel_power[c] - power_received_per_node[notification_interest.source_id];
 				*channel_max_intereference = c;
 
 			}

@@ -238,6 +238,26 @@
 #define INFO_DETAIL_LEVEL_2		2
 #define INFO_DETAIL_LEVEL_3		3
 
+// IEEE protocol
+#define IEEE_NOT_SPECIFIED		0
+#define IEEE_802_11_AX			1
+
+// IEEE 802.11ax
+// --- PHY parameters ---
+#define IEEE_AX_OFDM_SYMBOL_DURATION	(16 * MICRO_VALUE)	// Duration of OFDM symbol (CP of 3.2us is included) [s]
+#define IEEE_AX_LEGACY_PHYH_DURATION 	(20 * MICRO_VALUE)	// Duration of legacy PHY header [s]
+#define IEEE_AX_SU_SPATIAL_STREAMS	 	1					// Single user spatial streams
+#define IEEE_AX_HE_PHYH_DURATION	 	(16 + IEEE_AX_SU_SPATIAL_STREAMS*16) * MICRO_VALUE;	// HE PHY header [s]
+// --- MAC parameters ---
+#define IEEE_AX_SF_LENGTH				16					// Service field length [bits]
+#define IEEE_AX_TAIL_LENGTH				6					// Tail length [bits]
+#define IEEE_AX_DEL_LENGTH				32					// MPDU delimiter if packet aggregation is used [bits]
+#define IEEE_AX_MACH_LENGTH				272					// MAC header including FCS [bits]
+#define IEEE_AX_RTS_LENGTH				160					// RTS length [bits]
+#define IEEE_AX_CTS_LENGTH				112					// CTS length [bits]
+#define IEEE_AX_BACK_LENGTH				240					// Block-ACK length [bits]
+
+
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
  * ************************************************
@@ -320,6 +340,7 @@
 #define IX_MODULATION_DEFAULT		22
 #define IX_CENTRAL_FREQ				23
 #define IX_LAMBDA					24
+#define IX_IEEE_PROTOCOL_TYPE		25
 
 // APs file
 #define IX_AP_WLAN_CODE					1
@@ -346,6 +367,7 @@
 #define IX_AP_MODULATION_DEFAULT		22
 #define IX_AP_CENTRAL_FREQ				23
 #define IX_AP_LAMBDA					24
+#define IX_AP_IEEE_PROTOCOL_TYPE		25
 
 
 /* *********************

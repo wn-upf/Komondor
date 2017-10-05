@@ -116,6 +116,7 @@ component Node : public TypeII{
 		int node_type;				// Node type (e.g., AP, STA, ...)
 		int destination_id;			// Destination node id (for nodes not belonging to any WLAN)
 		double lambda;				// Average notification generation rate [notification/s]
+		int ieee_protocol;			// IEEE protocol type
 		int primary_channel;		// Primary channel
 		int min_channel_allowed;	// Min. allowed channel
 		int max_channel_allowed;	// Max. allowed channel
@@ -239,7 +240,7 @@ component Node : public TypeII{
 		Notification cts_notification;		// CTS to be filled before sending it
 		Notification data_notification;		// DATA notification to be filled before sending it
 		Notification ack_notification;		// ACK to be filled before sending it
-		Notification incoming_notification; // Notification of intereset being received
+		Notification incoming_notification; // Notification of interest being received
 
 		// Last notification that made the node change state or reamin in NAV. It is used for detecting simultaneous events.
 		Notification nav_notification;
@@ -248,7 +249,8 @@ component Node : public TypeII{
 		Notification outrange_nav_notification;
 
 		int default_modulation;				// Default MCS identifier
-		double current_data_rate;			// Data rate being used currently
+		double data_rate;					// Data rate being used currently
+		double data_rate_20mhz;				// Data rate in one channel (legacy mode)
 		int cw_current;						// Contention Window being used currently
 		int cw_stage_current;				// Current CW stage
 
@@ -510,8 +512,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					// Compute max interference (the highest one perceived in the reception channel range)
 					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							notification, current_left_channel, current_right_channel,
-							node_state, power_received_per_node, notification.source_id, channel_power);
+							incoming_notification, node_state, power_received_per_node, channel_power);
 
 					if(save_node_logs) fprintf(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
@@ -531,7 +532,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s SINR = %.2f dBm\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-							ConvertPower(PW_TO_DBM, current_sinr));
+							ConvertPower(LINEAR_TO_DB, current_sinr));
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
@@ -622,8 +623,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						// Compute max interference (the highest one perceived in the reception channel range)
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-								notification, current_left_channel, current_right_channel,
-								node_state, power_received_per_node, notification.source_id, channel_power);
+							incoming_notification, node_state, power_received_per_node, channel_power);
 
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
@@ -751,8 +751,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							// Compute max interference (the highest one perceived in the reception channel range)
 							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-									notification, current_left_channel, current_right_channel,
-									node_state, power_received_per_node, notification.source_id, channel_power);
+								incoming_notification, node_state, power_received_per_node, channel_power);
 
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
@@ -1063,8 +1062,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					// Compute max interference (the highest one perceived in the reception channel range)
 					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							notification, current_left_channel, current_right_channel,
-							node_state, power_received_per_node, receiving_from_node_id, channel_power);
+							incoming_notification, node_state, power_received_per_node, channel_power);
 
 					// Check if the ongoing reception is affected
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
@@ -1075,13 +1073,22 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
 						ConvertPower(PW_TO_DBM, power_rx_interest),
 						ConvertPower(PW_TO_DBM, max_pw_interference),
-						ConvertPower(PW_TO_DBM, current_sinr));
+						ConvertPower(LINEAR_TO_DB, current_sinr));
+
+					if(save_node_logs) fprintf(node_logger.file,
+						"%.15f;N%d;S%d;%s;%s primary = %d - capture_effect = %.2f dB - current_cca = %.2f dBm - per = %.2f\n",
+						SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, primary_channel,
+						ConvertPower(LINEAR_TO_DB, capture_effect),
+						ConvertPower(PW_TO_DBM, current_cca),
+						constant_per);
 
 					loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 							power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
-					if(loss_reason != PACKET_NOT_LOST
-							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE) { 	// If ongoing packet reception IS LOST
+					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
+						SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, loss_reason);
+
+					if(loss_reason != PACKET_NOT_LOST) { 	// If ongoing packet reception IS LOST
 
 						// Collision by hidden node
 						if(save_node_logs) fprintf(node_logger.file,
@@ -1153,8 +1160,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						// Compute max interference (the highest one perceived in the reception channel range)
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-								notification, current_left_channel, current_right_channel,
-								node_state, power_received_per_node, receiving_from_node_id, channel_power);
+							incoming_notification, node_state, power_received_per_node, channel_power);
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
@@ -1238,8 +1244,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						// Compute max interference (the highest one perceived in the reception channel range)
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-								notification, current_left_channel, current_right_channel,
-								node_state, power_received_per_node, receiving_from_node_id, channel_power);
+								incoming_notification, node_state, power_received_per_node, channel_power);
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
@@ -1334,11 +1339,18 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						// Compute max interference (the highest one perceived in the reception channel range)
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-								notification, current_left_channel, current_right_channel,
-								node_state, power_received_per_node, receiving_from_node_id, channel_power);
+							incoming_notification, node_state, power_received_per_node, channel_power);
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
+
+						if(save_node_logs) fprintf(node_logger.file,
+							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm - current_sinr = %.2f dBm\n",
+							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
+							ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
+							ConvertPower(PW_TO_DBM, power_rx_interest),
+							ConvertPower(PW_TO_DBM, max_pw_interference),
+							ConvertPower(LINEAR_TO_DB, current_sinr));
 
 						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
@@ -1475,8 +1487,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 				if(node_is_transmitter) {
 
-					// If BO is paused
-					if(!trigger_end_backoff.Active()){
+					if(!trigger_end_backoff.Active()){	// BO was paused
 
 						int resume = HandleBackoff(RESUME_TIMER, channel_power, primary_channel, current_cca,
 								num_packets_in_buffer);
@@ -1486,17 +1497,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							primary_channel, ConvertPower(PW_TO_DBM, channel_power[primary_channel]), channel_power[primary_channel]);
 
-						if(save_node_logs) fprintf(node_logger.file,
-							"%.15f;N%d;S%d;%s;%s power_received_per_node in primary = ",
-							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
-
-						PrintOrWriteArrayDouble(power_received_per_node, total_nodes_number, WRITE_LOG, save_node_logs,
-								FALSE, node_logger);
-
-						// Check if node can restart the BO
-						if (resume) {
-
-							// TODO: Check if BO is paused
+						if (resume) {	// BO can be resumed
 
 							// Sergio on 26/09/2017. EIFS vs NAV.
 							// - To identify if previous packet lost to trigger the EIFS
@@ -1507,13 +1508,24 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 							trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 
+							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s BO will be resumed after DIFS at %.12f.\n",
+									SimTime(), node_id, node_state, LOG_E11, LOG_LVL4,
+									trigger_start_backoff.GetTime());
+
 //							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS started.\n",
 //														SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
 
-						} else {
+						} else {	// BO cannot be resumed
+
 							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS cannot be started.\n",
 								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
+
 						}
+					} else {	// BO was already active
+
+						if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s BO was already active.\n",
+								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
+
 					}
 				}
 
@@ -2152,18 +2164,61 @@ void Node :: EndBackoff(trigger_t &){
 
 		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
 
-		current_data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1];
+
+		// Sergio on 5 Oct 2017:
+		// - Allow computing time in the IEEE 802.11ax
+
+		switch(ieee_protocol){
+
+			case IEEE_NOT_SPECIFIED:{
+
+				data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1];
+				rts_duration = ComputeTxTime(rts_length, data_rate, pdf_tx_time);
+				cts_duration = ComputeTxTime(cts_length, data_rate, pdf_tx_time);
+				data_duration = ComputeTxTime(packet_length * num_packets_aggregated, data_rate, pdf_tx_time);
+				ack_duration = ComputeTxTime(ack_length, data_rate, pdf_tx_time);
+
+				break;
+			}
+
+			case IEEE_802_11_AX:{
+
+				// data rate at 20 MHz is 52 * ym * yc
+				data_rate_20mhz = 52 * Mcs_array::modulation_bits[current_modulation-1] *
+						Mcs_array::coding_rates[current_modulation-1];
+
+				// data rate depending on CB and streams: Nsc * ym * yc * SUSS
+				data_rate =  getNumberSubcarriers(num_channels_tx) *
+						Mcs_array::modulation_bits[current_modulation-1] *
+						Mcs_array::coding_rates[current_modulation-1] *
+						IEEE_AX_SU_SPATIAL_STREAMS;
+
+				rts_duration = computeRtsTxTime80211ax(data_rate_20mhz);
+				cts_duration = computeCtsTxTime80211ax(data_rate_20mhz);
+				data_duration = computeDataTxTime80211ax(num_packets_aggregated, packet_length, data_rate);
+				ack_duration = computeAckTxTime80211ax(data_rate_20mhz);
+
+//				printf("current_modulation = %d\n"
+//						"data_rate_20mhz = %f\n"
+//						"data_rate = %f\n"
+//						"rts_duration = %f\n"
+//						"cts_duration = %f\n"
+//						"data_duration = %f\n"
+//						"ack_duration = %f\n"
+//						"Nsc = %d\n", current_modulation, data_rate_20mhz, data_rate,
+//						rts_duration, cts_duration, data_duration, ack_duration, getNumberSubcarriers(num_channels_tx));
+
+				break;
+			}
+
+		}
 
 		if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s Transmitting in %d channels using modulation %d (%.2f Mbps) \n",
-					SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
-					(int) pow(2,ix_num_channels_used), current_modulation, current_data_rate * pow(10,-6));
+			"%.15f;N%d;S%d;%s;%s Transmitting in %d channels using modulation %d (%.2f Mbps) \n",
+			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
+			(int) pow(2,ix_num_channels_used), current_modulation, data_rate * pow(10,-6));
 
 
-		data_duration = ComputeTxTime(packet_length * num_packets_aggregated, current_data_rate, pdf_tx_time);
-		ack_duration = ComputeTxTime(ack_length, current_data_rate, pdf_tx_time);
-		rts_duration = ComputeTxTime(rts_length, current_data_rate, pdf_tx_time);
-		cts_duration = ComputeTxTime(cts_length, current_data_rate, pdf_tx_time);
 
 		current_tx_duration = rts_duration;
 		current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
@@ -2434,7 +2489,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, d
 	int num_channels_tx = current_right_channel - current_left_channel + 1;
 	tx_info.tx_power = ComputeTxPowerPerChannel(current_tpc, num_channels_tx);
 	tx_info.tx_gain = tx_gain;
-	tx_info.data_rate = current_data_rate;
+	tx_info.data_rate = data_rate;
 	tx_info.x = x;
 	tx_info.y = y;
 	tx_info.z = z;

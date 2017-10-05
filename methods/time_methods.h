@@ -91,6 +91,53 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 }
 
 /*
+ * computeRtsTxTimeIeee80211ax: computes RTS transmission time
+ **/
+double computeRtsTxTime80211ax(double data_rate_20mhz){
+
+	double rts_duration = IEEE_AX_LEGACY_PHYH_DURATION + ceil((IEEE_AX_SF_LENGTH + IEEE_AX_RTS_LENGTH
+			+ IEEE_AX_TAIL_LENGTH) / data_rate_20mhz) * IEEE_AX_OFDM_SYMBOL_DURATION;
+
+	return rts_duration;
+}
+
+/*
+ * computeCtsTxTimeIeee80211ax: computes CTS transmission time
+ **/
+double computeCtsTxTime80211ax(double data_rate_20mhz){
+
+	double cts_duration = IEEE_AX_LEGACY_PHYH_DURATION + ceil((IEEE_AX_SF_LENGTH + IEEE_AX_CTS_LENGTH
+			+ IEEE_AX_TAIL_LENGTH) / data_rate_20mhz) * IEEE_AX_OFDM_SYMBOL_DURATION;
+
+	return cts_duration;
+
+}
+
+/*
+ * computeDataTxTimeIeee80211ax: computes data transmission time
+ **/
+double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_length, double data_rate){
+
+	double data_duration = IEEE_AX_LEGACY_PHYH_DURATION + ceil( (IEEE_AX_SF_LENGTH + num_packets_aggregated * (IEEE_AX_DEL_LENGTH +
+				IEEE_AX_MACH_LENGTH + data_packet_length) + IEEE_AX_TAIL_LENGTH) / data_rate) *
+				IEEE_AX_OFDM_SYMBOL_DURATION + IEEE_AX_HE_PHYH_DURATION;
+
+	return data_duration;
+}
+
+/*
+ * computeAckTxTimeIeee80211ax: computes ACK transmission time
+ **/
+double computeAckTxTime80211ax(double data_rate_20mhz){
+
+	double ack_duration = IEEE_AX_LEGACY_PHYH_DURATION + ceil((IEEE_AX_SF_LENGTH + IEEE_AX_BACK_LENGTH
+			+ IEEE_AX_TAIL_LENGTH) / data_rate_20mhz) * IEEE_AX_OFDM_SYMBOL_DURATION;
+
+	return ack_duration;
+
+}
+
+/*
  * ComputeNavTime: computes the NAV time for the RTS and CTS packets.
  **/
 double ComputeNavTime(int node_state, double rts_duration, double cts_duration, double data_duration,
