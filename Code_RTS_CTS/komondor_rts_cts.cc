@@ -226,6 +226,8 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 		if (print_system_logs) printf("\n\n");
 	}
 
+	InputChecker();
+
 	fprintf(logger_simulation.file, "------------------------------------\n");
 
 	if (save_system_logs){
@@ -448,8 +450,8 @@ void Komondor :: InputChecker(){
 				|| node_container[i].primary_channel < node_container[i].min_channel_allowed
 				|| node_container[i].min_channel_allowed > node_container[i].max_channel_allowed
 				|| node_container[i].primary_channel > num_channels_komondor
-				|| node_container[i].min_channel_allowed > num_channels_komondor
-				|| node_container[i].max_channel_allowed > num_channels_komondor) {
+				|| node_container[i].min_channel_allowed > (num_channels_komondor-1)
+				|| node_container[i].max_channel_allowed > (num_channels_komondor-1)) {
 			printf("\nERROR: Channels are not properly configured at node in line %d\n\n",i+2);
 			exit(-1);
 		}
