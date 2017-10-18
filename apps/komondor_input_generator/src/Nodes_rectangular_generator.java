@@ -33,9 +33,11 @@ public class Nodes_rectangular_generator {
     static double d_min_AP_STA;    // min. distance between AP and STA in same WLAN
     static double d_max_AP_STA;    // max. distance between AP and STA in same WLAN
     static double legacy_ratio;    // proportion of legacy devices (vs. IEEE 802.11 ax)
-    static int c_sys_width;     // system channel width
+    static int c_sys_width;         // system channel width
     static int cont_wind;          // contention window (CW)
+    static int cont_wind_stage;     // CW stage 
     static int channel_bonding_model;
+    static int ieee_protocol;       // IEEE protocol type
     // -------------------
     static final int destination_id = -1;
     static double tpc_min;
@@ -96,7 +98,7 @@ public class Nodes_rectangular_generator {
                     legacy_ratio = Double.parseDouble(node_info[8]);
                     c_sys_width = Integer.parseInt(node_info[9]);
                     cont_wind = Integer.parseInt(node_info[10]);
-                    // skip destination id ix 11
+                    cont_wind_stage = Integer.parseInt(node_info[11]);
                     tpc_min = Double.parseDouble(node_info[12]);
                     tpc_default = Double.parseDouble(node_info[13]);
                     tpc_max = Double.parseDouble(node_info[14]);
@@ -109,6 +111,7 @@ public class Nodes_rectangular_generator {
                     modulation_default = Integer.parseInt(node_info[21]);
                     central_freq = Double.parseDouble(node_info[22]);
                     lambda = Double.parseDouble(node_info[23]);
+                    ieee_protocol = Integer.parseInt(node_info[24]);
 
                     System.out.println(
                             "Input:"
@@ -150,7 +153,7 @@ public class Nodes_rectangular_generator {
         double y = 0;
         double z = 0;
 
-        boolean aps_separated;
+        boolean aps_separated;  // Relocate APs until separated
 
         for (int w = 0; w < num_wlans; w++) {
 
@@ -301,6 +304,7 @@ public class Nodes_rectangular_generator {
         double x, y, z = 0;
         double angle = 0;
         double d_ap_sta = 0;
+        double rand_value;
 
         String csv_header_line = "node_code" + CSV_SEPARATOR
                 + "node_type" + CSV_SEPARATOR
@@ -312,8 +316,8 @@ public class Nodes_rectangular_generator {
                 + "primary_channel" + CSV_SEPARATOR
                 + "min_channel_allowed" + CSV_SEPARATOR
                 + "max_channel_allowed" + CSV_SEPARATOR
-                + "Cwmin" + CSV_SEPARATOR
-                + "Cwmax" + CSV_SEPARATOR
+                + "cw" + CSV_SEPARATOR
+                + "cw_stage" + CSV_SEPARATOR
                 + "tpc_min(dBm)" + CSV_SEPARATOR
                 + "tpc_default(dBm)" + CSV_SEPARATOR
                 + "tpc_max(dBm)" + CSV_SEPARATOR
@@ -325,7 +329,8 @@ public class Nodes_rectangular_generator {
                 + "channel_bonding_model" + CSV_SEPARATOR
                 + "modulation_default" + CSV_SEPARATOR
                 + "central_freq (GHz)" + CSV_SEPARATOR
-                + "lambda";
+                + "lambda" + CSV_SEPARATOR
+                + "ieee_protocol";
 
         // System.out.println(csv_header_line);
         out.println(csv_header_line);
@@ -345,10 +350,19 @@ public class Nodes_rectangular_generator {
 
             node_type = 1;
 
+            // Set STAs location
+                            
             for (int n = 0; n < wlan.num_stas; n++) {
 
-                d_ap_sta = d_min_AP_STA + (d_max_AP_STA - d_min_AP_STA) * new Random().nextDouble();
+                /* Choose the angle uniformly but for the radius an 
+                intermediate value z is generated uniformly between 0 and 1 
+                and then r is calculated as r = sqrt(z)*R.
+                */
                 angle = 360 * new Random().nextDouble();
+                rand_value = new Random().nextDouble();
+                d_ap_sta = d_min_AP_STA +
+                        Math.sqrt(rand_value) * (d_max_AP_STA - d_min_AP_STA);
+                
                 x = wlan.x + Math.cos(Math.toRadians(angle)) * d_ap_sta;
                 y = wlan.y + Math.sin(Math.toRadians(angle)) * d_ap_sta;
                 z = 0;
@@ -383,8 +397,8 @@ public class Nodes_rectangular_generator {
                 + primary_channel + CSV_SEPARATOR
                 + min_channel_allowed + CSV_SEPARATOR
                 + max_channel_allowed + CSV_SEPARATOR
-                + cont_wind + CSV_SEPARATOR // CW Min
-                + cont_wind + CSV_SEPARATOR // CW Max
+                + cont_wind + CSV_SEPARATOR // CW
+                + cont_wind_stage + CSV_SEPARATOR // CW's max stage
                 + tpc_min + CSV_SEPARATOR
                 + tpc_default + CSV_SEPARATOR
                 + tpc_max + CSV_SEPARATOR
@@ -396,7 +410,8 @@ public class Nodes_rectangular_generator {
                 + channel_bonding_model + CSV_SEPARATOR
                 + modulation_default + CSV_SEPARATOR
                 + central_freq + CSV_SEPARATOR
-                + lambda;
+                + lambda + CSV_SEPARATOR
+                + ieee_protocol;
 
         return line;
     }
