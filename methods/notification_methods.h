@@ -268,42 +268,43 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
 /*
  * IsPacketLost(): computes notification loss according to SINR received
  **/
-int IsPacketLost(Notification notification, double sinr, double capture_effect, double cca,
-		double power_rx_interest, double constant_per, int *hidden_nodes_list, int node_id){
+int IsPacketLost(int primary_channel, Notification notification_interference,
+		double sinr, double capture_effect, double cca, double power_rx_interest, double constant_per,
+		int *hidden_nodes_list, int node_id){
 
 	int loss_reason = PACKET_NOT_LOST;
 	int is_packet_lost;	// Determines if the current notification has been lost (1) or not (0)
 
 	//is_packet_lost = applyModulationProbabilityError(notification);
 
-//	if(node_id == 0) {
-//		printf("caputa = %f (%f dB)\n", capture_effect,  ConvertPower(LINEAR_TO_DB, capture_effect));
-//		printf("N%d: sinr = %f (%f dB) - P_st = %f (%f dBm)\n",
-//					node_id,
-//					sinr, ConvertPower(LINEAR_TO_DB, sinr),
-//					power_rx_interest, ConvertPower(PW_TO_DBM,power_rx_interest));
-//	}
+	// Check if primary channel is involved
 
+	if(primary_channel >= notification_interference.left_channel && primary_channel <= notification_interference.right_channel){
 
-	is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per,
-			node_id);
+		is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per, node_id);
 
-	if (is_packet_lost) {
+		if (is_packet_lost) {
 
-		if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
+			if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
 
-			loss_reason = PACKET_LOST_LOW_SIGNAL;
-			hidden_nodes_list[notification.source_id] = TRUE;
+				loss_reason = PACKET_LOST_LOW_SIGNAL;
+				hidden_nodes_list[notification_interference.source_id] = TRUE;
 
-		} else if (sinr < capture_effect){	// Capture effect not accomplished
+			} else if (sinr < capture_effect){	// Capture effect not accomplished
 
-			loss_reason = PACKET_LOST_INTERFERENCE;
+				loss_reason = PACKET_LOST_INTERFERENCE;
 
-		} else {	// Incoming packet lost due to PER
+			} else {	// Incoming packet lost due to PER
 
-			loss_reason = PACKET_LOST_SINR_PROB;
+				loss_reason = PACKET_LOST_SINR_PROB;
 
+			}
 		}
+
+	} else{
+
+		loss_reason = PACKET_LOST_OUTSIDE_CH_RANGE;
+
 	}
 
 	return loss_reason;

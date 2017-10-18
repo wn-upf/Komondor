@@ -123,8 +123,24 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx (UNITS ARE NOT IN SI!)
 	case PATH_LOSS_LFS:{
 
-		loss = 32.4 + 20 * log10(central_frequency * pow(10,-6)) + 20 * log10(distance * pow(10,-3));
-		pw_received_dbm = tx_power_dbm - loss;
+//		loss = 32.4 + 20 * log10(central_frequency * pow(10,-6)) + 20 * log10(distance * pow(10,-3));
+//		pw_received_dbm = tx_power_dbm - loss;
+//
+//		printf("------------------------------------------------------\n");
+//		printf("OLD\n");
+//		printf("- loss = %f\n", loss);
+//		printf("- pw_received_dbm = %f\n", pw_received_dbm);
+
+		// Sergio on 28/09/2017 to match specific SFCTMN
+		loss = 20 * log10(distance) + 20 * log10(central_frequency) + 20 * log10((4*M_PI)/((double) (SPEED_LIGHT)));
+
+		pw_received_dbm = tx_power_dbm + ConvertPower(LINEAR_TO_DB, rx_gain) +
+				ConvertPower(LINEAR_TO_DB, tx_gain) - loss;
+
+//		printf("NEW\n");
+//		printf("- rx_gain = %f\n", rx_gain);
+//		printf("- loss = %f\n", loss);
+//		printf("- pw_received_dbm = %f\n", pw_received_dbm);
 
 		break;
 	}
@@ -322,84 +338,122 @@ double ComputeTxPowerPerChannel(double current_tpc, int num_channels_tx){
 /*
  * GetChannelOccupancyByCCA(): indicates the channels occupied and free in a binary way
  */
-void GetChannelOccupancyByCCA(int *channels_free, int min_channel_allowed, int max_channel_allowed,
+void GetChannelOccupancyByCCA(int pifs_activated, int *channels_free, int min_channel_allowed, int max_channel_allowed,
     double *channel_power, double cca, double *timestampt_channel_becomes_free, double sim_time,
-	double difs){
+	double pifs){
 
-	// double time_channel_has_been_free;	// Time channel has been free since last P(ch) > CCA
+	switch(pifs_activated){
 
-	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
+		case TRUE:{
 
-		// time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
+			double time_channel_has_been_free;	// Time channel has been free since last P(ch) > CCA
 
-		// if(channel_power[c] < cca && time_channel_has_been_free > difs){
+			for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 
-		if(channel_power[c] < cca){
+				time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
 
-		  channels_free[c] = CHANNEL_FREE;
+				if(channel_power[c] < cca && time_channel_has_been_free > pifs){
 
-		} else {
+				  channels_free[c] = CHANNEL_FREE;
 
-		  channels_free[c] = CHANNEL_OCCUPIED;
+				} else {
+
+				  channels_free[c] = CHANNEL_OCCUPIED;
+
+				}
+			}
+
+			break;
 
 		}
+
+		case FALSE:{
+
+			for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
+
+					if(channel_power[c] < cca){
+
+					  channels_free[c] = CHANNEL_FREE;
+
+					} else {
+
+					  channels_free[c] = CHANNEL_OCCUPIED;
+
+					}
+				}
+
+			break;
+		}
 	}
+
 }
 
 /*
- * UpdatePowerSensedPerNode: updates the power sensed comming from each node
+ * UpdatePowerSensedPerNode: updates the power sensed comming from each node in the primary channel
+ * Sergio on 22/09/2017: power of interest counted only if transmission implies the primary channel
  **/
-void UpdatePowerSensedPerNode(double *power_received_per_node, Notification notification,
+void UpdatePowerSensedPerNode(int primary_channel, double *power_received_per_node, Notification notification,
     double x, double y, double z, double rx_gain, double central_frequency, int path_loss_model,
 	int start_or_finish) {
 
-	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
-			notification.tx_info.z);
+	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
 
-	double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
-			notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
+		double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
+					notification.tx_info.z);
 
-	if (start_or_finish == TX_INITIATED) {
+		double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
+				notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
 
-		power_received_per_node[notification.source_id] = pw_received;
+		if (start_or_finish == TX_INITIATED) {
 
-	} else if(start_or_finish == TX_FINISHED){
+			power_received_per_node[notification.source_id] = pw_received;
 
+		} else if(start_or_finish == TX_FINISHED){
+
+			power_received_per_node[notification.source_id] = 0;
+
+		}
+
+	} else {
 		power_received_per_node[notification.source_id] = 0;
-
 	}
-
-
 }
 
 /*
- * ApplyCochannelInterferenceModel: applies a cochannel interference model
+ * ApplyAdjacentChannelInterferenceModel: applies a cochannel interference model
  **/
-void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, Notification notification,
-		int num_channels_komondor, double *power_received_per_node){
+void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
+		int adjacent_channel_model, double *total_power, Notification notification,
+		int num_channels_komondor, double rx_gain, double central_frequency, int path_loss_model){
+
+	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
+		notification.tx_info.z);
+
+	double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
+		notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
+
+
 
 	// Direct power (power of the channels used for transmitting)
 	for(int i = notification.left_channel; i <= notification.right_channel; i++){
 
-		total_power[i] = power_received_per_node[notification.source_id];
+		total_power[i] = pw_received;
 
 	}
 
-	double pw_rx_node = power_received_per_node[notification.source_id];
 	double pw_loss_db;
 	double total_power_dbm;
 
 	// Co-channel interference power
-	switch(cochannel_model){
+	switch(adjacent_channel_model){
 
-		case COCHANNEL_NONE:{
+		case ADJACENT_CHANNEL_NONE:{
 			// Do nothing
 			break;
 		}
 
 		// (RECOMMENDED) Boundary co-channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
-		case COCHANNEL_BOUNDARY:{
-
+		case ADJACENT_CHANNEL_BOUNDARY:{
 			for(int c = 0; c < num_channels_komondor; c++) {
 
 				if(c < notification.left_channel || c > notification.right_channel){
@@ -407,13 +461,13 @@ void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, N
 					if(c < notification.left_channel) {
 
 						pw_loss_db = 20 * abs(c-notification.left_channel);
-						total_power_dbm = ConvertPower(PW_TO_DBM, pw_rx_node) - pw_loss_db;
+						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
 						total_power[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					} else if(c > notification.right_channel) {
 
 						pw_loss_db = 20 * abs(c-notification.right_channel);
-						total_power_dbm = ConvertPower(PW_TO_DBM, pw_rx_node) - pw_loss_db;
+						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
 						total_power[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					}
@@ -431,7 +485,7 @@ void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, N
 			break;
 		}
 
-		case COCHANNEL_EXTREME:{
+		case ADJACENT_CHANNEL_EXTREME:{
 
 			for(int c = 0; c < num_channels_komondor; c++) {
 
@@ -440,7 +494,7 @@ void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, N
 					if(c != j) {
 
 						pw_loss_db = 20 * abs(c-j);
-						total_power_dbm = ConvertPower(PW_TO_DBM, pw_rx_node) - pw_loss_db;
+						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
 						total_power[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 						if(total_power[c] < MIN_DOUBLE_VALUE_KOMONDOR) total_power[c] = 0;
@@ -462,24 +516,25 @@ void ApplyCochannelInterferenceModel(int cochannel_model, double *total_power, N
 /*
  * UpdateChannelsPower: updates the aggergated power sensed by the node in every channel
  **/
-void UpdateChannelsPower(double *channel_power, double *power_received_per_node, Notification notification,
-    int update_type, double central_frequency, int num_channels_komondor, int path_loss_model, int cochannel_model){
+void UpdateChannelsPower(double x, double y, double z, double *channel_power, Notification notification,
+    int update_type, double central_frequency, int num_channels_komondor, int path_loss_model,
+	double rx_gain, int adjacent_channel_model){
+
 
 	if(update_type != TX_FINISHED && update_type != TX_INITIATED) {
 		printf("ERROR: update_type %d does not exist!!!", update_type);
 		exit(EXIT_FAILURE);
 	}
 
-	// Total power [pW] (of interest and interference) generated only by the incoming or outgoing TX
+	// Total power [pW] (of interest and interference) generated ONLY by the incoming or outgoing TX
 	double *total_power;
 	total_power = (double *) malloc(num_channels_komondor * sizeof(*total_power));
-
 	for(int i = 0; i < num_channels_komondor; i++) {
 		total_power[i] = 0;
 	}
 
-	ApplyCochannelInterferenceModel(cochannel_model, total_power, notification, num_channels_komondor,
-				power_received_per_node);
+	ApplyAdjacentChannelInterferenceModel(x, y , z, adjacent_channel_model, total_power, notification,
+			num_channels_komondor, rx_gain, central_frequency, path_loss_model);
 
 	// Increase/decrease power sensed if TX started/finished
 	for(int c = 0; c < num_channels_komondor; c++){
@@ -497,6 +552,7 @@ void UpdateChannelsPower(double *channel_power, double *power_received_per_node,
 
 	}
 
+
 }
 
 /*
@@ -504,11 +560,7 @@ void UpdateChannelsPower(double *channel_power, double *power_received_per_node,
  **/
 double UpdateSINR(double pw_received_interest, double noise_level, double max_pw_interference){
 
-	double pw_rx_interest_dbm = ConvertPower(PW_TO_DBM, pw_received_interest);
-	double inter_plus_noise = noise_level + max_pw_interference;
-	double interf_plus_noise_dbm = ConvertPower(PW_TO_DBM, inter_plus_noise);
-	double sinr_db = pw_rx_interest_dbm - interf_plus_noise_dbm;
-	double sinr = ConvertPower(DB_TO_LINEAR, sinr_db);
+	double sinr = pw_received_interest / (max_pw_interference + noise_level);
 
 	return sinr;
 }
@@ -516,26 +568,26 @@ double UpdateSINR(double pw_received_interest, double noise_level, double max_pw
 /*
  * ComputeMaxInterference(): computes the maximum interference perceived in the channels of interest
  **/
-double ComputeMaxInterference(Notification notification, int current_left_channel, int current_right_channel,
-    int node_state, double *power_received_per_node, int receiving_from_node_id, double *channel_power) {
+void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intereference,
+	Notification notification_interest, int node_state, double *power_received_per_node, double *channel_power) {
 
-	double max_pw_interference = 0;
+	*max_pw_interference = 0;
 
-	for(int c = current_left_channel; c <= current_right_channel; c++){
+	for(int c = notification_interest.left_channel; c <= notification_interest.right_channel; c++){
 
 		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK || node_state == STATE_NAV
 				|| node_state == STATE_RX_RTS || node_state == STATE_RX_CTS || node_state == STATE_SENSING){
 
-			if(max_pw_interference <=
-					(channel_power[c] - power_received_per_node[receiving_from_node_id])){
+			if(*max_pw_interference <
+					(channel_power[c] - power_received_per_node[notification_interest.source_id])){
 
-				max_pw_interference = channel_power[c] - power_received_per_node[receiving_from_node_id];
+				*max_pw_interference = channel_power[c] - power_received_per_node[notification_interest.source_id];
+
+				*channel_max_intereference = c;
 
 			}
 		}
 	}
-
-	return max_pw_interference;
 }
 
 
@@ -546,9 +598,7 @@ double ComputeMaxInterference(Notification notification, int current_left_channe
  **/
 void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_model, int *channels_free,
     int min_channel_allowed, int max_channel_allowed, int primary_channel, int **mcs_per_node,
-	int ix_mcs_per_node){
-
-	int num_channels_system = sizeof(channels_free)/sizeof(channels_free[0]);
+	int ix_mcs_per_node, int num_channels_system){
 
 	// Reset channels for transmitting
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
@@ -601,7 +651,6 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 		}
 	}
 
-
 	// Check primary and 3 secondaries
 	if(num_channels_system > 3){
 		if(primary_channel > 3){	// primary in channel range 4-7
@@ -626,6 +675,11 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 		}
 		if(all_channels_free_in_range) possible_channel_ranges_ixs[3] = TRUE;
 	}
+
+//	for(int n = 0; n < 4; n++){
+//		printf("%d ", possible_channel_ranges_ixs[n]);
+//	}
+//	printf("\n");
 
 
 
@@ -722,7 +776,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 			// TODO: (skectch) check if it is valid!
 			case CB_ALWAYS_MAX_LOG2:{
 
-				int ch_range_ix = GetNumberOfSpecificElementInArray(TRUE, possible_channel_ranges_ixs, 4);
+				int ch_range_ix = GetNumberOfSpecificElementInArray(1, possible_channel_ranges_ixs, 4);
 
 				switch(ch_range_ix){
 
@@ -732,6 +786,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 					}
 
 					case 2:{
+
 						channels_for_tx[primary_channel] = TRUE;
 						if(primary_channel % 2 == 1){	// If primary is odd
 							channels_for_tx[primary_channel - 1] = TRUE;
@@ -739,6 +794,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 							channels_for_tx[primary_channel + 1] = TRUE;
 						}
 						break;
+
 					}
 
 					case 3:{
@@ -838,11 +894,9 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 			// Log2 probabilistic uniform: pick with same probabilty any available channel range
 			case CB_PROB_UNIFORM_LOG2:{
 
-				int ch_range_ix = GetNumberOfSpecificElementInArray(TRUE, possible_channel_ranges_ixs, 4);
+				int ch_range_ix = GetNumberOfSpecificElementInArray(1, possible_channel_ranges_ixs, 4);
 
-				int random_value = rand() % (ch_range_ix + 1);	// 1 to ch_range_ix
-
-				printf("ch_range_ix = %d", ch_range_ix);
+				int random_value = 1 + rand() % (ch_range_ix);	// 1 to ch_range_ix
 
 				switch(ch_range_ix){
 

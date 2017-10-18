@@ -105,6 +105,7 @@
 #define PACKET_ACK_LOST					6	// ACK lost
 #define PACKET_LOST_RX_IN_NAV			7	// Received a packet when being in NAV state
 #define PACKET_LOST_BO_COLLISION		8
+#define PACKET_LOST_OUTSIDE_CH_RANGE	9	// Packet was transmitted outside the primary channel of the receiver
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1
@@ -188,21 +189,21 @@
 #define CB_ALWAYS_MAX_LOG2_MCS		5	// Log2 Always-max (DCB) with optimal MCS: picks the channel range + MCS providing max throughput
 #define CB_PROB_UNIFORM_LOG2		6	// Log2 probabilistic uniform: pick with same probabilty any available channel range
 
-// Co-channel interference model
-#define COCHANNEL_NONE		0	// No co-channel interference
-#define COCHANNEL_BOUNDARY	1	// (RECOMMENDED) Boundary co-channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
-#define COCHANNEL_EXTREME	2	// Extreme co-channel interference: ALL channels used in the TX affect the rest of channels
+// Adjacent channel interference model
+#define ADJACENT_CHANNEL_NONE		0	// No adjacent channel interference
+#define ADJACENT_CHANNEL_BOUNDARY	1	// (RECOMMENDED) Boundary adjacent channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
+#define ADJACENT_CHANNEL_EXTREME	2	// Extreme adjacent channel interference: ALL channels used in the TX affect the rest of channels
 
 // Traffic model
 #define TRAFFIC_FULL_BUFFER			0	// Transmitters always have packets to transmit
-#define TRAFFIC_POISSON			1	// Traffic is generated randomly according to a Poisson distribution
+#define TRAFFIC_POISSON				1	// Traffic is generated randomly according to a Poisson distribution
 #define TRAFFIC_DETERMINISTIC		2	// Traffic is generated at fixed intervals
 
 #define PACKET_BUFFER_SIZE		256		// Size of the packets buffer
 
 // Protocols
-#define INCREASE_CW 1		// Command to increase Congestion Window
-#define DECREASE_CW 2		// Command to decrease Congestion Window
+#define INCREASE_CW 1		// Command to increase contention window
+#define RESET_CW 2	// Command to reset the contention window
 #define MAX_POWER 20 		// Maximum power that can be transmitted (dBm)
 
 // Node type
@@ -236,6 +237,26 @@
 #define INFO_DETAIL_LEVEL_1		1
 #define INFO_DETAIL_LEVEL_2		2
 #define INFO_DETAIL_LEVEL_3		3
+
+// IEEE protocol
+#define IEEE_NOT_SPECIFIED		0
+#define IEEE_802_11_AX			1
+
+// IEEE 802.11ax
+// --- PHY parameters ---
+#define IEEE_AX_OFDM_SYMBOL_DURATION	(16 * MICRO_VALUE)	// Duration of OFDM symbol (CP of 3.2us is included) [s]
+#define IEEE_AX_LEGACY_PHYH_DURATION 	(20 * MICRO_VALUE)	// Duration of legacy PHY header [s]
+#define IEEE_AX_SU_SPATIAL_STREAMS	 	1					// Single user spatial streams
+#define IEEE_AX_HE_PHYH_DURATION	 	(16 + IEEE_AX_SU_SPATIAL_STREAMS*16) * MICRO_VALUE;	// HE PHY header [s]
+// --- MAC parameters ---
+#define IEEE_AX_SF_LENGTH				16					// Service field length [bits]
+#define IEEE_AX_TAIL_LENGTH				6					// Tail length [bits]
+#define IEEE_AX_DEL_LENGTH				32					// MPDU delimiter if packet aggregation is used [bits]
+#define IEEE_AX_MACH_LENGTH				272					// MAC header including FCS [bits]
+#define IEEE_AX_RTS_LENGTH				160					// RTS length [bits]
+#define IEEE_AX_CTS_LENGTH				112					// CTS length [bits]
+#define IEEE_AX_BACK_LENGTH				240					// Block-ACK length [bits]
+
 
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
@@ -291,6 +312,8 @@
 #define IX_BO_TYPE					16
 #define IX_RTS_LENGTH				17
 #define IX_CTS_LENGTH				18
+#define IX_CW_ADAPTATION			19
+#define IX_PIFS_ACTIVATION			20
 
 // Nodes file
 #define IX_NODE_CODE				1
@@ -304,7 +327,7 @@
 #define IX_MIN_CH_ALLOWED			9
 #define IX_MAX_CH_ALLOWED			10
 #define IX_CW_MIN					11
-#define IX_CW_MAX					12
+#define IX_CW_STAGE_MAX				12
 #define IX_TPC_MIN					13
 #define IX_TPC_DEFAULT				14
 #define IX_TPC_MAX					15
@@ -317,6 +340,7 @@
 #define IX_MODULATION_DEFAULT		22
 #define IX_CENTRAL_FREQ				23
 #define IX_LAMBDA					24
+#define IX_IEEE_PROTOCOL_TYPE		25
 
 // APs file
 #define IX_AP_WLAN_CODE					1
@@ -330,7 +354,7 @@
 #define IX_AP_MIN_CH_ALLOWED			9
 #define IX_AP_MAX_CH_ALLOWED			10
 #define IX_AP_CW_MIN					11
-#define IX_AP_CW_MAX					12
+#define IX_AP_CW_STAGE_MAX				12
 #define IX_AP_TPC_MIN					13
 #define IX_AP_TPC_DEFAULT				14
 #define IX_AP_TPC_MAX					15
@@ -343,6 +367,7 @@
 #define IX_AP_MODULATION_DEFAULT		22
 #define IX_AP_CENTRAL_FREQ				23
 #define IX_AP_LAMBDA					24
+#define IX_AP_IEEE_PROTOCOL_TYPE		25
 
 
 /* *********************

@@ -111,13 +111,16 @@ component Komondor : public CostSimEng {
 		int path_loss_model;			// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 		double capture_effect;			// Capture effect threshold [linear ratio]
 		double noise_level;				// Environment noise [pW]
-		int cochannel_model;			// Co-channel interference model
+		int adjacent_channel_model;			// Co-channel interference model
 		int collisions_model;			// Collisions model
 		double SIFS;					// Short Interframe Space (SIFS) [s]
 		double DIFS;					// DCF Interframe Space (DIFS) [s]
+		double PIFS;					// Point coordination function (PCF) Interframe Space (PIFS) [s]
 		double constant_per;			// Constant PER for successful transmissions
 		int traffic_model;				// Traffic model (0: full buffer, 1: poisson, 2: deterministic)
 		int backoff_type;				// Type of Backoff (0: Slotted 1: Continuous)
+		int cw_adaptation;				// CW adaptation (0: constant, 1: bineary exponential backoff)
+		int pifs_activated;				// PIFS mechanism activation
 
 	// Private items
 	private:
@@ -275,7 +278,7 @@ void Komondor :: Start(){
  */
 void Komondor :: Stop(){
 
-	int total_packets_sent = 0;
+	int total_data_packets_sent = 0;
 	double total_throughput = 0;
 	int total_rts_lost_slotted_bo = 0;
 	int total_rts_cts_sent = 0;
@@ -285,7 +288,7 @@ void Komondor :: Stop(){
 	for(int m=0; m < total_nodes_number; m++){
 
 		if( node_container[m].node_type == NODE_TYPE_AP){
-			total_packets_sent += node_container[m].packets_sent;
+			total_data_packets_sent += node_container[m].data_packets_sent;
 			total_throughput += node_container[m].throughput;
 			total_rts_lost_slotted_bo += node_container[m].rts_lost_slotted_bo;
 			total_rts_cts_sent += node_container[m].rts_cts_sent;
@@ -296,9 +299,9 @@ void Komondor :: Stop(){
 
 	if (print_system_logs) {
 		printf("\n%s General Statistics:\n", LOG_LVL1);
-		printf("%s Total number of packets sent = %d\n", LOG_LVL2, total_packets_sent);
+		printf("%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL2, total_throughput * pow(10,-6));
-		printf("%s Average number of packets sent per WLAN = %d\n", LOG_LVL2, (total_packets_sent/total_wlans_number));
+		printf("%s Average number of packets sent per WLAN = %d\n", LOG_LVL2, (total_data_packets_sent/total_wlans_number));
 		printf("%s Average throughput per WLAN = %.2f Mbps\n", LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number));
 
 		printf("\n\n");
@@ -307,7 +310,7 @@ void Komondor :: Stop(){
 	// Sergio: just to keep track of the average througput even when not asking for system results
 	printf("\n");
 	printf("- Average throughput per WLAN = %f Mbps\n", (total_throughput * pow(10,-6)/total_wlans_number));
-	printf("- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_packets_sent/ (double) total_wlans_number));
+	printf("- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_data_packets_sent/ (double) total_wlans_number));
 	printf("- Average number of RTS packets lost due to slotted BO = %.2f (%.2f %% loss)\n",
 			(double) total_rts_lost_slotted_bo/(double) total_wlans_number,
 			((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
@@ -326,10 +329,10 @@ void Komondor :: Stop(){
 
 		// Simulation log file
 		fprintf(logger_simulation.file, "%s STATISTICS:\n", LOG_LVL1);
-		fprintf(logger_simulation.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_packets_sent);
-		fprintf(logger_simulation.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_packets_sent);
+		fprintf(logger_simulation.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
+		fprintf(logger_simulation.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
 		fprintf(logger_simulation.file, "%s Total throughput = %f\n", LOG_LVL2, total_throughput);
-		fprintf(logger_simulation.file, "%s Average number of packets sent = %d\n", LOG_LVL2, (total_packets_sent/total_nodes_number));
+		fprintf(logger_simulation.file, "%s Average number of packets sent = %d\n", LOG_LVL2, (total_data_packets_sent/total_nodes_number));
 		fprintf(logger_simulation.file, "%s Average throughput = %f\n", LOG_LVL2, (total_throughput/total_nodes_number));
 		fprintf(logger_simulation.file, "\n");
 
@@ -337,7 +340,7 @@ void Komondor :: Stop(){
 
 		// Script file (for several simulations in one)
 		fprintf(logger_script.file, "%s STATISTICS:\n", LOG_LVL1);
-		fprintf(logger_script.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_packets_sent);
+		fprintf(logger_script.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
 		double avg_throughput = 0;
 		double min_trhoughput = 10000;
 		double max_trhoughput = -1000;
@@ -349,7 +352,7 @@ void Komondor :: Stop(){
 		printf("length = %lu", len);
 		if (len == 0) {
 			fprintf(logger_script_csv.file, "filename;sim_code;wlan_id;wlan_code;node_id;node_code;throughput[Mbps];"
-											"packets_sent;packets_lost;rts_cts_sent;rts_cts_lost\n");
+											"data_packets_sent;data_packets_lost;rts_cts_sent;rts_cts_lost\n");
 		}
 
 
@@ -369,8 +372,8 @@ void Komondor :: Stop(){
 				fprintf(logger_script_csv.file, "%d;", node_container[m].node_id);			// Node ID
 				fprintf(logger_script_csv.file, "%s;", node_container[m].node_code);		// Node code
 				fprintf(logger_script_csv.file, "%f;", node_container[m].throughput * pow(10,-6));	// Throughput [Mbps]
-				fprintf(logger_script_csv.file, "%d;", node_container[m].packets_sent);		// Packets sent
-				fprintf(logger_script_csv.file, "%d;", node_container[m].packets_lost);		// Packets lost
+				fprintf(logger_script_csv.file, "%d;", node_container[m].data_packets_sent);		// Packets sent
+				fprintf(logger_script_csv.file, "%d;", node_container[m].data_packets_lost);		// Packets lost
 				fprintf(logger_script_csv.file, "%d;", node_container[m].rts_cts_sent);		// RTS packets sent
 				fprintf(logger_script_csv.file, "%d", node_container[m].rts_cts_lost);		// RTS packets lost
 				fprintf(logger_script_csv.file, "\n");										// End of line
@@ -557,8 +560,8 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 
 			// Co-channel model
 			tmp = strdup(line_system);
-			const char* cochannel_model_char = GetField(tmp, IX_COCHANNEL_MODEL);
-			cochannel_model = atof(cochannel_model_char);
+			const char* adjacent_channel_model_char = GetField(tmp, IX_COCHANNEL_MODEL);
+			adjacent_channel_model = atof(adjacent_channel_model_char);
 
 			// Collisions model
 			tmp = strdup(line_system);
@@ -570,6 +573,7 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 			const char* sifs_char = GetField(tmp, IX_SIFS);
 			SIFS = atof(sifs_char) * pow(10,-6);
 			DIFS = SIFS + (2 * SLOT_TIME);
+			PIFS = SIFS + SLOT_TIME;
 
 			// Constant PER for successful transmissions
 			tmp = strdup(line_system);
@@ -595,6 +599,16 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 			tmp = strdup(line_system);
 			const char* backoff_type_char = GetField(tmp, IX_BO_TYPE);
 			backoff_type = atoi(backoff_type_char);
+
+			// Contention window adaptation
+			tmp = strdup(line_system);
+			const char* cw_adaptation_char = GetField(tmp, IX_CW_ADAPTATION);
+			cw_adaptation = atoi(cw_adaptation_char);
+
+			// PIFS mechanism activation
+			tmp = strdup(line_system);
+			const char* pifs_activated_char = GetField(tmp, IX_PIFS_ACTIVATION);
+			pifs_activated = atoi(pifs_activated_char);
 
 			free(tmp);
 		}
@@ -721,11 +735,11 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 			// Min CW
 			tmp_nodes = strdup(line_nodes);
-			int min_cw = atoi(GetField(tmp_nodes, IX_AP_CW_MIN));
+			int cw_min = atoi(GetField(tmp_nodes, IX_AP_CW_MIN));
 
 			// Max CW
 			tmp_nodes = strdup(line_nodes);
-			int max_cw = atoi(GetField(tmp_nodes, IX_AP_CW_MAX));
+			int cw_stage_max = atoi(GetField(tmp_nodes, IX_AP_CW_STAGE_MAX));
 
 			// Primary channel
 			tmp_nodes = strdup(line_nodes);
@@ -797,6 +811,13 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 			const char* lambda_char = GetField(tmp_nodes, IX_AP_LAMBDA);
 			double lambda = atof(lambda_char);
 
+			// IEEE protocol type
+			tmp_nodes = strdup(line_nodes);
+			const char* ieee_protocol_char = GetField(tmp_nodes, IX_AP_IEEE_PROTOCOL_TYPE);
+			double ieee_protocol = atof(ieee_protocol_char);
+
+
+
 			node_id_counter_in_wlan = 0;
 
 			node_ix_aux = node_ix;
@@ -836,8 +857,8 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 				node_container[node_ix].wlan_code = wlan_container[wlan_ix].wlan_code;
 				node_container[node_ix].destination_id = NODE_ID_NONE;
-				node_container[node_ix].min_cw = min_cw;
-				node_container[node_ix].max_cw = max_cw;
+				node_container[node_ix].cw_min = cw_min;
+				node_container[node_ix].cw_stage_max = cw_stage_max;
 				node_container[node_ix].primary_channel = primary_channel;
 				node_container[node_ix].min_channel_allowed = min_channel_allowed;
 				node_container[node_ix].max_channel_allowed = max_channel_allowed;
@@ -861,11 +882,12 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].print_node_logs = print_node_logs;
 				node_container[node_ix].basic_channel_bandwidth = basic_channel_bandwidth;
 				node_container[node_ix].num_channels_komondor = num_channels_komondor;
-				node_container[node_ix].cochannel_model = cochannel_model;
+				node_container[node_ix].adjacent_channel_model = adjacent_channel_model;
 				node_container[node_ix].default_destination_id = NODE_ID_NONE;
 				node_container[node_ix].noise_level = noise_level;
 				node_container[node_ix].SIFS = SIFS;
 				node_container[node_ix].DIFS = DIFS;
+				node_container[node_ix].PIFS = PIFS;
 				node_container[node_ix].constant_per = constant_per;
 				node_container[node_ix].central_frequency = central_frequency;
 				node_container[node_ix].pdf_backoff = pdf_backoff;
@@ -878,7 +900,10 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].cts_length = cts_length;
 				node_container[node_ix].traffic_model = traffic_model;
 				node_container[node_ix].backoff_type = backoff_type;
+				node_container[node_ix].cw_adaptation = cw_adaptation;
+				node_container[node_ix].pifs_activated = pifs_activated;
 				node_container[node_ix].lambda = lambda;
+				node_container[node_ix].ieee_protocol = ieee_protocol;
 				node_container[node_ix].simulation_code = simulation_code;
 
 				node_ix++;
@@ -1021,11 +1046,11 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 
 			// CW min
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].min_cw = atoi(GetField(tmp_nodes, IX_CW_MIN));
+			node_container[node_ix].cw_min = atoi(GetField(tmp_nodes, IX_CW_MIN));
 
 			// CW max
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].max_cw = atoi(GetField(tmp_nodes, IX_CW_MAX));
+			node_container[node_ix].cw_stage_max = atoi(GetField(tmp_nodes, IX_CW_STAGE_MAX));
 
 			// Primary channel
 			tmp_nodes = strdup(line_nodes);
@@ -1097,6 +1122,13 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			const char* lambda_char = GetField(tmp_nodes, IX_LAMBDA);
 			node_container[node_ix].lambda = atof(lambda_char);
 
+			// IEEE protocol type
+			tmp_nodes = strdup(line_nodes);
+			const char* ieee_protocol_char = GetField(tmp_nodes, IX_IEEE_PROTOCOL_TYPE);
+			node_container[node_ix].ieee_protocol = atof(ieee_protocol_char);
+
+
+
 			// System
 			node_container[node_ix].simulation_time_komondor = simulation_time_komondor;
 			node_container[node_ix].total_nodes_number = total_nodes_number;
@@ -1106,11 +1138,12 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].print_node_logs = print_node_logs;
 			node_container[node_ix].basic_channel_bandwidth = basic_channel_bandwidth;
 			node_container[node_ix].num_channels_komondor = num_channels_komondor;
-			node_container[node_ix].cochannel_model = cochannel_model;
+			node_container[node_ix].adjacent_channel_model = adjacent_channel_model;
 			node_container[node_ix].default_destination_id = NODE_ID_NONE;
 			node_container[node_ix].noise_level = noise_level;
 			node_container[node_ix].SIFS = SIFS;
 			node_container[node_ix].DIFS = DIFS;
+			node_container[node_ix].PIFS = PIFS;
 			node_container[node_ix].constant_per = constant_per;
 			node_container[node_ix].pdf_backoff = pdf_backoff;
 			node_container[node_ix].path_loss_model = path_loss_model;
@@ -1122,6 +1155,8 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].cts_length = cts_length;
 			node_container[node_ix].traffic_model = traffic_model;
 			node_container[node_ix].backoff_type = backoff_type;
+			node_container[node_ix].cw_adaptation = cw_adaptation;
+			node_container[node_ix].pifs_activated = pifs_activated;
 			node_container[node_ix].simulation_code = simulation_code;
 
 			node_ix ++;
@@ -1160,15 +1195,18 @@ void Komondor :: printSystemInfo(){
 		printf("%s rts_length = %d bits\n", LOG_LVL3, rts_length);
 		printf("%s traffic_model = %d\n", LOG_LVL3, traffic_model);
 		printf("%s backoff_type = %d\n", LOG_LVL3, backoff_type);
+		printf("%s cw_adaptation = %d\n", LOG_LVL3, cw_adaptation);
+		printf("%s pifs_activated = %d\n", LOG_LVL3, pifs_activated);
 		printf("%s num_packets_aggregated = %d\n", LOG_LVL3, num_packets_aggregated);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 		printf("%s capture_effect = %f [linear] (%f dB)\n", LOG_LVL3, capture_effect, ConvertPower(LINEAR_TO_DB, capture_effect));
 		printf("%s noise_level = %f pW (%f dBm)\n",
 				LOG_LVL3, noise_level, ConvertPower(PW_TO_DBM, noise_level));
-		printf("%s cochannel_model = %d\n", LOG_LVL3, cochannel_model);
+		printf("%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
 		printf("%s collisions_model = %d\n", LOG_LVL3, collisions_model);
 		printf("%s SIFS = %f s\n", LOG_LVL3, SIFS);
 		printf("%s DIFS = %f s\n", LOG_LVL3, DIFS);
+		printf("%s PIFS = %f s\n", LOG_LVL3, PIFS);
 		printf("%s Constant PER = %f\n", LOG_LVL3, constant_per);
 		printf("\n");
 	}
@@ -1193,10 +1231,11 @@ void Komondor :: WriteSystemInfo(Logger logger){
 	fprintf(logger.file, "%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 	fprintf(logger.file, "%s capture_effect = %f\n", LOG_LVL3, capture_effect);
 	fprintf(logger.file, "%s noise_level = %f dBm\n", LOG_LVL3, noise_level);
-	fprintf(logger.file, "%s cochannel_model = %d\n", LOG_LVL3, cochannel_model);
+	fprintf(logger.file, "%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
 	fprintf(logger.file, "%s collisions_model = %d\n", LOG_LVL3, collisions_model);
 	fprintf(logger.file, "%s SIFS = %f s\n", LOG_LVL3, SIFS);
 	fprintf(logger.file, "%s DIFS = %f s\n", LOG_LVL3, DIFS);
+	fprintf(logger.file, "%s PIFS = %f s\n", LOG_LVL3, PIFS);
 }
 
 /*
