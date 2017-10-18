@@ -578,10 +578,11 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intere
 		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK || node_state == STATE_NAV
 				|| node_state == STATE_RX_RTS || node_state == STATE_RX_CTS || node_state == STATE_SENSING){
 
-			if(*max_pw_interference <=
+			if(*max_pw_interference <
 					(channel_power[c] - power_received_per_node[notification_interest.source_id])){
 
 				*max_pw_interference = channel_power[c] - power_received_per_node[notification_interest.source_id];
+
 				*channel_max_intereference = c;
 
 			}

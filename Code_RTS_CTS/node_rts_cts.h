@@ -249,7 +249,7 @@ component Node : public TypeII{
 		Notification outrange_nav_notification;
 
 		int default_modulation;				// Default MCS identifier
-		double data_rate;					// Data rate being used currently
+		double data_rate;					// Data rate [bits per duration of OFDM symbol] being used currently
 		double data_rate_20mhz;				// Data rate in one channel (legacy mode)
 		int cw_current;						// Contention Window being used currently
 		int cw_stage_current;				// Current CW stage
@@ -439,9 +439,14 @@ void Node :: Stop(){
 void Node :: InportSomeNodeStartTX(Notification &notification){
 
 	if(save_node_logs) fprintf(node_logger.file,
-			"%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX(): N%d to N%d (type %d) - nodes transmitting: ",
+			"%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX(): N%d to N%d sends packet type %d in range %d-%d\n",
 			SimTime(), node_id, node_state, LOG_D00, LOG_LVL1,
-			notification.source_id, notification.tx_info.destination_id, notification.packet_type);
+			notification.source_id, notification.tx_info.destination_id, notification.packet_type,
+			notification.left_channel, notification.right_channel);
+
+	if(save_node_logs) fprintf(node_logger.file,
+				"%.15f;N%d;S%d;%s;%s Nodes transmitting: ",
+				SimTime(), node_id, node_state, LOG_D00, LOG_LVL3);
 
 	// Identify node that has started the transmission as transmitting node in the array
 	nodes_transmitting[notification.source_id] = TRUE;
@@ -510,13 +515,14 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					current_left_channel = notification.left_channel;
 					current_right_channel = notification.right_channel;
 
+					if(save_node_logs) fprintf(node_logger.file,
+							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
+							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3,
+							notification.tx_info.destination_id);
+
 					// Compute max interference (the highest one perceived in the reception channel range)
 					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
 							incoming_notification, node_state, power_received_per_node, channel_power);
-
-					if(save_node_logs) fprintf(node_logger.file,
-							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
-							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.tx_info.destination_id);
 
 					if(save_node_logs) fprintf(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm\n",
@@ -1075,14 +1081,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ConvertPower(PW_TO_DBM, max_pw_interference),
 						ConvertPower(LINEAR_TO_DB, current_sinr));
 
-					if(save_node_logs) fprintf(node_logger.file,
-						"%.15f;N%d;S%d;%s;%s primary = %d - capture_effect = %.2f dB - current_cca = %.2f dBm - per = %.2f\n",
-						SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, primary_channel,
-						ConvertPower(LINEAR_TO_DB, capture_effect),
-						ConvertPower(PW_TO_DBM, current_cca),
-						constant_per);
-
-					loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
+					// Check if the notification that was already being received is lost due to new notification
+					loss_reason = IsPacketLost(primary_channel, incoming_notification, current_sinr, capture_effect, current_cca,
 							power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
@@ -2214,9 +2214,10 @@ void Node :: EndBackoff(trigger_t &){
 		}
 
 		if(save_node_logs) fprintf(node_logger.file,
-			"%.15f;N%d;S%d;%s;%s Transmitting in %d channels using modulation %d (%.2f Mbps) \n",
+			"%.15f;N%d;S%d;%s;%s Transmitting in %d channels using modulation %d (%.0f bits per OFDM symbol ---> %.2f Mbps) \n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
-			(int) pow(2,ix_num_channels_used), current_modulation, data_rate * pow(10,-6));
+			(int) pow(2,ix_num_channels_used), current_modulation, data_rate,
+			data_rate/IEEE_AX_OFDM_SYMBOL_DURATION * pow(10,-6));
 
 
 
@@ -2599,8 +2600,8 @@ void Node :: SendResponsePacket(trigger_t &){
 
 		case STATE_TX_CTS:{
 			if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s SIFS completed after receiving RTS, sending CTS...\n",
-					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3);
+					"%.15f;N%d;S%d;%s;%s SIFS completed after receiving RTS, sending CTS (duration = %f)\n",
+					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3, current_tx_duration);
 			outportSelfStartTX(cts_notification);
 
 			time_to_trigger = SimTime() + current_tx_duration;

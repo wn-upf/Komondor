@@ -1,7 +1,9 @@
-clear
-echo 'EXECUTING KOMONDOR SIMULATIONS WITH PARTIAL CONFIGURATION... '
-# remove old script output file
-rm output/script_output.txt
+# compile KOMONDOR
+./build_local
+echo 'EXECUTING KOMONDOR SIMULATIONS WITH FULL CONFIGURATION... '
+
+# remove old script output file and node logs
+rm output/*
 
 # get input files path in folder 'script_input_files'
 cd input/script_input_files
@@ -26,8 +28,12 @@ do
 	echo ""
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./VaquitaSimulation ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} sim${executing_ix} 1 500
+	./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim${executing_ix} 1 0 0 1 1000 1992
+
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo ""
 done
+echo ""
 echo 'SCRIPT FINISHED: OUTUP FILE SAVED IN /output/script_output.txt'
+echo ""
+echo ""
