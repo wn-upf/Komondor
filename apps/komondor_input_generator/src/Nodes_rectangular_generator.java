@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -387,13 +391,18 @@ public class Nodes_rectangular_generator {
             String wlan_code, double x, double y, double z, int primary_channel,
             int min_channel_allowed, int max_channel_allowed, int channel_bonding_model) {
 
+        // Round position coordinates to limited number of decimals
+        NumberFormat nf = NumberFormat.getNumberInstance(Locale.UK);
+        nf.setGroupingUsed(true);
+        nf.setMaximumFractionDigits(4);
+                
         String line = node_code + CSV_SEPARATOR
                 + node_type + CSV_SEPARATOR
                 + wlan_code + CSV_SEPARATOR
                 + destination_id + CSV_SEPARATOR
-                + x + CSV_SEPARATOR
-                + y + CSV_SEPARATOR
-                + z + CSV_SEPARATOR
+                + nf.format(x) + CSV_SEPARATOR
+                + nf.format(y) + CSV_SEPARATOR
+                + nf.format(z) + CSV_SEPARATOR
                 + primary_channel + CSV_SEPARATOR
                 + min_channel_allowed + CSV_SEPARATOR
                 + max_channel_allowed + CSV_SEPARATOR
@@ -426,21 +435,59 @@ public class Nodes_rectangular_generator {
 
     public static void main(String args[]) throws IOException {
 
+        // CODE FOR JUST ONE OUTPUT
+//        String input_path = args[0];        
+//        System.out.println("input_path: " + input_path);
+//        String output_path = args[1];
+//        System.out.println("output_path: " + output_path);
+//        input_attributes(input_path);
+//        generate_wlans();
+//        genearate_file(output_path);
+//        System.out.println("Creating map...");
+//        String map_viewer_args[] = {output_path};
+//        Map_viewer.main(map_viewer_args);
+        
+        // CODE FOR SEVERAL OUTPUTS WITH DIFFERENT CHANNEL ALLOCATION AND POSITION
         String input_path = args[0];
-        // String input_path = "input_template_rectangular.csv";
-
         System.out.println("input_path: " + input_path);
+        String output_path = "";
+        
+        int num_outputs = 20;
+        
+        for(int out_ix = 0; out_ix < num_outputs; out_ix++){
 
-        String output_path = args[1];
-        // String output_path = "output_rectangular.csv";
-        System.out.println("output_path: " + output_path);
-
-        input_attributes(input_path);
-
-        generate_wlans();
-
-        genearate_file(output_path);
-
+            
+            input_attributes(input_path);
+                    
+            // Always-max
+            channel_bonding_model = 4;   
+            generate_wlans();
+            output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb4.csv";
+            System.out.println("output_path: " + output_path);
+            genearate_file(output_path);
+            
+            // SCB
+            channel_bonding_model = 2;   
+            generate_wlans();
+            output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb2.csv";
+            System.out.println("output_path: " + output_path);
+            genearate_file(output_path);
+            
+            // OP
+            channel_bonding_model = 0;   
+            generate_wlans();
+            output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb0.csv";
+            System.out.println("output_path: " + output_path);
+            genearate_file(output_path);
+            
+            // Prob. uniform
+            channel_bonding_model = 6;   
+            generate_wlans();
+            output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb6.csv";
+            System.out.println("output_path: " + output_path);
+            genearate_file(output_path);
+            
+     
+        }
     }
-
 }

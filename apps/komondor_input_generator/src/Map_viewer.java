@@ -42,6 +42,8 @@ public class Map_viewer extends JFrame {
     private final XYSeries series_ap = new XYSeries("AP");
     private final XYSeries series_sta = new XYSeries("STA");
 
+    private static String path = "";
+
     static final String CSV_SEPARATOR = ";";
 
     class Node_data {
@@ -56,8 +58,8 @@ public class Map_viewer extends JFrame {
     static double map_width;
     static double map_heigth;
 
-    public Map_viewer(String s) throws IOException {
-        super(s);
+    public Map_viewer(String title) throws IOException {
+        super(title);
         final ChartPanel chartPanel = createPanel();
         this.add(chartPanel, BorderLayout.CENTER);
     }
@@ -76,11 +78,11 @@ public class Map_viewer extends JFrame {
         double delta = size / 2.0;
         Shape shape1 = new Rectangle2D.Double(-delta, -delta, size, size);
         Shape shape2 = new Ellipse2D.Double(-delta, -delta, size, size);
-        
+
         renderer.setSeriesShape(0, shape1);
         renderer.setSeriesPaint(0, Color.YELLOW);
         renderer.setSeriesShape(1, shape2);
-        renderer.setSeriesPaint(1, Color.CYAN);        
+        renderer.setSeriesPaint(1, Color.CYAN);
 
         XYTextAnnotation annotation;
 
@@ -115,14 +117,14 @@ public class Map_viewer extends JFrame {
 
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
 
-        String path = "";
-
-        // Get file path
-        JFileChooser fileChooser = new JFileChooser("user.home\\Desktop");
-        int result = fileChooser.showOpenDialog(this);
-        // If file selected and openned
-        if (result == JFileChooser.APPROVE_OPTION) {
-            path = "" + fileChooser.getSelectedFile();
+        if (path.equals("")) {
+            // Get file path
+            JFileChooser fileChooser = new JFileChooser("user.home\\Desktop");
+            int result = fileChooser.showOpenDialog(this);
+            // If file selected and openned
+            if (result == JFileChooser.APPROVE_OPTION) {
+                path = "" + fileChooser.getSelectedFile();
+            }
         }
 
         String line;
@@ -183,6 +185,11 @@ public class Map_viewer extends JFrame {
     }
 
     public static void main(String args[]) {
+
+        if (args.length > 0) {
+            path = args[0];
+        }
+
         EventQueue.invokeLater(new Runnable() {
 
             @Override
