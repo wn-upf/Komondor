@@ -26,34 +26,23 @@ done < <(ls)
 
 cd ..
 cd ..
+touch output/console_logs.txt
 for (( executing_ix=0; executing_ix < (file_ix + 1); executing_ix++))
 do 
 	echo ""
-	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	echo "++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	echo "  ---------------------------------------------------------------------------- "
-	echo "  ------- SEED 1992"
-	echo "  ---------------------------------------------------------------------------- "
-./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim${executing_ix} 0 0 0 1 1000 1992
+	echo "  * Seed 1992"
+./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 25 1992 >> output/console_logs.txt
+#	echo "  * Seed 42"
+# ./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 50 42 >> output/console_logs.txt
+#	echo "  * Seed 8080"
+# ./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 50 8080 >> output/console_logs.txt
+# 	echo "  * Seed 608108"
+# ./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 50 608108 >> output/console_logs.txt
+#	echo "  * Seed 1616"
+# ./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 50 1616 >> output/console_logs.txt
 
-	echo "  ---------------------------------------------------------------------------- "
-	echo "  ------- SEED 42"
-	echo "  ---------------------------------------------------------------------------- "
-./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim${executing_ix} 0 0 0 1 1000 42
-
-	echo "  ---------------------------------------------------------------------------- "
-	echo "  ------- SEED 8080"
-	echo "  ---------------------------------------------------------------------------- "
-./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim${executing_ix} 0 0 0 1 1000 8080
-
-	echo "  ---------------------------------------------------------------------------- "
-	echo "  ------- SEED 608108"
-	echo "  ---------------------------------------------------------------------------- "
-./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim${executing_ix} 0 0 0 1 1000 608108
-
-
-	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	echo ""
 done
 echo ""
 echo 'SCRIPT FINISHED: OUTUP FILE SAVED IN /output/script_output.txt'

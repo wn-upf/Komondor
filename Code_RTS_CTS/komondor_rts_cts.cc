@@ -65,7 +65,7 @@ component Komondor : public CostSimEng {
 
 		void Setup(double simulation_time_komondor, int save_system_logs,  int save_node_logs,
 				int print_node_logs, int print_system_logs, char *system_filename,
-				char *nodes_filename, char *script_filename, char *simulation_code);
+				char *nodes_filename, char *script_filename, char *simulation_code, int seed_console);
 		void Stop();
 		void Start();
 		void InputChecker();
@@ -125,6 +125,7 @@ component Komondor : public CostSimEng {
 	// Private items
 	private:
 
+		int seed;						// Simulation seed number
 		int save_system_logs;			// Flag for activating the log writting of the Komondor system
 		int print_system_logs;			// Flag for activating the printing of system logs
 		char *simulation_code;			// Komondor simulation code
@@ -155,7 +156,7 @@ component Komondor : public CostSimEng {
  */
 void Komondor :: Setup(double sim_time_console, int save_system_logs_console, int save_node_logs_console,
 		int print_system_logs_console, int print_node_logs_console, char *system_input_filename,
-		char *nodes_input_filename_console, char *script_output_filename, char *simulation_code_console){
+		char *nodes_input_filename_console, char *script_output_filename, char *simulation_code_console, int seed_console){
 
 	simulation_time_komondor = sim_time_console;
 	save_node_logs = save_node_logs_console;
@@ -166,6 +167,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	simulation_code = (char *) malloc((strlen(simulation_code_console) + 1) * sizeof(*simulation_code));
 	sprintf(simulation_code, "%s", simulation_code_console);
 	total_nodes_number = 0;
+	seed = seed_console;
 
 	// Generate output files
 
@@ -207,8 +209,8 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	logger_script_csv.save_logs = SAVE_LOG;
 	logger_script_csv.file = script_output_file_csv;
 
-	fprintf(logger_script.file, "------------------------------------\n");
-	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s'\n", LOG_LVL1, simulation_code);
+	// fprintf(logger_script.file, "------------------------------------\n");
+	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code, seed);
 	// Read system (environment) file
 	SetupEnvironmentByReadingInputFile(system_input_filename);
 
@@ -282,6 +284,7 @@ void Komondor :: Stop(){
 
 	int total_data_packets_sent = 0;
 	double total_throughput = 0;
+	double fairness = 0;
 	int total_rts_lost_slotted_bo = 0;
 	int total_rts_cts_sent = 0;
 	double total_prob_slotted_bo_collision = 0;
@@ -296,6 +299,7 @@ void Komondor :: Stop(){
 			total_rts_cts_sent += node_container[m].rts_cts_sent;
 			total_prob_slotted_bo_collision += node_container[m].prob_slotted_bo_collision;
 			total_num_tx_init_not_possible += node_container[m].num_tx_init_not_possible;
+			fairness += log10(node_container[m].throughput);
 		}
 	}
 
@@ -311,7 +315,8 @@ void Komondor :: Stop(){
 
 	// Sergio: just to keep track of the average througput even when not asking for system results
 	printf("\n");
-	printf("- Average throughput per WLAN = %f Mbps\n", (total_throughput * pow(10,-6)/total_wlans_number));
+	printf("- Average throughput per WLAN = %.2f Mbps\n", (total_throughput * pow(10,-6)/total_wlans_number));
+	printf("- Fairness = %.2f\n", fairness);
 	printf("- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_data_packets_sent/ (double) total_wlans_number));
 	printf("- Average number of RTS packets lost due to slotted BO = %.2f (%.2f %% loss)\n",
 			(double) total_rts_lost_slotted_bo/(double) total_wlans_number,
@@ -341,8 +346,8 @@ void Komondor :: Stop(){
 		fclose(simulation_output_file);
 
 		// Script file (for several simulations in one)
-		fprintf(logger_script.file, "%s STATISTICS:\n", LOG_LVL1);
-		fprintf(logger_script.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
+		// fprintf(logger_script.file, "%s STATISTICS:\n", LOG_LVL1);
+		// fprintf(logger_script.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
 		double avg_throughput = 0;
 		double min_trhoughput = 10000;
 		double max_trhoughput = -1000;
@@ -386,10 +391,33 @@ void Komondor :: Stop(){
 
 		}
 		avg_throughput = avg_throughput/transmitting_nodes;
-		fprintf(logger_script.file, "%s AVERAGE TPT = %f\n", LOG_LVL2, avg_throughput);
-		fprintf(logger_script.file, "%s MIN VAL = %f\n", LOG_LVL2, min_trhoughput);
-		fprintf(logger_script.file, "%s MAX VAL = %f\n", LOG_LVL2, max_trhoughput);
+
+//		fprintf(logger_script.file, "%s AVERAGE TPT = %.2f\n", LOG_LVL2, avg_throughput);
+//		fprintf(logger_script.file, "%s FAIRNESS = %.2f\n", LOG_LVL2, fairness);
+//		fprintf(logger_script.file, "%s - MIN VAL = %f\n", LOG_LVL2, min_trhoughput);
+//		fprintf(logger_script.file, "%s - MAX VAL = %f\n", LOG_LVL2, max_trhoughput);
 	}
+
+
+	// Logs for Sergio's paper #3
+	for(int m=0; m < total_nodes_number; m++){
+		if( node_container[m].node_type == NODE_TYPE_AP){
+		fprintf(simulation_output_file, "%s Node #%d (%s) Throughput [Mbps] = %.2f\n", LOG_LVL2, m,
+				node_container[m].node_code, node_container[m].throughput * pow(10,-6));
+		}
+	}
+	fprintf(simulation_output_file,"- Average throughput per WLAN = %.2f Mbps\n", (total_throughput * pow(10,-6)/total_wlans_number));
+	fprintf(simulation_output_file,"- Fairness = %.2f\n", fairness);
+	fprintf(simulation_output_file,"- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_data_packets_sent/ (double) total_wlans_number));
+	fprintf(simulation_output_file,"- Average number of RTS packets lost due to slotted BO = %.2f (%.2f %% loss)\n",
+				(double) total_rts_lost_slotted_bo/(double) total_wlans_number,
+				((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
+	fprintf(simulation_output_file,"- Prob. collision by slotted BO = %f\n", total_prob_slotted_bo_collision / total_wlans_number);
+	fprintf(simulation_output_file,"- Aggregate throughput = %f Mbps\n", total_throughput * pow(10,-6));
+	fprintf(simulation_output_file,"- Aggregate number of transmission not possible = %d\n", total_num_tx_init_not_possible);
+
+	fprintf(logger_script.file, ";%.2f;%.2f\n", (total_throughput * pow(10,-6)/total_wlans_number), fairness);
+	// End of logs
 
 	fclose(script_output_file);
 
@@ -1300,9 +1328,9 @@ void Komondor :: WriteAllNodesInfo(Logger logger, int info_detail_level, char *h
  */
 const char* GetField(char* line, int num){
     const char* tok;
-    for (tok = strtok(line, ",");
+    for (tok = strtok(line, ";");
             tok && *tok;
-            tok = strtok(NULL, ",\n"))
+            tok = strtok(NULL, ";\n"))
     {
         if (!--num)
             return tok;
@@ -1507,7 +1535,7 @@ int main(int argc, char *argv[]){
 	srand(seed); // Needed for ensuring randomness dependency on seed
 	test.StopTime(sim_time);
 	test.Setup(sim_time, save_system_logs, save_node_logs, print_system_logs, print_node_logs,
-			system_input_filename, nodes_input_filename, script_output_filename, simulation_code);
+			system_input_filename, nodes_input_filename, script_output_filename, simulation_code, seed);
 
 	printf("------------------------------------------\n");
 	printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code);

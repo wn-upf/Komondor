@@ -367,7 +367,7 @@ void Node :: Start(){
 	// Initialize variables
 	InitializeVariables();
 
-	if(print_node_logs) printf("%s(N%d) Start\n", node_code, node_id);
+	// if(print_node_logs) printf("%s(N%d) Start\n", node_code, node_id);
 
 	// Create node logs file if required
 	if(save_node_logs) {
@@ -494,6 +494,31 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, channel_power,
 				current_cca, num_channels_komondor, SimTime());
+
+		if(save_node_logs) {
+
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
+										SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+
+			for(int i = 0; i < num_channels_komondor; i++){
+
+				fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
+
+			}
+			fprintf(node_logger.file, "\n");
+
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
+										SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+
+			for(int i = 0; i < num_channels_komondor; i++){
+
+				fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
+
+			}
+
+			fprintf(node_logger.file, "\n");
+
+		}
 
 		// Decide action according to current state and Notification initiated
 		switch(node_state){
@@ -1100,29 +1125,34 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //								SimTime(), node_id, node_state, LOG_D19, LOG_LVL5,
 //								notification.timestampt, incoming_notification.timestampt);
 
-						// If two or more packets sent at the same time
-						if(fabs(notification.timestampt - incoming_notification.timestampt) < MAX_DIFFERENCE_SAME_TIME){
 
-							// SERGIO HandleSlottedBackoffCollision();
-							loss_reason = PACKET_LOST_BO_COLLISION;
-
-							if(!node_is_transmitter) {
-
-								trigger_NAV_timeout.Cancel();
-								trigger_NAV_timeout.Set(SimTime());
-
-							} else {
-
-								// TODO: !!!
-								// In case STAs can send to AP
-								// RestartNode(FALSE);
-								printf("WHYO2?\n");
-
-							}
-
-							// EOF HandleSlottedBackoffCollision();
-
-						}
+						// Sergio on 18 Oct 2017:
+						// - I decide to remove this source of collision because it is not a regular BO collision
+						// - The CE at the AP may be not achieved by the sum of several transmitters at the same time.
+						// -  ****** Old code begins ******
+							// // If two or more packets sent at the same time
+							// if(fabs(notification.timestampt - incoming_notification.timestampt) < MAX_DIFFERENCE_SAME_TIME){
+							//
+							//	 loss_reason = PACKET_LOST_BO_COLLISION;
+							//
+							//	if(!node_is_transmitter) {
+							//
+							//		trigger_NAV_timeout.Cancel();
+							//		trigger_NAV_timeout.Set(SimTime());
+							//
+							//	} else {
+							//
+							//		// Collision by hidden node
+							//		if(save_node_logs) fprintf(node_logger.file,
+							//			"%.15f;N%d;S%d;%s;%s WHYO2?\n",
+							//			SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
+							//
+							//	}
+							//
+							//	// EOF HandleSlottedBackoffCollision();
+							//
+							// }
+						/// -  ****** Old code finishes ******
 
 						// Send logical NACK to ongoing transmitter
 						LogicalNack logical_nack = GenerateLogicalNack(incoming_notification.packet_type,
@@ -1464,12 +1494,12 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		UpdateChannelsPower(x, y, z, channel_power, notification, TX_FINISHED,
 				central_frequency, num_channels_komondor, path_loss_model, rx_gain, adjacent_channel_model);
 
-//		if(save_node_logs) fprintf(node_logger.file,
-//			"%.15f;N%d;S%d;%s;%s Channel after updating: ",
-//			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
-//
-//		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-//						channel_power, num_channels_komondor);
+		if(save_node_logs) fprintf(node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
+			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
+
+		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+				channel_power, num_channels_komondor);
 
 		// Call UpdatePowerSensedPerNode() ONLY for adding power (some node started)
 		UpdatePowerSensedPerNode(primary_channel, power_received_per_node, notification, x, y, z,
@@ -1477,6 +1507,33 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, channel_power,
 				ConvertPower(DBM_TO_PW, current_cca), num_channels_komondor, SimTime());
+
+		if(save_node_logs) {
+
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_free: ",
+										SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+
+			for(int i = 0; i < num_channels_komondor; i++){
+
+				fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
+
+			}
+			fprintf(node_logger.file, "\n");
+
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
+										SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+
+			for(int i = 0; i < num_channels_komondor; i++){
+
+				fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
+
+			}
+
+			fprintf(node_logger.file, "\n");
+
+		}
+
+
 
 		switch(node_state){
 
@@ -1938,18 +1995,19 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS per number of channels: ",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
 
-		printf("- N%d MCS per number of channels: ", node_id);
+		// printf("- N%d MCS per number of channels: ", current_destination_id);
 
 		// Set receiver modulation to the received one
 		for (int i = 0; i < NUM_OPTIONS_CHANNEL_LENGTH; i++){
 
 			mcs_per_node[ix_aux][i] = notification.tx_info.modulation_schemes[i];
 			if(save_node_logs) fprintf(node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
-			printf("%d ", mcs_per_node[ix_aux][i]);
+			// printf("%d ", mcs_per_node[ix_aux][i]);
 		}
 
 		if(save_node_logs) fprintf(node_logger.file, "\n");
-		printf("\n");
+
+		// printf("\n");
 
 		// TODO: ADD LOGIC TO HANDLE WRONG SITUATIONS (cannot transmit over none of the channel combinations)
 		if(mcs_per_node[ix_aux][0] == -1) {
@@ -2118,11 +2176,20 @@ void Node :: EndBackoff(trigger_t &){
 	// Identify free channels
 	num_tx_init_tried ++;
 
-	GetChannelOccupancyByCCA(pifs_activated, channels_free, min_channel_allowed, max_channel_allowed,
+	GetChannelOccupancyByCCA(primary_channel, pifs_activated, channels_free, min_channel_allowed, max_channel_allowed,
 			channel_power, current_cca, timestampt_channel_becomes_free, SimTime(), PIFS);
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free: ",
-			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+
+	if(save_node_logs) fprintf(node_logger.file,
+				"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
+				SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
+
+	PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+			channel_power, num_channels_komondor);
+
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free (mind PIFS if activated): ",
+			SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+
 
 	PrintOrWriteChannelsFree(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
 			num_channels_komondor, channels_free);
@@ -2303,6 +2370,9 @@ void Node :: EndBackoff(trigger_t &){
 
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
 				SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
+
+		printf("%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
+						SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
 
 	}
 

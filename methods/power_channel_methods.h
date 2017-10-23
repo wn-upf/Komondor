@@ -338,9 +338,9 @@ double ComputeTxPowerPerChannel(double current_tpc, int num_channels_tx){
 /*
  * GetChannelOccupancyByCCA(): indicates the channels occupied and free in a binary way
  */
-void GetChannelOccupancyByCCA(int pifs_activated, int *channels_free, int min_channel_allowed, int max_channel_allowed,
-    double *channel_power, double cca, double *timestampt_channel_becomes_free, double sim_time,
-	double pifs){
+void GetChannelOccupancyByCCA(int primary_channel, int pifs_activated, int *channels_free, int min_channel_allowed,
+		int max_channel_allowed, double *channel_power, double cca, double *timestampt_channel_becomes_free,
+		double sim_time, double pifs){
 
 	switch(pifs_activated){
 
@@ -350,17 +350,30 @@ void GetChannelOccupancyByCCA(int pifs_activated, int *channels_free, int min_ch
 
 			for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 
-				time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
+				if(c == primary_channel){
 
-				if(channel_power[c] < cca && time_channel_has_been_free > pifs){
-
-				  channels_free[c] = CHANNEL_FREE;
+					if(channel_power[c] < cca) channels_free[c] = CHANNEL_FREE;
 
 				} else {
 
-				  channels_free[c] = CHANNEL_OCCUPIED;
+					time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
 
+					// Sergio on 19 Oct 2017:
+					// - Added condidition time_channel_has_been_free < MICRO_VALUE to consider events that happen at the same time.
+					// - That is, when the BO expires and other nodes start transmitting PIFS must no be considered, but collision.
+					if(channel_power[c] < cca && (time_channel_has_been_free > pifs
+							|| time_channel_has_been_free < MICRO_VALUE)){
+					//	if(channel_power[c] < cca){
+
+					  channels_free[c] = CHANNEL_FREE;
+
+					} else {
+
+					  channels_free[c] = CHANNEL_OCCUPIED;
+
+					}
 				}
+
 			}
 
 			break;
