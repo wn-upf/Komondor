@@ -55,10 +55,10 @@ double	Exponential2(double mean)	{ return -mean*log(Random2());}
 /*
  * ComputeBackoff(): computes a new backoff
  * */
-double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
+double ComputeBackoff(int pdf_backoff, int cw, int backoff_type){
 
 	double backoff_time;
-	double expected_backoff = (double) (congestion_window-1)/2;	// [slots]
+	double expected_backoff = (double) (cw-1)/2;	// [slots]
 	double lambda_backoff =  1/(expected_backoff * SLOT_TIME);
 
 	switch(pdf_backoff){
@@ -67,8 +67,10 @@ double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
 
 			if(backoff_type == BACKOFF_SLOTTED) {
 
-				int num_slots = rand() % congestion_window + 1; // Num slots in [1, CW]
+				int num_slots = rand() % cw; // Num slots in [0, CW-1]
 				backoff_time = num_slots * SLOT_TIME;
+
+				// printf("num_slots = %d\n", num_slots);
 
 			} else if(backoff_type == BACKOFF_CONTINUOUS) {
 
@@ -99,13 +101,20 @@ double ComputeBackoff(int pdf_backoff, int congestion_window, int backoff_type){
 		}
 	}
 
+	// HARDCODED BY SERGIO TO TEST
+	// backoff_time = SLOT_TIME;
+	// END OF HARDCODING
+
 	return backoff_time;
 }
 
 /*
  * computeRemainingBackoff(): computes the remaining backoff after some even happens
  * */
-double ComputeRemainingBackoff(int backoff_type, double remaining_backoff, double sim_time){
+double ComputeRemainingBackoff(int backoff_type, double remaining_backoff){
+
+//	printf("----------------------------------\n");
+//	printf("remaining_backoff = %f\n", remaining_backoff);
 
 	double updated_remaining_backoff;
 
@@ -113,41 +122,21 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff, doubl
 
 		case BACKOFF_SLOTTED: {
 
+			int closest_slot = round(remaining_backoff / SLOT_TIME);
+//			printf("- closest_slot = %d\n", closest_slot);
 
-			double dif = remaining_backoff - sim_time;
-
-			// double num_remaining_slots = dif / SLOT_TIME;
-
-			// printf("num_remaining_slots = %.15f\n", num_remaining_slots);
-
-			// No puede haber remaining no múltiples de SLOT_TIME
-//			if (fmod(remaining_backoff - sim_time, SLOT_TIME) != 0) {
-//				printf("-------------------\n");
-//				printf(" - remaining_backoff = %.15f\n"
-//						" - sim_time = %.15f\n"
-//						" - dif = %.15f\n"
-//						" - fmod = %.15f\n"
-//						" - ceil = %f\n",
-//						remaining_backoff, sim_time,
-//						dif, fmod(dif, SLOT_TIME),
-//						ceil((dif)/SLOT_TIME));
-//				printf("Pol·las\n");
-//			}
-
-
-			int closest_slot = round(dif / SLOT_TIME);
-
-			if(fabs(dif - closest_slot * SLOT_TIME) < MAX_DIFFERENCE_SAME_TIME){
+			if(fabs(remaining_backoff - closest_slot * SLOT_TIME) < MAX_DIFFERENCE_SAME_TIME){
 				updated_remaining_backoff = closest_slot * SLOT_TIME;
 			} else {
-				updated_remaining_backoff = ceil(dif/SLOT_TIME) * SLOT_TIME;
+				updated_remaining_backoff = ceil(remaining_backoff/SLOT_TIME) * SLOT_TIME;
 			}
 
 			break;
 		}
 
 		case BACKOFF_CONTINUOUS: {
-			updated_remaining_backoff = remaining_backoff - sim_time;
+
+			updated_remaining_backoff = remaining_backoff;
 			break;
 		}
 
@@ -159,6 +148,8 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff, doubl
 
 	}
 
+//	printf("updated = %f (%d)\n", updated_remaining_backoff, (int) (updated_remaining_backoff/ SLOT_TIME));
+
 	return updated_remaining_backoff;
 }
 
@@ -168,13 +159,13 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff, doubl
 int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channel, double cca,
 	int packets_in_buffer){
 
-	int handle_success = FALSE;
+	int resume_backoff = FALSE;
 
 	switch(pause_or_resume){
 
 		case PAUSE_TIMER:{
 
-			if(channel_power[primary_channel] > cca) handle_success = TRUE;
+			if(channel_power[primary_channel] > cca) resume_backoff = TRUE;
 			break;
 
 		}
@@ -182,7 +173,7 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 		case RESUME_TIMER:{
 
 			if(packets_in_buffer > 0) {
-				if(channel_power[primary_channel] <= cca) handle_success =  TRUE;
+				if(channel_power[primary_channel] <= cca) resume_backoff =  TRUE;
 			}
 			break;
 
@@ -196,45 +187,58 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 		}
 	}
 
-	return handle_success;
+	return resume_backoff;
 }
 
 /*
- * HandleCongestionWindow(): increase or decrease the congestion window.
+ * HandleCongestionWindow(): increase or decrease the contention window.
  **/
-int HandleCongestionWindow(int increase_or_decrease, int current_cw, int min_cw, int max_cw) {
+void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int* cw_current, int cw_min,
+		int *cw_stage_current, int cw_stage_max) {
+
+//	printf("- cw_current = %d - cw_min = %d - cw_stage_current = %d - cw_stage_max = %d\n",
+//			*cw_current, cw_min, *cw_stage_current, cw_stage_max);
 
 	// http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
 
-	int updated_cw;
+	if(cw_adaptation == TRUE){
 
-	switch(increase_or_decrease){
+		switch(increase_or_reset){
 
-		case INCREASE_CW:{
-			if(2*current_cw < max_cw) {
-				updated_cw = 2*current_cw;
-			} else {
-				updated_cw = max_cw;
+				case INCREASE_CW:{
+
+					if(*cw_stage_current < cw_stage_max){
+
+						*cw_stage_current = *cw_stage_current + 1;
+						*cw_current = cw_min * pow(2, *cw_stage_current);
+
+					}
+
+					break;
+				}
+
+				case RESET_CW:{
+
+					*cw_stage_current = 0;
+					*cw_current = cw_min;
+
+					break;
+
+				}
+
+				default:{
+					printf("Unknown operation on contention window!");
+					exit(EXIT_FAILURE);
+					break;
+				}
+
 			}
-			break;
-		}
 
-		case DECREASE_CW:{
-			updated_cw = min_cw;
-			break;
-		}
+	} else {
 
-		default:{
-			printf("Unknown operation on congestion window!");
-			exit(EXIT_FAILURE);
-			break;
-		}
+		// Constant CW
+		// - do nothing: keep cw
 
 	}
-
-	// TODO: HARDCODED!
-	updated_cw = current_cw;
-
-	return updated_cw;
 
 }

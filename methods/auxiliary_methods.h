@@ -108,7 +108,7 @@ void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, in
 		case PRINT_LOG:{
 			if(print_node_logs){
 				for(int c = 0; c < list_size; c++){
-					printf("%f  ", list[c]);
+					printf("%.2f  ", list[c]);
 				}
 				printf("\n");
 			}
@@ -159,6 +159,18 @@ int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size){
 			break;
 		}
 	}
+}
+
+int GetNumberOfSpecificElementInArray(int value, int* array, int list_size){
+
+	int num = 0;
+
+	for(int i=0; i<list_size; i++){
+		if(array[i]==value) num++;
+	}
+
+	return num;
+
 }
 
 double RandomDouble(double min, double max)
