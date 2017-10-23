@@ -343,8 +343,6 @@ void Komondor :: Stop(){
 		fprintf(logger_simulation.file, "%s Average throughput = %f\n", LOG_LVL2, (total_throughput/total_nodes_number));
 		fprintf(logger_simulation.file, "\n");
 
-		fclose(simulation_output_file);
-
 		// Script file (for several simulations in one)
 		// fprintf(logger_script.file, "%s STATISTICS:\n", LOG_LVL1);
 		// fprintf(logger_script.file, "%s Total number of packets sent = %d\n", LOG_LVL2, total_data_packets_sent);
@@ -362,11 +360,11 @@ void Komondor :: Stop(){
 											"data_packets_sent;data_packets_lost;rts_cts_sent;rts_cts_lost\n");
 		}
 
-
 		for(int m=0; m < total_nodes_number; m++){
 			fprintf(logger_script.file, "%s Node #%d (%s) Throughput = %f\n", LOG_LVL2, m,
 					node_container[m].node_code, node_container[m].throughput);
 			avg_throughput += node_container[m].throughput;
+
 			if(node_container[m].node_type == NODE_TYPE_AP){
 
 				transmitting_nodes ++;
@@ -388,7 +386,6 @@ void Komondor :: Stop(){
 			if(node_container[m].throughput > max_trhoughput) max_trhoughput = node_container[m].throughput;
 			if(node_container[m].throughput < min_trhoughput) min_trhoughput = node_container[m].throughput;
 
-
 		}
 		avg_throughput = avg_throughput/transmitting_nodes;
 
@@ -398,7 +395,6 @@ void Komondor :: Stop(){
 //		fprintf(logger_script.file, "%s - MAX VAL = %f\n", LOG_LVL2, max_trhoughput);
 	}
 
-
 	// Logs for Sergio's paper #3
 	for(int m=0; m < total_nodes_number; m++){
 		if( node_container[m].node_type == NODE_TYPE_AP){
@@ -406,6 +402,7 @@ void Komondor :: Stop(){
 				node_container[m].node_code, node_container[m].throughput * pow(10,-6));
 		}
 	}
+
 	fprintf(simulation_output_file,"- Average throughput per WLAN = %.2f Mbps\n", (total_throughput * pow(10,-6)/total_wlans_number));
 	fprintf(simulation_output_file,"- Fairness = %.2f\n", fairness);
 	fprintf(simulation_output_file,"- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_data_packets_sent/ (double) total_wlans_number));
@@ -418,7 +415,7 @@ void Komondor :: Stop(){
 
 	fprintf(logger_script.file, ";%.2f;%.2f\n", (total_throughput * pow(10,-6)/total_wlans_number), fairness);
 	// End of logs
-
+	fclose(simulation_output_file);
 	fclose(script_output_file);
 
 	printf("%s SIMULATION '%s' FINISHED\n", LOG_LVL1, simulation_code);
