@@ -32,3 +32,5 @@
 *.cxx
 *.txt~
 output/*
+Code_RTS_CTS/output/*
+Code_Basic/output/*
