@@ -361,9 +361,8 @@ void GetChannelOccupancyByCCA(int primary_channel, int pifs_activated, int *chan
 					// Sergio on 19 Oct 2017:
 					// - Added condidition time_channel_has_been_free < MICRO_VALUE to consider events that happen at the same time.
 					// - That is, when the BO expires and other nodes start transmitting PIFS must no be considered, but collision.
-					if(channel_power[c] < cca && (time_channel_has_been_free > pifs
-							|| time_channel_has_been_free < MICRO_VALUE)){
-					//	if(channel_power[c] < cca){
+
+					if(channel_power[c] < cca && time_channel_has_been_free > pifs){
 
 					  channels_free[c] = CHANNEL_FREE;
 
@@ -1031,6 +1030,7 @@ void UpdateTimestamptChannelFreeAgain(double *timestampt_channel_becomes_free, d
 		double current_cca, int num_channels_komondor, double sim_time) {
 
 	for(int i = 0; i < num_channels_komondor; i ++){
+
 		if(channel_power[i] > current_cca) {
 
 			timestampt_channel_becomes_free[i] = -1;
