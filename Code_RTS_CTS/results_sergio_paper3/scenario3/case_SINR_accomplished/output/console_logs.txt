@@ -1,0 +1,1616 @@
+------------------------------------------
+ SIMULATION 'sim_seed1992_input_nodes_region2.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 42.933504 Mbps
+  - RTS/CTS sent = 55903 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55903 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55903 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 365.151864 s (36.52 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 365.15 s (36.52 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55903 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 42.868224 Mbps
+  - RTS/CTS sent = 55818 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55818 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55818 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 364.603176 s (36.46 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 364.60 s (36.46 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55818 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 42.802944 Mbps
+  - RTS/CTS sent = 55733 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55733 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55733 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 364.047956 s (36.40 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 364.05 s (36.40 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55733 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 42.87 Mbps
+- Fairness = 22.90
+- Average number of data packets successfully sent per WLAN = 55818.00
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 128.604672 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed1992_input_nodes_region2.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 1952576 events processed in 9.273 seconds, event processing rate: 210555
+------------------------------------------
+ SIMULATION 'sim_seed42_input_nodes_region2.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 42.842880 Mbps
+  - RTS/CTS sent = 55785 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55785 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55785 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 364.381088 s (36.44 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 364.38 s (36.44 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55785 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 42.789120 Mbps
+  - RTS/CTS sent = 55715 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55715 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55715 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 363.930380 s (36.39 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 363.93 s (36.39 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55715 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 42.685440 Mbps
+  - RTS/CTS sent = 55580 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55580 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55580 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 363.048560 s (36.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 363.05 s (36.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55580 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 42.77 Mbps
+- Fairness = 22.89
+- Average number of data packets successfully sent per WLAN = 55693.33
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 128.317440 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed42_input_nodes_region2.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 1949202 events processed in 8.542 seconds, event processing rate: 228187
+------------------------------------------
+ SIMULATION 'sim_seed8080_input_nodes_region2.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 42.878976 Mbps
+  - RTS/CTS sent = 55832 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55832 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55832 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 364.694624 s (36.47 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 364.69 s (36.47 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55832 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 42.836736 Mbps
+  - RTS/CTS sent = 55777 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55777 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55777 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 364.328832 s (36.43 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 364.33 s (36.43 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55777 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 42.784512 Mbps
+  - RTS/CTS sent = 55709 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55709 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55709 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 363.891188 s (36.39 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 363.89 s (36.39 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55709 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 42.83 Mbps
+- Fairness = 22.90
+- Average number of data packets successfully sent per WLAN = 55772.67
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 128.500224 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed8080_input_nodes_region2.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 1951342 events processed in 8.553 seconds, event processing rate: 228145
+------------------------------------------
+ SIMULATION 'sim_seed608108_input_nodes_region2.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 42.885120 Mbps
+  - RTS/CTS sent = 55840 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55840 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55840 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 364.746880 s (36.47 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 364.75 s (36.47 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55840 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 42.748416 Mbps
+  - RTS/CTS sent = 55662 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55662 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55662 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 363.584184 s (36.36 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 363.58 s (36.36 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55662 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 42.850560 Mbps
+  - RTS/CTS sent = 55795 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 55795 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 55795 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 364.446408 s (36.44 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 364.45 s (36.44 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 55795 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 42.83 Mbps
+- Fairness = 22.90
+- Average number of data packets successfully sent per WLAN = 55765.67
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 128.484096 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed608108_input_nodes_region2.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 1951151 events processed in 8.536 seconds, event processing rate: 228573
+------------------------------------------
+ SIMULATION 'sim_seed1992_input_nodes_region3.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 112.108800 Mbps
+  - RTS/CTS sent = 145975 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 145975 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 145975 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 953.502168 s (95.35 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 953.50 s (95.35 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 145975 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 1.237248 Mbps
+  - RTS/CTS sent = 1611 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 1611 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 1611 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 10.523052 s (1.05 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 10.52 s (1.05 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 1611 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 112.119552 Mbps
+  - RTS/CTS sent = 145989 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 145989 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 145989 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 953.593616 s (95.36 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 953.59 s (95.36 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 145989 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 75.16 Mbps
+- Fairness = 22.19
+- Average number of data packets successfully sent per WLAN = 97858.33
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 225.465600 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed1992_input_nodes_region3.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 2941432 events processed in 14.186 seconds, event processing rate: 207342
+------------------------------------------
+ SIMULATION 'sim_seed42_input_nodes_region3.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 112.327680 Mbps
+  - RTS/CTS sent = 146261 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 146260 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 146261 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 955.370320 s (95.54 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 955.37 s (95.54 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 146261 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 0.999168 Mbps
+  - RTS/CTS sent = 1302 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 1301 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 1302 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 8.498132 s (0.85 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 8.50 s (0.85 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 1302 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 112.332288 Mbps
+  - RTS/CTS sent = 146267 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 146266 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 146267 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 955.409512 s (95.54 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 955.41 s (95.54 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 146267 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 75.22 Mbps
+- Fairness = 22.10
+- Average number of data packets successfully sent per WLAN = 97942.33
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 225.659136 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed42_input_nodes_region3.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 2942830 events processed in 14.231 seconds, event processing rate: 206795
+------------------------------------------
+ SIMULATION 'sim_seed8080_input_nodes_region3.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 112.331520 Mbps
+  - RTS/CTS sent = 146265 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 146265 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 146265 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 955.396448 s (95.54 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 955.40 s (95.54 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 146265 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 0.993024 Mbps
+  - RTS/CTS sent = 1293 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 1293 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 1293 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 8.445876 s (0.84 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 8.45 s (0.84 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 1293 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 112.326144 Mbps
+  - RTS/CTS sent = 146258 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 146258 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 146258 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 955.350724 s (95.54 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 955.35 s (95.54 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 146258 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 75.22 Mbps
+- Fairness = 22.10
+- Average number of data packets successfully sent per WLAN = 97938.67
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 225.650688 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed8080_input_nodes_region3.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 2950688 events processed in 14.331 seconds, event processing rate: 205900
+------------------------------------------
+ SIMULATION 'sim_seed608108_input_nodes_region3.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 111.759360 Mbps
+  - RTS/CTS sent = 145520 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 145520 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 145520 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 950.530108 s (95.05 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 950.53 s (95.05 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 145520 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 1.635840 Mbps
+  - RTS/CTS sent = 2130 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 2130 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 2130 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 13.913160 s (1.39 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 13.91 s (1.39 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 2130 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 111.753984 Mbps
+  - RTS/CTS sent = 145513 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 145513 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 145513 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 950.484384 s (95.05 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 950.48 s (95.05 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 145513 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 75.05 Mbps
+- Fairness = 22.31
+- Average number of data packets successfully sent per WLAN = 97721.00
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 225.149184 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed608108_input_nodes_region3.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 2939154 events processed in 16.264 seconds, event processing rate: 180718
+------------------------------------------
+ SIMULATION 'sim_seed1992_input_nodes_region5.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 113.227008 Mbps
+  - RTS/CTS sent = 147431 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147431 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147431 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.012760 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.01 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147431 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 86.027520 Mbps
+  - RTS/CTS sent = 112015 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 112015 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 112015 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 731.675448 s (73.17 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 731.68 s (73.17 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 112015 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 113.223168 Mbps
+  - RTS/CTS sent = 147426 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147426 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147426 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 962.980100 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 962.98 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147426 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 104.16 Mbps
+- Fairness = 24.04
+- Average number of data packets successfully sent per WLAN = 135624.00
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 312.477696 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed1992_input_nodes_region5.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 4139081 events processed in 20.367 seconds, event processing rate: 203227
+------------------------------------------
+ SIMULATION 'sim_seed42_input_nodes_region5.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 113.231616 Mbps
+  - RTS/CTS sent = 147437 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147437 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147437 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.051952 s (96.31 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.05 s (96.31 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147437 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 85.896192 Mbps
+  - RTS/CTS sent = 111844 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 111844 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 111844 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 730.558476 s (73.06 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 730.56 s (73.06 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 111844 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 113.226240 Mbps
+  - RTS/CTS sent = 147430 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147430 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147430 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.006228 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.01 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147430 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 104.12 Mbps
+- Fairness = 24.04
+- Average number of data packets successfully sent per WLAN = 135570.33
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 312.354048 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed42_input_nodes_region5.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 4137859 events processed in 20.492 seconds, event processing rate: 201926
+------------------------------------------
+ SIMULATION 'sim_seed8080_input_nodes_region5.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 113.228544 Mbps
+  - RTS/CTS sent = 147433 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147433 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147433 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.025824 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.03 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147433 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 85.972224 Mbps
+  - RTS/CTS sent = 111943 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 111943 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 111943 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 731.205144 s (73.12 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 731.21 s (73.12 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 111943 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 113.227776 Mbps
+  - RTS/CTS sent = 147432 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147432 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147432 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.019292 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.02 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147432 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 104.14 Mbps
+- Fairness = 24.04
+- Average number of data packets successfully sent per WLAN = 135602.67
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 312.428544 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed8080_input_nodes_region5.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 4138514 events processed in 20.231 seconds, event processing rate: 204566
+------------------------------------------
+ SIMULATION 'sim_seed608108_input_nodes_region5.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 113.225472 Mbps
+  - RTS/CTS sent = 147430 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147429 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147430 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.006228 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.01 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147430 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 86.043648 Mbps
+  - RTS/CTS sent = 112036 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 112036 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 112036 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 731.812620 s (73.18 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 731.81 s (73.18 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 112036 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 113.221632 Mbps
+  - RTS/CTS sent = 147424 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147424 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147424 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 962.967036 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 962.97 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147424 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 104.16 Mbps
+- Fairness = 24.04
+- Average number of data packets successfully sent per WLAN = 135629.67
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 312.490752 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed608108_input_nodes_region5.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 4139080 events processed in 20.384 seconds, event processing rate: 203055
+------------------------------------------
+ SIMULATION 'sim_seed1992_input_nodes_region6.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 113.227008 Mbps
+  - RTS/CTS sent = 147431 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147431 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147431 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.012760 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.01 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147431 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 113.223936 Mbps
+  - RTS/CTS sent = 147427 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147427 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147427 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 962.986632 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 962.99 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147427 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 113.227008 Mbps
+  - RTS/CTS sent = 147431 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147431 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147431 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.012760 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.01 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147431 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 113.23 Mbps
+- Fairness = 24.16
+- Average number of data packets successfully sent per WLAN = 147429.67
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 339.677952 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed1992_input_nodes_region6.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 4422902 events processed in 21.752 seconds, event processing rate: 203337
+------------------------------------------
+ SIMULATION 'sim_seed42_input_nodes_region6.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 113.221632 Mbps
+  - RTS/CTS sent = 147424 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147424 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147424 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 962.967036 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 962.97 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147424 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 113.224704 Mbps
+  - RTS/CTS sent = 147428 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147428 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147428 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 962.993164 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 962.99 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147428 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 113.223936 Mbps
+  - RTS/CTS sent = 147427 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147427 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147427 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 962.986632 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 962.99 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147427 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 113.22 Mbps
+- Fairness = 24.16
+- Average number of data packets successfully sent per WLAN = 147426.33
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 339.670272 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed42_input_nodes_region6.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 4422802 events processed in 21.499 seconds, event processing rate: 205724
+------------------------------------------
+ SIMULATION 'sim_seed8080_input_nodes_region6.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 113.224704 Mbps
+  - RTS/CTS sent = 147428 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147428 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147428 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 962.993164 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 962.99 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147428 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 113.224704 Mbps
+  - RTS/CTS sent = 147428 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147428 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147428 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 962.993164 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 962.99 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147428 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 113.226240 Mbps
+  - RTS/CTS sent = 147430 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147430 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147430 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.006228 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.01 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147430 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 113.23 Mbps
+- Fairness = 24.16
+- Average number of data packets successfully sent per WLAN = 147428.67
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 339.675648 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed8080_input_nodes_region6.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 4422872 events processed in 21.750 seconds, event processing rate: 203350
+------------------------------------------
+ SIMULATION 'sim_seed608108_input_nodes_region6.csv' STARTED
+ PROGRESS BAR:
+* 0 % *
+* 5 % *
+* 10 % *
+* 15 % *
+* 20 % *
+* 25 % *
+* 30 % *
+* 35 % *
+* 40 % *
+* 45 % *
+* 50 % *
+* 55 % *
+* 60 % *
+* 65 % *
+* 70 % *
+* 75 % *
+* 80 % *
+* 85 % *
+* 90 % *
+* 95 % *
+* 100 % *
+------- AP_A (N0) ------
+  - Throughput = 113.223168 Mbps
+  - RTS/CTS sent = 147426 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147426 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147426 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 962.980100 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 962.98 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147426 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_B (N2) ------
+  - Throughput = 113.226240 Mbps
+  - RTS/CTS sent = 147430 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147430 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147430 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.006228 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.01 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147430 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+------- AP_C (N4) ------
+  - Throughput = 113.226240 Mbps
+  - RTS/CTS sent = 147430 - RTS/CTS lost = 0  (0.00 % lost)
+    · RTS lost due to slotted BO = 0 (0.000000 %)
+  - Data packets sent = 147430 - Data packets lost = 0  (0.000000 % lost)
+  - num_tx_init_tried = 147430 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    · Time EFFECTIVELY transmitting in N channels:
+    · - 1: 963.006228 s (96.30 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 963.01 s (96.30 %)
+    · - 1 = 0.00 s (0.00 %)
+    · - 2 = 0.00 s (0.00 %)
+    · - 3 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+    · - 1: 147430 (100.00 %)
+    · - 2: 0 (0.00 %)
+    · - 4: 0 (0.00 %)
+  - num_tx_init_not_possible = 0
+
+
+
+- Average throughput per WLAN = 113.23 Mbps
+- Fairness = 24.16
+- Average number of data packets successfully sent per WLAN = 147428.67
+- Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+
+------- FOR COMPARING TO BIANCCI -------
+- Prob. collision by slotted BO = 0.000000
+- Aggregate throughput = 339.675648 Mbps
+- Aggregate number of transmission not possible = 0
+----------------------------------------
+
+ SIMULATION 'sim_seed608108_input_nodes_region6.csv' FINISHED
+------------------------------------------
+# -------------------------------------------------------------------------
+# CostSimEng with SimpleQueue, stopped at 1000.000000
+# 4422872 events processed in 22.006 seconds, event processing rate: 200981

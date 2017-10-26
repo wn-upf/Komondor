@@ -121,6 +121,10 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 						"%.12f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
 						sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
+//				printf(
+//					"%.12f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
+//					sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
+
 				// Increase the number of times of POTENTIAL hidden nodes with the current transmitting nodes
 				for(int i = 0; i < total_nodes_number; i++) {
 					if (nodes_transmitting[i] && i != node_id && i != logical_nack.source_id){
@@ -173,7 +177,7 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 
 			case PACKET_LOST_SINR_PROB:{	// Packet lost due to SINR probability (deprecated)
 
-				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Packet lost due to the BER (%f) "
+				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Packet lost due constant PER or due to the BER (%f) "
 						"associated to the current SINR (%f dB)\n", sim_time, node_id, node_state, LOG_H02, LOG_LVL2,
 						logical_nack.ber, ConvertPower(LINEAR_TO_DB, logical_nack.sinr));
 
@@ -245,10 +249,11 @@ void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
  * AttemptToDecodePacket(): attempts to decode incoming packet according to SINR and the capture effect (CE)
  **/
 int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
-		double power_rx_interest, double constant_per, int node_id){
+		double power_rx_interest, double constant_per, int node_id, int packet_type,
+		int destination_id){
 
 	int packet_lost;
-	double per;
+	double per = 0;
 
 	// Try to decode when power received is greater than CCA
 	if(sinr < capture_effect || power_rx_interest < cca) {
@@ -257,38 +262,57 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
 
 	} else {
 
-		per = constant_per;
+		// Sergio on 24/10/2017:
+		// - For paper 3, just apply PER to DATA packets
+		if( (destination_id == node_id) && (packet_type == PACKET_TYPE_DATA) ){
+
+			per = constant_per;
+
+		}
 
 	}
 
+	// double random_value = (double) rand() / (RAND_MAX);
+
+	// printf("- random_value = %f\n", random_value);
+
+	// packet_lost = random_value < per;
+
 	packet_lost = ((double) rand() / (RAND_MAX)) < per;
+
 	return packet_lost;
 }
 
 /*
  * IsPacketLost(): computes notification loss according to SINR received
  **/
-int IsPacketLost(int primary_channel, Notification notification_interference,
+int IsPacketLost(int primary_channel, Notification incoming_notification, Notification new_notification,
 		double sinr, double capture_effect, double cca, double power_rx_interest, double constant_per,
 		int *hidden_nodes_list, int node_id){
 
 	int loss_reason = PACKET_NOT_LOST;
 	int is_packet_lost;	// Determines if the current notification has been lost (1) or not (0)
 
-	//is_packet_lost = applyModulationProbabilityError(notification);
 
-	// Check if primary channel is involved
+	// Sergio on 25 Oct 2017:
+	// - Change the way packets are determined are lost
+	// - Use both incoming (interest) and new (sometimes noisy) notifications
+	// - We were missing some cases. E.g. when RX_DATA and new packet arrived
 
-	if(primary_channel >= notification_interference.left_channel && primary_channel <= notification_interference.right_channel){
+	// Check if incoming notification (of interest) involves the primary channel
+	if(primary_channel >= incoming_notification.left_channel && primary_channel <= incoming_notification.right_channel){
 
-		is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per, node_id);
+		// Attempt to decode (or continue decoding) the notification of interest
+		is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per, node_id,
+				new_notification.packet_type, new_notification.tx_info.destination_id);
 
-		if (is_packet_lost) {
+
+		if (is_packet_lost) {	// Incoming packet is lost
 
 			if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
 
 				loss_reason = PACKET_LOST_LOW_SIGNAL;
-				hidden_nodes_list[notification_interference.source_id] = TRUE;
+				hidden_nodes_list[new_notification.source_id] = TRUE;
 
 			} else if (sinr < capture_effect){	// Capture effect not accomplished
 
