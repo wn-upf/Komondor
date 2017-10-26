@@ -409,8 +409,8 @@ void Node :: Start(){
 
 
 	// Write in log from a given timestamp on
-//	save_node_logs = FALSE;
-//	trigger_start_saving_logs.Set(SimTime() + 7.6);
+//    save_node_logs = FALSE;
+//    trigger_start_saving_logs.Set(SimTime() + 3628);
 
 	if(save_node_logs) fprintf(node_logger.file,"\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 
@@ -570,8 +570,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(LINEAR_TO_DB, current_sinr));
 
 						// Check if notification has been lost due to interferences or weak signal strength
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, notification.packet_type);
+						loss_reason = IsPacketLost(primary_channel, notification, notification,
+								current_sinr, capture_effect, current_cca,
+								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
@@ -670,8 +671,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(PW_TO_DBM, max_pw_interference),
 							ConvertPower(LINEAR_TO_DB,current_sinr));
 
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, notification.packet_type);
+						loss_reason = IsPacketLost(primary_channel, notification, notification, current_sinr,
+								capture_effect, current_cca, power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason == PACKET_NOT_LOST) { // RTS/CTS can be decoded
 
@@ -798,8 +799,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								ConvertPower(PW_TO_DBM, max_pw_interference));
 
 							// Check if notification has been lost due to interferences or weak signal strength
-							loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
-									power_rx_interest, constant_per, hidden_nodes_list, node_id, notification.packet_type);
+							loss_reason = IsPacketLost(primary_channel, notification, notification,
+									current_sinr, capture_effect, current_cca,
+									power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 							if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
@@ -942,8 +944,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// Check if it can be decoded to update NAV time if required
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-							loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
-									power_rx_interest, constant_per, hidden_nodes_list, node_id, notification.packet_type);
+							loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+									current_sinr, capture_effect, current_cca,
+									power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 							if (loss_reason == PACKET_NOT_LOST &&
 								ConvertPower(PW_TO_DBM, channel_power[primary_channel]) > current_cca) {
@@ -1032,8 +1035,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					// Check if ongoing notification has been lost due to interferences caused by new transmission
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-					loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
-							power_rx_interest, constant_per, hidden_nodes_list, node_id, notification.packet_type);
+					loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+							current_sinr, capture_effect, current_cca,
+							power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 					if(loss_reason != PACKET_NOT_LOST
 							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If ongoing data packet IS LOST
@@ -1111,8 +1115,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ConvertPower(LINEAR_TO_DB, current_sinr));
 
 					// Check if the notification that was already being received is lost due to new notification
-					loss_reason = IsPacketLost(primary_channel, incoming_notification, current_sinr, capture_effect, current_cca,
-							power_rx_interest, constant_per, hidden_nodes_list, node_id, notification.packet_type);
+					loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+							current_sinr, capture_effect, current_cca,
+							power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
 						SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, loss_reason);
@@ -1220,8 +1225,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, notification.packet_type);;
+						loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+								current_sinr, capture_effect, current_cca,
+								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason != PACKET_NOT_LOST
 								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE) {	// If ACK packet IS LOST, send logical Nack
@@ -1312,8 +1318,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							ConvertPower(PW_TO_DBM, power_rx_interest), power_rx_interest, ConvertPower(PW_TO_DBM, max_pw_interference),
 //							max_pw_interference);
 
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, notification.packet_type);
+						loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+								current_sinr, capture_effect, current_cca,
+								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason != PACKET_NOT_LOST
 								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If CTS packet IS LOST, send logical Nack
@@ -1407,8 +1414,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(PW_TO_DBM, max_pw_interference),
 							ConvertPower(LINEAR_TO_DB, current_sinr));
 
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, notification.packet_type);
+						loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+								current_sinr, capture_effect, current_cca,
+								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason != PACKET_NOT_LOST
 							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If DATA packet IS LOST, send logical Nack
@@ -1931,12 +1939,6 @@ void Node :: InportNackReceived(LogicalNack &logical_nack){
 				SimTime(), node_id, node_state, LOG_H00, LOG_LVL2, logical_nack.packet_id, logical_nack.source_id,
 				logical_nack.node_id_a, logical_nack.node_id_b, logical_nack.loss_reason);
 
-		if(logical_nack.loss_reason == 2) {
-		printf("%.15f;N%d;S%d;%s;%s NACK of packet #%d received from N%d sent to a:N%d (and b:N%d) with reason %d\n",
-						SimTime(), node_id, node_state, LOG_H00, LOG_LVL2, logical_nack.packet_id, logical_nack.source_id,
-						logical_nack.node_id_a, logical_nack.node_id_b, logical_nack.loss_reason);
-		}
-
 		// Process logical NACK for statistics purposes
 		nack_reason = ProcessNack(logical_nack, node_id, node_logger, node_state, save_node_logs,
 				SimTime(), nacks_received, hidden_nodes_list, potential_hidden_nodes,
@@ -2433,9 +2435,6 @@ void Node :: EndBackoff(trigger_t &){
 
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
 				SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
-
-		printf("%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
-						SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
 
 	}
 
