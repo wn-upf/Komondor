@@ -25,7 +25,7 @@ done < <(ls)
 # execute files
 
 # simulation time [s]
-sim_time=10000
+sim_time=1000
 
 cd ..
 cd ..

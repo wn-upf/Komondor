@@ -156,7 +156,7 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff){
 /*
  * HandleBackoff(): handles the backoff. It is called when backoff may be paused or resumed.
  * */
-int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channel, double cca,
+int HandleBackoff(int pause_or_resume, double **channel_power, int primary_channel, double cca,
 	int packets_in_buffer){
 
 	int resume_backoff = FALSE;
@@ -165,7 +165,7 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 
 		case PAUSE_TIMER:{
 
-			if(channel_power[primary_channel] > cca) resume_backoff = TRUE;
+			if((*channel_power)[primary_channel] > cca) resume_backoff = TRUE;
 			break;
 
 		}
@@ -173,7 +173,7 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 		case RESUME_TIMER:{
 
 			if(packets_in_buffer > 0) {
-				if(channel_power[primary_channel] <= cca) resume_backoff =  TRUE;
+				if((*channel_power)[primary_channel] <= cca) resume_backoff =  TRUE;
 			}
 			break;
 

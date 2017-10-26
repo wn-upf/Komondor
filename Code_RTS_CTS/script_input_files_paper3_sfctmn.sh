@@ -38,15 +38,15 @@ do
 	seed=1992
 	echo "  * Seed ${seed}"
 ./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_seed${seed}_${array[executing_ix]} 0 0 0 1 ${sim_time} ${seed} >> output/console_logs.txt
-	seed=42
-	echo "  * Seed ${seed}"
-./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_seed${seed}_${array[executing_ix]} 0 0 0 1 ${sim_time} ${seed} >> output/console_logs.txt
-	seed=8080
-	echo "  * Seed ${seed}"
-./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_seed${seed}_${array[executing_ix]} 0 0 0 1 ${sim_time} ${seed} >> output/console_logs.txt
- 	seed=608108
-	echo "  * Seed ${seed}"
-./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_seed${seed}_${array[executing_ix]} 0 0 0 1 ${sim_time} ${seed} >> output/console_logs.txt
+#	seed=42
+#	echo "  * Seed ${seed}"
+#./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_seed${seed}_${array[executing_ix]} 0 0 0 1 ${sim_time} ${seed} >> output/console_logs.txt
+#	seed=8080
+#	echo "  * Seed ${seed}"
+#./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_seed${seed}_${array[executing_ix]} 0 0 0 1 ${sim_time} ${seed} >> output/console_logs.txt
+# 	seed=608108
+#	echo "  * Seed ${seed}"
+#./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_seed${seed}_${array[executing_ix]} 0 0 0 1 ${sim_time} ${seed} >> output/console_logs.txt
 
 done
 echo ""
