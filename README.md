@@ -1,6 +1,11 @@
 # KomondorSimulator
 
-INTRODUCTION AND PROJECT DESCRIPTION
+# Collaborative Spatial Reuse in Wireless Networks via Selfish Multi-Armed Bandits
+### Authors
+* [Sergio Barrachina-Muñoz](https://github.com/sergiobarra)
+* [Francesc Wilhelmi](https://github.com/fwilhelmi)
+
+### Introduction and Project description
 
 The Komondor Simulator has been built to simulate the behavior of overlapping WLANs according to their configuration. Komondor is mainly oriented to simulate the behavior of IEEE 802.11ax WLANs, which has not been considered in the current State-of-the-Art simulators. In addition, it has been prepared for a simple integration of intelligent agents that modify the nodes configuration for improving the network performance. 
 
@@ -14,21 +19,27 @@ The project is structured as follows:
 * apps: contains auxiliary applications that contribute to the proper usage of Komondor (e.g., input file generator).
 * documentation: folder containing documentation and additional information.
 
-EXECUTION, INPUTS AND OUTPUTS
+### Execution instructions
 
 To run Komondor simulator, just build the project by using the build_local script and then execute it by doing:
 
 STEP 0: Set permissions to the folder
 
+```
 $ chmod -R 777 <dirname>
+```
 
 STEP 1: Build the project
 
+```
 $ ./build_local
+```
 
 STEP 2: Run Komondor simulator for the given input information
 
+```
 $ ./Komondor.cc INPUT_FILE_SYSTEM_CONFIGURATION INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_SYSTEM_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
+```
 
 The inputs are further described next:
 * INPUT_FILE_SYSTEM_CONFIGURATION: file containing system information (e.g., number of channels available, traffic model, etc.). The file must be a .csv with semicolons as separators.
@@ -44,8 +55,8 @@ The inputs are further described next:
 IMPORTANT NOTE (!): Setting FLAG_SAVE_SYSTEM_LOGS and FLAG_SAVE_NODE_LOGS to TRUE (1) entails a higher execution time. 
 
 There are two input files located at the "input" folder at which you can configure system and nodes parameters, respectively:
-	* input_system_conf.csv: define parameters such as the number of total available channels, the CW...
-	* input_nodes_conf.csv: define parameters such as the node id, the node location, etc.
+* input_system_conf.csv: define parameters such as the number of total available channels, the CW...
+* input_nodes_conf.csv: define parameters such as the node id, the node location, etc.
 	
 There are two ways of generating nodes:
 1) Nodes file: both APs and STAs are individually defined
@@ -53,3 +64,7 @@ There are two ways of generating nodes:
 IMPORTANT NOTE (!): a nodes file must contain the keyword "nodes", whereas an APs file must contain the keyword "aps".
 
 Regarding the output ("output" folder), some logs and statistics are created at the end of the execution.
+
+### Contribute
+
+If you want to contribute, please contact to sergio.barrachina@upf.edu and/or francisco.wilhelmi@upf.edu

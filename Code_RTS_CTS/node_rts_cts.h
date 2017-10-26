@@ -82,6 +82,7 @@ component Node : public TypeII{
 		void PrintOrWriteNodeStatistics(int write_or_print);
 		void HandleSlottedBackoffCollision();
 		void StartSavingLogs();
+		void RecoverFromCtsTimeout();
 
 		// Packets
 		Notification GenerateNotification(int packet_type, int destination_id, double tx_duration);
@@ -315,6 +316,7 @@ component Node : public TypeII{
 		Timer <trigger_t> trigger_restart_sta; 			// Trigger for retarding the STA restart enough time to handle same time RTS finish events
 		Timer <trigger_t> trigger_wait_collisions; 		// Trigger for waiting just in case more RTS collisions are detected at the same time
 		Timer <trigger_t> trigger_start_saving_logs; 	// Trigger for starting saving logs
+		Timer <trigger_t> trigger_recover_cts_timeout; 	// Trigger for waiting part of EIFS after CTS timeout detected
 
 
 		// Every time the timer expires execute this
@@ -332,6 +334,7 @@ component Node : public TypeII{
 		inport inline void CallRestartSta(trigger_t& t1);
 		inport inline void CallSensing(trigger_t& t1);
 		inport inline void StartSavingLogs(trigger_t& t1);
+		inport inline void RecoverFromCtsTimeout(trigger_t& t1);
 
 		// Connect timers to methods
 		Node () {
@@ -349,6 +352,7 @@ component Node : public TypeII{
 			connect trigger_restart_sta.to_component,CallRestartSta;
 			connect trigger_wait_collisions.to_component,CallSensing;
 			connect trigger_start_saving_logs.to_component,StartSavingLogs;
+			connect trigger_recover_cts_timeout.to_component,RecoverFromCtsTimeout;
 		}
 };
 
@@ -405,8 +409,8 @@ void Node :: Start(){
 
 
 	// Write in log from a given timestamp on
-	//	save_node_logs = FALSE;
-	//	trigger_start_saving_logs.Set(SimTime() + 49);
+//    save_node_logs = FALSE;
+//    trigger_start_saving_logs.Set(SimTime() + 3628);
 
 	if(save_node_logs) fprintf(node_logger.file,"\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 
@@ -566,7 +570,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(LINEAR_TO_DB, current_sinr));
 
 						// Check if notification has been lost due to interferences or weak signal strength
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
+						loss_reason = IsPacketLost(primary_channel, notification, notification,
+								current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
@@ -666,8 +671,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(PW_TO_DBM, max_pw_interference),
 							ConvertPower(LINEAR_TO_DB,current_sinr));
 
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id);
+						loss_reason = IsPacketLost(primary_channel, notification, notification, current_sinr,
+								capture_effect, current_cca, power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason == PACKET_NOT_LOST) { // RTS/CTS can be decoded
 
@@ -794,7 +799,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								ConvertPower(PW_TO_DBM, max_pw_interference));
 
 							// Check if notification has been lost due to interferences or weak signal strength
-							loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
+							loss_reason = IsPacketLost(primary_channel, notification, notification,
+									current_sinr, capture_effect, current_cca,
 									power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 							if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
@@ -938,7 +944,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// Check if it can be decoded to update NAV time if required
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-							loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
+							loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+									current_sinr, capture_effect, current_cca,
 									power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 							if (loss_reason == PACKET_NOT_LOST &&
@@ -1028,7 +1035,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					// Check if ongoing notification has been lost due to interferences caused by new transmission
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-					loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
+					loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+							current_sinr, capture_effect, current_cca,
 							power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 					if(loss_reason != PACKET_NOT_LOST
@@ -1107,7 +1115,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ConvertPower(LINEAR_TO_DB, current_sinr));
 
 					// Check if the notification that was already being received is lost due to new notification
-					loss_reason = IsPacketLost(primary_channel, incoming_notification, current_sinr, capture_effect, current_cca,
+					loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+							current_sinr, capture_effect, current_cca,
 							power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
@@ -1119,12 +1128,6 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						if(save_node_logs) fprintf(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Collision by interferences!\n",
 								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
-
-//						if(save_node_logs) fprintf(node_logger.file,
-//								"%.15f;N%d;S%d;%s;%s notification.timestampt = %.9f - incoming_notification.timestampt = %.9f\n",
-//								SimTime(), node_id, node_state, LOG_D19, LOG_LVL5,
-//								notification.timestampt, incoming_notification.timestampt);
-
 
 						// Sergio on 18 Oct 2017:
 						// - I decide to remove this source of collision because it is not a regular BO collision
@@ -1154,6 +1157,33 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// }
 						/// -  ****** Old code finishes ******
 
+
+						 // If two or more packets sent at the same time
+						if(node_state == STATE_RX_RTS && notification.packet_type == PACKET_TYPE_RTS){
+
+							if(fabs(notification.timestampt - incoming_notification.timestampt) < MAX_DIFFERENCE_SAME_TIME){
+
+								 loss_reason = PACKET_LOST_BO_COLLISION;
+
+
+//								if(!node_is_transmitter) {
+//
+//									trigger_NAV_timeout.Cancel();
+//									trigger_NAV_timeout.Set(SimTime());
+//
+//								} else {
+//
+//									// Collision by hidden node
+//									if(save_node_logs) fprintf(node_logger.file,
+//										"%.15f;N%d;S%d;%s;%s WHYO2?\n",
+//										SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
+//
+//								}
+
+								// EOF HandleSlottedBackoffCollision();
+
+							}
+						}
 						// Send logical NACK to ongoing transmitter
 						LogicalNack logical_nack = GenerateLogicalNack(incoming_notification.packet_type,
 								incoming_notification.tx_info.packet_id, node_id, incoming_notification.source_id,
@@ -1195,7 +1225,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
+						loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+								current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason != PACKET_NOT_LOST
@@ -1287,7 +1318,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							ConvertPower(PW_TO_DBM, power_rx_interest), power_rx_interest, ConvertPower(PW_TO_DBM, max_pw_interference),
 //							max_pw_interference);
 
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
+						loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+								current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason != PACKET_NOT_LOST
@@ -1382,7 +1414,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(PW_TO_DBM, max_pw_interference),
 							ConvertPower(LINEAR_TO_DB, current_sinr));
 
-						loss_reason = IsPacketLost(primary_channel, notification, current_sinr, capture_effect, current_cca,
+						loss_reason = IsPacketLost(primary_channel, incoming_notification, notification,
+								current_sinr, capture_effect, current_cca,
 								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 						if(loss_reason != PACKET_NOT_LOST
@@ -1456,10 +1489,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
  */
 void Node :: InportSomeNodeFinishTX(Notification &notification){
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeFinishTX(): N%d to N%d (type %d) "
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeFinishTX(): N%d to N%d (type %d)"
+			"at range %d-%d "
 			"- nodes transmitting: ",
 		SimTime(), node_id, node_state, LOG_E00, LOG_LVL1,
-		notification.source_id, notification.tx_info.destination_id, notification.packet_type);
+		notification.source_id, notification.tx_info.destination_id, notification.packet_type,
+		notification.left_channel, notification.right_channel);
 
 	// Identify node that has finished the transmission as non-transmitting node in the array
 	nodes_transmitting[notification.source_id] = FALSE;
@@ -1506,7 +1541,12 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 				rx_gain, central_frequency, path_loss_model, TX_FINISHED);
 
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, channel_power,
-				ConvertPower(DBM_TO_PW, current_cca), num_channels_komondor, SimTime());
+				current_cca, num_channels_komondor, SimTime());
+
+		if(save_node_logs) fprintf(node_logger.file,
+					"%.15f;N%d;S%d;%s;%s current_cca: %.2f (%2.f)\n",
+					SimTime(), node_id, node_state, LOG_E18, LOG_LVL3,
+					current_cca, ConvertPower(PW_TO_DBM, current_cca));
 
 		if(save_node_logs) {
 
@@ -2187,6 +2227,31 @@ void Node :: EndBackoff(trigger_t &){
 	PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
 			channel_power, num_channels_komondor);
 
+	if(save_node_logs) {
+
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
+									SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+
+		for(int i = 0; i < num_channels_komondor; i++){
+
+			fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
+
+		}
+		fprintf(node_logger.file, "\n");
+
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
+									SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+
+		for(int i = 0; i < num_channels_komondor; i++){
+
+			fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
+
+		}
+
+		fprintf(node_logger.file, "\n");
+
+	}
+
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free (mind PIFS if activated): ",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 
@@ -2370,9 +2435,6 @@ void Node :: EndBackoff(trigger_t &){
 
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
 				SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
-
-		printf("%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
-						SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
 
 	}
 
@@ -2688,7 +2750,7 @@ void Node :: SendResponsePacket(trigger_t &){
 			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,13,12));
 			data_packets_sent++;
 			if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s Data TX will be finished in %.12f\n",
+					"%.15f;N%d;S%d;%s;%s Data TX will be finished at %.15f\n",
 					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3,
 					trigger_toFinishTX.GetTime());
 
@@ -2783,16 +2845,22 @@ void Node :: CtsTimeout(trigger_t &){
 								remaining_backoff, remaining_backoff/SLOT_TIME);
 
 		// FRANKY
-		remaining_backoff += SLOT_TIME;
+//		remaining_backoff += SLOT_TIME;
+//
+//		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Extra slot added: %f.\n",
+//						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4, remaining_backoff);
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Extra slot added: %f.\n",
-						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4, remaining_backoff);
+		// Sergio on 25 Oct 2017:
+		// - Start DIFS after the expected CTS transmission time is finished.
+		time_to_trigger = SimTime() + incoming_notification.tx_info.cts_duration;
+		trigger_recover_cts_timeout.Set(fix_time_offset(time_to_trigger,13,12));
+
 
 		// Freeze backoff immediately if primary channel is occupied
-		int resume = HandleBackoff(RESUME_TIMER, channel_power, primary_channel, current_cca,
-				num_packets_in_buffer);
-
-		if (resume) trigger_start_backoff.Set(SimTime());
+//		int resume = HandleBackoff(RESUME_TIMER, channel_power, primary_channel, current_cca,
+//				num_packets_in_buffer);
+//
+//		if (resume) trigger_start_backoff.Set(SimTime());
 
 	}
 
@@ -3098,6 +3166,20 @@ void Node:: HandleSlottedBackoffCollision() {
 		RestartNode(FALSE);
 	}
 }
+
+void Node:: RecoverFromCtsTimeout(trigger_t &) {
+
+	// Sergio on 25 Oct 2017
+	// - Just restart the node to start the DIFS
+
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RecoverFromCtsTimeout\n",
+							SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
+
+	RestartNode(TRUE);
+
+}
+
+
 
 /************************/
 /************************/

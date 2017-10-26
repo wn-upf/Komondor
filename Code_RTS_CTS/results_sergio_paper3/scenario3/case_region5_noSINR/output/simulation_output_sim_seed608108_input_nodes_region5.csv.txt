@@ -1,0 +1,12 @@
+ KOMONDOR SIMULATION 'sim_seed608108_input_nodes_region5.csv' (seed 608108) Generating nodes...
+------------------------------------
+  - Node #0 (AP_A) Throughput [Mbps] = 113.23
+  - Node #2 (AP_B) Throughput [Mbps] = 0.00
+  - Node #4 (AP_C) Throughput [Mbps] = 113.23
+- Average throughput per WLAN = 75.49 Mbps
+- Fairness = 18.99
+- Average number of data packets successfully sent per WLAN = 115702.33
+- Average number of RTS packets lost due to slotted BO = 4938.33 (3.35 % loss)
+- Prob. collision by slotted BO = 0.033501
+- Aggregate throughput = 226.460928 Mbps
+- Aggregate number of transmission not possible = 0

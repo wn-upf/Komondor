@@ -224,7 +224,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 		PrintAllWlansInfo();
 		if (print_system_logs) printf("\n");
 		printf("%s Nodes generated!\n", LOG_LVL2);
-		PrintAllNodesInfo(INFO_DETAIL_LEVEL_0);
+		PrintAllNodesInfo(INFO_DETAIL_LEVEL_2);
 		if (print_system_logs) printf("\n\n");
 	}
 
@@ -397,9 +397,92 @@ void Komondor :: Stop(){
 
 	// Logs for Sergio's paper #3
 	for(int m=0; m < total_nodes_number; m++){
+
 		if( node_container[m].node_type == NODE_TYPE_AP){
-		fprintf(simulation_output_file, "%s Node #%d (%s) Throughput [Mbps] = %.2f\n", LOG_LVL2, m,
-				node_container[m].node_code, node_container[m].throughput * pow(10,-6));
+
+			fprintf(simulation_output_file, "%s Node #%d (%s)", LOG_LVL1, m, node_container[m].node_code);
+
+			// Throughput
+			fprintf(simulation_output_file, "%s Throughput [Mbps] = %.2f\n",
+					LOG_LVL2,
+					node_container[m].throughput * pow(10,-6));
+
+			// RTS/CTS sent and lost
+			fprintf(simulation_output_file, "%s RTS/CTS sent = %d - RTS/CTS lost = %d  (%.2f %% lost)\n",
+					LOG_LVL2,
+					node_container[m].rts_cts_sent,
+					node_container[m].rts_cts_lost,
+					(double(node_container[m].rts_cts_lost * 100)/double(node_container[m].rts_cts_sent)));
+
+			// RTS/CTS sent and lost
+			fprintf(simulation_output_file, "%s RTS lost due to slotted BO = %d (%f %%)\n",
+					LOG_LVL3,
+					node_container[m].rts_lost_slotted_bo,
+					(double(node_container[m].rts_lost_slotted_bo *100)/double(node_container[m].rts_cts_sent)));
+
+			// Data packets sent and lost
+			fprintf(simulation_output_file, "%s Data packets sent = %d - Data packets lost = %d  (%f %% lost)\n",
+					LOG_LVL2,
+					node_container[m].data_packets_sent,
+					node_container[m].data_packets_lost,
+					(double(node_container[m].data_packets_lost * 100)/double(node_container[m].data_packets_sent)));
+
+			// Number of trials to transmit
+			fprintf(simulation_output_file, "%s num_tx_init_tried = %d - num_tx_init_not_possible = %d (%f %% failed)\n",
+					LOG_LVL2,
+					node_container[m].num_tx_init_tried,
+					node_container[m].num_tx_init_not_possible,
+					(double(node_container[m].num_tx_init_not_possible * 100)/double(node_container[m].num_tx_init_tried)));
+
+			// Time EFFECTIVELY transmitting in a given number of channels (no losses)
+			fprintf(simulation_output_file, "%s  Time EFFECTIVELY transmitting in N channels:", LOG_LVL3);
+
+			for(int n = 0; n < node_container[m].num_channels_allowed; n++){
+				fprintf(simulation_output_file, "\n%s - %d: %f s (%.2f %%)",
+						LOG_LVL3, (int) pow(2,n),
+						node_container[m].total_time_transmitting_in_num_channels[n] -
+						node_container[m].total_time_lost_in_num_channels[n],
+						((node_container[m].total_time_transmitting_in_num_channels[n] -
+						node_container[m].total_time_lost_in_num_channels[n])) * 100 / SimTime());
+
+				if((int) pow(2,n) == num_channels_komondor) break;
+			}
+			fprintf(simulation_output_file, "\n");
+
+			// Time EFFECTIVELY transmitting in each of the channels (no losses)
+			fprintf(simulation_output_file, "%s Time EFFECTIVELY transmitting in each channel:", LOG_LVL3);
+			double time_effectively_txing;
+			for(int c = 0; c < num_channels_komondor; c++){
+
+				time_effectively_txing = node_container[m].total_time_transmitting_per_channel[c] -
+						node_container[m].total_time_lost_per_channel[c];
+
+				fprintf(simulation_output_file,"\n%s - %d = %.2f s (%.2f %%)",
+						LOG_LVL3, c, time_effectively_txing,
+						(time_effectively_txing * 100 /SimTime()));
+			}
+			fprintf(simulation_output_file,"\n");
+
+
+			// Time tx trials in each number of channels
+			fprintf(simulation_output_file,"%s Number of tx trials per number of channels:", LOG_LVL3);
+			for(int n = 0; n < num_channels_komondor; n++){
+
+				printf("\n%s - %d: %d (%.2f %%)",
+						LOG_LVL3, (int) pow(2,n),
+						node_container[m].num_trials_tx_per_num_channels[n],
+						(((double) node_container[m].num_trials_tx_per_num_channels[n] * 100) / (double) (node_container[m].rts_cts_sent)));
+
+				if((int) pow(2,n) == num_channels_komondor) break;
+			}
+			fprintf(simulation_output_file,"\n");
+
+
+			// Number of TX initiations that have been not possible due to channel state and DCB model
+			fprintf(simulation_output_file,"%s num_tx_init_not_possible = %d\n", LOG_LVL2,
+					node_container[m].num_tx_init_not_possible);
+
+
 		}
 	}
 
@@ -413,7 +496,25 @@ void Komondor :: Stop(){
 	fprintf(simulation_output_file,"- Aggregate throughput = %f Mbps\n", total_throughput * pow(10,-6));
 	fprintf(simulation_output_file,"- Aggregate number of transmission not possible = %d\n", total_num_tx_init_not_possible);
 
-	fprintf(logger_script.file, ";%.2f;%.2f\n", (total_throughput * pow(10,-6)/total_wlans_number), fairness);
+	// For scenario I and II and III
+	for(int m=0; m < total_nodes_number; m++){
+		if( node_container[m].node_type == NODE_TYPE_AP){
+		fprintf(logger_script.file, "%s;%.4f;%.4f;%.4f;",
+				node_container[m].node_code,
+				node_container[m].throughput * pow(10,-6),
+				double(node_container[m].rts_lost_slotted_bo *100)/double(node_container[m].rts_cts_sent),
+				double(node_container[m].rts_cts_lost *100)/double(node_container[m].rts_cts_sent));
+		}
+	}
+	fprintf(logger_script.file, "\n");
+
+	// For scenario II
+
+	// For large scenarios
+	//fprintf(logger_script.file, ";%.2f;%.2f\n", (total_throughput * pow(10,-6)/total_wlans_number), fairness);
+
+
+
 	// End of logs
 	fclose(simulation_output_file);
 	fclose(script_output_file);
@@ -511,7 +612,7 @@ void Komondor :: InputChecker(){
 void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
 
 	if (print_system_logs) printf("%s Reading system configuration file '%s'...\n", LOG_LVL1, system_filename);
-	fprintf(simulation_output_file, "%s Reading system configuration file '%s'...\n", LOG_LVL2, system_filename);
+	fprintf(simulation_output_file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code, seed);
 
 	FILE* stream_system = fopen(system_filename, "r");
 	if (!stream_system){
