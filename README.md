@@ -55,8 +55,8 @@ The inputs are further described next:
 IMPORTANT NOTE (!): Setting FLAG_SAVE_SYSTEM_LOGS and FLAG_SAVE_NODE_LOGS to TRUE (1) entails a higher execution time. 
 
 There are two input files located at the "input" folder at which you can configure system and nodes parameters, respectively:
-	* input_system_conf.csv: define parameters such as the number of total available channels, the CW...
-	* input_nodes_conf.csv: define parameters such as the node id, the node location, etc.
+* input_system_conf.csv: define parameters such as the number of total available channels, the CW...
+* input_nodes_conf.csv: define parameters such as the node id, the node location, etc.
 	
 There are two ways of generating nodes:
 1) Nodes file: both APs and STAs are individually defined
