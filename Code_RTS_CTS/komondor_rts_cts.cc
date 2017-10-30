@@ -468,7 +468,7 @@ void Komondor :: Stop(){
 			fprintf(simulation_output_file,"%s Number of tx trials per number of channels:", LOG_LVL3);
 			for(int n = 0; n < num_channels_komondor; n++){
 
-				printf("\n%s - %d: %d (%.2f %%)",
+				fprintf(simulation_output_file, "\n%s - %d: %d (%.2f %%)",
 						LOG_LVL3, (int) pow(2,n),
 						node_container[m].num_trials_tx_per_num_channels[n],
 						(((double) node_container[m].num_trials_tx_per_num_channels[n] * 100) / (double) (node_container[m].rts_cts_sent)));
@@ -486,32 +486,31 @@ void Komondor :: Stop(){
 		}
 	}
 
-	fprintf(simulation_output_file,"- Average throughput per WLAN = %.2f Mbps\n", (total_throughput * pow(10,-6)/total_wlans_number));
-	fprintf(simulation_output_file,"- Fairness = %.2f\n", fairness);
-	fprintf(simulation_output_file,"- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_data_packets_sent/ (double) total_wlans_number));
-	fprintf(simulation_output_file,"- Average number of RTS packets lost due to slotted BO = %.2f (%.2f %% loss)\n",
-				(double) total_rts_lost_slotted_bo/(double) total_wlans_number,
-				((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
-	fprintf(simulation_output_file,"- Prob. collision by slotted BO = %f\n", total_prob_slotted_bo_collision / total_wlans_number);
-	fprintf(simulation_output_file,"- Aggregate throughput = %f Mbps\n", total_throughput * pow(10,-6));
-	fprintf(simulation_output_file,"- Aggregate number of transmission not possible = %d\n", total_num_tx_init_not_possible);
+//	fprintf(simulation_output_file,"- Average throughput per WLAN = %.2f Mbps\n", (total_throughput * pow(10,-6)/total_wlans_number));
+//	fprintf(simulation_output_file,"- Fairness = %.2f\n", fairness);
+//	fprintf(simulation_output_file,"- Average number of data packets successfully sent per WLAN = %.2f\n", ( (double) total_data_packets_sent/ (double) total_wlans_number));
+//	fprintf(simulation_output_file,"- Average number of RTS packets lost due to slotted BO = %.2f (%.2f %% loss)\n",
+//				(double) total_rts_lost_slotted_bo/(double) total_wlans_number,
+//				((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
+//	fprintf(simulation_output_file,"- Prob. collision by slotted BO = %f\n", total_prob_slotted_bo_collision / total_wlans_number);
+//	fprintf(simulation_output_file,"- Aggregate throughput = %f Mbps\n", total_throughput * pow(10,-6));
+//	fprintf(simulation_output_file,"- Aggregate number of transmission not possible = %d\n", total_num_tx_init_not_possible);
+//
+//	// For scenario I and II and III
+//	for(int m=0; m < total_nodes_number; m++){
+//		if( node_container[m].node_type == NODE_TYPE_AP){
+//		fprintf(logger_script.file, "%s;%.4f;%.4f;%.4f;",
+//				node_container[m].node_code,
+//				node_container[m].throughput * pow(10,-6),
+//				double(node_container[m].rts_lost_slotted_bo *100)/double(node_container[m].rts_cts_sent),
+//				double(node_container[m].rts_cts_lost *100)/double(node_container[m].rts_cts_sent));
+//		}
+//	}
+//	fprintf(logger_script.file, "\n");
 
-	// For scenario I and II and III
-	for(int m=0; m < total_nodes_number; m++){
-		if( node_container[m].node_type == NODE_TYPE_AP){
-		fprintf(logger_script.file, "%s;%.4f;%.4f;%.4f;",
-				node_container[m].node_code,
-				node_container[m].throughput * pow(10,-6),
-				double(node_container[m].rts_lost_slotted_bo *100)/double(node_container[m].rts_cts_sent),
-				double(node_container[m].rts_cts_lost *100)/double(node_container[m].rts_cts_sent));
-		}
-	}
-	fprintf(logger_script.file, "\n");
-
-	// For scenario II
 
 	// For large scenarios
-	//fprintf(logger_script.file, ";%.2f;%.2f\n", (total_throughput * pow(10,-6)/total_wlans_number), fairness);
+	fprintf(logger_script.file, ";%.2f;%.2f\n", (total_throughput * pow(10,-6)/total_wlans_number), fairness);
 
 
 

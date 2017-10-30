@@ -407,54 +407,28 @@ void Node :: Start(){
 		}
 	}
 
-//	if(node_id == 0){
+//	double pw_1m = ComputePowerReceived(1, tpc_default, tx_gain, rx_gain, central_frequency, PATHLOSS_5GHZ_OFFICE_BUILDING);
+//	double pw_3m = ComputePowerReceived(3, tpc_default, tx_gain, rx_gain, central_frequency, PATHLOSS_5GHZ_OFFICE_BUILDING);
+//	double pw_5m = ComputePowerReceived(5, tpc_default, tx_gain, rx_gain, central_frequency, PATHLOSS_5GHZ_OFFICE_BUILDING);
+//	double pw_10m = ComputePowerReceived(10, tpc_default, tx_gain, rx_gain, central_frequency, PATHLOSS_5GHZ_OFFICE_BUILDING);
+//	double pw_50m = ComputePowerReceived(50, tpc_default, tx_gain, rx_gain, central_frequency, PATHLOSS_5GHZ_OFFICE_BUILDING);
 //
-//		printf("power = %f pw (%f dBm)\n",
-//				ComputePowerReceived(450, tpc_default, tx_gain, rx_gain, central_frequency, 0),
-//				ConvertPower(PW_TO_DBM, ComputePowerReceived(450, tpc_default, tx_gain, rx_gain, central_frequency, 0)));
+//	double pw_1m_free = ComputePowerReceived(1, tpc_default, tx_gain, rx_gain, central_frequency, PATH_LOSS_LFS);
+//	double pw_3m_free = ComputePowerReceived(3, tpc_default, tx_gain, rx_gain, central_frequency, PATH_LOSS_LFS);
+//	double pw_5m_free = ComputePowerReceived(5, tpc_default, tx_gain, rx_gain, central_frequency, PATH_LOSS_LFS);
+//	double pw_10m_free = ComputePowerReceived(10, tpc_default, tx_gain, rx_gain, central_frequency, PATH_LOSS_LFS);
+//	double pw_50m_free = ComputePowerReceived(50, tpc_default, tx_gain, rx_gain, central_frequency, PATH_LOSS_LFS);
 //
-//
-//
-//		double pw_a_pw = ComputePowerReceived(900.0005, tpc_default, tx_gain, rx_gain, central_frequency, 0);
-//
-//		double pw_b_pw = ComputePowerReceived(450.001, tpc_default, tx_gain, rx_gain, central_frequency, 0);
-//
-//		double pw_c_pw = ComputePowerReceived(1, tpc_default, tx_gain, rx_gain, central_frequency, 0);
-//
-//		double pw_ab_pw = pw_a_pw + pw_b_pw;
-//
-//		double pw_ac_pw = pw_a_pw + pw_c_pw;
-//
-//		double pw_bc_pw = pw_b_pw + pw_c_pw;
-//
-//		double pw_abc_pw = pw_a_pw + pw_b_pw + pw_c_pw;
-//
-//		printf("pw_a = %f pw (%f dBm)\n"
-//				"pw_b = %f pw (%f dBm)\n"
-//				"pw_c = %f pw (%f dBm)\n"
-//				"pw_ab = %f pw (%f dBm)\n"
-//				"pw_ac = %f pw (%f dBm)\n"
-//				"pw_bc = %f pw (%f dBm)\n"
-//				"pw_abc = %f pw (%f dBm)\n"	,
-//				pw_a_pw, ConvertPower(PW_TO_DBM, pw_a_pw),
-//				pw_b_pw, ConvertPower(PW_TO_DBM, pw_b_pw),
-//				pw_c_pw, ConvertPower(PW_TO_DBM, pw_c_pw),
-//				pw_ab_pw, ConvertPower(PW_TO_DBM, pw_ab_pw),
-//				pw_ac_pw, ConvertPower(PW_TO_DBM, pw_ac_pw),
-//				pw_bc_pw, ConvertPower(PW_TO_DBM, pw_bc_pw),
-//				pw_abc_pw, ConvertPower(PW_TO_DBM, pw_abc_pw));
-//
-//	}
-//
-//
-////	printf("pw_abc = %f pw (%f dBm)\n"
-////			"pw_c = %f pw (%f dBm)\n",
-////			"pw_ab = %f pw (%f dBm)\n",
-////			ConvertPower(DBM_TO_PW, pw_abc), pw_abc,
-////			ConvertPower(DBM_TO_PW, pw_c),pw_c,
-////			(ConvertPower(DBM_TO_PW, pw_abc) - ConvertPower(DBM_TO_PW, pw_c)),
-////			ConvertPower(PW_TO_DBM,(ConvertPower(DBM_TO_PW, pw_abc) - ConvertPower(DBM_TO_PW, pw_c))));
-//
+//	printf("pw_1m = %f pw (%f dBm) - Free: pw_1m_free = %f pw (%f dBm)\n"
+//			"pw_3m = %f pw (%f dBm) - Free: pw_3m_free = %f pw (%f dBm)\n"
+//			"pw_5m = %f pw (%f dBm) - Free: pw_5m_free = %f pw (%f dBm)\n"
+//			"pw_10m = %f pw (%f dBm) - Free: pw_10m_free = %f pw (%f dBm)\n"
+//			"pw_50m = %f pw (%f dBm) - Free: pw_50m_free = %f pw (%f dBm)\n",
+//			pw_1m, ConvertPower(PW_TO_DBM, pw_1m), pw_1m_free, ConvertPower(PW_TO_DBM, pw_1m_free),
+//			pw_3m, ConvertPower(PW_TO_DBM, pw_3m), pw_3m_free, ConvertPower(PW_TO_DBM, pw_3m_free),
+//			pw_5m, ConvertPower(PW_TO_DBM, pw_5m), pw_5m_free, ConvertPower(PW_TO_DBM, pw_5m_free),
+//			pw_10m, ConvertPower(PW_TO_DBM, pw_10m), pw_10m_free, ConvertPower(PW_TO_DBM, pw_10m_free),
+//			pw_50m, ConvertPower(PW_TO_DBM, pw_50m), pw_50m_free, ConvertPower(PW_TO_DBM, pw_50m_free));
 
 
 	// Write in log from a given timestamp on

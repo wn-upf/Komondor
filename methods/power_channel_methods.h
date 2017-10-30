@@ -119,7 +119,8 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 //	double wavelength = (double) SPEED_LIGHT/central_frequency;
 //	double loss;
 
-	double pw_received_pw;
+	double pw_received;	// Power received [pW]
+
 
 	switch(path_loss_model){
 	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx (UNITS ARE NOT IN SI!)
@@ -132,9 +133,7 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 //				ConvertPower(LINEAR_TO_DB, tx_gain) - loss;
 
 		// Sergio on 26/10/2017
-		pw_received_pw = tx_power * tx_gain * rx_gain * pow(((double) SPEED_LIGHT/(4*M_PI*distance*central_frequency)),2);
-
-
+		pw_received = tx_power * tx_gain * rx_gain * pow(((double) SPEED_LIGHT/(4*M_PI*distance*central_frequency)),2);
 
 		break;
 	}
@@ -178,31 +177,53 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 //	  break;
 //	}
 //
-//	// Residential - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
-//	// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-//
-//	// IEEE 802.11ax uses the TGn channel B path loss model for performance evaluation of simulation scenario #1
-//	// with extra indoor wall and floor penetration loss.
-//	case PATH_LOSS_SCENARIO_1_TGax: {
-//
-//	  int n_walls = 10;   // Wall frequency (n_walls walls each m)
-//	  int n_floors = 3;   // Floor frequency (n_floors floors each m)
-//	  int L_iw = 5;     // Penetration for a single wall (dB)
-//
-//	  double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
-//
-//	  int d_BP = 5;    // Break-point distance (m)
-//
-//	  if (distance >= d_BP) {
-//		loss = LFS + 35*log10(distance/d_BP) + 18.3*pow(n_floors,((n_floors+2)/(n_floors+1)) - 0.46) + L_iw*n_walls;
-//	  } else {
-//		loss = LFS;
-//	  }
-//
-//	  pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - loss;
-//	  break;
-//
-//	}
+	// Residential - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
+	// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
+
+	// IEEE 802.11ax uses the TGn channel B path loss model for performance evaluation of simulation scenario #1
+	// with extra indoor wall and floor penetration loss.
+	// Scenarios in https://mentor.ieee.org/802.11/dcn/14/11-14-0980-16-00ax-simulation-scenarios.docx
+	case PATH_LOSS_SCENARIO_1_TGax: {
+
+		// pl_overall = pl_indoor(d) + pel_floor + pel_wall
+		double pl_overall_db;	// Overall path loss
+		double pl_indoor_db;	// Pathloss indoor
+		double pel_floor_db;	// Penetration extra loss floor
+		double pel_wall_db;		// Penetration extra loss walls
+
+		// Free space
+		double pl_free_space_db = 20 * log10(distance) + 20 * log10(central_frequency) +
+				20 * log10((4*M_PI)/((double) SPEED_LIGHT)) - ConvertPower(LINEAR_TO_DB, rx_gain) -
+				ConvertPower(LINEAR_TO_DB, tx_gain);
+
+		if(distance <= PATH_LOSS_DISTANCE_BREAKPOINT_CHANNEL_B){
+
+			pl_indoor_db = pl_free_space_db;
+
+		} else {
+
+			pl_indoor_db = pl_free_space_db + 35 * log10((distance/(double)PATH_LOSS_DISTANCE_BREAKPOINT_CHANNEL_B));
+
+		}
+
+		// Walls and floor
+		int n_walls = 100;   // Wall frequency (n_walls walls each m)
+		int n_floors = 30;   // Floor frequency (n_floors floors each m)
+		int l_iw = 5;     	// Penetration for a single wall (dB)
+
+		pel_floor_db = 10.3 * pow(n_floors, ( ( (double) n_floors + 2) / ( (double) n_floors + 1 ) - 0.46));
+		pel_wall_db = n_walls * l_iw;
+
+		// Overall path loss
+		pl_overall_db = pl_indoor_db + pel_floor_db + pel_wall_db;
+
+		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+
+		break;
+
+	}
 //
 //	// Enterprise - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
 //	// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
@@ -293,6 +314,32 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 //	  break;
 //	}
 
+	/*
+	 * Medbo, J., & Berg, J. E. (2000). Simple and accurate path loss modeling at 5 GHz in indoor environments
+	 * with corridors. In Vehicular Technology Conference, 2000. IEEE-VTS Fall VTC 2000. 52nd (Vol. 1, pp. 30-36). IEEE.
+	 */
+	case PATHLOSS_5GHZ_OFFICE_BUILDING:{
+
+		// pl_overall = pl_free_space(d) + alpha * d
+		double pl_overall_db;		// Overall path loss
+		double pl_free_space_db;	// Pathloss free space
+		double alpha = 0.44;		// Constant attenuation per unit of path length [dB/m]
+
+		pl_free_space_db = 20 * log10(distance) + 20 * log10(central_frequency) +
+				20 * log10((4*M_PI)/((double) SPEED_LIGHT)) - ConvertPower(LINEAR_TO_DB, rx_gain) -
+				ConvertPower(LINEAR_TO_DB, tx_gain);
+
+		pl_overall_db = pl_free_space_db + alpha * distance;
+
+		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+
+		break;
+
+	}
+
+
 	default:{
 	  printf("Path loss model not found!\n");
 	  break;
@@ -301,8 +348,6 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	}
 
 	// double pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-
-	double pw_received = pw_received_pw;
 
 	return pw_received;
 }
