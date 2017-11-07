@@ -25,7 +25,7 @@ done < <(ls)
 # execute files
 
 # simulation time [s]
-sim_time=50
+sim_time=20
 
 cd ..
 cd ..
@@ -36,6 +36,9 @@ do
 	echo "++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
 	seed=1992
+./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_seed${seed}_${array[executing_ix]} 0 0 0 1 ${sim_time} ${seed} >> output/console_logs.txt
+
+	seed=1142
 ./komondor_rts_cts ./input/input_system_conf.csv ./input/script_input_files/${array[executing_ix]} ./output/script_output.txt sim_seed${seed}_${array[executing_ix]} 0 0 0 1 ${sim_time} ${seed} >> output/console_logs.txt
 
 done

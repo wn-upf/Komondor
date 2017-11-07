@@ -1,0 +1,5 @@
+node_code;node_type;wlan_code;destination_id;x(m);y(m);z(m);primary_channel;min_channel_allowed;max_channel_allowed;cw;cw_stage;tpc_min(dBm);tpc_default(dBm);tpc_max(dBm);cca_min(dBm);cca_default(dBm);cca_max(dBm);tx_antenna_gain;rx_antenna_gain;channel_bonding_model;modulation_default;central_freq (GHz);lambda;ieee_protocol
+AP_A;0;A;-1;43.098;81.7324;0;6;4;7;16;5;15.0;15.0;15.0;-82.0;-82.0;-82.0;0.0;0.0;4;0;5.0;10000.0;1
+STA_A1;1;A;-1;39.3317;85.003;0;6;4;7;16;5;15.0;15.0;15.0;-82.0;-82.0;-82.0;0.0;0.0;4;0;5.0;10000.0;1
+AP_B;0;B;-1;49.2005;64.0996;0;0;0;7;16;5;15.0;15.0;15.0;-82.0;-82.0;-82.0;0.0;0.0;4;0;5.0;10000.0;1
+STA_B1;1;B;-1;51.6927;63.7142;0;0;0;7;16;5;15.0;15.0;15.0;-82.0;-82.0;-82.0;0.0;0.0;4;0;5.0;10000.0;1

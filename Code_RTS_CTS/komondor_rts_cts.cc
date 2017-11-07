@@ -283,8 +283,12 @@ void Komondor :: Start(){
 void Komondor :: Stop(){
 
 	int total_data_packets_sent = 0;
-	double total_throughput = 0;
-	double fairness = 0;
+	double total_throughput = 0;		// Total throughput
+	double fairness = 0;				// Porportional throughput
+	double jains_fi = 0;				// Jain's fair index (JFI) per WLAN (not per STA)
+	double sum_throughput_square = 0;	// Sum of the square of the throughputs (for JFI calculations)
+	double min_throughput = 9999999999999;	// Throughput of the WLAN perceiving less throughput
+	int ix_wlan_min_throughput = 99999;	// Index of the WLAN experiencing less throughput
 	int total_rts_lost_slotted_bo = 0;
 	int total_rts_cts_sent = 0;
 	double total_prob_slotted_bo_collision = 0;
@@ -300,8 +304,18 @@ void Komondor :: Stop(){
 			total_prob_slotted_bo_collision += node_container[m].prob_slotted_bo_collision;
 			total_num_tx_init_not_possible += node_container[m].num_tx_init_not_possible;
 			fairness += log10(node_container[m].throughput);
+			sum_throughput_square += pow(node_container[m].throughput, 2);
+
+			if( node_container[m].throughput < min_throughput) {
+
+				ix_wlan_min_throughput = m;
+				min_throughput = node_container[m].throughput;
+
+			}
 		}
 	}
+
+	jains_fi = pow(total_throughput, 2) / (total_nodes_number * sum_throughput_square);
 
 	if (print_system_logs) {
 		printf("\n%s General Statistics:\n", LOG_LVL1);
@@ -309,6 +323,8 @@ void Komondor :: Stop(){
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL2, total_throughput * pow(10,-6));
 		printf("%s Average number of packets sent per WLAN = %d\n", LOG_LVL2, (total_data_packets_sent/total_wlans_number));
 		printf("%s Average throughput per WLAN = %.2f Mbps\n", LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number));
+		printf("%s Proportional fairness = %f\n", LOG_LVL2, fairness);
+		printf("%s Jane's Fair Index = %f\n", LOG_LVL2, jains_fi);
 
 		printf("\n\n");
 	}
@@ -509,9 +525,25 @@ void Komondor :: Stop(){
 //	fprintf(logger_script.file, "\n");
 
 
-	// For large scenarios
-	fprintf(logger_script.file, ";%.2f;%.2f\n", (total_throughput * pow(10,-6)/total_wlans_number), fairness);
 
+	// For large scenarios (Node density vs. throughput)
+	fprintf(logger_script.file, ";%.2f;%.2f;%f;%.2f;%d\n",
+			(total_throughput * pow(10,-6)/total_wlans_number),
+			fairness,
+			jains_fi,
+			min_throughput * pow(10,-6),
+			ix_wlan_min_throughput);
+
+	// Throughput in the WLAN in the middle for central scenario
+//	fprintf(logger_script.file, ";%.2f;%d;%d;%d;%d;%d;%d;%d\n",
+//			(node_container[0].throughput * pow(10,-6)/total_wlans_number),
+//			node_container[0].rts_cts_sent,
+//			node_container[0].rts_cts_lost,
+//			node_container[0].rts_lost_slotted_bo,
+//			node_container[0].data_packets_sent,
+//			node_container[0].data_packets_lost,
+//			node_container[0].num_tx_init_tried,
+//			node_container[0].num_tx_init_not_possible);
 
 
 	// End of logs
