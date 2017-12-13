@@ -23,13 +23,13 @@
 \contentsline {subsection}{\numberline {4.3}Hidden and Exposed Node Scenarios}{11}{subsection.4.3}
 \contentsline {subsection}{\numberline {4.4}Channel Bonding Scenarios}{12}{subsection.4.4}
 \contentsline {section}{\numberline {5}Tutorial and Development Notes}{12}{section.5}
-\contentsline {subsection}{\numberline {5.1}Brief Tutorial}{14}{subsection.5.1}
-\contentsline {subsubsection}{\numberline {5.1.1}Files Organization}{14}{subsubsection.5.1.1}
-\contentsline {subsubsection}{\numberline {5.1.2}Compilation and Execution}{14}{subsubsection.5.1.2}
-\contentsline {subsubsection}{\numberline {5.1.3}Input files}{15}{subsubsection.5.1.3}
-\contentsline {subsubsection}{\numberline {5.1.4}Output files}{15}{subsubsection.5.1.4}
-\contentsline {subsubsection}{\numberline {5.1.5}Logs System}{15}{subsubsection.5.1.5}
-\contentsline {subsection}{\numberline {5.2}Code development}{15}{subsection.5.2}
+\contentsline {subsection}{\numberline {5.1}Brief Tutorial}{13}{subsection.5.1}
+\contentsline {subsubsection}{\numberline {5.1.1}Files Organization}{13}{subsubsection.5.1.1}
+\contentsline {subsubsection}{\numberline {5.1.2}Compilation and Execution}{13}{subsubsection.5.1.2}
+\contentsline {subsubsection}{\numberline {5.1.3}Input files}{14}{subsubsection.5.1.3}
+\contentsline {subsubsection}{\numberline {5.1.4}Output files}{14}{subsubsection.5.1.4}
+\contentsline {subsubsection}{\numberline {5.1.5}Logs System}{14}{subsubsection.5.1.5}
+\contentsline {subsection}{\numberline {5.2}Code development}{14}{subsection.5.2}
 \contentsline {subsubsection}{\numberline {5.2.1}Main considerations}{16}{subsubsection.5.2.1}
 \contentsline {subsubsection}{\numberline {5.2.2}Miscellany}{16}{subsubsection.5.2.2}
 \contentsline {subsubsection}{\numberline {5.2.3}Releases}{16}{subsubsection.5.2.3}

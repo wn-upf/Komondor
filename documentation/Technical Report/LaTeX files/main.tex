@@ -565,35 +565,7 @@ In this Section we provide an overview of the main MAC layer features included i
 	\end{figure}
 	
 	% Table results CB
-	\begin{table}[]
-		\centering
-		\begin{tabular}{|c|c|c|c|c|c|c|c|}
-			\hline
-			\textbf{Scenario}                           & \textbf{States}                              & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma_D$ & $\Gamma$   \\ \hline
-			                                            &                                              & Komondor       & 57.6104    & 57.6225    & -          & -          & 115.2329   \\ \cline{3-8} 
-			\multirow{-2}{*}{1}                         & \multirow{-2}{*}{3}                          & CTMN          & 57.6166    & 57.6166    & -          & -          & 115.2331   \\ \hline
-			                                            &                                              & Komondor       & 62.6054    & 61.9511    & -          & -          & 124.5566   \\ \cline{3-8} 
-			\multirow{-2}{*}{2}                         & \multirow{-2}{*}{5}                          & CTMN          & 62.6145    & 61.9399    & -          & -          & 124.5544   \\ \hline
-			                                            &                                              & Komondor       & 31.3030    & 31.2908    & 62.1658    & -          & 124.7597   \\ \cline{3-8} 
-			\multirow{-2}{*}{3}                         & \multirow{-2}{*}{7}                          & CTMN          & 31.2965    & 31.2965    & 62.1671    & -          & 124.7601   \\ \hline
-			\rowcolor[HTML]{FFCCC9} 
-			\cellcolor[HTML]{FFCCC9}                    & \cellcolor[HTML]{FFCCC9}                     & Komondor       & 61.9338    & 62.914772  & 114.6460   & -          & 239.494597 \\ \cline{3-8} 
-			\rowcolor[HTML]{FFCCC9} 
-			\multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}4} & \multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}13} & CTMN          & 61.9390    & 63.1841    & 113.4185   & -          & 238.5416   \\ \hline
-			                                            &                                              & Komondor       & 41.3179    & 41.2383    & 41.2891    & 41.2491    & 165.0945   \\ \cline{3-8} 
-			\multirow{-2}{*}{5}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
-			                                            &                                              & Komondor       & 57.6193    & 57.6136    & 57.6184    & 57.6152    & 230.4667   \\ \cline{3-8} 
-			\multirow{-2}{*}{6}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
-			                                            &                                              & Komondor       & 57.6193    & 57.6136    & 57.6184    & 57.6152    & 230.4667   \\ \cline{3-8} 
-			\multirow{-2}{*}{7}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
-			                                            &                                              & Komondor       & 41.3179    & 41.2383    & 41.2891    & 41.2491    & 165.0945   \\ \cline{3-8} 
-			\multirow{-2}{*}{8}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
-		\end{tabular}
-		\caption{Summary of the results obtained for the \textit{log2} DCB scenarios. Throughput computations in Komondor slightly differ from CTMN ones at Scenario 4 (in red). This is because the CTMC model allows STA B to pick the range 2 - 3 while it is not permitted in the \textit{log2} model implemented in Komondor. The simulation time in Komondor was 100,000 seconds. The seed was 42.}
-		\label{table:scenario_4wlans}
-	\end{table}
-	
-	\begin{table}[]
+	\begin{table}[h!]
 		\centering
 		\begin{tabular}{|c|c|c|c|c|c|c|c|}
 		\hline
@@ -664,6 +636,12 @@ In this Section we provide an overview of the main MAC layer features included i
 		    \item Collect the results either in the output files or in the console.
 		\end{enumerate}
 	
+		In case that the user does not have permissions to execute some of the files, grant them by introducing the following commands:
+		\begin{lstlisting}[frame=single]
+		$ cd "files_folder"
+		$ chmod -R 777 *
+		\end{lstlisting}
+		
 		Furthermore, and in order to ease experimental procedures, we provide a mechanism for executing several simulations and properly collecting all the results. 
 		%TODO: talk about execution scripts
 		
