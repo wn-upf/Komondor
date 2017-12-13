@@ -26,6 +26,8 @@
 \usepackage{multirow}
 \usepackage{listings}
 \usepackage{color}
+\usepackage{epsfig}
+\usepackage{epstopdf}
 
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
@@ -60,525 +62,712 @@
 \usetikzlibrary{shapes,snakes}
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}
 
-\title{[TUTORIAL] KOMONDOR: A Wireless Network Simulator Based on COST}
+\title{[TUTORIAL] KOMONDOR: A Wireless Network Simulator Based for Next-Generation IEEE 802.11ax WLANs}
 \author{Sergio Barrachina and Francesc Wilhelmi}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Komondor is a wireless network simulator that will allow Barrachina and Wilhelmi to understand the behavior of wireless network contention operating in different power (TPC and CCA) and different channels (DSA and DCB). 
+Komondor is a wireless network simulator that includes novel mechanisms for next-generation WLANs, such as Dynamic Channel Bonding or enhanced Spatial Reuse. One of Komondor's main purposes is to emulate the behavior of IEEE 802.11ax-2019 networks, which main challenge is spectral efficiency in dense deployments. Furthermore, due to the growing popularity of autonomous systems and the tendency of WLANs to use learning, Komondor is intended to include intelligent agents that perform operations like Carrier Sense Threshold adjustment.
 \end{abstract}
 
 \tableofcontents
 
-%-------------------------------
-%-------------------------------
-%-------------------------------
-%-------------------------------
+\listoffigures
 
-\section{Introduction}
-Komondor is an event-based simulator based in COST \cite{ref:cost}, a simulator SENSE\footnote{SENSE main website: \url{http://www.ita.cs.rpi.edu/}}...
-% * <francisco.wilhelmi@upf.edu> 2017-05-31T15:53:22.000Z:
-% 
-% TODO: Talk about new requirements in WLANs and proposed solutions (emphasize IEEE 802.11ax standard).
-% 
-% ^.
-
-% * <francisco.wilhelmi@upf.edu> 2017-05-31T15:53:17.111Z:
-% 
-% TODO: Talk about the application of AI to WLANs to enhance their performance
-% 
-% ^.
-
-% * <francisco.wilhelmi@upf.edu> 2017-05-31T15:53:10.432Z:
-% 
-% TODO: Argue about the need of building Komondor based on lack of simulation tools and adaptability of learning mechanisms to them.
-% 
-% ^.
-We have decided to build a new simulator for the impediments shown by ns-3, at which it is not possible to simulate the new IEEE 802.11ax functionalities. In addition, Komondor is intended to support the inclusion of agents for deciding the behaviour of WLANs by using Reinforcement Learning (RL).
-
-Its main features are:
-\begin{itemize}
-\item CCA
-\item Channel Bonding
-\item Collisions\^{*}
-\end{itemize}
-
-% * <francisco.wilhelmi@upf.edu> 2017-05-31T15:53:40.608Z:
-% 
-% TODO: Paper structure
-% 
-% ^.
+\listoftables
 
 %%%%%%%%%%%%%%%
-% SYSTEM MODEL
+% 1. INTRODUCTION
+%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{section:introduction}
+	Komondor is an event-based simulator based in COST \cite{cost}, a CompC++ library to perform discrete event simulation.\footnote{COST main website: \url{http://www.ita.cs.rpi.edu/cost.html}} Komondor is mostly intended to reproduce the novel techniques included in the IEEE 802.11ax-2019 amendment \cite{tgax2017draft}, which is called to become a benchmark in next-generation wireless networks. For that, and due to the lack of 11ax-oriented simulators, we aim to develop Komondor. Furthermore, a key feature of our simulator is the inclusion of agents that can decide the behavior of WLANs through Reinforcement Learning (RL). Other popular simulation tools such as ns-3 lack of flexibility and adaptability towards including online learning procedures within their operation.
+	
+	Komondor has been developed to be an open source tool that contributes to the ongoing research in wireless networks.
+	
+	%%%  NG WLANs
+	\subsection{Next-Generation WLANs}
+	\label{section:ng_wlans}
+	The increasing network requirements in terms of data rate and users capacity has brought the wireless communications community to introduce novel approaches. Regarding IEEE 802.11 WLANs, the 11ax amendment is being developed to improve spectrum efficiency in high density scenarios. To accomplish that, it introduces the concept of High-Efficiency (HE) WLANs, which incorporates new mechanisms such as OFDMA, Dynamic Channel Bonding, Beamforming and Multi-User Multiple-Input Multiple-Output (MU-MIMO). Such advanced mechanisms drastically change the current operation of WLANs and have not been previously implemented with detail in other network simulators. Further information regarding the novel capabilities included in the IEEE 802.11ax standard can be found in \cite{bellalta2016ieee}.
+	
+	In addition to including such novel techniques, wireless networks are evolving towards autonomous management, which in many cases is achieved through Artificial Intelligence (AI). Its utilization is expected to be key in next-generation complex systems, since it allows solving (or at least approximating) computational-intensive problems. In particular, online learning has been previously applied in well-known problems such as Transmit Power Control (TPC), Carrier Sense Threshold (CST) adjustment and channel allocation \cite{wilhelmi2017implications, wilhelmi2017collaborative, maghsudi2015joint, maghsudi2015channel}. Since most of the literature that applies learning into wireless networks is theoretical in nature, there is a strong need for tools that allow implementing learning algorithms in a realistic simulation environment.	
+	
+	%%%  Komondor main features
+	\subsection{Komondor Main Features}
+	\label{section:features}
+	Komondor aims to thoroughly simulate the operation of wireless networks. Henceforth, it reproduces actual transmissions on a per-packet basis. For that, nodes properties (e.g., location, transmit power, CCA threshold) are taken into account during data exchange procedures.
+	
+	In overview mode, Komondor is intended to simulate the following wireless networks mechanisms:
+	\begin{itemize}
+		\item Distributed Coordination Function (DCF)
+		\item Channel Bonding (CB)
+		\item Dynamic transmit power and CST adjustment
+		\item MU-MIMO transmissions
+		\item Directional transmissions
+		\item Packet aggregation
+		\item Dynamic MCS
+		\item RTS/CTS and NAV allocation
+	\end{itemize}
+
+	Note, as well, that the first version of Komondor introduced by this document includes the basic operation carried out by WLANs and only implements DCF, CB, dynamic MCS and RTS/CTS.
+	
+	%%%  COST 
+	\subsection{COST}
+	\label{section:cost}
+	In order to provide a deep understanding of Komondor, it is important to briefly understand the COST library, which allows building discrete interactions between components, which may represent entities like wireless nodes. Such interaction is achieved through synchronous and asynchronous events. While the former are message explicitly exchanged between components through input/output ports, the later are based on timers. In practice, components perform a set of operations until a significant event occurs. For instance, a node that is decreasing its backoff (i.e., current operation) may freeze it when an overlapping node occupies the channel (i.e., an event). Figure \ref{fig:cost} shows the schematic of a COST component, which is characterized by its inports and outports, and a set of timers. While inports and outports allow to directly communicate with other components, timers trigger events specific to the component.
+	\begin{figure}[h!]
+		\centering
+		\epsfig{file=images/cost.pdf, width=7cm}
+		\caption{COST component}
+		\label{fig:cost}
+	\end{figure}	
+	
+	%%%  Structure
+	\subsection{Paper Structure}
+	\label{section:structure}
+	This documents is structured as follows: Section \ref{section:system_model} describes the system model. Then, Section \ref{section:mac_features} defines the implementation of MAC functionalities considered so far.
+	
+%%%%%%%%%%%%%%%
+% 2. SYSTEM MODEL
 %%%%%%%%%%%%%%%
 \section{System Model}
 \label{section:system_model}
-In this Section we describe the models defined for simulating the different layers of the communication between devices.
-
-\subsection{Traffic Modelling}
-\label{section:traffic_modelling}
-In order to represent an acceptable Downlink traffic model, we have considered that only the APs are able to transmit data packets to the STAs. Regarding traffic generation, we have considered three different models:
-% * <francisco.wilhelmi@upf.edu> 2017-05-18T16:36:46.461Z:
-% 
-% This is a test
-% 
-% ^ <francisco.wilhelmi@upf.edu> 2017-05-31T15:34:02.511Z.
-\begin{itemize}
-\item Full buffer: the transmitters are in a permanent saturation regime, so that there are always packets to be sent.
-\item Poisson: packets are generated according to a Poisson distribution, at which the time between packets $\Delta_p$ is determined by the packets generation rate $\lambda$, and is given by Equation \ref{eq:poisson_packet_generation}.
-\begin{equation}
-\label{eq:poisson_packet_generation}
-	\Delta_{\rm p} = e^{1/\lambda}
-\end{equation}
-\item Deterministic: with this model packets are generated at fixed time intervals $\Delta_d$ given by the packets generation rate (shown in Equation \ref{eq:deterministic_packet_generation}).
-\begin{equation}
-\label{eq:deterministic_packet_generation}
-	\Delta_{\rm d} = 1/\lambda
-\end{equation}
-\end{itemize}
-
-\subsection{Medium Access Control}
-\label{section:medium_access_control}
-When an AP has a packet to be sent, it implements Carrier Sense Multiple Access with Collision Avoidance (CSMA/CA) to access the medium, in which transmissions are carried out if the channel has been empty for a given BackOff (BO) time. We consider that the channel is empty if the interference in it is equal or higher than a Capture Effect threshold, which allows defining the frequency at which packet losses occur, regardless on the Modulation Coding Scheme used. In Figure \ref{} it is shown an example of CSMA/CA implementation for two WLANs that sense each other, i.e., if one transmits, the other senses the channel as busy.
-
-TO DETAIL A FLOW CHART!!!!!!!!!!!!!!!!!!!\\
-
-As it is shown, AP 1 transmits first since its BO time was lower than for AP 2. After the packet transmission is done, the STA 1 waits for a Short InterFrame Space (SIFS) before sending the ACK, so the AP 1 knows that either the packet or the ACK have been lost after the SIFS time has been exhausted. Once the transmission from AP 1 to STA 1 has finished, and before the AP 2 BO is resumed, it is required to wait for a DCF InterFrame Space (DIFS) time period, which avoids decreasing the BO between a packet and an ACK transmission. At the moment AP 2 starts decreasing the already frozen BO, the AP 1 generates a new BO for doing the next packet transmission.
-
-\subsubsection{Binary Exponential Backoff (BEB)}
-\label{section:beb}
-The process of generating a BO when a packet transmission is pending is determined by the Congestion Window (CW) and the generation PDF used, which has been considered to support both deterministic and exponential distributions.
-
-Regarding the implementation it has been considered to provide two different ways of generating the BO. The first one assumes that the BO is continuous, so that the probability of noticing a collision by BO is practically null, while the other assumes a discrete BO, so that devices are synchronized and collisions by BO are feasible to occur (depend on the congestion window and the number of coexisting nodes).
-
-\begin{itemize}
-\item Continuous Backoff: TODO: Explain how continuous backoff is implemented
-\item Discrete Backoff: TODO: Explain how discrete backoff is implemented
-\end{itemize}
-
-\subsection{Channel Modelling}
-TODO: Explain path-loss models and co-channel interference model
-
-\textbf{Co-channel interference}: it is considered to occur by decreasing 20 dBr by each channel distance (relative dB (dBr) -> if using dBm, it would be -20 dBm).
-
-\textbf{Received power}: Incoming power is assumed to be the same during the entire transmission. This relaxation allows us determining easily whenever the channel of interest is busy or not. A direct implication of it affects to Path-loss models used, as well as some of them assume random variations of the medium, preventing to obtain the same result at different power received calculations (so far, power received is added and subtracted when the node accesses and leaves the channel, respectively). Thus, for each node we store its incoming power (which is computed only once) for subtracting it at the end of its transmission. 
-
-
-
-\section{Collisions Modelling}
-TODO: Explain how collisions are computed and the Hidden nodes detection
-
-\textbf{Collisions}: collisions in Komondor may be caused by two events:
+One of the main tasks regarding the implementation of Komondor is the definition of the system model, which lays the foundations of the simulator. In this Section we describe the models defined for simulating the different communication aspects that wireless device implement.
+	
+	%%% Channel Modeling
+	\subsection{Channel Modeling}
+	Channel modeling is one of the most important parts regarding the system model, since it has direct impact on the interactions between wireless devices. For that, and in order to provide the most representative wireless environments, we implemented the following set of path-loss models, which can be further extended by any developer:
 	\begin{itemize}
-	\item \textbf{Deterministic backoff}: these collisions occur when two or more nodes start transmitting at the same time in a shared channel. They cannot occur if the backoff is generated through an exponentially distributed random variable. \textcolor{red}{To be discerned what to do in the deterministic (and real) case.}
-    \item \textbf{Hidden and exposed node}: as shown in Figure \ref{fig:collisions_hidden_node}, two or more nodes which are not in coverage of each other, may transmit to the same node sharing part of the channel, which causes a collision. Such collision can be detected by the destination node and act accordingly (NACK to be developed).
-    	\begin{itemize}
-    	\item How to determine if a transmission can be decoded? Just $P_{rx}>\text{CCA}$? \textbf{NO!}. With SNR! --> get error probability
-        \item If the sum of powers (except power of interest) in the channels used in the TX is less than CCA, there is no collision. $P_\text{channel} - P_{rx} < \text{CCA}$
-    	\end{itemize}
-    
-    \begin{figure}
-      \centering
-      \begin{tikzpicture}
-      \node at (0,0) [circle, fill=red, draw, minimum width=0.6cm,minimum height=0.6cm, label=below:$\text{A}$] (A) {};
-      \node at (A) [circle,draw=red, minimum size=5cm, dashed] (Ac) {};
-      \node[circle, fill=orange, draw, minimum width=0.6cm,minimum height=0.6cm, label=below:$\text{B}$] (B) [right of=A, xshift=0.6cm] {};
-      \node at (B) [circle,draw=orange, minimum size=5cm, dashed] (Bc) {};
-      \node[circle,draw, fill=blue, minimum width=0.6cm,minimum height=0.6cm, label=below:$\text{C}$] (C) [right of=B, xshift=0.6cm] {};
-      \node at (C) [circle,draw=blue, minimum size=5cm, dashed] (Cc) {};
-      
-      \draw [->,line width=1.8pt] (A) edge (B) (C) edge (B);
-
-      \end{tikzpicture}
-      \caption{Hidden \& exposed node cause of collision.} \label{fig:collisions_hidden_node}
-      \end{figure}
+		\item Free Space Path Loss (FSPL): a free-space model is considered, which captures direct line-of-sight and ignores shadowing effects. The experienced loss of power during a transmission that assumes this model is given by:
+		\begin{equation}
+			\text{FSPL} = 20 \log_{10}(d) + 20 \log_{10}(f) + 20 \log_{10}(\frac{4\pi}{c}) - G_t - G_r,
+			\nonumber
+		\end{equation}
+		where $d$ is the distance between the transmitter and the receiver, $f$ is the frequency used in GHz, $c$ is the light speed in $m/s$, and $G_t$ and $G_r$ are the gains in dB at the transmitter and receiver, respectively.
+		\item Okumura-Hata model \cite{hata1980empirical}: this well-known model was conceived for predicting the path-loss of cellular transmissions in outside urban and rural environments. Our main concern is related to dense urban areas, so the loss, $L_U$, that is considered to be experienced during a transmission is given by: 
+		\begin{equation}
+		\begin{aligned}
+			L_U =  &69.55 + 22.16 \log_{10}(f) - 13.82 \log_{10} (h_B) + (44.9 - 6.55 \log_{10}(h_B)) \log_{10}(d) - \\ 
+			& 3.2 \log_{10}(11.7554 h_M)^2 - 4.97,
+		\end{aligned}
+		\nonumber
+		\end{equation}
+		where $f$ is the center frequency in MHz, $h_B$ is the height of the transmitter antenna (fixed to 10 m), $d$ is the distance between the transmitter's and the receiver in meters, and $h_M$ is the height of the receiver's antenna (fixed to 10 m).
+		\item Indoor model: this model represents a simple indoor scenario, which is useful to simulate typical scenarios such as flats, schools or restaurants. According to this model, the losses $L_{indoor}$ experienced between a packet transmission are:		
+		\begin{equation}
+			L_{indoor} = 5 + 10 \alpha \log_{10}(d) + h_S + (\frac{d}{f_w}) h_O,
+			\nonumber
+		\end{equation}
+		where $\alpha$ is a constant that depends on the propagation model (set to 4.4), $d$ is the distance in meters between the transmitter and the receiver, $h_S$ is the shadowing factor, $f_w$ is the frequency of walls (set to one wall each 5 meters), and $h_{O}$ is the obstacles factor.
+		\item Indoor model with random channel effects: we consider the same model as before, but now we introduce random variables to determine the shadowing and obstacles effects in the power losses.
+		\item Residential path-loss model IEEE 802.11ax: such model is included in the 11ax amendment, and captures the path-loss effects of a typical apartments building. The losses experienced between a packet transmission are:
+		\begin{equation}
+			\nonumber
+		\end{equation}
+	\end{itemize}
+	
+	In addition to path-loss types, we also defined different co-channel interference models to capture several kinds of interactions between devices:
+	\begin{itemize}
+		\item Without adjacent interference: no power is leaked to adjacent channels.
+		\item Full channel interference: power from other channels i leaked, so that a 20 dBr decrease is noticed for each channel distance. For instance, the power that channel 1 leaks into channel 3 is the actual power in channel 1 minus 40 dBr. 
+		\item Limited adjacent interference: in this case, only immediate adjacent channels leak power to the target one.
+	\end{itemize}
+	
+	An example of channels overlapping is shown in Figure \ref{fig:cochannel_interference}.
+	\begin{figure}[h!]
+		\centering
+		\epsfig{file=images/cochannel_interference.pdf, width=9cm}
+		\caption{Channel models with and without adjacent interference}
+		\label{fig:cochannel_interference}
+	\end{figure}	
+		
+	Finally, regarding the channel model, it is important to remark that the incoming power is assumed to be the same during the entire transmission. This relaxation allows us to easily determine whenever the channel of interest is busy or not. A direct implication of it affects to path-loss models used, as well as some of them assume random variations of the medium, preventing to obtain the same result with different power received calculations (so far, power received is added and subtracted when the node accesses and leaves the channel, respectively). Thus, for each node we store its incoming power (which is computed only once) for subtracting it at the end of its transmission. 
+	
+	%%% Traffic modeling
+	\subsection{Traffic Modeling}
+	\label{section:traffic_modelling}
+	Traffic modeling refers to the capacity of generating data in higher transmission layers. So far, Komondor only considers downlink traffic, so that data transmissions are initiated by APs. Regarding traffic generation, we have considered three different models:
+	\begin{itemize}
+		\item Full buffer: transmitters are in a permanent saturation regime, so that they always have packets to be sent.
+		\item Poisson: packets are generated according to a Poisson distribution, so that the time between packets $\Delta_p$ is determined by the packet generation rate $\lambda$, and is given by $\Delta_{\rm p} = e^{\frac{1}{\lambda}}$
+		\item Deterministic: packets are generated at fixed time intervals, $\Delta_d$, given by the packet generation rate, $\Delta_{\rm d} = 1/\lambda$.
 	\end{itemize}
 
-\begin{figure}
-	\centering
-  \includegraphics[scale=0.7]{img/ACK_issue.png}
-  \caption{Weird case when collisions occur due to last transmitting AP checks the channel right in the SIFS period of other WLAN and picks a range affecting the previous transmission.}
-  \label{fig:boat1}
-\end{figure}
+	Figure \ref{fig:traffic_models} illustrates the aforementioned traffic models. 
+	\begin{figure}[h!]
+		\centering
+		\epsfig{file=images/traffic_models.pdf, width=9cm}
+		\caption{Traffic models used in Komondor}
+		\label{fig:traffic_models}
+	\end{figure}	
+	
+	%%% Data rate modeling
+	\subsection{Link Modeling}
+	In order to determine the data rate to be used during a given transmission, the MCS defined in the IEEE 802.11ax are considered. Komondor assumes that the MCS used between a pair of devices is determined by the SINR at the received, so that the maximum allowable MCS is used. The required SINR that corresponds to each MCS is defined in Table \ref{table:sinr_thresholds_mcs}, as well as the granted data rate for each channel width.
+	% MCS IEEE 802.11ax
+	\begin{table}[]
+		\centering
+		\resizebox{\textwidth}{!}{\begin{tabular}{|c|c|c|c|c|c|c|c|}
+			\hline
+			\multirow{2}{*}{\textbf{\begin{tabular}[c]{@{}c@{}}MCS \\ index\end{tabular}}} &
+			\multirow{2}{*}{\textbf{\begin{tabular}[c]{@{}c@{}}SINR \\ interval (dBm)\end{tabular}}} &
+			\multirow{2}{*}{\textbf{\begin{tabular}[c]{@{}c@{}}Modulation\\ type\end{tabular}}} & \multirow{2}{*}{\textbf{\begin{tabular}[c]{@{}c@{}}Coding\\ rate\end{tabular}}} & \multicolumn{4}{c|}{\textbf{Data rate (Mbps)}} \\ \cline{5-8} 
+			& &  &  & \textbf{20 MHz} & \textbf{40 MHz} & \textbf{80 MHz} & \textbf{160 MHz} \\ \hline
+			0 & {[}-82, -79) & BPSK & 1/2 & 4 & 8 & 17 & 34 \\ \hline
+			1 & {[}-79, -77) & QPSK & 1/2 & 16 & 33 & 68 & 136 \\ \hline
+			2 & {[}-77, -74) & QPSK & 3/4 & 24 & 49 & 102 & 204 \\ \hline
+			3 & {[}-74, -70) & 16-QAM & 1/2 & 33 & 65 & 136 & 272 \\ \hline
+			4 & {[}-70, -66) & 16-QAM & 3/4 & 49 & 98 & 204 & 408 \\ \hline
+			5 & {[}-66, -65) & 64-QAM & 2/3 & 65 & 130 & 272 & 544 \\ \hline
+			6 & {[}-65, -64) & 64-QAM & 3/4 & 73 & 146 & 306 & 613 \\ \hline
+			7 & {[}-64, -59) & 64-QAM & 5/6 & 81 & 163 & 340 & 681 \\ \hline
+			8 & {[}-59, -57) & 256-QAM & 3/4 & 98 & 195 & 408 & 817 \\ \hline
+			9 & {[}-57, -54) & 256-QAM & 5/6 & 108 & 217 & 453 & 907 \\ \hline
+			10 & {[}-54, -52) & 1024-QAM & 3/4 & 122 & 244 & 510 & 1021 \\ \hline
+			11 & $\geq$ 52 & 1024-QAM & 5/6 & 135 & 271 & 567 & 1143 \\ \hline
+		\end{tabular}}
+		\caption{Data rates granted per MCS in IEEE 802.11ax. Guard Intervals (GI) of 1600 ns are only considered.}
+		\label{table:sinr_thresholds_mcs}	
+	\end{table}
+	
+	So far, link adaptation is not considered\footnote{Future work contemplates the inclusion of Minstrel as a rate adaptation scheme.}, so that the MCS to be used between each transmitter-receiver pair is negotiated at the beginning of the first transmission, and remains static during all the simulation. In practice, the highest possible modulation is computed for each number of channels used according to the power received (the transmit power is lower as the number of channels used is higher).  With that, we aim to simulate the Receiver Driver Protocol, at which few symbols are transmitted at the lowest bit-rate for all the subcarriers. Thus, according to the SINR perceived at the receiver, the MCS is chosen and communicated to the transmitter.
+		
+	Finally, regarding the transmission time for sending a packet, it is computed as a function of the data rate and the size of the packet to be transmitted. Packet lengths are defined according to the IEEE 802.11ax specification, which is further described in Section \ref{section:parameters}.
+
+	%%% Collisions model
+	\subsection{Collisions Modeling}
+	Collisions are one of the main issues in WLANs, since they harm the experienced performance. In particular, packet losses mostly occur because of backoff collision, hidden-node effects and link asymmetries. An example of a hidden-node collision is shown in Figure \ref{fig:collisions_hidden_node}, in which nodes A and C transmit simultaneously to B, since they do not sense the other's transmission.	
+	\begin{figure}
+		\centering
+		\begin{tikzpicture}
+		\node at (0,0) [circle, fill=red, draw, minimum width=0.6cm,minimum height=0.6cm, label=below:$\text{A}$] (A) {};
+		\node at (A) [circle,draw=red, minimum size=5cm, dashed] (Ac) {};
+		\node[circle, fill=orange, draw, minimum width=0.6cm,minimum height=0.6cm, label=below:$\text{B}$] (B) [right of=A, xshift=0.6cm] {};
+		\node at (B) [circle,draw=orange, minimum size=5cm, dashed] (Bc) {};
+		\node[circle,draw, fill=blue, minimum width=0.6cm,minimum height=0.6cm, label=below:$\text{C}$] (C) [right of=B, xshift=0.6cm] {};
+		\node at (C) [circle,draw=blue, minimum size=5cm, dashed] (Cc) {};      
+		\draw [->,line width=1.8pt] (A) edge (B) (C) edge (B);
+		\end{tikzpicture}
+		\caption{Hidden-node cause of collision} \label{fig:collisions_hidden_node}
+	\end{figure}
+
+	In Komondor, a packet loss is considered when the ACK timeout is over. However, it is critical to identify what caused such loss, which may allow to solve the root problem. In particular, the following packet losses categories are provided:
+	\begin{itemize}
+		\item PACKET\_LOST\_DESTINATION\_TX: packet is discarded because the destination was already transmitting when the packet transmission was attempted.
+		\item PACKET\_LOST\_LOW\_SIGNAL: the packet cannot be decoded because the signal strength is not enough (i.e., it is less than capture effect).
+		\item PACKET\_LOST\_INTERFERENCE: packet is lost due to interference signals that makes the receiver not accomplish the capture effect condition.	
+		\item PACKET\_LOST\_PURE\_COLLISION: packet is lost because two nodes transmit to same destination with signal strengths enough to be decoded	(the situation shown in Figure \ref{fig:collisions_hidden_node}).	
+		\item PACKET\_LOST\_LOW\_SIGNAL\_AND\_RX: the destination is already receiving data when a new data transmission starts. In addition, the newest signal strength is not enough to be decoded in normal conditions.
+		\item PACKET\_LOST\_RX\_IN\_NAV: packet is lost because the target node is in a NAV period (it previously decoded an RTS/CTS sequence).		
+		\item PACKET\_LOST\_BO\_COLLISION: the packet is lost because a backoff collision occurred, i.e., two or more interfering devices ended their backoff simultaneously.
+	\end{itemize}	
+	
+	Furthermore, other types of collisions that are uncontrolled may occur. For instance, when applying Channel Bonding, the situation depicted in Figure \ref{fig:boat1} may occur.
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=0.7]{images/ACK_issue.png}
+		\caption{Weird case when collisions occur due to last transmitting AP checks the channel right in the SIFS period of other WLAN and picks a range affecting the previous transmission.}
+		\label{fig:boat1}
+	\end{figure}
 
 %%%%%%%%%%%%%%%
-% MAIN FEATURES
+% MAC FEATURES
 %%%%%%%%%%%%%%%
-\section{Main Features}
+\section{MAC Features}
+\label{section:mac_features}
+In this Section we provide an overview of the main MAC layer features included in Komondor, as well as a glimpse on their practical implementation.
+	
+	%%% Channel Access
+	\subsection{Channel Access}
+	\label{section:channel_access}
+	When an AP has a packet to be sent, it implements Carrier Sense Multiple Access with Collision Avoidance (CSMA/CA) to access the medium, which makes use of the Distribution Coordination Function (DCF). With that, transmissions are carried out if the target channel has been empty for a given Backoff (BO) time. A channel is considered to be empty if the interference in it is equal or higher than a Capture Effect (CE) threshold, which allows defining the frequency at which packet losses occur, regardless on the Modulation Coding Scheme used.
+		
+		% CE
+		\subsubsection{Capture Effect}
+		\label{section:capture_effect}
+		In order to perform transmissions through the radio link, the receiver must perceive that the desired signal strength is bigger than a CE threshold, so that the received data can be distinguished among noise and interference present in the channel. Despite there are two types of interference patterns (\emph{stronger-first} and \emph{stronger-last}), Komondor only considers data transmissions in which the target packet arrives first, just as shown in Figure \ref{fig:capture_effect}. Otherwise, when a second data packet arrives in the middle of a data transmission, both packets are discarded if the second signal is stronger than the first one.
+		\begin{figure}[h!]
+	 		\centering
+	 		\epsfig{file=images/capture_effect, width=9cm}
+	 		\caption{Stronger-First Capture Effect example}
+	 		\label{fig:capture_effect}
+	 	\end{figure}
+ 	
+	 	% DCF
+		\subsubsection{Distributed Coordination Function}
+		\label{section:dcf}		
+		As previously mentioned, the CSMA/CA operation is based on the DCF, which orchestrates channel access in a distributed manner. Roughly, transmitters (e.g., devices that have data to be transmitted) choose a random BO value, which is decremented only if the channel is sensed as idle due to the CCA condition. Otherwise, the BO is freeze and the transmission is contended. Figure \ref{fig:dcf_operation} shows an example of the DCF operation in which three nodes listen to each other in the same wireless scenario. As it is shown, STA2 wins the channel access because its BO timer is the first one to reach 0. During the packet transmission STA1 listens and does not decrease its BO. After data transmission is finished and the channel has been idle for a DIFS interval, the BO procedure is activated in all the transmitting devices.
+		\begin{figure}[h!]
+			\centering
+			\epsfig{file=images/dcf_operation, width=12cm}
+			\caption{Example of the DCF procedure}
+			\label{fig:dcf_operation}
+		\end{figure}
+			
+		The process of generating a BO before a packet transmission is determined by the Congestion Window (CW) and the generation PDF used, which has been considered to support both deterministic and exponential distributions. Komondor implements two kinds of BO pdfs to be used in different situations:
+		\begin{itemize}
+			\item Uniform: the BO is a number between 0 and $\text{CW}-1$, and all the values have the same probability.
+			\item Exponential: instead of using an uniform distribution, we use an exponential one, so that the BO is given by a Gaussian distribution with mean $\frac{\text{CW}-1}{2}$
+		\end{itemize}
+				
+		An important consideration with respect to discrete BO is that devices are synchronized, which allows reproducing collisions by BO that depend on the congestion window and the number of coexisting nodes.
+		
+		% CW Adaptation	
+		\subsubsection{Contention Window Adaptation}
+		\label{section:cw_adaptation}
+		To complement the DCF operation, dynamic CW adaptation is considered on a per-packet basis. Optionally, one can activate CW adaptation so that the CW increases or decreases according to the situation. Given a minimum and a maximum boundaries for CW ($CW_{min}$ and $CW_{max}$, respectively), the reset operation is performed when a successful transmission is carried out. In such situation, the CW is set to $CW_{min}$. Otherwise, when packet losses occur, the CW is increased without exceeding $CW_{max}$. To do so, a counter (namely $CW_{count}$) is maintained and increased one unit each time a packet loss occurs. Then, the CW is computed as $CW = CW_{min} \times 2^{CW_{count}}$.
+	
+	%%% RTS/CTS
+	\subsection{RTS/CTS and NAV Allocation}
+	The Ready-to-Send/Clear-to-Send (RTS/CTS) mechanism is implemented in order to minimize the collisions by hidden node. Through RTS/CTS, transmitting nodes attempt to ensure that the channel would be clear during their transmissions. For that, they send control packets and wait confirmation about the clearness of the channel from the receiver's point of view. Through such packet exchange, overlapping nodes must set a virtual carrier sensing during the transmission duration, which allows reducing the collisions by hidden node. The RTS/CTS operation is exemplified in Figure \ref{fig:rts_cts_mechanism}.
+	\begin{figure}[h!]
+		\centering
+		\epsfig{file=images/rts_cts_mechanism.pdf, width=12cm}
+		\caption{Example of RTS/CTS implementation. The transmitter (STA2) sends an RTS packet before starting a transmission. The receiver (AP) answers with a CTS as it senses the channel free. The other coexisting devices (STA1) listen either the RTS and/or the CTS and set their NAV accordingly.}
+		\label{fig:rts_cts_mechanism}
+	\end{figure}	
+		
+	%%% Channel Bonding
+	\subsection{Channel Bonding}
+	\label{section:channel_bonding}
+	\textcolor{red}{TO BE COMPLETED BY @SERGIO}\\
+	Channel Bonding (CB) is one of the most promising techniques to enhance spectral efficiency in IEEE 802.11ax WLANs, since it aims to make the most of medium by transmitting data over several channels. For that, different CB policies are implemented in Komondor, which can be interchangeably applied by the simulated WLANs. To perform CB, one may explicitly define the available range of channels for each WLAN. Then, the following policies can be applied:
+	\begin{itemize}
+		\item CB disabled: the legacy operation is performed, so that only the primary channel is attempted to be accessed.
+		\item Static CB: carrier sensing is performed at the primary channel. However, when attempting to transmit, all the channels within the CB range must be clear. Otherwise, a new backoff is computed.
+		\begin{itemize}
+		\item Aggressive SCB: 
+		\item Power of 2 SCB
+		\end{itemize}
+		\item Dynamic:
+		\begin{itemize}
+			\item Aggressive DCB
+			\item Power of 2 DCB\footnote{In the Matlab code, this model corresponds to the configuration \textit{onlymax = true} and \textit{selfloop = false}}: transmit in the larger channel range that is allowed by the \textit{log2} structure shown in Figure \ref{}.  
+		\end{itemize}
+		\item Policy-dependent:
+		\begin{itemize}
+			\item Sergio's PhD :D
+		\end{itemize}
+	\end{itemize}
 
-\subsection{Modulation Coding Schemes}
-TODO: Explain how MCS is done and automatically adjusted (is it?)
-
-\textbf{Modulation Code Scheme (MCS):} We have used the MCS used in IEEE 802.11ax (more info here: \url{https://en.wikipedia.org/wiki/IEEE_802.11ax}). The TX time is going to be determined by the data rate provided by the MCS and the size of the packet to be transmitted. IMPORTANT: by now, it is assumed that all nodes transmit data packets of size 12.000 bits and ACKs of size 112 bits.
-
-The MCS is negotiated before the first transmission of a packet for each of the possible destinations, so that a \textbf{virtual event} is generated in order to devise at the receiver which modulation can be used for each number of channels used according to the power received (which depends on the distance and the path-loss effect).
-
-\textbf{Receiver Driver Protocol:} It is assumed that the Transmitter (TX) knows the Modulation Coding Scheme (MCS) to be used during a transmission with the Receiver (RX). This simulates the Receiver Driver Protocol, at which few symbols are transmitted at the lowest bit-rate for all the subcarriers. Thus, according to the SIRN perceived at the RX, the MCS is chosen and communicated to the TX. The thresholds for each MCS are described in Table \ref{tbl:sinr_thresholds_mcs}
-
-\begin{lstlisting}
-/* Add power received when Node X starts transmitting */
-
-for(int c = notification.left_channel; c <= notification.right_channel; c++) {
-	channel_occupancy[c]=1;		
-	power_received_per_node[notification.source_id] = pw_received_mw;
-	channel_power[c] += pw_received_mw;
-}
-
-...
-
-/* Subtract power received when Node X stops transmitting */
-
-for(int c=notification.left_channel; c <= notification.right_channel; c++) {
-	channel_occupancy[c]=0;
-	channel_power[c] -= power_received_per_node[notification.source_id];
-}
-
-...
-\end{lstlisting}
-
-Another important assumption is that the sensed incoming power for a given node is the same at the different channels it uses.
-
-\begin{table}[h!]
-\centering
-\caption{SINR thresholds for using a given MCS}
-\label{tbl:sinr_thresholds_mcs}
-\begin{tabular}{|c|c|}
-\hline
-\textbf{Required SINR (dB)} & \textbf{Modulation (with coding)} \\ \hline
-$\leq 0$ & Use default MCS - BPSK (1/2)\footnote{The signal is not going to be decoded, but it will be detected during pkt TX} \\ \hline
-(0, 3.5] & BPSK (1/2) \\ \hline
-(3.5, 5] & QPSK (1/2) \\ \hline
-(5, 6.5] & QPSK (3/4) \\ \hline
-(6.5, 9] & 16-QAM (1/2) \\ \hline
-(9, 11] & 16-QAM (3/4) \\ \hline
-(11, 13.5] & 64-QAM (2/3) \\ \hline
-(13.5 15] & 64-QAM (3/4) \\ \hline
-(15 17] & 64-QAM (5/6) \\ \hline
-(17, 18.5] & 256-QAM (3/4) \\ \hline
-(18.5 20] & 256-QAM (5/6) \\ \hline
-(20, 21] & 1024-QAM (3/4) \\ \hline
-\textgreater 21 & 1024-QAM (5/6) \\ \hline
-\end{tabular}
-\end{table}
-
-\subsection{Channel Bonding}
-TODO: Explain different approaches for doing channel bonding
-
-Channel Bonding is...
-In the current version of Komondor, there are \textbf{some} available channel bonding models:
-\begin{itemize}
-\item Static:
-  \begin{itemize}
-  \item Aggressive SCB
-  \item Power of 2 SCB
-  \end{itemize}
-\item Dynamic:
-  \begin{itemize}
-  \item Aggressive DCB
-  \item Power of 2 DCB\footnote{In the Matlab code, this model corresponds to the configuration \textit{onlymax = true} and \textit{selfloop = false}}: transmit in the larger channel range that is allowed by the \textit{log2} structure shown in Figure \ref{}.  
-  \end{itemize}
- \item Policy-dependent:
-  \begin{itemize}
-  \item Sergio's PhD :D
-  \end{itemize}
-\end{itemize}
-
-\subsection{RTS/CTS}
-In order to minimize the collisions by hidden node, it is proposed an implementation of the Ready-to-Send/Clear-to-Send (RTS/CTS) protocol, so that virtual carrier sense is considered. The behaviour of RTS/CTS is defined in Figure \ref{fig:rts_cts_process}.
-  
-    \begin{figure}
-	\centering
-  \includegraphics[scale=0.7]{img/rts_cts.jpg}
-  \caption{RTS/CTS implementation. The source sends an RTS packet before starting a transmission. The receiver answers with a CTS as it senses the channel free. The other devices listens either the RTS and/or the CTS and sets its NAV accordingly. \textcolor{red}{TODO: generate an own image.}}
-  \label{fig:rts_cts_process}
-\end{figure}
-% * <francisco.wilhelmi@upf.edu> 2017-05-31T15:42:45.289Z:
-% 
-% TODO: create an own image of RTS/CTS
-% 
-% ^.
-
+	%%% Packet Aggregation
+	\subsection{Packet Aggregation}
+	Packet aggregation aims to reduce transmission overheads such as headers, SIFS and DIFS intervals or backoff periods. For that, it concatenates $N$ MPDUs to be sent over the same packet transmission, so that it can be acknowledged through a block ACK. Komondor allows to define the number of aggregated packets, which value remains static during the entire simulation.
+	\begin{figure}[h!]
+		\centering
+		\epsfig{file=images/ampdu, width=12cm}
+		\caption{Example of packet aggregation in which N MPDUs are concatenated to be sent during the same packet transmission.}
+		\label{fig:ampdu}
+	\end{figure}
+	
+%%%%%%%%%%%%%%%%
+%% PHY FEATURES
+%%%%%%%%%%%%%%%%
+%\section{PHY Features}
+%\label{section:phy_features}
+%Similarly to previous Section, now we describe the PHY mechanisms implemented in Komondor.
 
 %%%%%%%%%%%%%%%
 % VALIDATIONS
 %%%%%%%%%%%%%%%
 \section{Komondor Main Features Validation through CTMN}
-TODO: show validations with CTMN for basic scenarios (exposed node, hidden node, starvation, etc.) and validate Channel Bonding.
+\label{section:validations}
+	In this Section we focus on a set of key scenarios, which allow us to validate the Komondor's operation. For that, we use the Continuous Time Markov Networks (CTMNs) model \cite{bellalta2014throughput} for analytical comparison, which has been further extended and implemented in \cite{barrachina2017dynamic}. 
 
-\subsubsection{Validating Komondor with the CTMN model}
-Several scenarios where\textbf{ WLANs are in coverage range of each other} as shown in Figure \ref{fig:ctmn_wlans_coverage} are presented comparing the throughput obtained both by Komondor and Matlab's CTMC model. The simulation time in Komondor was 100,000 seconds. The seed was 42.
+	%%% Parameters
+	\subsection{IEEE 802.11ax Parameters}
+	\label{section:parameters}
+	Before showing the set of Komondor validations, we introduce the IEEE 802.11ax parameters that we have utilized for simulations, and which are recommended to be kept to emulate 11ax's behavior.
+	
+	%%% Basic Scenarios
+	\subsection{Basic Scenarios}
+	\label{section:validations_basic_scenario}
+	Through the following scenarios, we aim to validate the basic operation of Komondor, so that features such as DCF and RTS/CTS can be properly tested.	The first validation we aim to show is at a very basic scenario in which two overlapping WLANs transmit by using $a)$ the same primary channel, $b)$ different non-overlapping channels. Such scenario is depicted in Figure \ref{fig:basic_scenario_1}. Furthermore, and in order to provide a more complete validation, we test Komondor's operation in the scenario shown in Figure \ref{fig:basic_scenario_2}. The four overlapping WLANs in such scenario are intended to use $a)$ the same primary channel, $b)$ two different channels, and $c)$ four different channels. 
+	\begin{figure}[h!]
+	\centering
+ 	\begin{subfigure}[b]{0.475\textwidth}
+		\begin{tikzpicture}
+			\node at (0,0) [circle, fill=blue, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_A$] (S1) {};
+			\node at (S1) [circle,draw=blue, minimum size=5cm, dashed] (S1c) {};
+			\node[circle, fill=red, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_B$] (S2) [right of=S1, xshift=0.5cm] {};
+			\node at (S2) [circle,draw=red, minimum size=5cm, dashed] (S2c) {};
+		\end{tikzpicture}
+		\caption{Basic scenario 1} 
+		\label{fig:basic_scenario_1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.475\textwidth}
+		\begin{tikzpicture}
+		\node at (0,0) [circle, fill=green, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_C$] (S1) {};
+		\node at (S1) [circle,draw=green, minimum size=5cm, dashed] (S1c) {};
+		\node[circle, fill=orange, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_D$] (S2) [right of=S1, xshift=0.5cm] {};
+		\node at (S2) [circle,draw=orange, minimum size=5cm, dashed] (S2c) {};
+		\node[circle,draw, fill=blue, minimum width=0.5cm,minimum height=0.5cm, label=above:$\text{WLAN}_A$] (S3) [above of=S1, yshift=0.5cm] {};
+		\node at (S3) [circle,draw=blue, minimum size=5cm, dashed] (S3c) {};
+		\node[circle,draw, fill=red, minimum width=0.5cm,minimum height=0.5cm, label=above:$\text{WLAN}_B$] (S4) [above of=S2, yshift=0.5cm] {};
+		\node at (S4) [circle,draw=red, minimum size=5cm, dashed] (S4c) {};	
+		\end{tikzpicture}
+		\caption{Basic scenario 2}
+		\label{fig:basic_scenario_2}
+	\end{subfigure}
+	\caption{Scenarios for basic validations}
+	\label{fig:basic_scenario}
+	\end{figure}
 
-\begin{figure}
-\centering
-\begin{tikzpicture}
-\node at (0,0) [circle, fill=green, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_C$] (S1) {};
-\node at (S1) [circle,draw=green, minimum size=5cm, dashed] (S1c) {};
-\node[circle, fill=orange, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_D$] (S2) [right of=S1, xshift=0.5cm] {};
-\node at (S2) [circle,draw=orange, minimum size=5cm, dashed] (S2c) {};
-\node[circle,draw, fill=blue, minimum width=0.5cm,minimum height=0.5cm, label=above:$\text{WLAN}_A$] (S3) [above of=S1, yshift=0.5cm] {};
-\node at (S3) [circle,draw=blue, minimum size=5cm, dashed] (S3c) {};
-\node[circle,draw, fill=red, minimum width=0.5cm,minimum height=0.5cm, label=above:$\text{WLAN}_B$] (S4) [above of=S2, yshift=0.5cm] {};
-\node at (S4) [circle,draw=red, minimum size=5cm, dashed] (S4c) {};
+	Results from simulation in each of the basic scenarios are presented in Table \ref{table:basic_scenarios}.
+	\begin{table}[h!]
+		\centering
+		\begin{tabular}{|c|c|c|c|c|c|c|}
+			\hline
+			\textbf{Scenario} & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma_D$ & $\Gamma$ \\ \hline
+			\multirow{2}{*}{1a} & Komondor & a & b & - & - & c \\ \cline{2-7} 
+			& CTMN & a & b & - & - & c \\ \hline
+			\multirow{2}{*}{1b} & Komondor & a & b & - & - & c \\ \cline{2-7} 
+			& CTMN & a & b & - & - & c \\ \hline
+			\multirow{2}{*}{2a} & Komondor & a & b & c & d & e \\ \cline{2-7} 
+			& CTMN & a & b & c & d & e \\ \hline
+			\multirow{2}{*}{2b} & Komondor & a & b & c & d & e \\ \cline{2-7} 
+			& CTMN & a & b & c & d & e \\ \hline
+			\multirow{2}{*}{2c} & Komondor & a & b & c & d & e \\ \cline{2-7} 
+			& CTMN & a & b & c & d & e \\ \hline
+		\end{tabular}
+		\caption{Summary of the results obtained for the basic scenarios.}
+		\label{table:basic_scenarios}
+	\end{table}	
+	
+	%%% Hidden and Exposed Scenarios
+	\subsection{Hidden and Exposed Node Scenarios}
+	\label{section:validations_hidden_exposed}
+	We start by showing 
+	
+	Regarding the exposed node situation, we introduce the scenario depicted in Figure \ref{fig:exposed_node_scenario}, in which one of the three WLANs suffers starvation because of its location. The fact that $\text{WLAN}_A$ and $\text{WLAN}_C$ do not sense each other makes that $\text{WLAN}_B$ senses the channel busy almost all the time and lacks of opportunities for accessing to it.
+	\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.475\textwidth}
+		\begin{tikzpicture}
+		\node at (0,0) [circle, fill=red, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{Node}_A$] (A) {};
+		\node at (A) [circle,draw=red, minimum size=4cm, dashed] (Ac) {};
+		\node[circle, fill=orange, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{Node}_B$] (B) [right of=A, xshift=0.5cm] {};
+		\node at (B) [circle,draw=orange, minimum size=4cm, dashed] (Bc) {};
+		\node[circle,draw, fill=blue, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{Node}_C$] (C) [right of=B, xshift=0.5cm] {};
+		\node at (C) [circle,draw=blue, minimum size=4cm, dashed] (Cc) {};      
+		\draw [->,line width=1.8pt] (A) edge (B) (C) edge (B);
+		\end{tikzpicture}
+		\caption{Hidden-node} 
+		\label{fig:hidden_node_scenario}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.475\textwidth}
+		\begin{tikzpicture}
+		\node at (0,0) [circle, fill=red, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_A$] (A) {};
+		\node at (A) [circle,draw=red, minimum size=4cm, dashed] (Ac) {};
+		\node[circle, fill=orange, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_B$] (B) [right of=A, xshift=0.5cm] {};
+		\node at (B) [circle,draw=orange, minimum size=4cm, dashed] (Bc) {};
+		\node[circle,draw, fill=blue, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_C$] (C) [right of=B, xshift=0.5cm] {};
+		\node at (C) [circle,draw=blue, minimum size=4cm, dashed] (Cc) {};      
+		\end{tikzpicture}
+		\caption{Exposed-node}
+		\label{fig:exposed_node_scenario}
+	\end{subfigure}
+	\caption{Representative scenarios of performance anomalies in WLANs} 
+	\label{fig:anomalies_scenario}
+	\end{figure}
 
-\end{tikzpicture}
-\caption{Coverage range for CTMN model with 4 WLANs.} \label{fig:ctmn_wlans_coverage}
-\end{figure}
+	Results for both hidden and exposed scenarios are shown in Table \ref{table:hidden_exposed_scenarios}.
+	% Please add the following required packages to your document preamble:
+	% \usepackage{multirow}
+	\begin{table}[]
+		\centering
+		\begin{tabular}{|c|c|c|c|c|c|c|}
+			\hline
+			\textbf{Scenario} & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma$ & Collisions \\ \hline
+			\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Hidden\\ node\end{tabular}} & Komondor & a & b & c & d & x \\ \cline{2-7} 
+			& CTMN & a & b & c & d & x \\ \hline
+			\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Exposed\\ node\end{tabular}} & Komondor & a & b & c & d & x \\ \cline{2-7} 
+			& CTMN & a & b & c & d & x \\ \hline
+		\end{tabular}
+		\caption{Summary of the results obtained for the hidden and exposed node scenarios.}
+		\label{table:hidden_exposed_scenarios}
+	\end{table}	
 
-\begin{figure}[h]
-\centering
-  \begin{subfigure}[b]{0.475\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{img/channel_bonding_scenario1.png}
-    \caption[]%
-    {{\small Scenario 1}}    
-    \label{fig:channel_bonding_scenario1}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}[b]{0.475\textwidth}  
-    \centering 
-    \includegraphics[width=\textwidth]{img/channel_bonding_scenario2.png}
-    \caption[]%
-    {{\small Scenario 2}}
-    \label{fig:channel_bonding_scenario2}
-  \end{subfigure}
-    \begin{subfigure}[b]{0.475\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{img/channel_bonding_scenario3.png}
-    \caption[]%
-    {{\small Scenario 3}}    
-    \label{fig:channel_bonding_scenario3}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}[b]{0.475\textwidth}  
-    \centering 
-    \includegraphics[width=\textwidth]{img/channel_bonding_scenario4.png}
-    \caption[]%
-    {{\small Scenario 4}}    
-    \label{fig:channel_bonding_scenario4}
-  \end{subfigure}
-  \vskip\baselineskip
-  \begin{subfigure}[b]{0.475\textwidth}   		
-    \centering 
-    \includegraphics[width=\textwidth]{img/channel_bonding_scenario5.png}
-    \caption[]%
-    {{\small Scenario 5}}    
-    \label{fig:channel_bonding_scenario5}
-  \end{subfigure}
-  \quad
-  \begin{subfigure}[b]{0.475\textwidth}   
-    \centering 
-    \includegraphics[width=\textwidth]{img/channel_bonding_scenario6.png}
-    \caption[]%
-    {{\small Scenario 6}}    
-    \label{fig:channel_bonding_scenario6}
-  \end{subfigure}
-  \begin{subfigure}[b]{0.475\textwidth}   		
-    \centering 
-    \includegraphics[width=\textwidth]{img/channel_bonding_scenario7.png}
-    \caption[]%
-    {{\small Scenario 7}}    
-    \label{fig:channel_bonding_scenario7}
-  \end{subfigure}
-  \quad
-  \begin{subfigure}[b]{0.475\textwidth}   
-    \centering 
-    \includegraphics[width=\textwidth]{img/channel_bonding_scenario8.png}
-    \caption[]%
-    {{\small Scenario 8}}    
-    \label{fig:channel_bonding_scenario8}
-  \end{subfigure}
-\caption[Channel allocations]
-{\small Channel allocations of the different scenarios.} 
-\label{fig:channel_allocation_3to6}
-\end{figure}
-
-\begin{table}[]
-\centering
-\caption{Summary of the results obtained for the \textit{log2} DCB scenarios. Throughput computations in Komondor slightly differ from CTMN ones at Scenario 4 (in red). This is because the CTMC model allows STA B to pick the range 2 - 3 while it is not permitted in the \textit{log2} model implemented in Komondor.}
-\label{table:scenario_4wlans}
-\begin{tabular}{|c|c|c|c|c|c|c|c|}
-\hline
-\textbf{Scenario}                           & \textbf{States}                              & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma_D$ & $\Gamma$   \\ \hline
-                                            &                                              & Komondor       & 57.6104    & 57.6225    & -          & -          & 115.2329   \\ \cline{3-8} 
-\multirow{-2}{*}{1}                         & \multirow{-2}{*}{3}                          & CTMN          & 57.6166    & 57.6166    & -          & -          & 115.2331   \\ \hline
-                                            &                                              & Komondor       & 62.6054    & 61.9511    & -          & -          & 124.5566   \\ \cline{3-8} 
-\multirow{-2}{*}{2}                         & \multirow{-2}{*}{5}                          & CTMN          & 62.6145    & 61.9399    & -          & -          & 124.5544   \\ \hline
-                                            &                                              & Komondor       & 31.3030    & 31.2908    & 62.1658    & -          & 124.7597   \\ \cline{3-8} 
-\multirow{-2}{*}{3}                         & \multirow{-2}{*}{7}                          & CTMN          & 31.2965    & 31.2965    & 62.1671    & -          & 124.7601   \\ \hline
-\rowcolor[HTML]{FFCCC9} 
-\cellcolor[HTML]{FFCCC9}                    & \cellcolor[HTML]{FFCCC9}                     & Komondor       & 61.9338    & 62.914772  & 114.6460   & -          & 239.494597 \\ \cline{3-8} 
-\rowcolor[HTML]{FFCCC9} 
-\multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}4} & \multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}13} & CTMN          & 61.9390    & 63.1841    & 113.4185   & -          & 238.5416   \\ \hline
-                                            &                                              & Komondor       & 41.3179    & 41.2383    & 41.2891    & 41.2491    & 165.0945   \\ \cline{3-8} 
-\multirow{-2}{*}{5}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
-                                            &                                              & Komondor       & 57.6193    & 57.6136    & 57.6184    & 57.6152    & 230.4667   \\ \cline{3-8} 
-\multirow{-2}{*}{6}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
-                                            &                                              & Komondor       & 57.6193    & 57.6136    & 57.6184    & 57.6152    & 230.4667   \\ \cline{3-8} 
-\multirow{-2}{*}{7}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
-                                            &                                              & Komondor       & 41.3179    & 41.2383    & 41.2891    & 41.2491    & 165.0945   \\ \cline{3-8} 
-\multirow{-2}{*}{8}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
-\end{tabular}
-\end{table}
-
-\begin{table}[]
-\centering
-\caption{Summary of the results obtained for the \textit{log2} DCB scenarios with ACK and WLANs implemented. Simulation time is 10,000 seconds. All scenarios properly replicated :D}
-\label{table:scenario_4wlans}
-\begin{tabular}{|c|c|c|c|c|c|c|c|}
-\hline
-\textbf{Scenario}                           & \textbf{States}                              & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma_D$ & $\Gamma$   \\ \hline
-                                            &                                              & ACK       & 57.1418    & 57.2815    & -          & -          & 114.4234   \\ \cline{3-8} 
-\multirow{-2}{*}{1}                         & \multirow{-2}{*}{3}                          & CTMN          & 57.6166    & 57.6166    & -          & -          & 115.2331   \\ \hline
-                                            &                                              & ACK       & 62.5831    & 61.3054   & -          & -          & 123.8886   \\ \cline{3-8} 
-\multirow{-2}{*}{2}                         & \multirow{-2}{*}{5}                          & CTMN          & 62.6145    & 61.9399    & -          & -          & 124.5544   \\ \hline
-                                            &                                              & ACK       & 31.1883    & 31.1394    & 61.7620    & -          & 124.0898   \\ \cline{3-8} 
-\multirow{-2}{*}{3}                         & \multirow{-2}{*}{7}                          & CTMN          & 31.2965    & 31.2965    & 62.1671    & -          & 124.7601   \\ \hline
-\rowcolor[HTML]{FFCCC9} 
-\cellcolor[HTML]{FFCCC9}                    & \cellcolor[HTML]{FFCCC9}                     & ACK       & XXX    & XXX  & XXX   & -          & XXX \\ \cline{3-8} 
-\rowcolor[HTML]{FFCCC9} 
-\multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}4} & \multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}13} & CTMN          & 61.9390    & 63.1841    & 113.4185   & -          & 238.5416   \\ \hline
-                                            &                                              & ACK       & 40.8806   & 40.8506    & 40.7439    & 40.7498    & 163.2251   \\ \cline{3-8} 
-\multirow{-2}{*}{5}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
-                                            &                                              & ACK       & XXX    &XXX    & XXX    & XXX    & XXX   \\ \cline{3-8} 
-\multirow{-2}{*}{6}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
-                                            &                                              & ACK       & XXX    & XXX    & XXX    & XXX    & XXX   \\ \cline{3-8} 
-\multirow{-2}{*}{7}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
-                                            &                                              & ACK       & XXX   & XXX    &XXX1    & XXX   &XXX   \\ \cline{3-8} 
-\multirow{-2}{*}{8}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
-\end{tabular}
-\end{table}
-
-The validation test seems satisfactory as the throughput computed with Komondor and the CTMN model are pretty similar.
-
+	%%% Channel Bonding Scenarios
+	\subsection{Channel Bonding Scenarios}
+	\label{section:validations_channel_bonding}
+	Finally, in order to validate the most important technique included in the first version of the Komondor simulator, we now propose a set of scenarios in which CB is applied. For that, we use the same scenario as shown in Figure \ref{fig:basic_scenario_2}, which allows us to devise several combinations regarding channel allocation. Such combinations are illustrated in Figure \ref{fig:channel_allocation_3to6}.	
+	
+	% Figure scenarios CB
+	\begin{figure}[h]
+	\centering
+	  \begin{subfigure}[b]{0.475\textwidth}
+	    \centering
+	    \includegraphics[width=\textwidth]{images/channel_bonding_scenario1.png}
+	    \caption[]%
+	    {{\small Scenario 1}}    
+	    \label{fig:channel_bonding_scenario1}
+	  \end{subfigure}
+	  \hfill
+	  \begin{subfigure}[b]{0.475\textwidth}  
+	    \centering 
+	    \includegraphics[width=\textwidth]{images/channel_bonding_scenario2.png}
+	    \caption[]%
+	    {{\small Scenario 2}}
+	    \label{fig:channel_bonding_scenario2}
+	  \end{subfigure}
+	    \begin{subfigure}[b]{0.475\textwidth}
+	    \centering
+	    \includegraphics[width=\textwidth]{images/channel_bonding_scenario3.png}
+	    \caption[]%
+	    {{\small Scenario 3}}    
+	    \label{fig:channel_bonding_scenario3}
+	  \end{subfigure}
+	  \hfill
+	  \begin{subfigure}[b]{0.475\textwidth}  
+	    \centering 
+	    \includegraphics[width=\textwidth]{images/channel_bonding_scenario4.png}
+	    \caption[]%
+	    {{\small Scenario 4}}    
+	    \label{fig:channel_bonding_scenario4}
+	  \end{subfigure}
+	  \vskip\baselineskip
+	  \begin{subfigure}[b]{0.475\textwidth}   		
+	    \centering 
+	    \includegraphics[width=\textwidth]{images/channel_bonding_scenario5.png}
+	    \caption[]%
+	    {{\small Scenario 5}}    
+	    \label{fig:channel_bonding_scenario5}
+	  \end{subfigure}
+	  \quad
+	  \begin{subfigure}[b]{0.475\textwidth}   
+	    \centering 
+	    \includegraphics[width=\textwidth]{images/channel_bonding_scenario6.png}
+	    \caption[]%
+	    {{\small Scenario 6}}    
+	    \label{fig:channel_bonding_scenario6}
+	  \end{subfigure}
+	  \begin{subfigure}[b]{0.475\textwidth}   		
+	    \centering 
+	    \includegraphics[width=\textwidth]{images/channel_bonding_scenario7.png}
+	    \caption[]%
+	    {{\small Scenario 7}}    
+	    \label{fig:channel_bonding_scenario7}
+	  \end{subfigure}
+	  \quad
+	  \begin{subfigure}[b]{0.475\textwidth}   
+	    \centering 
+	    \includegraphics[width=\textwidth]{images/channel_bonding_scenario8.png}
+	    \caption[]%
+	    {{\small Scenario 8}}    
+	    \label{fig:channel_bonding_scenario8}
+	  \end{subfigure}
+	\caption[Channel allocations]
+	{\small Channel allocations of the different scenarios.} 
+	\label{fig:channel_allocation_3to6}
+	\end{figure}
+	
+	% Table results CB
+	\begin{table}[]
+		\centering
+		\begin{tabular}{|c|c|c|c|c|c|c|c|}
+			\hline
+			\textbf{Scenario}                           & \textbf{States}                              & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma_D$ & $\Gamma$   \\ \hline
+			                                            &                                              & Komondor       & 57.6104    & 57.6225    & -          & -          & 115.2329   \\ \cline{3-8} 
+			\multirow{-2}{*}{1}                         & \multirow{-2}{*}{3}                          & CTMN          & 57.6166    & 57.6166    & -          & -          & 115.2331   \\ \hline
+			                                            &                                              & Komondor       & 62.6054    & 61.9511    & -          & -          & 124.5566   \\ \cline{3-8} 
+			\multirow{-2}{*}{2}                         & \multirow{-2}{*}{5}                          & CTMN          & 62.6145    & 61.9399    & -          & -          & 124.5544   \\ \hline
+			                                            &                                              & Komondor       & 31.3030    & 31.2908    & 62.1658    & -          & 124.7597   \\ \cline{3-8} 
+			\multirow{-2}{*}{3}                         & \multirow{-2}{*}{7}                          & CTMN          & 31.2965    & 31.2965    & 62.1671    & -          & 124.7601   \\ \hline
+			\rowcolor[HTML]{FFCCC9} 
+			\cellcolor[HTML]{FFCCC9}                    & \cellcolor[HTML]{FFCCC9}                     & Komondor       & 61.9338    & 62.914772  & 114.6460   & -          & 239.494597 \\ \cline{3-8} 
+			\rowcolor[HTML]{FFCCC9} 
+			\multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}4} & \multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}13} & CTMN          & 61.9390    & 63.1841    & 113.4185   & -          & 238.5416   \\ \hline
+			                                            &                                              & Komondor       & 41.3179    & 41.2383    & 41.2891    & 41.2491    & 165.0945   \\ \cline{3-8} 
+			\multirow{-2}{*}{5}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
+			                                            &                                              & Komondor       & 57.6193    & 57.6136    & 57.6184    & 57.6152    & 230.4667   \\ \cline{3-8} 
+			\multirow{-2}{*}{6}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
+			                                            &                                              & Komondor       & 57.6193    & 57.6136    & 57.6184    & 57.6152    & 230.4667   \\ \cline{3-8} 
+			\multirow{-2}{*}{7}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
+			                                            &                                              & Komondor       & 41.3179    & 41.2383    & 41.2891    & 41.2491    & 165.0945   \\ \cline{3-8} 
+			\multirow{-2}{*}{8}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
+		\end{tabular}
+		\caption{Summary of the results obtained for the \textit{log2} DCB scenarios. Throughput computations in Komondor slightly differ from CTMN ones at Scenario 4 (in red). This is because the CTMC model allows STA B to pick the range 2 - 3 while it is not permitted in the \textit{log2} model implemented in Komondor. The simulation time in Komondor was 100,000 seconds. The seed was 42.}
+		\label{table:scenario_4wlans}
+	\end{table}
+	
+	\begin{table}[]
+		\centering
+		\begin{tabular}{|c|c|c|c|c|c|c|c|}
+		\hline
+		\textbf{Scenario}                           & \textbf{States}                              & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma_D$ & $\Gamma$   \\ \hline
+		                                            &                                              & ACK       & 57.1418    & 57.2815    & -          & -          & 114.4234   \\ \cline{3-8} 
+		\multirow{-2}{*}{1}                         & \multirow{-2}{*}{3}                          & CTMN          & 57.6166    & 57.6166    & -          & -          & 115.2331   \\ \hline
+		                                            &                                              & ACK       & 62.5831    & 61.3054   & -          & -          & 123.8886   \\ \cline{3-8} 
+		\multirow{-2}{*}{2}                         & \multirow{-2}{*}{5}                          & CTMN          & 62.6145    & 61.9399    & -          & -          & 124.5544   \\ \hline
+		                                            &                                              & ACK       & 31.1883    & 31.1394    & 61.7620    & -          & 124.0898   \\ \cline{3-8} 
+		\multirow{-2}{*}{3}                         & \multirow{-2}{*}{7}                          & CTMN          & 31.2965    & 31.2965    & 62.1671    & -          & 124.7601   \\ \hline
+		\rowcolor[HTML]{FFCCC9} 
+		\cellcolor[HTML]{FFCCC9}                    & \cellcolor[HTML]{FFCCC9}                     & ACK       & XXX    & XXX  & XXX   & -          & XXX \\ \cline{3-8} 
+		\rowcolor[HTML]{FFCCC9} 
+		\multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}4} & \multirow{-2}{*}{\cellcolor[HTML]{FFCCC9}13} & CTMN          & 61.9390    & 63.1841    & 113.4185   & -          & 238.5416   \\ \hline
+		                                            &                                              & ACK       & 40.8806   & 40.8506    & 40.7439    & 40.7498    & 163.2251   \\ \cline{3-8} 
+		\multirow{-2}{*}{5}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
+		                                            &                                              & ACK       & XXX    &XXX    & XXX    & XXX    & XXX   \\ \cline{3-8} 
+		\multirow{-2}{*}{6}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
+		                                            &                                              & ACK       & XXX    & XXX    & XXX    & XXX    & XXX   \\ \cline{3-8} 
+		\multirow{-2}{*}{7}                         & \multirow{-2}{*}{9}                          & CTMN          & 57.6166    & 57.6166    & 57.6166    & 57.6166    & 230.4663   \\ \hline
+		                                            &                                              & ACK       & XXX   & XXX    &XXX1    & XXX   &XXX   \\ \cline{3-8} 
+		\multirow{-2}{*}{8}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
+		\end{tabular}
+		\caption{Summary of the results obtained for the \textit{log2} DCB scenarios with ACK and WLANs implemented. Simulation time is 10,000 seconds. All scenarios properly replicated :D}
+		\label{table:scenario_4wlans}
+	\end{table}
+	
 %%%%%%%%%%%%%%%
 % TUTORIAL
 %%%%%%%%%%%%%%%
-\section{Brief tutorial}
-\begin{enumerate}
-	\item Set the .csv input files (format explained in XXX)
-	\item "cd" to \textit{KomondorSimulator} directory
-    \item Execute ".build\_local". This file contains the instructions for compiling the Komondor code. It is also updated to enable debugging with Valgrind\footnote{Valgrind is a programming tool for memory debugging, memory leak detection, and profiling. Valgrind main website: \url{http://valgrind.org/}}.
-    \item Execute \textit{./KomondorSimulator arg\_1 arg\_2 ... arg\_n}, where \textit{arg\_i} is the ith input argument.
-    	\begin{itemize}
-    		\item \textit{arg\_1}: simulation time [s]
-    		\item \textit{arg\_2}: random seed [n.u]
-            \item \textit{arg\_3}: activate node logs [boolean]\footnote{Major increases in the execution time may occur if nodes logging is activated. E.g., for a simulation of 4 nodes, simulating 1000 seconds takes 1.127 s and 15.672 s when not logging and when doing so, respectively.}
+\section{Tutorial and Development Notes}
+\label{section:tutorial_and_development_notes}
+	In this Section we provide a brief tutorial to encourage researchers and other practitioners to use the Komondor simulation for their experiments, and even to participate in the project. 
+	
+	\subsection{Brief Tutorial}
+	\label{section:brief_tutorial}
+	
+		\subsubsection{Files Organization}
+		\label{section:files}		
+		The code is organized as follows:
+		\begin{itemize}
+			\item COST libraries: contains the necessary COST libraries that allow the Komondor's primitive operation. 
+			\item Code: contains the two core files, which are \emph{komondor.cc} and \emph{node.h}, which are in charge of orchestrating all the simulation. In addition, here we find the inputs and the file that compiles the libraries for executing the code (\emph{build\_local}).
+			\item Methods: by following clean architecture guidelines, independent methods used by both \emph{komondor.cc} and \emph{node.h} files are contained in the methods folder. Several libraries are provided according to the nature of their functions. For instance, \emph{backoff\_methods.h} contains methods to handle the backoff operation.
+			\item Structures: the Komondor simulator considers four main objects to carry out its operation. The first one is \emph{wlan.h}, which defines the main characteristics of a WLAN (WLAN id, list of associated STAs, etc.). Furthermore, the \emph{notification.h} object allows to exchange packets between devices. Finally, \emph{logger.h} and \emph{logical\_nack.h} are used for auxiliary purposes, which are displaying logs and saving packet losses causes, respectively.
+			\item List of macros: all the static parameters are contained in the \emph{list\_of\_macros.h} file. 			
 		\end{itemize}
-    \item Write a paper with the results
-    \item Be accepted :D
-\end{enumerate}
+		
+		\subsubsection{Compilation and Execution}
+		\label{section:compilation_execution}
+		To compile and execute a Komondor's simulation, the following instructions must	be followed:
+		\begin{enumerate}
+			\item Set the .csv input files (further defined in Section \ref{section:input_files})
+			\item "cd" to \textit{KomondorSimulator} directory
+		    \item Execute ".build\_local". This file contains the instructions for compiling the Komondor code. It has been updated to enable debugging with Valgrind\footnote{Valgrind is a programming tool for memory debugging, memory leak detection, and profiling. Valgrind main website: \url{http://valgrind.org/}}.
+		    \item Execute \textit{./KomondorSimulator arg\_1 arg\_2 ... arg\_n}, where \textit{arg\_i} is the $i_{\text{th}}$ input argument:
+		    	\begin{itemize}		            
+		            \item \textit{arg\_1} (INPUT\_FILE\_SYSTEM\_CONFIGURATION): file containing system information (e.g., number of channels available, traffic model, etc.). The file must be a .csv with semicolons as separators.
+		            \item \textit{arg\_2} (INPUT\_FILE\_NODES): file containing nodes information (e.g., position, channels allowed, etc.).The file must be a .csv with semicolons as separators.
+		            \item \textit{arg\_3} (OUTPUT\_FILE\_LOGS): path to the output file to which write results at the end of the execution (if the file does not exist, the system will create it).
+		            \item \textit{arg\_4} (FLAG\_SAVE\_SYSTEM\_LOGS): flag to indicate whether to save the system logs into a file (1) or not (0).\footnote{Major increases in the execution time may occur if nodes logging is activated. E.g., for a simulation of 4 nodes, simulating 1000 seconds takes 1.127 s and 15.672 s when not logging and when doing so, respectively.}
+		            \item \textit{arg\_5} (FLAG\_SAVE\_NODE\_LOGS): flag to indicate whether to save the nodes logs into separate files (1) or not (0). If this flag is activated, one file per node will be created.
+		            \item \textit{arg\_6} (FLAG\_PRINT\_SYSTEM\_LOGS): flag to indicate whether to print the system logs (1) or not (0).
+		            \item \textit{arg\_7} (FLAG\_PRINT\_NODE\_LOGS): flag to indicate whether to print the nodes logs (1) or not (0).
+		            \item \textit{arg\_8} (SIM\_TIME): simulation time in seconds.
+		            \item \textit{arg\_8} (SEED): random seed for the experiments.
+				\end{itemize}
+		    \item Collect the results either in the output files or in the console.
+		\end{enumerate}
+	
+		Furthermore, and in order to ease experimental procedures, we provide a mechanism for executing several simulations and properly collecting all the results. 
+		%TODO: talk about execution scripts
+		
+		\subsubsection{Input files}
+		\label{section:input_files}	
+		Csv files that...
+		\begin{itemize}
+			\item Nodes config: It is \textbf{mandatory} to enter and input file with a list of nodes ordered by \textit{node\_id} and starting with \textit{node\_id} = 0. It is needed for the array responsible of storing the power perceived by each node (i.e., \textit{power\_received\_per\_node}).
+			\item System config
+		\end{itemize}
+	
+		\subsubsection{Output files}
+		\label{section:output_files}	
+		\begin{itemize}
+			\item Node events logs: events are categorized as summarized in Table \ref{table:event_coding}. \textcolor{red}{More \textit{specific} (i.e., just numbers or identifiers - no description text) logs to be done.}
+			\item Statistics
+		\end{itemize}
+	
+		\subsubsection{Logs System}
+		\label{section:logs_system}	
+		\begin{table}[]
+		\centering
+		\scriptsize
+		\caption{Node's event logs encoding.}
+		\label{table:event_coding}
+		\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Method}                            & \textbf{Type}       & \textbf{Sub-type} & \textbf{Event description}                              \\ \hline
+		Setup()                                    & A                   & -                 & -                                                       \\ \hline
+		\multirow{3}{*}{Start()}                   & \multirow{3}{*}{B}  & B00               & Start()                                                 \\ \cline{3-4} 
+		                                           &                     & B01               & Start() end                                             \\ \cline{3-4} 
+		                                           &                     & B02               & Node's info (one line)                                  \\ \hline
+		\multirow{6}{*}{Stop()}                    & \multirow{6}{*}{C}  & C00               & Stop()                                                  \\ \cline{3-4} 
+		                                           &                     & C01               & Stop() end                                              \\ \cline{3-4} 
+		                                           &                     & C02               & Time transmitting in number of channels                 \\ \cline{3-4} 
+		                                           &                     & C03               & Time transmitting in each channel                       \\ \cline{3-4} 
+		                                           &                     & C04               & Packets sent                                            \\ \cline{3-4} 
+		                                           &                     & C05               & Throughput                                              \\ \hline
+		\multirow{14}{*}{inportSomeNodeStartTX()}  & \multirow{14}{*}{D} & D00               & inportSomeNodeStartTX()                                 \\ \cline{3-4} 
+		                                           &                     & D01               & inportSomeNodeStartTX() end                             \\ \cline{3-4} 
+		                                           &                     & D02               & Node N has started a TX in channels: c\_left - c\_right \\ \cline{3-4} 
+		                                           &                     & D03               & Pre update channel state                                \\ \cline{3-4} 
+		                                           &                     & D04               & Distance to transmitting node                           \\ \cline{3-4} 
+		                                           &                     & D05               & Power received from transmitting node                   \\ \cline{3-4} 
+		                                           &                     & D06               & Post update channel state                               \\ \cline{3-4} 
+		                                           &                     & D07               & I am (or not) the TX destination                        \\ \cline{3-4} 
+		                                           &                     & D08               & Current SINR                                            \\ \cline{3-4} 
+		                                           &                     & D09               & Capacitiy                                               \\ \cline{3-4} 
+		                                           &                     & D10               & Primary channel affected (or not)                       \\ \cline{3-4} 
+		                                           &                     & D11               & Power sensed in primary channel                         \\ \cline{3-4} 
+		                                           &                     & D12               & CCA exceeded (or not)                                   \\ \cline{3-4} 
+		                                           &                     & D13               & Backoof active (or not)                                 \\ \hline
+		\multirow{10}{*}{inportSomeNodeFinishTX()} & \multirow{10}{*}{E} & E00               & inportSomeNodeFinishTX()                                \\ \cline{3-4} 
+		                                           &                     & E01               & inportSomeNodeFinishTX() end                            \\ \cline{3-4} 
+		                                           &                     & E02               & N\%d has finished a TX in channel range: \%d - \%d      \\ \cline{3-4} 
+		                                           &                     & E03               & Initial power of transmitter                            \\ \cline{3-4} 
+		                                           &                     & E04               & Pre update channel state                                \\ \cline{3-4} 
+		                                           &                     & E05               & Post update channel state                               \\ \cline{3-4} 
+		                                           &                     & E06               & Primary channel affected (or not)                       \\ \cline{3-4} 
+		                                           &                     & E07               & Power sensed in primary channel                         \\ \cline{3-4} 
+		                                           &                     & E08               & CCA exceeded (or not)                                   \\ \cline{3-4} 
+		                                           &                     & E09               & I am transmitting (or not)                              \\ \hline
+		\multirow{6}{*}{endBackoff()}              & \multirow{6}{*}{F}  & F00               & endBackoff()                                            \\ \cline{3-4} 
+		                                           &                     & F01               & endBackoff() end                                        \\ \cline{3-4} 
+		                                           &                     & F02               & Channels for transmitting                               \\ \cline{3-4} 
+		                                           &                     & F03               & Transmission is possible (or not)                       \\ \cline{3-4} 
+		                                           &                     & F04               & Selected transmission range                             \\ \cline{3-4} 
+		                                           &                     & F05               & New backoff generated                                   \\ \hline
+		\multirow{3}{*}{myTXFinished()}            & \multirow{3}{*}{G}  & G00               & myTXFinished()                                          \\ \cline{3-4} 
+		                                           &                     & G01               & myTXFinished() end                                      \\ \cline{3-4} 
+		                                           &                     & G02               & New backoff generated                                   \\ \hline
+		\end{tabular}
+		\end{table}
 
+	%%% Code Development
+	\subsection{Code development}
+	\label{section:code_development}		
+	This section is for code and structure clarifications that developers may need to remember or modify sometime. 
 
-\subsection{Console input}
-Simulation time, seed...
-\subsection{Input files}
-Csv files that...
-\begin{itemize}
-  \item Nodes config: It is \textbf{mandatory} to enter and input file with a list of nodes ordered by \textit{node\_id} and starting with \textit{node\_id} = 0. It is needed for the array responsible of storing the power perceived by each node (i.e., \textit{power\_received\_per\_node}).
-  \item System config
-\end{itemize}
-\subsection{Output files}
-\begin{itemize}
-	\item Node events logs: events are categorized as summarized in Table \ref{table:event_coding}. \textcolor{red}{More \textit{specific} (i.e., just numbers or identifiers - no description text) logs to be done.}
-	\item Statistics
-\end{itemize}
+		\subsubsection{Main considerations}
+		\begin{itemize}
+		\item \textbf{Power and CCA}: power variables are stored in pW (pico watts) in order to be able to operate power magnitudes without loosing resolution\footnote{E.g., the sum of two signals of power values -85 dBm (3.162 pW) and -90 dBm (1 pW), respectively, is -83.803 dBm (4.162 pW).}. However, values are presented to the user in dBm.
+		
+		W (-30)  - mW (0)  - uW (+30) - nW (+60) - pW (+90)\\
+		$P_{\text{pw}} = 10^{\frac{P_{\text{dBm}} + 90}{10}}$
+		\end{itemize}
+		
+		\subsubsection{Miscellany}
+		\begin{itemize}
+		\item Transmitting capability: we have added a flag to each node that determines if it is able to transmit (1) or not (0), so that we can decide if the node is only listening or both transmitting and listening.
+		\item Progress bar: the Komondor simulation progress bar is displayed through a \textit{printf()} command called by any node with \textit{node\_id} set to 0. If no node has \textit{node\_id} set to 0, the progress bar is not displayed.
+		\end{itemize}
 
-\begin{table}[]
-\centering
-\scriptsize
-\caption{Node's event logs encoding.}
-\label{table:event_coding}
-\begin{tabular}{|c|c|c|c|}
-\hline
-\textbf{Method}                            & \textbf{Type}       & \textbf{Sub-type} & \textbf{Event description}                              \\ \hline
-Setup()                                    & A                   & -                 & -                                                       \\ \hline
-\multirow{3}{*}{Start()}                   & \multirow{3}{*}{B}  & B00               & Start()                                                 \\ \cline{3-4} 
-                                           &                     & B01               & Start() end                                             \\ \cline{3-4} 
-                                           &                     & B02               & Node's info (one line)                                  \\ \hline
-\multirow{6}{*}{Stop()}                    & \multirow{6}{*}{C}  & C00               & Stop()                                                  \\ \cline{3-4} 
-                                           &                     & C01               & Stop() end                                              \\ \cline{3-4} 
-                                           &                     & C02               & Time transmitting in number of channels                 \\ \cline{3-4} 
-                                           &                     & C03               & Time transmitting in each channel                       \\ \cline{3-4} 
-                                           &                     & C04               & Packets sent                                            \\ \cline{3-4} 
-                                           &                     & C05               & Throughput                                              \\ \hline
-\multirow{14}{*}{inportSomeNodeStartTX()}  & \multirow{14}{*}{D} & D00               & inportSomeNodeStartTX()                                 \\ \cline{3-4} 
-                                           &                     & D01               & inportSomeNodeStartTX() end                             \\ \cline{3-4} 
-                                           &                     & D02               & Node N has started a TX in channels: c\_left - c\_right \\ \cline{3-4} 
-                                           &                     & D03               & Pre update channel state                                \\ \cline{3-4} 
-                                           &                     & D04               & Distance to transmitting node                           \\ \cline{3-4} 
-                                           &                     & D05               & Power received from transmitting node                   \\ \cline{3-4} 
-                                           &                     & D06               & Post update channel state                               \\ \cline{3-4} 
-                                           &                     & D07               & I am (or not) the TX destination                        \\ \cline{3-4} 
-                                           &                     & D08               & Current SINR                                            \\ \cline{3-4} 
-                                           &                     & D09               & Capacitiy                                               \\ \cline{3-4} 
-                                           &                     & D10               & Primary channel affected (or not)                       \\ \cline{3-4} 
-                                           &                     & D11               & Power sensed in primary channel                         \\ \cline{3-4} 
-                                           &                     & D12               & CCA exceeded (or not)                                   \\ \cline{3-4} 
-                                           &                     & D13               & Backoof active (or not)                                 \\ \hline
-\multirow{10}{*}{inportSomeNodeFinishTX()} & \multirow{10}{*}{E} & E00               & inportSomeNodeFinishTX()                                \\ \cline{3-4} 
-                                           &                     & E01               & inportSomeNodeFinishTX() end                            \\ \cline{3-4} 
-                                           &                     & E02               & N\%d has finished a TX in channel range: \%d - \%d      \\ \cline{3-4} 
-                                           &                     & E03               & Initial power of transmitter                            \\ \cline{3-4} 
-                                           &                     & E04               & Pre update channel state                                \\ \cline{3-4} 
-                                           &                     & E05               & Post update channel state                               \\ \cline{3-4} 
-                                           &                     & E06               & Primary channel affected (or not)                       \\ \cline{3-4} 
-                                           &                     & E07               & Power sensed in primary channel                         \\ \cline{3-4} 
-                                           &                     & E08               & CCA exceeded (or not)                                   \\ \cline{3-4} 
-                                           &                     & E09               & I am transmitting (or not)                              \\ \hline
-\multirow{6}{*}{endBackoff()}              & \multirow{6}{*}{F}  & F00               & endBackoff()                                            \\ \cline{3-4} 
-                                           &                     & F01               & endBackoff() end                                        \\ \cline{3-4} 
-                                           &                     & F02               & Channels for transmitting                               \\ \cline{3-4} 
-                                           &                     & F03               & Transmission is possible (or not)                       \\ \cline{3-4} 
-                                           &                     & F04               & Selected transmission range                             \\ \cline{3-4} 
-                                           &                     & F05               & New backoff generated                                   \\ \hline
-\multirow{3}{*}{myTXFinished()}            & \multirow{3}{*}{G}  & G00               & myTXFinished()                                          \\ \cline{3-4} 
-                                           &                     & G01               & myTXFinished() end                                      \\ \cline{3-4} 
-                                           &                     & G02               & New backoff generated                                   \\ \hline
-\end{tabular}
-\end{table}
+		\subsubsection{Releases}
 
-
-
-
-
-
-
-
-
-
-
-\section{Code development}
-
-This section is for code and structure clarifications that developers may need to remember or modify sometime. 
-
-\subsection{Main considerations}
-\begin{itemize}
-\item \textbf{Power and CCA}: power variables are stored in pW (pico watts) in order to be able to operate power magnitudes without loosing resolution\footnote{E.g., the sum of two signals of power values -85 dBm (3.162 pW) and -90 dBm (1 pW), respectively, is -83.803 dBm (4.162 pW).}. However, values are presented to the user in dBm.
-
-W (-30)  - mW (0)  - uW (+30) - nW (+60) - pW (+90)\\
-$P_{\text{pw}} = 10^{\frac{P_{\text{dBm}} + 90}{10}}$
-\end{itemize}
-
-\subsection{Miscellany}
-\begin{itemize}
-\item Transmitting capability: we have added a flag to each node that determines if it is able to transmit (1) or not (0), so that we can decide if the node is only listening or both transmitting and listening.
-\item Progress bar: the Komondor simulation progress bar is displayed through a \textit{printf()} command called by any node with \textit{node\_id} set to 0. If no node has \textit{node\_id} set to 0, the progress bar is not displayed.
-\end{itemize}
-
-\section{Releases}
-
-\subsection{Komondor v0.1}
-Features:
-\begin{itemize}
-\item Channel Bonding
-\item Adjacent power
-\item Collisions
-\item Scripting
-\item Path loss models
-\end{itemize}
+		\textbf{Komondor v0.1}\\
+		Features:
+		\begin{itemize}
+		\item Channel Bonding
+		\item Adjacent power
+		\item Collisions
+		\item Scripting
+		\item Path loss models
+		\end{itemize}
 
 %-------------------------------
 %-------------------------------
@@ -588,13 +777,9 @@ Features:
 \section{Conclusions}
 Does not apply yet.
 
+Regarding validations, tests seem satisfactory as the throughput computed with Komondor and the CTMN model are pretty similar.
 
-\begin{thebibliography}{1}
-
-\bibitem{ref:cost} 
-Chen, Gilbert, and Boleslaw K. Szymanski. "Reusing simulation components: cost: a component-oriented discrete event simulator."
-Proceedings of the 34th conference on Winter simulation: exploring new frontiers. Winter Simulation Conference, 2002.
-
-\end{thebibliography}
+\bibliographystyle{unsrt}
+\bibliography{bib}
 
 \end{document}
