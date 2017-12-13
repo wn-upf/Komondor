@@ -1,6 +1,5 @@
-# KomondorSimulator
+# Komondor: An IEEE 802.11ax Simulator
 
-# Collaborative Spatial Reuse in Wireless Networks via Selfish Multi-Armed Bandits
 ### Authors
 * [Sergio Barrachina-Muñoz](https://github.com/sergiobarra)
 * [Francesc Wilhelmi](https://github.com/fwilhelmi)
