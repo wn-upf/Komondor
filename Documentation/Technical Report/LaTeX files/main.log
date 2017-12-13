@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  13 DEC 2017 14:49
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  13 DEC 2017 17:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -901,11 +901,7 @@ brarydecorations.pathreplacing.code.tex))
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/frontendlayer/tikz/librarie
 s/tikzlibrarydecorations.shapes.code.tex
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/libraries/decorations/pgfli
-brarydecorations.shapes.code.tex))) (./main.aux
-
-LaTeX Warning: Label `table:scenario_4wlans' multiply defined.
-
-)
+brarydecorations.shapes.code.tex))) (./main.aux)
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 68.
@@ -922,7 +918,8 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 68.
 LaTeX Font Info:    ... okay on input line 68.
 LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 68.
 LaTeX Font Info:    ... okay on input line 68.
- (/usr/local/texlive/2016/texmf-dist/tex/latex/ucs/ucsencs.def
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/ucs/ucsencs.def
 File: ucsencs.def 2011/01/21 Fixes to fontencodings LGR, T3
 )
 *geometry* driver: auto-detecting
@@ -1044,7 +1041,7 @@ File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 104.
 
-<images/cost.pdf, id=268, 472.1896pt x 163.94438pt>
+<images/cost.pdf, id=270, 472.1896pt x 163.94438pt>
 File: images/cost.pdf Graphic file (type pdf)
  <use images/cost.pdf>
 Package pdftex.def Info: images/cost.pdf used on input line 122.
@@ -1058,21 +1055,36 @@ n.2.1}) has been already used, duplicate ignored
 
 \@EveryShipout@Output ...@Org@Shipout \box \@cclv 
                                                   
-l.172 	\begin{itemize}
-                      pdfTeX warning (ext4): destination with the same identifi
-er (name{equation.2.1}) has been already used, duplicate ignored
+l.166 		\begin{equation}
+                        pdfTeX warning (ext4): destination with the same identi
+fier (name{equation.2.1}) has been already used, duplicate ignored
 
 \@EveryShipout@Output ...@Org@Shipout \box \@cclv 
                                                   
-l.172 	\begin{itemize}
-                      pdfTeX warning (ext4): destination with the same identifi
-er (name{equation.2.1}) has been already used, duplicate ignored
-
-\@EveryShipout@Output ...@Org@Shipout \box \@cclv 
-                                                  
-l.172 	\begin{itemize}
-                       <./images/cost.pdf>]
-<images/cochannel_interference.pdf, id=306, 416.52121pt x 180.72618pt>
+l.166 		\begin{equation}
+                         <./images/cost.pdf>]pdfTeX warning (ext4): destination
+ with the same identifier (name{equation.2.1}) has been already used, duplicate
+ ignored
+<to be read again> 
+                   \relax 
+l.166 		\begin{equation}
+                        pdfTeX warning (ext4): destination with the same identi
+fier (name{equation.2.1}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.166 		\begin{equation}
+                        pdfTeX warning (ext4): destination with the same identi
+fier (name{equation.2.1}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.166 		\begin{equation}
+                        pdfTeX warning (ext4): destination with the same identi
+fier (name{equation.2.1}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.166 		\begin{equation}
+                        
+<images/cochannel_interference.pdf, id=308, 416.52121pt x 180.72618pt>
 File: images/cochannel_interference.pdf Graphic file (type pdf)
 
 <use images/cochannel_interference.pdf>
@@ -1080,7 +1092,7 @@ Package pdftex.def Info: images/cochannel_interference.pdf used on input line 1
 81.
 (pdftex.def)             Requested size: 256.0748pt x 111.11423pt.
 
-<images/traffic_models.pdf, id=308, 654.97182pt x 271.06892pt>
+<images/traffic_models.pdf, id=310, 654.97182pt x 271.06892pt>
 File: images/traffic_models.pdf Graphic file (type pdf)
 
 <use images/traffic_models.pdf>
@@ -1094,35 +1106,34 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 LaTeX Warning: No positions in optional float specifier.
                Default added (so using `tbp') on input line 210.
 
-[5 <./images/cochannel_interference.pdf>]
+[5 <./images/cochannel_interference.pdf>] [6 <./images/traffic_models.pdf>]
 Overfull \hbox (1.2908pt too wide) in paragraph at lines 259--260
 []\T1/cmr/m/n/10 PACKET_LOST_LOW_SIGNAL: the packet can-not be de-coded be-caus
 e the sig-nal strength
  []
 
-[6 <./images/traffic_models.pdf>]
-<images/ACK_issue.png, id=359, 469.15276pt x 214.401pt>
+<images/ACK_issue.png, id=361, 469.15276pt x 214.401pt>
 File: images/ACK_issue.png Graphic file (type png)
 
 <use images/ACK_issue.png>
 Package pdftex.def Info: images/ACK_issue.png used on input line 270.
 (pdftex.def)             Requested size: 328.40468pt x 150.07967pt.
-
-<images/capture_effect.pdf, id=361, 317.88583pt x 166.46571pt>
+ [7 <./images/ACK_issue.png>]
+<images/capture_effect.pdf, id=368, 317.88583pt x 166.46571pt>
 File: images/capture_effect.pdf Graphic file (type pdf)
 
 <use images/capture_effect.pdf>
 Package pdftex.def Info: images/capture_effect.pdf used on input line 293.
 (pdftex.def)             Requested size: 256.0748pt x 134.09985pt.
- [7 <./images/ACK_issue.png>]
-<images/dcf_operation.png, id=368, 598.3956pt x 233.14302pt>
+
+<images/dcf_operation.png, id=370, 598.3956pt x 233.14302pt>
 File: images/dcf_operation.png Graphic file (type png)
 
 <use images/dcf_operation.png>
 Package pdftex.def Info: images/dcf_operation.png used on input line 304.
 (pdftex.def)             Requested size: 341.43306pt x 133.02808pt.
  [8 <./images/capture_effect.pdf> <./images/dcf_operation.png>]
-<images/rts_cts_mechanism.pdf, id=393, 593.07693pt x 222.5412pt>
+<images/rts_cts_mechanism.pdf, id=394, 593.07693pt x 222.5412pt>
 File: images/rts_cts_mechanism.pdf Graphic file (type pdf)
 
 <use images/rts_cts_mechanism.pdf>
@@ -1132,24 +1143,21 @@ Package pdftex.def Info: images/rts_cts_mechanism.pdf used on input line 327.
 
 LaTeX Warning: Reference `' on page 10 undefined on input line 347.
 
-<images/ampdu.png, id=526, 1101.11375pt x 511.9125pt>
+<images/ampdu.png, id=528, 1101.11375pt x 511.9125pt>
 File: images/ampdu.png Graphic file (type png)
  <use images/ampdu.png>
 Package pdftex.def Info: images/ampdu.png used on input line 360.
 (pdftex.def)             Requested size: 341.43306pt x 158.73029pt.
 
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
 [10 <./images/ampdu.png>]
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
 
 LaTeX Warning: No positions in optional float specifier.
                Default added (so using `tbp') on input line 479.
 
-[11] <images/channel_bonding_scenario1.png, id=549, 352.9185pt x 122.25674pt>
+[11] <images/channel_bonding_scenario1.png, id=551, 352.9185pt x 122.25674pt>
 File: images/channel_bonding_scenario1.png Graphic file (type png)
 
 <use images/channel_bonding_scenario1.png>
@@ -1157,7 +1165,7 @@ Package pdftex.def Info: images/channel_bonding_scenario1.png used on input lin
 e 503.
 (pdftex.def)             Requested size: 202.72849pt x 70.22992pt.
 
-<images/channel_bonding_scenario2.png, id=550, 711.8595pt x 248.127pt>
+<images/channel_bonding_scenario2.png, id=552, 711.8595pt x 248.127pt>
 File: images/channel_bonding_scenario2.png Graphic file (type png)
 
 <use images/channel_bonding_scenario2.png>
@@ -1165,7 +1173,7 @@ Package pdftex.def Info: images/channel_bonding_scenario2.png used on input lin
 e 511.
 (pdftex.def)             Requested size: 202.72849pt x 70.66391pt.
 
-<images/channel_bonding_scenario3.png, id=551, 353.52075pt x 124.0635pt>
+<images/channel_bonding_scenario3.png, id=553, 353.52075pt x 124.0635pt>
 File: images/channel_bonding_scenario3.png Graphic file (type png)
 
 <use images/channel_bonding_scenario3.png>
@@ -1173,7 +1181,7 @@ Package pdftex.def Info: images/channel_bonding_scenario3.png used on input lin
 e 518.
 (pdftex.def)             Requested size: 202.72849pt x 71.14474pt.
 
-<images/channel_bonding_scenario4.png, id=552, 707.64375pt x 243.309pt>
+<images/channel_bonding_scenario4.png, id=554, 707.64375pt x 243.309pt>
 File: images/channel_bonding_scenario4.png Graphic file (type png)
 
 <use images/channel_bonding_scenario4.png>
@@ -1181,7 +1189,7 @@ Package pdftex.def Info: images/channel_bonding_scenario4.png used on input lin
 e 526.
 (pdftex.def)             Requested size: 202.72849pt x 69.7039pt.
 
-<images/channel_bonding_scenario5.png, id=553, 357.13425pt x 154.77824pt>
+<images/channel_bonding_scenario5.png, id=555, 357.13425pt x 154.77824pt>
 File: images/channel_bonding_scenario5.png Graphic file (type png)
 
 <use images/channel_bonding_scenario5.png>
@@ -1189,7 +1197,7 @@ Package pdftex.def Info: images/channel_bonding_scenario5.png used on input lin
 e 534.
 (pdftex.def)             Requested size: 202.72849pt x 87.86081pt.
 
-<images/channel_bonding_scenario6.png, id=554, 357.7365pt x 155.3805pt>
+<images/channel_bonding_scenario6.png, id=556, 357.7365pt x 155.3805pt>
 File: images/channel_bonding_scenario6.png Graphic file (type png)
 
 <use images/channel_bonding_scenario6.png>
@@ -1197,7 +1205,7 @@ Package pdftex.def Info: images/channel_bonding_scenario6.png used on input lin
 e 542.
 (pdftex.def)             Requested size: 202.72849pt x 88.0533pt.
 
-<images/channel_bonding_scenario7.png, id=555, 355.3275pt x 151.16475pt>
+<images/channel_bonding_scenario7.png, id=557, 355.3275pt x 151.16475pt>
 File: images/channel_bonding_scenario7.png Graphic file (type png)
 
 <use images/channel_bonding_scenario7.png>
@@ -1205,7 +1213,7 @@ Package pdftex.def Info: images/channel_bonding_scenario7.png used on input lin
 e 549.
 (pdftex.def)             Requested size: 202.72849pt x 86.24783pt.
 
-<images/channel_bonding_scenario8.png, id=556, 358.941pt x 154.176pt>
+<images/channel_bonding_scenario8.png, id=558, 358.941pt x 154.176pt>
 File: images/channel_bonding_scenario8.png Graphic file (type png)
 
 <use images/channel_bonding_scenario8.png>
@@ -1214,74 +1222,102 @@ e 557.
 (pdftex.def)             Requested size: 202.72849pt x 87.07664pt.
 
 
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[12] [13 <./images/channel_bonding_scenario1.png> <./images/channel_bonding_sce
+nario2.png> <./images/channel_bonding_scenario3.png> <./images/channel_bonding_
+scenario4.png> <./images/channel_bonding_scenario5.png> <./images/channel_bondi
+ng_scenario6.png> <./images/channel_bonding_scenario7.png> <./images/channel_bo
+nding_scenario8.png>]
+
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[12 <./images/channel_bonding_scenario1.png> <./images/channel_bonding_scenario
-2.png> <./images/channel_bonding_scenario3.png> <./images/channel_bonding_scena
-rio4.png> <./images/channel_bonding_scenario5.png> <./images/channel_bonding_sc
-enario6.png> <./images/channel_bonding_scenario7.png> <./images/channel_bonding
-_scenario8.png>] [13]
+
+Overfull \hbox (34.84004pt too wide) in paragraph at lines 688--720
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[14] <images/nodes_statistics_example.png, id=599, 840.13875pt x 660.4675pt>
+File: images/nodes_statistics_example.png Graphic file (type png)
+
+<use images/nodes_statistics_example.png>
+Package pdftex.def Info: images/nodes_statistics_example.png used on input line
+ 734.
+(pdftex.def)             Requested size: 341.43306pt x 268.41504pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<images/general_statistics_example.png, id=600, 824.07875pt x 714.67pt>
+File: images/general_statistics_example.png Graphic file (type png)
+
+<use images/general_statistics_example.png>
+Package pdftex.def Info: images/general_statistics_example.png used on input li
+ne 741.
+(pdftex.def)             Requested size: 341.43306pt x 296.10269pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 665.
+               Default added (so using `tbp') on input line 751.
 
-[14] [15] (./main.bbl [16]) [17]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 763.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 763.
+[15] [16] [17] [18 <./images/nodes_statistics_example.png> <./images/general_st
+atistics_example.png>] (./main.bbl [19]) [20]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 858.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 858.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 763.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 763.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 858.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 858.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 3AB902E002E59B3E05471E758EF1DAD8;2405.
+(rerunfilecheck)             Checksum: 130A8FBDE452445DCE4A43EB93548E9C;2415.
 
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: There were multiply-defined labels.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 763.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 858.
  ) 
 Here is how much of TeX's memory you used:
- 25160 strings out of 493014
- 495480 string characters out of 6133351
- 628355 words of memory out of 5000000
- 28072 multiletter control sequences out of 15000+600000
+ 24856 strings out of 493014
+ 493547 string characters out of 6133351
+ 635754 words of memory out of 5000000
+ 27762 multiletter control sequences out of 15000+600000
  23081 words of font info for 63 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,20n,95p,963b,1243s stack positions out of 5000i,500n,10000p,200000b,80000s
-pdfTeX warning (dest): name{table.caption.21} has been referenced but does no
-t exist, replaced by a fixed one
-
-{/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}</
-usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></u
-sr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr
-/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/l
-ocal/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/loc
-al/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/
-texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/tex
-live/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texl
-ive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texliv
-e/2016/texmf-dist/fonts/type1/public/cm-super/sfbx0700.pfb></usr/local/texlive/
-2016/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/20
-16/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2016
-/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2016/t
-exmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2016/tex
-mf-dist/fonts/type1/public/cm-super/sfrm0500.pfb></usr/local/texlive/2016/texmf
--dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2016/texmf-d
-ist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2016/texmf-dis
-t/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2016/texmf-dist/
-fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2016/texmf-dist/fo
-nts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2016/texmf-dist/font
-s/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2016/texmf-dist/fonts/
-type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2016/texmf-dist/fonts/ty
-pe1/public/cm-super/sfti0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/type
-1/public/cm-super/sfti1000.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/
-public/cm-super/sftt0800.pfb>
-Output written on main.pdf (17 pages, 1069214 bytes).
+ 62i,20n,95p,1083b,953s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}
+</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
+/usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></u
+sr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr
+/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/l
+ocal/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/loca
+l/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/t
+exlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/te
+xlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texl
+ive/2016/texmf-dist/fonts/type1/public/cm-super/sfbx0700.pfb></usr/local/texliv
+e/2016/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/
+2016/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/20
+16/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2016
+/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2016/t
+exmf-dist/fonts/type1/public/cm-super/sfrm0500.pfb></usr/local/texlive/2016/tex
+mf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2016/texmf
+-dist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2016/texmf-d
+ist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2016/texmf-dis
+t/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2016/texmf-dist/
+fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2016/texmf-dist/fo
+nts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2016/texmf-dist/font
+s/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2016/texmf-dist/fonts/
+type1/public/cm-super/sfti0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/ty
+pe1/public/cm-super/sfti1000.pfb></usr/local/texlive/2016/texmf-dist/fonts/type
+1/public/cm-super/sftt0800.pfb>
+Output written on main.pdf (20 pages, 1264114 bytes).
 PDF statistics:
- 711 PDF objects out of 1000 (max. 8388607)
- 578 compressed objects within 6 object streams
- 100 named destinations out of 1000 (max. 500000)
- 373 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 735 PDF objects out of 1000 (max. 8388607)
+ 595 compressed objects within 6 object streams
+ 104 named destinations out of 1000 (max. 500000)
+ 383 words of extra memory for PDF output out of 10000 (max. 10000000)
 

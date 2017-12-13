@@ -83,9 +83,9 @@ Komondor is a wireless network simulator that includes novel mechanisms for next
 %%%%%%%%%%%%%%%
 \section{Introduction}
 \label{section:introduction}
-	Komondor is an event-based simulator based in COST \cite{cost}, a CompC++ library to perform discrete event simulation.\footnote{COST main website: \url{http://www.ita.cs.rpi.edu/cost.html}} Komondor is mostly intended to reproduce the novel techniques included in the IEEE 802.11ax-2019 amendment \cite{tgax2017draft}, which is called to become a benchmark in next-generation wireless networks. For that, and due to the lack of 11ax-oriented simulators, we aim to develop Komondor. Furthermore, a key feature of our simulator is the inclusion of agents that can decide the behavior of WLANs through Reinforcement Learning (RL). Other popular simulation tools such as ns-3 lack of flexibility and adaptability towards including online learning procedures within their operation.
+	Komondor is an event-based simulator based in COST \cite{cost}, a CompC++ library to perform discrete event simulation.\footnote{COST main website: \url{http://www.ita.cs.rpi.edu/cost.html}} The presented simulator is mostly intended to reproduce the novel techniques included in the IEEE 802.11ax-2019 amendment \cite{tgax2017draft}, which is called to become a benchmark in next-generation wireless networks. For that, and due to the lack of 11ax-oriented simulators, we aim to develop Komondor. Furthermore, a key feature of our simulator is the inclusion of agents that can decide the behavior of WLANs through Reinforcement Learning (RL). Other popular simulation tools such as ns-3 lack of flexibility and adaptability towards including online learning procedures within their operation.
 	
-	Komondor has been developed to be an open source tool that contributes to the ongoing research in wireless networks.
+	Komondor has been developed to be an open source tool that contributes to the ongoing research in wireless networks. Henceforth, in this document we describe its main features and system model considerations, as well as some basic guidelines to run it. To provide detailed technical information regarding the development of the code is out of the scope of this document.
 	
 	%%%  NG WLANs
 	\subsection{Next-Generation WLANs}
@@ -589,7 +589,7 @@ In this Section we provide an overview of the main MAC layer features included i
 		                                            &                                              & ACK       & XXX   & XXX    &XXX1    & XXX   &XXX   \\ \cline{3-8} 
 		\multirow{-2}{*}{8}                         & \multirow{-2}{*}{5}                          & CTMN          & 41.2737    & 41.2737    & 41.2737    & 41.2737    & 165.0947   \\ \hline
 		\end{tabular}
-		\caption{Summary of the results obtained for the \textit{log2} DCB scenarios with ACK and WLANs implemented. Simulation time is 10,000 seconds. All scenarios properly replicated :D}
+		\caption{Summary of the results obtained for the \textit{log2} DCB scenarios with ACK and WLANs implemented. Simulation time is 10,000 seconds.}
 		\label{table:scenario_4wlans}
 	\end{table}
 	
@@ -599,13 +599,14 @@ In this Section we provide an overview of the main MAC layer features included i
 \section{Tutorial and Development Notes}
 \label{section:tutorial_and_development_notes}
 	In this Section we provide a brief tutorial to encourage researchers and other practitioners to use the Komondor simulation for their experiments, and even to participate in the project. 
-	
+	%%% Brief tutorial
 	\subsection{Brief Tutorial}
 	\label{section:brief_tutorial}
-	
+		
+		% Project organization
 		\subsubsection{Files Organization}
 		\label{section:files}		
-		The code is organized as follows:
+		To properly understand the Komondor's operation, it is important to describe how the project is organized, which provides an overview of the different modules that constitute it. The code is organized as follows:
 		\begin{itemize}
 			\item COST libraries: contains the necessary COST libraries that allow the Komondor's primitive operation. 
 			\item Code: contains the two core files, which are \emph{komondor.cc} and \emph{node.h}, which are in charge of orchestrating all the simulation. In addition, here we find the inputs and the file that compiles the libraries for executing the code (\emph{build\_local}).
@@ -614,6 +615,7 @@ In this Section we provide an overview of the main MAC layer features included i
 			\item List of macros: all the static parameters are contained in the \emph{list\_of\_macros.h} file. 			
 		\end{itemize}
 		
+		% Compilation & Execution
 		\subsubsection{Compilation and Execution}
 		\label{section:compilation_execution}
 		To compile and execute a Komondor's simulation, the following instructions must	be followed:
@@ -636,37 +638,119 @@ In this Section we provide an overview of the main MAC layer features included i
 		    \item Collect the results either in the output files or in the console.
 		\end{enumerate}
 	
-		In case that the user does not have permissions to execute some of the files, grant them by introducing the following commands:
-		\begin{lstlisting}[frame=single]
-		$ cd "files_folder"
-		$ chmod -R 777 *
-		\end{lstlisting}
+		In case that the user does not have permissions to execute some of the files, grant them by introducing the following command in the target folder: \emph{\$ chmod -R 777 *}.
 		
-		Furthermore, and in order to ease experimental procedures, we provide a mechanism for executing several simulations and properly collecting all the results. 
-		%TODO: talk about execution scripts
+		Furthermore, in order to ease experimental procedures, we provide a mechanism for executing several simulations and properly collecting all the results. At folder ``scripts multiple executions" one can find few examples for executing a list of input files, thus generating several outputs.		
 		
+		% Input
 		\subsubsection{Input files}
 		\label{section:input_files}	
-		Csv files that...
+		The Komondor simulator relies in two types of input files for defining the simulation environment:
 		\begin{itemize}
-			\item Nodes config: It is \textbf{mandatory} to enter and input file with a list of nodes ordered by \textit{node\_id} and starting with \textit{node\_id} = 0. It is needed for the array responsible of storing the power perceived by each node (i.e., \textit{power\_received\_per\_node}).
-			\item System config
-		\end{itemize}
-	
+			\item \textbf{System input:} defines global input parameters such as packets length or propagation models. System input parameters are defined in Table \ref{table:system_parameters}.
+			\item \textbf{Nodes input:} defines specific nodes' characteristics such as implementing features (e.g., CB policy). There are two ways of generating nodes, which is indicated in the file name. While including the keyword \emph{nodes} all the devices (APs and STAs) must be introduced and described. Otherwise, if including the keyword \emph{aps}, only the APs are defined, so that a STAs are randomly generated under certain introduced parameters (e.g., minimum/maximum number of STAs, maximum distance between APs and STA).\footnote{The usage of APs input files is discouraged to the lack of maintenance.} As a final remark, in order to ensure a proper execution, it is mandatory to introduce and input file with a list of nodes ordered by \textit{node\_id} and starting with \textit{node\_id} = 0. It is needed for the array responsible of storing the power perceived by each node (i.e., \textit{power\_received\_per\_node}). Table \ref{table:nodes_parameters} describes the Nodes input parameters for both \emph{nodes} and \emph{aps} files.
+		\end{itemize}		
+
+		%  System input parameters	
+		\begin{table}[h!]
+			\centering
+			\begin{tabular}{|c|c|l|}
+				\hline
+				\textbf{Parameter} & \textbf{Type} & \multicolumn{1}{c|}{\textbf{Description}} \\ \hline
+				num\_channels & int & \begin{tabular}[c]{@{}l@{}}Maximum number of frequency channels \\ in the system\end{tabular} \\ \hline
+				basic\_channel\_bandwidth & int & Bandwidth for each channel {[}MHz{]} \\ \hline
+				pdf\_backoff & int & PDF to compute the backoff () \\ \hline
+				pdf\_tx\_time & int & PDF to compute the tx time () \\ \hline
+				packet\_length & int & Length of data packets {[}bits{]} \\ \hline
+				ack\_length & int & Length of ACK packets {[}bits{]} \\ \hline
+				num\_packets\_aggregated & int & Number of packets aggregated per transmission \\ \hline
+				path\_loss\_model & int & \begin{tabular}[c]{@{}l@{}}Path-loss model (0: FSPL, 1: Hata, \\ 2: Indoor 1, 3: Indoor 2, 4: TGax scenario 1)\end{tabular} \\ \hline
+				capture\_effect & int & Capture Effect Threshold {[}dB{]} \\ \hline
+				noise\_level & int & Floor noise level {[}dBm{]} \\ \hline
+				adjacent\_channel\_model & int & \begin{tabular}[c]{@{}l@{}}Co-channel interference model \\ (0: without adjacent interference,\\ 1: contiguous adjacent interference, \\ 2: complete adjacent interference)\end{tabular} \\ \hline
+				collisions\_model & int & Collisions model (reserved) \\ \hline
+				SIFS & int & SIFS period {[}$\mu$s{]} \\ \hline
+				constant\_PER & int & Defines a constant Packet Error Rate \\ \hline
+				traffic\_model & int & \begin{tabular}[c]{@{}l@{}}Traffic model (0: full buffer, 1: Poisson distr., \\ 2: deterministic distr.)\end{tabular} \\ \hline
+				backoff\_type & int & Type of backoff (discrete: 0, continuous: 1) \\ \hline
+				rts\_length & int & Length of RTS packets {[}bits{]} \\ \hline
+				cts\_length & int & Length of CTS packets {[}bits{]} \\ \hline
+				cw\_adaptation & bool & For activating CW adaptation \\ \hline
+				pifs\_activated & bool & For activating PIFS \\ \hline
+			\end{tabular}
+			\caption{System input parameters description}
+			\label{table:system_parameters}
+		\end{table}
+		
+		% Nodes input parameters		
+		\begin{table}[h!]
+			\centering
+			\begin{tabular}{|c|c|c|l|}
+				\hline
+				\textbf{Parameter} & \textbf{Type} & \textbf{Nodes or APs} & \multicolumn{1}{c|}{\textbf{Description}} \\ \hline
+				node\_code & String & nodes & Code assigned to the node \\ \hline
+				node\_type & int & nodes & Type of node (0: AP, 1: STA) \\ \hline
+				wlan\_code & String & both & Code assigned to the WLAN \\ \hline
+				destination\_id & int & nodes & \begin{tabular}[c]{@{}l@{}}To specify the ID of the destination \\ (packets would be only sent to that devices).\\ Setting it to -1 specifies current operation.\end{tabular} \\ \hline
+				min\_sta\_number & int & aps & Minimum number of associated STAs \\ \hline
+				max\_sta\_number & int & aps & Maximum number of associated STAs \\ \hline
+				max\_distance\_sta & int & aps & Maximum distance of associated STAs \\ \hline
+				x & int & both & X location {[}m{]} \\ \hline
+				y & int & both & Y location {[}m{]} \\ \hline
+				z & int & both & Z location {[}m{]} \\ \hline
+				primary\_channel & int & both & Primary channel \\ \hline
+				min\_channel\_allowed & int & both & Left channel in range \\ \hline
+				max\_channel\_allowed & int & both & Right channel in range \\ \hline
+				cw & int & both & Fixed CW \\ \hline
+				cw\_stage & int & both & Initial CW stage (for CW adaptation) \\ \hline
+				tpc\_min & int & both & Minimum transmit power allowed {[}dBm{]} \\ \hline
+				tpc\_default & int & both & Default transmit power allowed {[}dBm{]} \\ \hline
+				tpc\_max & int & both & Maximum transmit power allowed {[}dBm{]} \\ \hline
+				cca\_min & double & both & Minimum CCA allowed {[}dBm{]} \\ \hline
+				cca\_default & double & both & Default CCA allowed {[}dBm{]} \\ \hline
+				cca\_max & double & both & Maximum CCA allowed {[}dBm{]} \\ \hline
+				tx\_antenna\_gain & int & both & Gain of the tx antenna {[}dB{]} \\ \hline
+				rx\_antenna\_gain & int & both & Gain of the rx antenna {[}dB{]} \\ \hline
+				channel\_bonding\_model & int & both & \begin{tabular}[c]{@{}l@{}}Channel bonding model (0: only primary, \\ 1: SCB, 2: SCB log2, 3: always max, \\ 4: always max log2, 5: always max log2 MCS,\\ 6: uniform probability log2)\end{tabular} \\ \hline
+				modulation\_default & int & both & \begin{tabular}[c]{@{}l@{}}Modulation set by default \\ (0 to use dynamic MCS)\end{tabular} \\ \hline
+				central\_freq & int & both & Frequency band used (2,4 or 5 GHz) \\ \hline
+				lambda & float & both & Packets transmission rate {[}packets/s{]} \\ \hline
+				ieee\_protocol & int & both & IEEE protocol used \\ \hline
+			\end{tabular}
+			\caption{Nodes input parameters description}
+			\label{table:nodes_parameters}
+		\end{table}
+		
+		% Output
 		\subsubsection{Output files}
 		\label{section:output_files}	
-		\begin{itemize}
-			\item Node events logs: events are categorized as summarized in Table \ref{table:event_coding}. \textcolor{red}{More \textit{specific} (i.e., just numbers or identifiers - no description text) logs to be done.}
-			\item Statistics
-		\end{itemize}
+		A lot of effort has been put on the output generation, since it is a sensitive module that allows understanding and validating the results provided by the simulator. Henceforth, we provide different kinds of outputs, which refer to console and file output logs. Note, as well, that generating output files considerably increases the computation time. 
+		
+		Regarding console output logs, them can be activated through \emph{arg\_6} and \emph{arg\_7} during the execution, which refer to system and nodes logs, respectively (see Section \ref{section:compilation_execution}). Additionally, those logs can be copied into files, which are saved into the \emph{output} folder, only if \emph{arg\_4} and \emph{arg\_5} are set to 1. While the path of the system's output file must be specified (\emph{arg\_3}), nodes' files are automatically created. 
+		
+		Finally, a set of statistics are show per node and for the entire simulation. Such statistics include throughput experienced, collisions, nodes sent, RTS/CTS sent, etc. An example of nodes and system statistics is shown in Figures \ref{fig:nodes_statistics_example} and \ref{fig:general_statistics_example}
+		\begin{figure}[h!]
+			\centering
+			\epsfig{file=images/nodes_statistics_example, width=12cm}
+			\caption{Example of nodes statistics in Komondor}
+			\label{fig:nodes_statistics_example}
+		\end{figure}
+		
+		\begin{figure}[h!]
+			\centering
+			\epsfig{file=images/general_statistics_example, width=12cm}
+			\caption{Example of system statistics in Komondor}
+			\label{fig:general_statistics_example}
+		\end{figure}
 	
-		\subsubsection{Logs System}
-		\label{section:logs_system}	
+		% Logs system
+		\subsubsection{Events Categorization}
+		\label{section:events_categorization}	
+		In order to provide a better understanding when reviewing the results of a given execution, logs are categorized according to the event that generates it. With that, further filtering processes can be carried out by developers. Table \ref{table:event_coding} describes the codes used for each type of event.		
+		% Events coding table
 		\begin{table}[]
 		\centering
 		\scriptsize
-		\caption{Node's event logs encoding.}
-		\label{table:event_coding}
 		\begin{tabular}{|c|c|c|c|}
 		\hline
 		\textbf{Method}                            & \textbf{Type}       & \textbf{Sub-type} & \textbf{Event description}                              \\ \hline
@@ -714,49 +798,62 @@ In this Section we provide an overview of the main MAC layer features included i
 		                                           &                     & G01               & myTXFinished() end                                      \\ \cline{3-4} 
 		                                           &                     & G02               & New backoff generated                                   \\ \hline
 		\end{tabular}
+		\caption{Node's event logs encoding}
+		\label{table:event_coding}
 		\end{table}
 
 	%%% Code Development
 	\subsection{Code development}
 	\label{section:code_development}		
-	This section is for code and structure clarifications that developers may need to remember or modify sometime. 
-
+	This Section is mostly focused in providing the most important clarifications regarding the code to developers that may be interested in using and/or modifying the presented simulator.
+	
+		% Considerations
 		\subsubsection{Main considerations}
+		\label{section:development_considerations}
+		% TODO: Extend this part.
+		Some technical information regarding code development is worth to be mentioned to properly understand how to use and modify the Komondor simulator. So far, the main considerations to be taken into account are:		
 		\begin{itemize}
-		\item \textbf{Power and CCA}: power variables are stored in pW (pico watts) in order to be able to operate power magnitudes without loosing resolution\footnote{E.g., the sum of two signals of power values -85 dBm (3.162 pW) and -90 dBm (1 pW), respectively, is -83.803 dBm (4.162 pW).}. However, values are presented to the user in dBm.
-		
+		\item \textbf{Power and CCA}: power variables are stored in pW (pico watts) in order to be able to operate power magnitudes without loosing resolution\footnote{For instance., the sum of two signals of power values -85 dBm (3.162 pW) and -90 dBm (1 pW), respectively, is -83.803 dBm (4.162 pW).}. However, values are presented to the user in dBm.		
 		W (-30)  - mW (0)  - uW (+30) - nW (+60) - pW (+90)\\
 		$P_{\text{pw}} = 10^{\frac{P_{\text{dBm}} + 90}{10}}$
 		\end{itemize}
-		
+	
+		% Miscellany
 		\subsubsection{Miscellany}
-		\begin{itemize}
-		\item Transmitting capability: we have added a flag to each node that determines if it is able to transmit (1) or not (0), so that we can decide if the node is only listening or both transmitting and listening.
-		\item Progress bar: the Komondor simulation progress bar is displayed through a \textit{printf()} command called by any node with \textit{node\_id} set to 0. If no node has \textit{node\_id} set to 0, the progress bar is not displayed.
-		\end{itemize}
-
+		\label{section:development_miscellany}
+		% TODO: Extend this part.
+			\begin{itemize}
+			\item Transmitting capability: we have added a flag to each node that determines if it is able to transmit (1) or not (0), so that we can decide if the node is only listening or both transmitting and listening.
+			\item Progress bar: the Komondor simulation progress bar is displayed through a \textit{printf()} command called by any node with \textit{node\_id} set to 0. If no node has \textit{node\_id} set to 0, the progress bar is not displayed.
+			\end{itemize}
+	
+		% Miscellany
 		\subsubsection{Releases}
-
-		\textbf{Komondor v0.1}\\
-		Features:
+		\label{section:development_releases}
+		% TODO: Decide to include this section or not. If yes, extend it.
+		So far, Komondor has experienced two main releases. The first one, Komondor v0.1, included a basic operation in which only data packets were exchanged. Such version included the following features:
 		\begin{itemize}
-		\item Channel Bonding
-		\item Adjacent power
-		\item Collisions
-		\item Scripting
-		\item Path loss models
+			\item Channel Bonding
+			\item Adjacent power
+			\item Collisions
+			\item Scripting
+			\item Path loss models
 		\end{itemize}
+	
+		Furthermore, the release presented in this document, Komondor v1.0, extends the basic operation of v0.1 and includes all the features previously described.
 
-%-------------------------------
-%-------------------------------
-%-------------------------------
-%-------------------------------
-
+%%%%%%%%%%%%%%%
+% 6. CONCLUSIONS
+%%%%%%%%%%%%%%%
 \section{Conclusions}
-Does not apply yet.
+\label{section:conclusions}
+In this document we provided an overview of the first version of the Komondor simulator, which aims to reproduce the basic operation of IEEE 802.11ax WLANs in addition to allow the utilization of intelligent systems. We provided the system model considered when building the simulator, as well as the main MAC features implemented. Additionally, due to the open source nature of this project, we provided basic information of interest for developers that are expected to use or even modify this networks simulator.
 
-Regarding validations, tests seem satisfactory as the throughput computed with Komondor and the CTMN model are pretty similar.
+Regarding validations, we provided a set of meaningful test scenarios to prove the proper behavior of the simulator. As shown,  tests were satisfactory as the throughput computed with Komondor and the CTMN model are pretty similar.
 
+This project is expected to move forward for including of novel mechanisms such as OFDMA, MU-MIMO, TPC or  CST adjustment. In addition, intelligent agents are expected to be included for making operations such as Dynamic CB (DCB).
+
+%%% BIBLIOGRAPHY
 \bibliographystyle{unsrt}
 \bibliography{bib}
 
