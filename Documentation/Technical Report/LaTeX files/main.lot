@@ -1,8 +1,9 @@
 \select@language {english}
 \contentsline {table}{\numberline {1}{\ignorespaces Data rates granted per MCS in IEEE 802.11ax. Guard Intervals (GI) of 1600 ns are only considered.\relax }}{6}{table.caption.7}
-\contentsline {table}{\numberline {2}{\ignorespaces Summary of the results obtained for the basic scenarios.\relax }}{11}{table.caption.15}
-\contentsline {table}{\numberline {3}{\ignorespaces Summary of the results obtained for the hidden and exposed node scenarios.\relax }}{12}{table.caption.17}
-\contentsline {table}{\numberline {4}{\ignorespaces Summary of the results obtained for the \textit {log2} DCB scenarios with ACK and WLANs implemented. Simulation time is 10,000 seconds.\relax }}{12}{table.caption.19}
-\contentsline {table}{\numberline {5}{\ignorespaces System input parameters description\relax }}{15}{table.caption.20}
-\contentsline {table}{\numberline {6}{\ignorespaces Nodes input parameters description\relax }}{16}{table.caption.21}
-\contentsline {table}{\numberline {7}{\ignorespaces Node's event logs encoding\relax }}{17}{table.caption.24}
+\contentsline {table}{\numberline {2}{\ignorespaces IEEE 802.11ax parameters\relax }}{11}{table.caption.14}
+\contentsline {table}{\numberline {3}{\ignorespaces Summary of the results obtained for the basic scenarios.\relax }}{12}{table.caption.16}
+\contentsline {table}{\numberline {4}{\ignorespaces Summary of the results obtained for the hidden and exposed node scenarios. *A constant packet loss rate of 0.1 is set to simulate losses when using an acceptable MCS.\relax }}{12}{table.caption.18}
+\contentsline {table}{\numberline {5}{\ignorespaces Summary of the results obtained for the \textit {log2} DCB scenarios with ACK and WLANs implemented. Simulation time is 10,000 seconds.\relax }}{13}{table.caption.20}
+\contentsline {table}{\numberline {6}{\ignorespaces System input parameters description\relax }}{16}{table.caption.22}
+\contentsline {table}{\numberline {7}{\ignorespaces Nodes input parameters description\relax }}{17}{table.caption.23}
+\contentsline {table}{\numberline {8}{\ignorespaces Node's event logs encoding\relax }}{18}{table.caption.26}

@@ -381,6 +381,46 @@ In this Section we provide an overview of the main MAC layer features included i
 	\label{section:parameters}
 	Before showing the set of Komondor validations, we introduce the IEEE 802.11ax parameters that we have utilized for simulations, and which are recommended to be kept to emulate 11ax's behavior.
 	
+	\begin{table}[h]
+		\centering
+		\resizebox{\columnwidth}{!}{
+			\begin{tabular}{|c|c|c|}
+			\hline
+			\textbf{Parameter}     & \textbf{Description}              & \textbf{Value} \\ \hline
+			$\text{CW}_\text{min}$ & Min. contention window            & 16             \\ \hline
+			$m$                    & Backoff stage                     & 5              \\ \hline
+			CCA                    & CCA threshold                               & -82 dBm        \\ \hline
+			$P_\text{tx}$          & Transmission power                & 15 dBm         \\ \hline
+			$G_\text{tx}$         & Transmitting gain                 & 0 dB           \\ \hline
+			$G_\text{rx}$         & Reception gain                    & 0 dB           \\ \hline
+			$L_\text{data}$       & Length of a data packet at NET layer           & 12000 bits     \\ \hline
+			$L_\text{BACK}$       & Length of a block ACK             & 240 bits       \\ \hline
+			$L_\text{RTS}$        & Length of an RTS packet           & 160 bits       \\ \hline
+			$L_\text{CTS}$        & Length of a CTS packet            & 112 bits       \\ \hline
+			$n_\text{agg}$       & Number of data packets aggregated & 64             \\ \hline
+			CE                     & Capture effect threshold          & 20 dB          \\ \hline
+			$N$                      & Background noise level            & -95 dBm        \\ \hline
+			$T_\text{slot}$       & Slot duration                     & 9 $\mu$s          \\ \hline
+			SIFS                   & SIFS duration                     & 16 $\mu$s          \\ \hline
+			DIFS                   & DIFS duration                     & 34 $\mu$s          \\ \hline
+			PIFS                   & PIFS duration                     & 25 $\mu$s         \\ \hline
+			$\eta$                 & Constant packet error rate        & 0.1           \\ \hline
+			$f_c$                 & Central frequency       & 5 GHz           \\ \hline
+			
+			% IEEE 802.11ax
+			$T_\text{ofdm}$      & Duration of OFDM symbol     & 16 $\mu$s           \\ \hline
+			$T_\text{phy}$      & Duration of legacy PHY header       & 20 $\mu$s           \\ \hline
+			$n_\text{ss}$               & Single user spatial streams       & 1           \\ \hline
+			$T_\text{phy}^\text{HE}$      & Duration of HE header       & $(16 + n_\text{SUSS} * 16)$ $\mu$s           \\ \hline
+			$L_\text{sfF}$      & Length of the MAC's service field       & 16 bits           \\ \hline
+			$L_\text{del}$      & Length of the MAC's MPDU delimiter       & 32 bits           \\ \hline
+			$L_\text{mac}$      & Length of the MAC header     & 272 bits           \\ \hline
+			$L_\text{tail}$      & Length of the MAC's tail     & 6 bits           \\ \hline
+			\end{tabular}}
+			\caption{IEEE 802.11ax parameters}
+			\label{table:appendix_table}
+		\end{table}
+
 	%%% Basic Scenarios
 	\subsection{Basic Scenarios}
 	\label{section:validations_basic_scenario}
@@ -421,16 +461,16 @@ In this Section we provide an overview of the main MAC layer features included i
 		\begin{tabular}{|c|c|c|c|c|c|c|}
 			\hline
 			\textbf{Scenario} & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma_D$ & $\Gamma$ \\ \hline
-			\multirow{2}{*}{1a} & Komondor & a & b & - & - & c \\ \cline{2-7} 
-			& CTMN & a & b & - & - & c \\ \hline
-			\multirow{2}{*}{1b} & Komondor & a & b & - & - & c \\ \cline{2-7} 
-			& CTMN & a & b & - & - & c \\ \hline
-			\multirow{2}{*}{2a} & Komondor & a & b & c & d & e \\ \cline{2-7} 
-			& CTMN & a & b & c & d & e \\ \hline
-			\multirow{2}{*}{2b} & Komondor & a & b & c & d & e \\ \cline{2-7} 
-			& CTMN & a & b & c & d & e \\ \hline
-			\multirow{2}{*}{2c} & Komondor & a & b & c & d & e \\ \cline{2-7} 
-			& CTMN & a & b & c & d & e \\ \hline
+			\multirow{2}{*}{1a} & Komondor & 51.17 & 51.12 & - & - & 102.29 \\ \cline{2-7} 
+			& CTMN & 66.71 & 66.71 & - & - & 133.42 \\ \hline
+			\multirow{2}{*}{1b} & Komondor & 101.66  & 101.71 & - & - & 203.37 \\ \cline{2-7} 
+			& CTMN & 132.81 & 132.81 & - & - & 265.63 \\ \hline
+			\multirow{2}{*}{2a} & Komondor & 12.45 & 12.50 & 12.47 & 12.49 & 49.91 \\ \cline{2-7} 
+			& CTMN & 33.43 & 33.43 & 33.43 & 33.43 & e \\ \hline
+			\multirow{2}{*}{2b} & Komondor & 50.99 & 50.97 & 51 & 51.02 & 203.98 \\ \cline{2-7} 
+			& CTMN & 66.71 & 66.71 & 66.71 & 66.71 & 266.84 \\ \hline
+			\multirow{2}{*}{2c} & Komondor & 101.19 & 101.23 & 101.18 & 101.19 & 404.78 \\ \cline{2-7} 
+			& CTMN & 132.81 & 132.81 & 132.81 & 132.81 & 531.24 \\ \hline
 		\end{tabular}
 		\caption{Summary of the results obtained for the basic scenarios.}
 		\label{table:basic_scenarios}
@@ -439,25 +479,27 @@ In this Section we provide an overview of the main MAC layer features included i
 	%%% Hidden and Exposed Scenarios
 	\subsection{Hidden and Exposed Node Scenarios}
 	\label{section:validations_hidden_exposed}
-	We start by showing 
+	We start showing a hidden-node situation in which two simultaneously transmit to the their respective STAs, as shown in Figure \ref{fig:hidden_node_scenario}. Due to nodes location, transmitters (i.e., the APs) do not sense each other, so that they simultaneously transmit and generate collisions at the receivers (e.g., the STAs), which are in the middle. 
 	
 	Regarding the exposed node situation, we introduce the scenario depicted in Figure \ref{fig:exposed_node_scenario}, in which one of the three WLANs suffers starvation because of its location. The fact that $\text{WLAN}_A$ and $\text{WLAN}_C$ do not sense each other makes that $\text{WLAN}_B$ senses the channel busy almost all the time and lacks of opportunities for accessing to it.
 	\begin{figure}[h!]
 	\centering
-	\begin{subfigure}[b]{0.475\textwidth}
+	\begin{subfigure}[b]{0.5\textwidth}
 		\begin{tikzpicture}
-		\node at (0,0) [circle, fill=red, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{Node}_A$] (A) {};
-		\node at (A) [circle,draw=red, minimum size=4cm, dashed] (Ac) {};
-		\node[circle, fill=orange, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{Node}_B$] (B) [right of=A, xshift=0.5cm] {};
-		\node at (B) [circle,draw=orange, minimum size=4cm, dashed] (Bc) {};
-		\node[circle,draw, fill=blue, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{Node}_C$] (C) [right of=B, xshift=0.5cm] {};
-		\node at (C) [circle,draw=blue, minimum size=4cm, dashed] (Cc) {};      
-		\draw [->,line width=1.8pt] (A) edge (B) (C) edge (B);
+		\node at (0,0) [circle, fill=red, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{AP}_A$] (A) {};
+		\node at (A) [circle,draw=red, minimum size=4.5cm, dashed] (Ac) {};
+		\node[circle, fill=red, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{STA}_A$] (B) [right of=A, xshift=0.1cm] {};
+		%\node at (B) [circle,draw=red, minimum size=3.5cm, dashed] (Bc) {};
+		\node[circle,draw, fill=blue, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{STA}_B$] (C) [right of=B, xshift=0.01cm] {};
+		%\node at (C) [circle,draw=blue, minimum size=3.5cm, dashed] (Cc) {};      
+		\node[circle,draw, fill=blue, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{AP}_B$] (D) [right of=C, xshift=0.1cm] {};
+		\node at (D) [circle,draw=blue, minimum size=4.5cm, dashed] (Cc) {};
+		\draw [->,line width=1.8pt] (A) edge (B) (D) edge (C);
 		\end{tikzpicture}
 		\caption{Hidden-node} 
 		\label{fig:hidden_node_scenario}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.475\textwidth}
+	\begin{subfigure}[b]{0.5\textwidth}
 		\begin{tikzpicture}
 		\node at (0,0) [circle, fill=red, draw, minimum width=0.5cm,minimum height=0.5cm, label=below:$\text{WLAN}_A$] (A) {};
 		\node at (A) [circle,draw=red, minimum size=4cm, dashed] (Ac) {};
@@ -480,13 +522,13 @@ In this Section we provide an overview of the main MAC layer features included i
 		\centering
 		\begin{tabular}{|c|c|c|c|c|c|c|}
 			\hline
-			\textbf{Scenario} & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma$ & Collisions \\ \hline
-			\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Hidden\\ node\end{tabular}} & Komondor & a & b & c & d & x \\ \cline{2-7} 
-			& CTMN & a & b & c & d & x \\ \hline
-			\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Exposed\\ node\end{tabular}} & Komondor & a & b & c & d & x \\ \cline{2-7} 
-			& CTMN & a & b & c & d & x \\ \hline
+			\textbf{Scenario} & \textbf{Tool} & $\Gamma_A$ & $\Gamma_B$ & $\Gamma_C$ & $\Gamma$ & Loss rate \\ \hline
+			\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Hidden\\ node\end{tabular}} & Komondor & 0 & 0 & - & 0 & 1  \\ \cline{2-7} 
+			& CTMN & 0 & 0 & - & 0 & 1 \\ \hline
+			\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Exposed\\ node\end{tabular}} & Komondor & 101.07 & 0.64 & 101.07 & 202.77 & 0.11* \\ \cline{2-7} 
+			& CTMN & 131.64 & 1.19 & 131.64 & 264.47 & 0 \\ \hline
 		\end{tabular}
-		\caption{Summary of the results obtained for the hidden and exposed node scenarios.}
+		\caption{Summary of the results obtained for the hidden and exposed node scenarios. *A constant packet loss rate of 0.1 is set to simulate losses when using an acceptable MCS.}
 		\label{table:hidden_exposed_scenarios}
 	\end{table}	
 
@@ -602,6 +644,13 @@ In this Section we provide an overview of the main MAC layer features included i
 	%%% Brief tutorial
 	\subsection{Brief Tutorial}
 	\label{section:brief_tutorial}
+		Komondor is composed by several modules that allow performing simulations with a high degree of freedom. In this Section we provide some details on the most important modules, as well as on its practical execution. Figure \ref{fig:komondor_flowchart} summarizes the main operations carried out by Komondor.
+		\begin{figure}[h!]
+			\centering
+			\epsfig{file=images/komondor_flowchart, width=15cm}
+			\caption{Komondor flowchart}
+			\label{fig:komondor_flowchart}
+		\end{figure}		
 		
 		% Project organization
 		\subsubsection{Files Organization}

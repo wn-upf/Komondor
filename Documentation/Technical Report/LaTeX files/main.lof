@@ -8,8 +8,9 @@
 \contentsline {figure}{\numberline {7}{\ignorespaces Example of the DCF procedure\relax }}{8}{figure.caption.11}
 \contentsline {figure}{\numberline {8}{\ignorespaces Example of RTS/CTS implementation. The transmitter (STA2) sends an RTS packet before starting a transmission. The receiver (AP) answers with a CTS as it senses the channel free. The other coexisting devices (STA1) listen either the RTS and/or the CTS and set their NAV accordingly.\relax }}{9}{figure.caption.12}
 \contentsline {figure}{\numberline {9}{\ignorespaces Example of packet aggregation in which N MPDUs are concatenated to be sent during the same packet transmission.\relax }}{10}{figure.caption.13}
-\contentsline {figure}{\numberline {10}{\ignorespaces Scenarios for basic validations\relax }}{11}{figure.caption.14}
-\contentsline {figure}{\numberline {11}{\ignorespaces Representative scenarios of performance anomalies in WLANs\relax }}{12}{figure.caption.16}
-\contentsline {figure}{\numberline {12}{\ignorespaces Channel allocations}}{13}{figure.caption.18}
-\contentsline {figure}{\numberline {13}{\ignorespaces Example of nodes statistics in Komondor\relax }}{18}{figure.caption.22}
-\contentsline {figure}{\numberline {14}{\ignorespaces Example of system statistics in Komondor\relax }}{18}{figure.caption.23}
+\contentsline {figure}{\numberline {10}{\ignorespaces Scenarios for basic validations\relax }}{12}{figure.caption.15}
+\contentsline {figure}{\numberline {11}{\ignorespaces Representative scenarios of performance anomalies in WLANs\relax }}{13}{figure.caption.17}
+\contentsline {figure}{\numberline {12}{\ignorespaces Channel allocations}}{14}{figure.caption.19}
+\contentsline {figure}{\numberline {13}{\ignorespaces Komondor flowchart\relax }}{14}{figure.caption.21}
+\contentsline {figure}{\numberline {14}{\ignorespaces Example of nodes statistics in Komondor\relax }}{19}{figure.caption.24}
+\contentsline {figure}{\numberline {15}{\ignorespaces Example of system statistics in Komondor\relax }}{19}{figure.caption.25}
