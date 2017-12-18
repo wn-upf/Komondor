@@ -3,14 +3,14 @@
 \contentsline {figure}{\numberline {2}{\ignorespaces Channel models with and without adjacent interference\relax }}{5}{figure.caption.5}
 \contentsline {figure}{\numberline {3}{\ignorespaces Traffic models used in Komondor\relax }}{6}{figure.caption.6}
 \contentsline {figure}{\numberline {4}{\ignorespaces Hidden-node cause of collision\relax }}{7}{figure.caption.8}
-\contentsline {figure}{\numberline {5}{\ignorespaces Weird case when collisions occur due to last transmitting AP checks the channel right in the SIFS period of other WLAN and picks a range affecting the previous transmission.\relax }}{7}{figure.caption.9}
-\contentsline {figure}{\numberline {6}{\ignorespaces Stronger-First Capture Effect example\relax }}{8}{figure.caption.10}
-\contentsline {figure}{\numberline {7}{\ignorespaces Example of the DCF procedure\relax }}{8}{figure.caption.11}
-\contentsline {figure}{\numberline {8}{\ignorespaces Example of RTS/CTS implementation. The transmitter (STA2) sends an RTS packet before starting a transmission. The receiver (AP) answers with a CTS as it senses the channel free. The other coexisting devices (STA1) listen either the RTS and/or the CTS and set their NAV accordingly.\relax }}{9}{figure.caption.12}
-\contentsline {figure}{\numberline {9}{\ignorespaces Example of packet aggregation in which N MPDUs are concatenated to be sent during the same packet transmission.\relax }}{10}{figure.caption.13}
-\contentsline {figure}{\numberline {10}{\ignorespaces Scenarios for basic validations\relax }}{12}{figure.caption.15}
+\contentsline {figure}{\numberline {5}{\ignorespaces Weird case when collisions occur due to last transmitting AP checks the channel right in the SIFS period of other WLAN and picks a range affecting the previous transmission.\relax }}{8}{figure.caption.9}
+\contentsline {figure}{\numberline {6}{\ignorespaces Example of the DCF procedure\relax }}{8}{figure.caption.10}
+\contentsline {figure}{\numberline {7}{\ignorespaces Stronger-First Capture Effect example\relax }}{9}{figure.caption.11}
+\contentsline {figure}{\numberline {8}{\ignorespaces Example of RTS/CTS implementation. The transmitter (STA2) sends an RTS packet before starting a transmission. The receiver (AP) answers with a CTS as it senses the channel free. The other coexisting devices (STA1) listen either the RTS and/or the CTS and set their NAV accordingly.\relax }}{10}{figure.caption.12}
+\contentsline {figure}{\numberline {9}{\ignorespaces Example of packet aggregation in which N MPDUs are concatenated to be sent during the same packet transmission.\relax }}{11}{figure.caption.13}
+\contentsline {figure}{\numberline {10}{\ignorespaces Scenarios for basic validations\relax }}{11}{figure.caption.15}
 \contentsline {figure}{\numberline {11}{\ignorespaces Representative scenarios of performance anomalies in WLANs\relax }}{13}{figure.caption.17}
 \contentsline {figure}{\numberline {12}{\ignorespaces Channel allocations}}{14}{figure.caption.19}
-\contentsline {figure}{\numberline {13}{\ignorespaces Komondor flowchart\relax }}{14}{figure.caption.21}
-\contentsline {figure}{\numberline {14}{\ignorespaces Example of nodes statistics in Komondor\relax }}{19}{figure.caption.24}
-\contentsline {figure}{\numberline {15}{\ignorespaces Example of system statistics in Komondor\relax }}{19}{figure.caption.25}
+\contentsline {figure}{\numberline {13}{\ignorespaces Komondor flowchart\relax }}{15}{figure.caption.21}
+\contentsline {figure}{\numberline {14}{\ignorespaces Example of nodes statistics in Komondor\relax }}{20}{figure.caption.24}
+\contentsline {figure}{\numberline {15}{\ignorespaces Example of system statistics in Komondor\relax }}{20}{figure.caption.25}

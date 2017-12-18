@@ -1,6 +1,5 @@
 # define execution parameters
 SIM_TIME=10
-SEED=1992
 # compile KOMONDOR
 cd ..
 ./build_local
@@ -29,6 +28,7 @@ cd ..
 cd ..
 for (( executing_ix=0; executing_ix < (file_ix + 1); executing_ix++))
 do 
+	SEED=$RANDOM
 	echo ""
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"

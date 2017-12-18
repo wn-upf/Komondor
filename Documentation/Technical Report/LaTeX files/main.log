@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  14 DEC 2017 16:17
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  18 DEC 2017 11:01
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1032,206 +1032,222 @@ LaTeX Font Info:    Try loading font information for T1+cmtt on input line 86.
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 ) [2]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 104.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 102.
 
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 104.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 102.
 
-<images/cost.pdf, id=276, 472.1896pt x 163.94438pt>
+<images/cost.pdf, id=291, 472.1896pt x 163.94438pt>
 File: images/cost.pdf Graphic file (type pdf)
  <use images/cost.pdf>
-Package pdftex.def Info: images/cost.pdf used on input line 122.
+Package pdftex.def Info: images/cost.pdf used on input line 125.
 (pdftex.def)             Requested size: 199.16928pt x 69.15135pt.
 
-[3] [4pdfTeX warning (ext4): destination with the same identifier (name{equatio
-n.2.1}) has been already used, duplicate ignored
-
-\@EveryShipout@Output ...@Org@Shipout \box \@cclv 
-                                                  
-l.164 		\item I
-               ndoor model with random channel effects: we consider the same...
-pdfTeX warning (ext4): destination with the same identifier (name{equation.2.1}
-) has been already used, duplicate ignored
-
-\@EveryShipout@Output ...@Org@Shipout \box \@cclv 
-                                                  
-l.164 		\item I
-               ndoor model with random channel effects: we consider the same...
- <./images/cost.pdf>]pdfTeX warning (ext4): destination with the same identifie
-r (name{equation.2.1}) has been already used, duplicate ignored
+[3] [4 <./images/cost.pdf>]pdfTeX warning (ext4): destination with the same ide
+ntifier (name{equation.2.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.166 		\begin{equation}
-                        pdfTeX warning (ext4): destination with the same identi
-fier (name{equation.2.1}) has been already used, duplicate ignored
+l.166 			\begin{equation}
+                         pdfTeX warning (ext4): destination with the same ident
+ifier (name{equation.2.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.166 		\begin{equation}
-                        pdfTeX warning (ext4): destination with the same identi
-fier (name{equation.2.1}) has been already used, duplicate ignored
+l.166 			\begin{equation}
+                         pdfTeX warning (ext4): destination with the same ident
+ifier (name{equation.2.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.166 		\begin{equation}
-                        pdfTeX warning (ext4): destination with the same identi
-fier (name{equation.2.1}) has been already used, duplicate ignored
+l.166 			\begin{equation}
+                         pdfTeX warning (ext4): destination with the same ident
+ifier (name{equation.2.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.166 		\begin{equation}
-                        
-<images/cochannel_interference.pdf, id=314, 416.52121pt x 180.72618pt>
+l.166 			\begin{equation}
+                         pdfTeX warning (ext4): destination with the same ident
+ifier (name{equation.2.1}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.173 			\begin{equation}
+                         pdfTeX warning (ext4): destination with the same ident
+ifier (name{equation.2.1}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.173 			\begin{equation}
+                         pdfTeX warning (ext4): destination with the same ident
+ifier (name{equation.2.1}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.173 			\begin{equation}
+                         pdfTeX warning (ext4): destination with the same ident
+ifier (name{equation.2.1}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.173 			\begin{equation}
+                         
+<images/cochannel_interference.pdf, id=329, 416.52121pt x 180.72618pt>
 File: images/cochannel_interference.pdf Graphic file (type pdf)
 
 <use images/cochannel_interference.pdf>
 Package pdftex.def Info: images/cochannel_interference.pdf used on input line 1
-81.
+90.
 (pdftex.def)             Requested size: 256.0748pt x 111.11423pt.
+ [5pdfTeX warning (ext4): destination with the same identifier (name{equation.2
+.1}) has been already used, duplicate ignored
 
-<images/traffic_models.pdf, id=316, 654.97182pt x 271.06892pt>
+\@EveryShipout@Output ...@Org@Shipout \box \@cclv 
+                                                  
+l.201 	\begin{itemize}
+                       <./images/cochannel_interference.pdf>]
+<images/traffic_models.pdf, id=348, 654.97182pt x 271.06892pt>
 File: images/traffic_models.pdf Graphic file (type pdf)
 
 <use images/traffic_models.pdf>
-Package pdftex.def Info: images/traffic_models.pdf used on input line 201.
+Package pdftex.def Info: images/traffic_models.pdf used on input line 210.
 (pdftex.def)             Requested size: 256.0748pt x 105.97702pt.
 
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 210.
+               Default added (so using `tbp') on input line 219.
 
-[5 <./images/cochannel_interference.pdf>] [6 <./images/traffic_models.pdf>]
-Overfull \hbox (1.2908pt too wide) in paragraph at lines 259--260
+[6 <./images/traffic_models.pdf>]
+Overfull \hbox (1.2908pt too wide) in paragraph at lines 268--269
 []\T1/cmr/m/n/10 PACKET_LOST_LOW_SIGNAL: the packet can-not be de-coded be-caus
 e the sig-nal strength
  []
 
-<images/ACK_issue.png, id=367, 469.15276pt x 214.401pt>
+<images/ACK_issue.png, id=382, 469.15276pt x 214.401pt>
 File: images/ACK_issue.png Graphic file (type png)
 
 <use images/ACK_issue.png>
-Package pdftex.def Info: images/ACK_issue.png used on input line 270.
+Package pdftex.def Info: images/ACK_issue.png used on input line 279.
 (pdftex.def)             Requested size: 328.40468pt x 150.07967pt.
- [7 <./images/ACK_issue.png>]
-<images/capture_effect.pdf, id=374, 317.88583pt x 166.46571pt>
-File: images/capture_effect.pdf Graphic file (type pdf)
 
-<use images/capture_effect.pdf>
-Package pdftex.def Info: images/capture_effect.pdf used on input line 293.
-(pdftex.def)             Requested size: 256.0748pt x 134.09985pt.
 
-<images/dcf_operation.png, id=376, 598.3956pt x 233.14302pt>
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[7] <images/dcf_operation.png, id=389, 598.3956pt x 233.14302pt>
 File: images/dcf_operation.png Graphic file (type png)
 
 <use images/dcf_operation.png>
-Package pdftex.def Info: images/dcf_operation.png used on input line 304.
+Package pdftex.def Info: images/dcf_operation.png used on input line 302.
 (pdftex.def)             Requested size: 341.43306pt x 133.02808pt.
- [8 <./images/capture_effect.pdf> <./images/dcf_operation.png>]
-<images/rts_cts_mechanism.pdf, id=400, 593.07693pt x 222.5412pt>
+ [8 <./images/ACK_issue.png> <./images/dcf_operation.png>] <images/capture_effe
+ct.pdf, id=397, 317.88583pt x 166.46571pt>
+File: images/capture_effect.pdf Graphic file (type pdf)
+
+<use images/capture_effect.pdf>
+Package pdftex.def Info: images/capture_effect.pdf used on input line 326.
+(pdftex.def)             Requested size: 256.0748pt x 134.09985pt.
+
+<images/rts_cts_mechanism.pdf, id=399, 593.07693pt x 222.5412pt>
 File: images/rts_cts_mechanism.pdf Graphic file (type pdf)
 
 <use images/rts_cts_mechanism.pdf>
-Package pdftex.def Info: images/rts_cts_mechanism.pdf used on input line 327.
+Package pdftex.def Info: images/rts_cts_mechanism.pdf used on input line 336.
 (pdftex.def)             Requested size: 341.43306pt x 128.1164pt.
- [9 <./images/rts_cts_mechanism.pdf>]
 
-LaTeX Warning: Reference `' on page 10 undefined on input line 347.
 
-<images/ampdu.png, id=534, 1101.11375pt x 511.9125pt>
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[9 <./images/capture_effect.pdf>]
+
+LaTeX Warning: Reference `' on page 10 undefined on input line 356.
+
+<images/ampdu.png, id=422, 1101.11375pt x 511.9125pt>
 File: images/ampdu.png Graphic file (type png)
  <use images/ampdu.png>
-Package pdftex.def Info: images/ampdu.png used on input line 360.
+Package pdftex.def Info: images/ampdu.png used on input line 369.
 (pdftex.def)             Requested size: 341.43306pt x 158.73029pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[10 <./images/ampdu.png>]
+[10 <./images/rts_cts_mechanism.pdf>]
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-Overfull \hbox (6.37518pt too wide) in paragraph at lines 498--499
+Overfull \hbox (6.37518pt too wide) in paragraph at lines 507--508
 [][] 
  []
 
-[11]
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 521.
+               Default added (so using `tbp') on input line 530.
 
-<images/channel_bonding_scenario1.png, id=558, 352.9185pt x 122.25674pt>
+[11 <./images/ampdu.png>] [12]
+<images/channel_bonding_scenario1.png, id=577, 352.9185pt x 122.25674pt>
 File: images/channel_bonding_scenario1.png Graphic file (type png)
 
 <use images/channel_bonding_scenario1.png>
 Package pdftex.def Info: images/channel_bonding_scenario1.png used on input lin
-e 545.
+e 554.
 (pdftex.def)             Requested size: 202.72849pt x 70.22992pt.
 
-<images/channel_bonding_scenario2.png, id=559, 711.8595pt x 248.127pt>
+<images/channel_bonding_scenario2.png, id=578, 711.8595pt x 248.127pt>
 File: images/channel_bonding_scenario2.png Graphic file (type png)
 
 <use images/channel_bonding_scenario2.png>
 Package pdftex.def Info: images/channel_bonding_scenario2.png used on input lin
-e 553.
+e 562.
 (pdftex.def)             Requested size: 202.72849pt x 70.66391pt.
 
-<images/channel_bonding_scenario3.png, id=560, 353.52075pt x 124.0635pt>
+<images/channel_bonding_scenario3.png, id=579, 353.52075pt x 124.0635pt>
 File: images/channel_bonding_scenario3.png Graphic file (type png)
 
 <use images/channel_bonding_scenario3.png>
 Package pdftex.def Info: images/channel_bonding_scenario3.png used on input lin
-e 560.
+e 569.
 (pdftex.def)             Requested size: 202.72849pt x 71.14474pt.
 
-<images/channel_bonding_scenario4.png, id=561, 707.64375pt x 243.309pt>
+<images/channel_bonding_scenario4.png, id=580, 707.64375pt x 243.309pt>
 File: images/channel_bonding_scenario4.png Graphic file (type png)
 
 <use images/channel_bonding_scenario4.png>
 Package pdftex.def Info: images/channel_bonding_scenario4.png used on input lin
-e 568.
+e 577.
 (pdftex.def)             Requested size: 202.72849pt x 69.7039pt.
 
-<images/channel_bonding_scenario5.png, id=562, 357.13425pt x 154.77824pt>
+<images/channel_bonding_scenario5.png, id=581, 357.13425pt x 154.77824pt>
 File: images/channel_bonding_scenario5.png Graphic file (type png)
 
 <use images/channel_bonding_scenario5.png>
 Package pdftex.def Info: images/channel_bonding_scenario5.png used on input lin
-e 576.
+e 585.
 (pdftex.def)             Requested size: 202.72849pt x 87.86081pt.
 
-<images/channel_bonding_scenario6.png, id=563, 357.7365pt x 155.3805pt>
+<images/channel_bonding_scenario6.png, id=582, 357.7365pt x 155.3805pt>
 File: images/channel_bonding_scenario6.png Graphic file (type png)
 
 <use images/channel_bonding_scenario6.png>
 Package pdftex.def Info: images/channel_bonding_scenario6.png used on input lin
-e 584.
+e 593.
 (pdftex.def)             Requested size: 202.72849pt x 88.0533pt.
 
-<images/channel_bonding_scenario7.png, id=564, 355.3275pt x 151.16475pt>
+<images/channel_bonding_scenario7.png, id=583, 355.3275pt x 151.16475pt>
 File: images/channel_bonding_scenario7.png Graphic file (type png)
 
 <use images/channel_bonding_scenario7.png>
 Package pdftex.def Info: images/channel_bonding_scenario7.png used on input lin
-e 591.
+e 600.
 (pdftex.def)             Requested size: 202.72849pt x 86.24783pt.
 
-<images/channel_bonding_scenario8.png, id=565, 358.941pt x 154.176pt>
+<images/channel_bonding_scenario8.png, id=584, 358.941pt x 154.176pt>
 File: images/channel_bonding_scenario8.png Graphic file (type png)
 
 <use images/channel_bonding_scenario8.png>
 Package pdftex.def Info: images/channel_bonding_scenario8.png used on input lin
-e 599.
+e 608.
 (pdftex.def)             Requested size: 202.72849pt x 87.07664pt.
 
 
@@ -1240,45 +1256,58 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<images/komondor_flowchart.pdf, id=567, 939.33148pt x 346.18874pt>
+<images/komondor_flowchart.pdf, id=586, 939.33148pt x 346.18874pt>
 File: images/komondor_flowchart.pdf Graphic file (type pdf)
 
 <use images/komondor_flowchart.pdf>
-Package pdftex.def Info: images/komondor_flowchart.pdf used on input line 650.
+Package pdftex.def Info: images/komondor_flowchart.pdf used on input line 659.
 (pdftex.def)             Requested size: 426.79134pt x 157.29425pt.
- [12]
+
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[13] [14 <./images/channel_bonding_scenario1.png> <./images/channel_bonding_sce
-nario2.png> <./images/channel_bonding_scenario3.png> <./images/channel_bonding_
-scenario4.png> <./images/channel_bonding_scenario5.png> <./images/channel_bondi
-ng_scenario6.png> <./images/channel_bonding_scenario7.png> <./images/channel_bo
-nding_scenario8.png> <./images/komondor_flowchart.pdf>] [15]
-Overfull \hbox (34.84004pt too wide) in paragraph at lines 737--769
+[13]
+
+LaTeX Warning: Text page 14 contains only floats.
+
+[14 <./images/channel_bonding_scenario1.png> <./images/channel_bonding_scenario
+2.png> <./images/channel_bonding_scenario3.png> <./images/channel_bonding_scena
+rio4.png> <./images/channel_bonding_scenario5.png> <./images/channel_bonding_sc
+enario6.png> <./images/channel_bonding_scenario7.png> <./images/channel_bonding
+_scenario8.png>] [15 <./images/komondor_flowchart.pdf>]
+Overfull \hbox (5.38176pt too wide) in paragraph at lines 717--718
+[]\T1/cmr/m/it/10 multiple_inputs_script.sh\T1/cmr/m/n/10 : pro-cesses all the 
+in-put files con-tained in ./in-put/script_input_files
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Overfull \hbox (34.84004pt too wide) in paragraph at lines 757--789
  [][] 
  []
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[16] <images/nodes_statistics_example.png, id=636, 840.13875pt x 660.4675pt>
+<images/nodes_statistics_example.png, id=645, 840.13875pt x 660.4675pt>
 File: images/nodes_statistics_example.png Graphic file (type png)
 
 <use images/nodes_statistics_example.png>
 Package pdftex.def Info: images/nodes_statistics_example.png used on input line
- 783.
+ 803.
 (pdftex.def)             Requested size: 341.43306pt x 268.41504pt.
-
+ [16]
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<images/general_statistics_example.png, id=637, 824.07875pt x 714.67pt>
+<images/general_statistics_example.png, id=652, 824.07875pt x 714.67pt>
 File: images/general_statistics_example.png Graphic file (type png)
 
 <use images/general_statistics_example.png>
 Package pdftex.def Info: images/general_statistics_example.png used on input li
-ne 790.
+ne 810.
 (pdftex.def)             Requested size: 341.43306pt x 296.10269pt.
 
 
@@ -1286,28 +1315,28 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 800.
+               Default added (so using `tbp') on input line 820.
 
-[17] [18] [19 <./images/nodes_statistics_example.png> <./images/general_statist
-ics_example.png>] (./main.bbl [20]) [21]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 909.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 909.
+[17] [18] [19] [20 <./images/nodes_statistics_example.png> <./images/general_st
+atistics_example.png>] (./main.bbl) [21]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 929.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 929.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 909.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 909.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 929.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 929.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 130A8FBDE452445DCE4A43EB93548E9C;2415.
+(rerunfilecheck)             Checksum: 0A731F49433B317C505827E53F9A220E;2654.
 
 
 LaTeX Warning: There were undefined references.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 909.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 929.
  ) 
 Here is how much of TeX's memory you used:
- 24872 strings out of 493014
- 493856 string characters out of 6133351
- 633954 words of memory out of 5000000
- 27774 multiletter control sequences out of 15000+600000
+ 24879 strings out of 493014
+ 493999 string characters out of 6133351
+ 636006 words of memory out of 5000000
+ 27778 multiletter control sequences out of 15000+600000
  23081 words of font info for 63 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  62i,20n,95p,1083b,953s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1336,10 +1365,10 @@ s/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2016/texmf-dist/fonts/
 type1/public/cm-super/sfti0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/ty
 pe1/public/cm-super/sfti1000.pfb></usr/local/texlive/2016/texmf-dist/fonts/type
 1/public/cm-super/sftt0800.pfb>
-Output written on main.pdf (21 pages, 1316784 bytes).
+Output written on main.pdf (21 pages, 1318492 bytes).
 PDF statistics:
- 769 PDF objects out of 1000 (max. 8388607)
- 622 compressed objects within 7 object streams
- 107 named destinations out of 1000 (max. 500000)
- 388 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 786 PDF objects out of 1000 (max. 8388607)
+ 639 compressed objects within 7 object streams
+ 110 named destinations out of 1000 (max. 500000)
+ 412 words of extra memory for PDF output out of 10000 (max. 10000000)
 

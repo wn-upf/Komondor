@@ -1,10 +1,13 @@
-/* TODO: DEFINE copyright headers.*/
-
-/* This is just an sketch of what our Komondor headers should look like.
+/* Komondor IEEE 802.11ax Simulator
  *
  * Copyright (c) 2017, Universitat Pompeu Fabra.
- * All rights reserved.
- *
+ * GNU GENERAL PUBLIC LICENSE
+ * Version 3, 29 June 2007
+
+ * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
+ * Everyone is permitted to copy and distribute verbatim copies
+ * of this license document, but changing it is not allowed.
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -40,7 +43,9 @@
  * -----------------------------------------------------------------
  * File description: this is the main Komondor file
  *
- * - Bla bla bla...
+ * - This file generates the wireless network according to the input files.
+ * Then, it initiates nodes to start sending packets until the simulation
+ * time is over. Finally, it processes the results. 
  */
 
 #include <stdio.h>

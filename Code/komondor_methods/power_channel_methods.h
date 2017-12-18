@@ -1,8 +1,13 @@
-/* This is just an sketch of what our Komondor headers should look like.
+/* Komondor IEEE 802.11ax Simulator
  *
  * Copyright (c) 2017, Universitat Pompeu Fabra.
- * All rights reserved.
- *
+ * GNU GENERAL PUBLIC LICENSE
+ * Version 3, 29 June 2007
+
+ * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
+ * Everyone is permitted to copy and distribute verbatim copies
+ * of this license document, but changing it is not allowed.
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -30,15 +35,15 @@
  *
  * -----------------------------------------------------------------
  *
- * Author  : Sergio Barrachina-Muñoz (sergio.barrachina@upf.edu) and Francesc Wilhelmi (francisco.wilhelmi@upf.edu)
+ * Author  : Sergio Barrachina-Muñoz and Francesc Wilhelmi
  * Created : 2016-12-05
  * Updated : $Date: 2017/03/20 10:32:36 $
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description:
+ * File description: this is the main Komondor file
  *
- * - Bla bla bla...
+ * - This file contains the methods related to "modulations" operations
  */
 
 #include <stddef.h>

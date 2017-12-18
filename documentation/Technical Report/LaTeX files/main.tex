@@ -97,18 +97,21 @@ Komondor is a wireless network simulator that includes novel mechanisms for next
 	%%%  Komondor main features
 	\subsection{Komondor Main Features}
 	\label{section:features}
-	Komondor aims to thoroughly simulate the operation of wireless networks. Henceforth, it reproduces actual transmissions on a per-packet basis. For that, nodes properties (e.g., location, transmit power, CCA threshold) are taken into account during data exchange procedures.
-	
-	In overview mode, Komondor is intended to simulate the following wireless networks mechanisms:
+	Komondor aims to thoroughly simulate the operation of wireless networks. Henceforth, it reproduces actual transmissions on a per-packet basis. For that, nodes properties (e.g., location, transmit power, CCA threshold) are taken into account during data exchange procedures. In overview mode, Komondor is provides the following functionalities:
 	\begin{itemize}
-		\item Distributed Coordination Function (DCF)
-		\item Channel Bonding (CB)
-		\item Dynamic transmit power and CST adjustment
-		\item MU-MIMO transmissions
-		\item Directional transmissions
-		\item Packet aggregation
-		\item Dynamic MCS
-		\item RTS/CTS and NAV allocation
+		\item Flexible input files processing with error control
+		\item IEEE 802.11ax WLANs features:
+		\begin{itemize}
+			\item Distributed Coordination Function (DCF)
+			\item Channel Bonding (CB)
+			\item Dynamic transmit power and CST adjustment
+			\item MU-MIMO transmissions
+			\item Directional transmissions
+			\item Packet aggregation
+			\item Dynamic MCS
+			\item RTS/CTS and NAV allocation
+		\end{itemize}
+		\item Statistics gathering and output generation
 	\end{itemize}
 
 	Note, as well, that the first version of Komondor introduced by this document includes the basic operation carried out by WLANs and only implements DCF, CB, dynamic MCS and RTS/CTS.
@@ -138,52 +141,58 @@ One of the main tasks regarding the implementation of Komondor is the definition
 	
 	%%% Channel Modeling
 	\subsection{Channel Modeling}
-	Channel modeling is one of the most important parts regarding the system model, since it has direct impact on the interactions between wireless devices. For that, and in order to provide the most representative wireless environments, we implemented the following set of path-loss models, which can be further extended by any developer:
-	\begin{itemize}
-		\item Free Space Path Loss (FSPL): a free-space model is considered, which captures direct line-of-sight and ignores shadowing effects. The experienced loss of power during a transmission that assumes this model is given by:
-		\begin{equation}
-			\text{FSPL} = 20 \log_{10}(d) + 20 \log_{10}(f) + 20 \log_{10}(\frac{4\pi}{c}) - G_t - G_r,
-			\nonumber
-		\end{equation}
-		where $d$ is the distance between the transmitter and the receiver, $f$ is the frequency used in GHz, $c$ is the light speed in $m/s$, and $G_t$ and $G_r$ are the gains in dB at the transmitter and receiver, respectively.
-		\item Okumura-Hata model \cite{hata1980empirical}: this well-known model was conceived for predicting the path-loss of cellular transmissions in outside urban and rural environments. Our main concern is related to dense urban areas, so the loss, $L_U$, that is considered to be experienced during a transmission is given by: 
-		\begin{equation}
-		\begin{aligned}
-			L_U =  &69.55 + 22.16 \log_{10}(f) - 13.82 \log_{10} (h_B) + (44.9 - 6.55 \log_{10}(h_B)) \log_{10}(d) - \\ 
-			& 3.2 \log_{10}(11.7554 h_M)^2 - 4.97,
-		\end{aligned}
-		\nonumber
-		\end{equation}
-		where $f$ is the center frequency in MHz, $h_B$ is the height of the transmitter antenna (fixed to 10 m), $d$ is the distance between the transmitter's and the receiver in meters, and $h_M$ is the height of the receiver's antenna (fixed to 10 m).
-		\item Indoor model: this model represents a simple indoor scenario, which is useful to simulate typical scenarios such as flats, schools or restaurants. According to this model, the losses $L_{indoor}$ experienced between a packet transmission are:		
-		\begin{equation}
-			L_{indoor} = 5 + 10 \alpha \log_{10}(d) + h_S + (\frac{d}{f_w}) h_O,
-			\nonumber
-		\end{equation}
-		where $\alpha$ is a constant that depends on the propagation model (set to 4.4), $d$ is the distance in meters between the transmitter and the receiver, $h_S$ is the shadowing factor, $f_w$ is the frequency of walls (set to one wall each 5 meters), and $h_{O}$ is the obstacles factor.
-		\item Indoor model with random channel effects: we consider the same model as before, but now we introduce random variables to determine the shadowing and obstacles effects in the power losses.
-		\item Residential path-loss model IEEE 802.11ax: such model is included in the 11ax amendment, and captures the path-loss effects of a typical apartments building. The losses experienced between a packet transmission are:
-		\begin{equation}
-			\nonumber
-		\end{equation}
-	\end{itemize}
+	Channel modeling is one of the most important parts regarding the system model, since it has direct impact on the interactions between wireless devices. In order to be flexible and allowing to simulate different scenarios and casuistic, we define a set of path-loss and co-channel interference models, which are described next.
 	
-	In addition to path-loss types, we also defined different co-channel interference models to capture several kinds of interactions between devices:
-	\begin{itemize}
-		\item Without adjacent interference: no power is leaked to adjacent channels.
-		\item Full channel interference: power from other channels i leaked, so that a 20 dBr decrease is noticed for each channel distance. For instance, the power that channel 1 leaks into channel 3 is the actual power in channel 1 minus 40 dBr. 
-		\item Limited adjacent interference: in this case, only immediate adjacent channels leak power to the target one.
-	\end{itemize}
+		% Path-loss
+		\subsubsection{Path-loss Models}
+		In order to provide the most representative wireless environments, we implemented the following set of path-loss models, which can be further extended by any developer:
+		\begin{itemize}
+			\item Free Space Path Loss (FSPL): a free-space model is considered, which captures direct line-of-sight and ignores shadowing effects. The experienced loss of power during a transmission that assumes this model is given by:
+			\begin{equation}
+				\text{FSPL} = 20 \log_{10}(d) + 20 \log_{10}(f) + 20 \log_{10}(\frac{4\pi}{c}) - G_t - G_r,
+				\nonumber
+			\end{equation}
+			where $d$ is the distance between the transmitter and the receiver, $f$ is the frequency used in GHz, $c$ is the light speed in $m/s$, and $G_t$ and $G_r$ are the gains in dB at the transmitter and receiver, respectively.
+			\item Okumura-Hata model \cite{hata1980empirical}: this well-known model was conceived for predicting the path-loss of cellular transmissions in outside urban and rural environments. Our main concern is related to dense urban areas, so the loss, $L_U$, that is considered to be experienced during a transmission is given by: 
+			\begin{equation}
+			\begin{aligned}
+				L_U =  &69.55 + 22.16 \log_{10}(f) - 13.82 \log_{10} (h_B) + (44.9 - 6.55 \log_{10}(h_B)) \log_{10}(d) - \\ 
+				& 3.2 \log_{10}(11.7554 h_M)^2 - 4.97,
+			\end{aligned}
+			\nonumber
+			\end{equation}
+			where $f$ is the center frequency in MHz, $h_B$ is the height of the transmitter antenna (fixed to 10 m), $d$ is the distance between the transmitter's and the receiver in meters, and $h_M$ is the height of the receiver's antenna (fixed to 10 m).
+			\item Indoor model: this model represents a simple indoor scenario, which is useful to simulate typical scenarios such as flats, schools or restaurants. According to this model, the losses $L_{indoor}$ experienced between a packet transmission are:		
+			\begin{equation}
+				L_{indoor} = 5 + 10 \alpha \log_{10}(d) + h_S + (\frac{d}{f_w}) h_O,
+				\nonumber
+			\end{equation}
+			where $\alpha$ is a constant that depends on the propagation model (set to 4.4), $d$ is the distance in meters between the transmitter and the receiver, $h_S$ is the shadowing factor, $f_w$ is the frequency of walls (set to one wall each 5 meters), and $h_{O}$ is the obstacles factor.
+			\item Indoor model with random channel effects: we consider the same model as before, but now we introduce random variables to determine the shadowing and obstacles effects in the power losses.
+			\item Residential path-loss model IEEE 802.11ax: such model is included in the 11ax amendment, and captures the path-loss effects of a typical apartments building. The losses experienced between a packet transmission are:
+			\begin{equation}
+				\nonumber
+			\end{equation}
+		\end{itemize}
 	
-	An example of channels overlapping is shown in Figure \ref{fig:cochannel_interference}.
-	\begin{figure}[h!]
-		\centering
-		\epsfig{file=images/cochannel_interference.pdf, width=9cm}
-		\caption{Channel models with and without adjacent interference}
-		\label{fig:cochannel_interference}
-	\end{figure}	
+		% Co-channel interference
+		\subsubsection{Co-channel Interference Models}
+		In addition to path-loss types, we also defined different co-channel interference models to capture several kinds of interactions between devices:
+		\begin{itemize}
+			\item Without adjacent interference: no power is leaked to adjacent channels.
+			\item Full channel interference: power from other channels i leaked, so that a 20 dBr decrease is noticed for each channel distance. For instance, the power that channel 1 leaks into channel 3 is the actual power in channel 1 minus 40 dBr. 
+			\item Limited adjacent interference: in this case, only immediate adjacent channels leak power to the target one.
+		\end{itemize}
 		
-	Finally, regarding the channel model, it is important to remark that the incoming power is assumed to be the same during the entire transmission. This relaxation allows us to easily determine whenever the channel of interest is busy or not. A direct implication of it affects to path-loss models used, as well as some of them assume random variations of the medium, preventing to obtain the same result with different power received calculations (so far, power received is added and subtracted when the node accesses and leaves the channel, respectively). Thus, for each node we store its incoming power (which is computed only once) for subtracting it at the end of its transmission. 
+		An example of channels overlapping is shown in Figure \ref{fig:cochannel_interference}.
+		\begin{figure}[h!]
+			\centering
+			\epsfig{file=images/cochannel_interference.pdf, width=9cm}
+			\caption{Channel models with and without adjacent interference}
+			\label{fig:cochannel_interference}
+		\end{figure}	
+			
+		Finally, it is important to remark that the incoming power is assumed to be the same during the entire transmission. This relaxation allows us to easily determine whenever the channel of interest is busy or not. A direct implication of it affects to path-loss models used, as well as some of them assume random variations of the medium, preventing to obtain the same result with different power received calculations (so far, power received is added and subtracted when the node accesses and leaves the channel, respectively). Thus, for each node we store its incoming power (which is computed only once) for subtracting it at the end of its transmission. 
 	
 	%%% Traffic modeling
 	\subsection{Traffic Modeling}
@@ -253,7 +262,7 @@ One of the main tasks regarding the implementation of Komondor is the definition
 		\caption{Hidden-node cause of collision} \label{fig:collisions_hidden_node}
 	\end{figure}
 
-	In Komondor, a packet loss is considered when the ACK timeout is over. However, it is critical to identify what caused such loss, which may allow to solve the root problem. In particular, the following packet losses categories are provided:
+	In Komondor, a packet loss is considered when the ACK timeout is over at a given transmitter. However, it is critical to identify what caused such loss, which may allow to solve the root problem. In particular, the following packet losses categories are provided:
 	\begin{itemize}
 		\item PACKET\_LOST\_DESTINATION\_TX: packet is discarded because the destination was already transmitting when the packet transmission was attempted.
 		\item PACKET\_LOST\_LOW\_SIGNAL: the packet cannot be decoded because the signal strength is not enough (i.e., it is less than capture effect).
@@ -284,18 +293,7 @@ In this Section we provide an overview of the main MAC layer features included i
 	\label{section:channel_access}
 	When an AP has a packet to be sent, it implements Carrier Sense Multiple Access with Collision Avoidance (CSMA/CA) to access the medium, which makes use of the Distribution Coordination Function (DCF). With that, transmissions are carried out if the target channel has been empty for a given Backoff (BO) time. A channel is considered to be empty if the interference in it is equal or higher than a Capture Effect (CE) threshold, which allows defining the frequency at which packet losses occur, regardless on the Modulation Coding Scheme used.
 		
-		% CE
-		\subsubsection{Capture Effect}
-		\label{section:capture_effect}
-		In order to perform transmissions through the radio link, the receiver must perceive that the desired signal strength is bigger than a CE threshold, so that the received data can be distinguished among noise and interference present in the channel. Despite there are two types of interference patterns (\emph{stronger-first} and \emph{stronger-last}), Komondor only considers data transmissions in which the target packet arrives first, just as shown in Figure \ref{fig:capture_effect}. Otherwise, when a second data packet arrives in the middle of a data transmission, both packets are discarded if the second signal is stronger than the first one.
-		\begin{figure}[h!]
-	 		\centering
-	 		\epsfig{file=images/capture_effect, width=9cm}
-	 		\caption{Stronger-First Capture Effect example}
-	 		\label{fig:capture_effect}
-	 	\end{figure}
- 	
-	 	% DCF
+		% DCF
 		\subsubsection{Distributed Coordination Function}
 		\label{section:dcf}		
 		As previously mentioned, the CSMA/CA operation is based on the DCF, which orchestrates channel access in a distributed manner. Roughly, transmitters (e.g., devices that have data to be transmitted) choose a random BO value, which is decremented only if the channel is sensed as idle due to the CCA condition. Otherwise, the BO is freeze and the transmission is contended. Figure \ref{fig:dcf_operation} shows an example of the DCF operation in which three nodes listen to each other in the same wireless scenario. As it is shown, STA2 wins the channel access because its BO timer is the first one to reach 0. During the packet transmission STA1 listens and does not decrease its BO. After data transmission is finished and the channel has been idle for a DIFS interval, the BO procedure is activated in all the transmitting devices.
@@ -318,6 +316,17 @@ In this Section we provide an overview of the main MAC layer features included i
 		\subsubsection{Contention Window Adaptation}
 		\label{section:cw_adaptation}
 		To complement the DCF operation, dynamic CW adaptation is considered on a per-packet basis. Optionally, one can activate CW adaptation so that the CW increases or decreases according to the situation. Given a minimum and a maximum boundaries for CW ($CW_{min}$ and $CW_{max}$, respectively), the reset operation is performed when a successful transmission is carried out. In such situation, the CW is set to $CW_{min}$. Otherwise, when packet losses occur, the CW is increased without exceeding $CW_{max}$. To do so, a counter (namely $CW_{count}$) is maintained and increased one unit each time a packet loss occurs. Then, the CW is computed as $CW = CW_{min} \times 2^{CW_{count}}$.
+		
+		% CE
+		\subsubsection{Capture Effect}
+		\label{section:capture_effect}
+		In order to perform transmissions through the radio link, the receiver must perceive that the desired signal strength is bigger than a CE threshold, so that the received data can be distinguished among noise and interference present in the channel. Despite there are two types of interference patterns (\emph{stronger-first} and \emph{stronger-last}), Komondor only considers data transmissions in which the target packet arrives first, just as shown in Figure \ref{fig:capture_effect}. Otherwise, when a second data packet arrives in the middle of a data transmission, both packets are discarded if the second signal is stronger than the first one.
+		\begin{figure}[h!]
+			\centering
+			\epsfig{file=images/capture_effect, width=9cm}
+			\caption{Stronger-First Capture Effect example}
+			\label{fig:capture_effect}
+		\end{figure}
 	
 	%%% RTS/CTS
 	\subsection{RTS/CTS and NAV Allocation}
@@ -700,6 +709,17 @@ In this Section we provide an overview of the main MAC layer features included i
 			\item \textbf{Nodes input:} defines specific nodes' characteristics such as implementing features (e.g., CB policy). There are two ways of generating nodes, which is indicated in the file name. While including the keyword \emph{nodes} all the devices (APs and STAs) must be introduced and described. Otherwise, if including the keyword \emph{aps}, only the APs are defined, so that a STAs are randomly generated under certain introduced parameters (e.g., minimum/maximum number of STAs, maximum distance between APs and STA).\footnote{The usage of APs input files is discouraged to the lack of maintenance.} As a final remark, in order to ensure a proper execution, it is mandatory to introduce and input file with a list of nodes ordered by \textit{node\_id} and starting with \textit{node\_id} = 0. It is needed for the array responsible of storing the power perceived by each node (i.e., \textit{power\_received\_per\_node}). Table \ref{table:nodes_parameters} describes the Nodes input parameters for both \emph{nodes} and \emph{aps} files.
 		\end{itemize}		
 
+		% Input scripts
+		\subsubsection{Input scripts}
+		\label{section:input_scripts}	
+		In order to facilitate researchers' work, we provide a set of scripts that allow performing several simulations at once, which is useful to avoid processing different output files. Such sample scripts can be found in the ``scripts multiple executions" folder, which perform the following operations:
+		\begin{itemize}
+			\item \emph{multiple\_inputs\_script.sh}: processes all the input files contained in ./input/script\_input\_files and generates a simulation for each one. 
+			\item \emph{multiple\_inputs\_script\_several\_seeds.sh}: in addition to process multiple inputs, generates different seeds for each simulation.
+		\end{itemize}
+		
+		Similar procedures can be implemented to extend the current provided functionalities, such as reading multiple system inputs or generating specific output reports.
+		
 		%  System input parameters	
 		\begin{table}[h!]
 			\centering
