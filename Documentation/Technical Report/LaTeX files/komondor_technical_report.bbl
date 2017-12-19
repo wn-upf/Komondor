@@ -1,9 +1,11 @@
 \begin{thebibliography}{10}
 
-\bibitem{cost}
-Gilbert Chen and Boleslaw~K. Szymanski.
-\newblock {COST}: a component-oriented discrete event simulator.
-\newblock 2002.
+\bibitem{chen2002reusing}
+G.~Chen and B.~K. Szymanski.
+\newblock {Reusing simulation components: cost: a component-oriented discrete
+  event simulator}.
+\newblock In {\em Proceedings of the 34th conference on Winter simulation:
+  exploring new frontiers}, pages 776--782. Winter Simulation Conference, 2002.
 
 \bibitem{tgax2017draft}
 {IEEE} p802.11ax/d2.0, November 2017.

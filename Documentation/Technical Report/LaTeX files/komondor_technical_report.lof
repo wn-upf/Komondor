@@ -1,0 +1,14 @@
+\select@language {english}
+\contentsline {figure}{\numberline {1}{\ignorespaces COST component. While inports and outports allow to directly communicate with other components, timers trigger events specific to the component.\relax }}{4}{figure.caption.4}
+\contentsline {figure}{\numberline {2}{\ignorespaces Channel models with and without adjacent interference\relax }}{6}{figure.caption.5}
+\contentsline {figure}{\numberline {3}{\ignorespaces Traffic models used in Komondor\relax }}{7}{figure.caption.6}
+\contentsline {figure}{\numberline {4}{\ignorespaces Hidden-node cause of collision\relax }}{8}{figure.caption.8}
+\contentsline {figure}{\numberline {5}{\ignorespaces Example of the DCF procedure\relax }}{9}{figure.caption.9}
+\contentsline {figure}{\numberline {6}{\ignorespaces Stronger-First Capture Effect example\relax }}{10}{figure.caption.10}
+\contentsline {figure}{\numberline {7}{\ignorespaces Example of RTS/CTS implementation. The transmitter (STA2) sends an RTS packet before starting a transmission. The receiver (AP) answers with a CTS as it senses the channel free. The other coexisting devices (STA1) that listen either the RTS and/or the CTS, set their NAV accordingly.\relax }}{10}{figure.caption.11}
+\contentsline {figure}{\numberline {8}{\ignorespaces Example of packet aggregation in which N MPDUs are concatenated to be sent during the same packet transmission.\relax }}{11}{figure.caption.12}
+\contentsline {figure}{\numberline {9}{\ignorespaces Scenarios and results for Komondor validations. Yellow and blue arrows indicate the carrier sense range of WLANs A and C, respectively (CST is equal for all the APs). The carrier sense range of WLAN B is not displayed. \textit {T3-noCE} refers to topology \textit {T3} when the STA in B does not accomplish the CE condition whenever A, B and C are active. MC and Sim refer to the values obtained through CTMN model and Komondor, respectively.\relax }}{13}{figure.caption.14}
+\contentsline {figure}{\numberline {10}{\ignorespaces WLANs A and B are inside the carrier sense range of each other with potentially overlapping channels 1 and 2.\relax }}{13}{figure.caption.15}
+\contentsline {figure}{\numberline {11}{\ignorespaces Komondor flowchart\relax }}{14}{figure.caption.17}
+\contentsline {figure}{\numberline {12}{\ignorespaces Example of nodes statistics in Komondor\relax }}{18}{figure.caption.20}
+\contentsline {figure}{\numberline {13}{\ignorespaces Example of system statistics in Komondor\relax }}{18}{figure.caption.21}

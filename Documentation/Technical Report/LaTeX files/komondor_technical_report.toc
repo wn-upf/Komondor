@@ -1,0 +1,38 @@
+\select@language {english}
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}
+\contentsline {subsection}{\numberline {1.1}Next-Generation WLANs}{3}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}Komondor Main Features}{3}{subsection.1.2}
+\contentsline {subsection}{\numberline {1.3}COST}{4}{subsection.1.3}
+\contentsline {subsection}{\numberline {1.4}Contributions}{4}{subsection.1.4}
+\contentsline {subsection}{\numberline {1.5}Document Structure}{4}{subsection.1.5}
+\contentsline {section}{\numberline {2}System Model}{4}{section.2}
+\contentsline {subsection}{\numberline {2.1}Channel Modeling}{5}{subsection.2.1}
+\contentsline {subsubsection}{\numberline {2.1.1}Path-loss Models}{5}{subsubsection.2.1.1}
+\contentsline {subsubsection}{\numberline {2.1.2}Co-channel Interference Models}{6}{subsubsection.2.1.2}
+\contentsline {subsection}{\numberline {2.2}Traffic Modeling}{6}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Link Modeling}{6}{subsection.2.3}
+\contentsline {subsection}{\numberline {2.4}Collisions Modeling}{7}{subsection.2.4}
+\contentsline {section}{\numberline {3}MAC Features}{8}{section.3}
+\contentsline {subsection}{\numberline {3.1}Channel Access}{8}{subsection.3.1}
+\contentsline {subsubsection}{\numberline {3.1.1}Distributed Coordination Function}{8}{subsubsection.3.1.1}
+\contentsline {subsubsection}{\numberline {3.1.2}Contention Window Adaptation}{9}{subsubsection.3.1.2}
+\contentsline {subsubsection}{\numberline {3.1.3}Capture Effect}{9}{subsubsection.3.1.3}
+\contentsline {subsection}{\numberline {3.2}RTS/CTS and NAV Allocation}{9}{subsection.3.2}
+\contentsline {subsection}{\numberline {3.3}Channel Bonding}{10}{subsection.3.3}
+\contentsline {subsection}{\numberline {3.4}Packet Aggregation}{11}{subsection.3.4}
+\contentsline {section}{\numberline {4}Komondor Main Features Validation through CTMN}{11}{section.4}
+\contentsline {subsection}{\numberline {4.1}IEEE 802.11ax Parameters}{11}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Basic Operation Validation}{11}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}Channel Bonding Validation}{12}{subsection.4.3}
+\contentsline {section}{\numberline {5}Tutorial and Development Notes}{14}{section.5}
+\contentsline {subsection}{\numberline {5.1}Brief Tutorial}{14}{subsection.5.1}
+\contentsline {subsubsection}{\numberline {5.1.1}Files Organization}{14}{subsubsection.5.1.1}
+\contentsline {subsubsection}{\numberline {5.1.2}Compilation and Execution}{15}{subsubsection.5.1.2}
+\contentsline {subsubsection}{\numberline {5.1.3}Input files}{16}{subsubsection.5.1.3}
+\contentsline {subsubsection}{\numberline {5.1.4}Input scripts}{16}{subsubsection.5.1.4}
+\contentsline {subsubsection}{\numberline {5.1.5}Output files}{17}{subsubsection.5.1.5}
+\contentsline {subsubsection}{\numberline {5.1.6}Events Categorization}{18}{subsubsection.5.1.6}
+\contentsline {subsection}{\numberline {5.2}Code development}{19}{subsection.5.2}
+\contentsline {subsubsection}{\numberline {5.2.1}Main considerations}{19}{subsubsection.5.2.1}
+\contentsline {subsubsection}{\numberline {5.2.2}Miscellany}{19}{subsubsection.5.2.2}
+\contentsline {section}{\numberline {6}Conclusions}{20}{section.6}

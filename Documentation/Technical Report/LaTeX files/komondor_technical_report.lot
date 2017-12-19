@@ -1,0 +1,7 @@
+\select@language {english}
+\contentsline {table}{\numberline {1}{\ignorespaces Data rates granted per MCS in IEEE 802.11ax. Guard Intervals (GI) of 1600 ns are only considered.\relax }}{7}{table.caption.7}
+\contentsline {table}{\numberline {2}{\ignorespaces IEEE 802.11ax parameters\relax }}{12}{table.caption.13}
+\contentsline {table}{\numberline {3}{\ignorespaces DCB policy effect on the average throughput [Mbps] in \textit {Scenario I} and \textit {Scenario II}. The values obtained through Komondor are displayed in blue, while the other correspond to the CTMN model.\relax }}{14}{table.caption.16}
+\contentsline {table}{\numberline {4}{\ignorespaces System input parameters description\relax }}{16}{table.caption.18}
+\contentsline {table}{\numberline {5}{\ignorespaces Nodes input parameters description\relax }}{17}{table.caption.19}
+\contentsline {table}{\numberline {6}{\ignorespaces Node's event logs encoding\relax }}{19}{table.caption.22}
