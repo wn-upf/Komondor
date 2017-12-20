@@ -32,9 +32,10 @@
 *.cxx
 *.txt~
 *.csv~
+*.csv#
 **.csv
+!Code/output/.gitkeep 
 Code/output/*
 
 # Whitelist 
 !Code/input/*
-!Code/output/.gitkeep 
