@@ -49,7 +49,7 @@
 #include <stddef.h>
 #include <math.h>
 #include "../list_of_macros.h"
-#include "../komondor_structures/modulations.h"
+#include "../structures/modulations.h"
 
 /***********************/
 /***********************/

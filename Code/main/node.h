@@ -52,16 +52,16 @@
 #include <stddef.h>
 
 #include "../list_of_macros.h"
-#include "../komondor_methods/auxiliary_methods.h"
-#include "../komondor_methods/power_channel_methods.h"
-#include "../komondor_methods/backoff_methods.h"
-#include "../komondor_methods/modulations_methods.h"
-#include "../komondor_methods/notification_methods.h"
-#include "../komondor_methods/time_methods.h"
-#include "../komondor_structures/notification.h"
-#include "../komondor_structures/logical_nack.h"
-#include "../komondor_structures/wlan.h"
-#include "../komondor_structures/logger.h"
+#include "../methods/auxiliary_methods.h"
+#include "../methods/power_channel_methods.h"
+#include "../methods/backoff_methods.h"
+#include "../methods/modulations_methods.h"
+#include "../methods/notification_methods.h"
+#include "../methods/time_methods.h"
+#include "../structures/notification.h"
+#include "../structures/logical_nack.h"
+#include "../structures/wlan.h"
+#include "../structures/logger.h"
 
 // Node component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Node : public TypeII{

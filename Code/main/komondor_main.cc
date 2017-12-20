@@ -54,10 +54,10 @@
 #include <time.h>
 #include ".././COST/cost.h"
 #include "../list_of_macros.h"
-#include "../komondor_structures/logical_nack.h"
-#include "../komondor_structures/notification.h"
-#include "../komondor_structures/wlan.h"
-#include "node_rts_cts.h"
+#include "../structures/logical_nack.h"
+#include "../structures/notification.h"
+#include "../structures/wlan.h"
+#include "node.h"
 
 /* Sequential simulation engine from where the system to be simulated is derived. */
 component Komondor : public CostSimEng {
