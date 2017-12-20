@@ -69,8 +69,8 @@
 \usetikzlibrary{automata,arrows,positioning,calc}
 \usetikzlibrary{shapes,snakes}
 
-
-\title{KOMONDOR: An Event-Based Wireless Network Simulator for Next-Generation IEEE 802.11ax WLANs}
+%%% TITLE
+\title{Komondor: An Event-Based Wireless Network Simulator for Next-Generation IEEE 802.11ax WLANs}
 \author{Sergio Barrachina and Francesc Wilhelmi}
 
 \begin{document}
@@ -91,7 +91,7 @@ Komondor is a wireless network simulator that includes novel mechanisms for next
 %%%%%%%%%%%%%%%
 \section{Introduction}
 \label{section:introduction}
-	Komondor is an event-based simulator based in COST \cite{chen2002reusing}, a CompC++ library that allows generating discrete event simulations.\footnote{COST main website: \url{http://www.ita.cs.rpi.edu/cost.html}} Komondor is mostly intended to reproduce the novel techniques included in the IEEE 802.11ax-2019 amendment \cite{tgax2017draft}, which is called to become a benchmark in next-generation wireless networks. Furthermore, due to the increasing popularity of learning-based approaches in WLANs, our simulator is being built to allow the inclusion of intelligent agents that make decisions in simulation time. The decision of building a new wireless networks simulator is based on $i)$ the lack of 11ax-oriented simulators that include novel techniques, $ii)$ the need of generating a tool able to simulate intelligent agents behavior, $iii)$ the difficulty in extending other existing solutions (e.g., ns-3) towards our abovementioned main goals. 
+	Komondor \cite{barrachina2017komondor} is an event-based simulator based in COST \cite{chen2002reusing}, a CompC++ library that allows generating discrete event simulations.\footnote{COST main website: \url{http://www.ita.cs.rpi.edu/cost.html}} Komondor is mostly intended to reproduce the novel techniques included in the IEEE 802.11ax-2019 amendment \cite{tgax2017draft}, which is called to become a benchmark in next-generation wireless networks. Furthermore, due to the increasing popularity of learning-based approaches in WLANs, our simulator is being built to allow the inclusion of intelligent agents that make decisions in simulation time. The decision of building a new wireless networks simulator is based on $i)$ the lack of 11ax-oriented simulators that include novel techniques, $ii)$ the need of generating a tool able to simulate intelligent agents behavior, $iii)$ the difficulty in extending other existing solutions (e.g., ns-3) towards our abovementioned main goals. 
 	
 	%%%  NG WLANs
 	\subsection{Next-Generation WLANs}
@@ -404,7 +404,7 @@ In this Section we provide an overview of the main MAC layer features included i
 %%%%%%%%%%%%%%%
 \section{Komondor Main Features Validation through CTMN}
 \label{section:validations}
-	In this Section we aim to validate the core operation of Komondor by using a set of key scenarios. Moreover, we use the Continuous Time Markov Networks (CTMNs) model \cite{bellalta2014throughput} for analytical comparison, which has been further extended and implemented in \cite{barrachina2017dynamic}. 
+	In this Section we aim to validate the core operation of Komondor by using a set of key scenarios. Moreover, we use the Continuous Time Markov Networks (CTMNs) model \cite{bellalta2014throughput} for analytical comparison. 
 
 	%%% Parameters
 	\subsection{IEEE 802.11ax Parameters}

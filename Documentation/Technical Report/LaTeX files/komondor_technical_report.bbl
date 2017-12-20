@@ -1,5 +1,10 @@
 \begin{thebibliography}{10}
 
+\bibitem{barrachina2017komondor}
+Sergio Barrachina-Mu\~noz and Francesc Wilhelmi.
+\newblock Komondor: An {IEEE} 802.11ax simulator.
+\newblock \url{https://github.com/wn-upf/Komondor}, 2017.
+
 \bibitem{chen2002reusing}
 G.~Chen and B.~K. Szymanski.
 \newblock {Reusing simulation components: cost: a component-oriented discrete
@@ -54,10 +59,5 @@ Boris Bellalta, Alessandro Zocca, Cristina Cano, Alessandro Checco, Jaume
   networks: a tutorial.
 \newblock In {\em Wireless Networking for Moving Objects}, pages 115--133.
   Springer, 2014.
-
-\bibitem{barrachina2017dynamic}
-Bellalta~Boris Barrachina, Sergio and Francesc Wilhelmi.
-\newblock Dynamic spectrum access in high-density {WLANs}.
-\newblock 2017.
 
 \end{thebibliography}

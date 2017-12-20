@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  19 DEC 2017 15:37
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  20 DEC 2017 12:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1078,14 +1078,14 @@ Overfull \hbox (22.35938pt too wide) in paragraph at lines 114--115
 i-ated be-tween any transmitter-
  []
 
-[3] <images/cost.pdf, id=297, 472.1896pt x 163.94438pt>
+[3] <images/cost.pdf, id=299, 472.1896pt x 163.94438pt>
 File: images/cost.pdf Graphic file (type pdf)
  <use images/cost.pdf>
 Package pdftex.def Info: images/cost.pdf used on input line 128.
 (pdftex.def)             Requested size: 199.16928pt x 69.15135pt.
 
 [4 <./images/cost.pdf>]
-<images/cochannel_interference.pdf, id=321, 416.52121pt x 180.72618pt>
+<images/cochannel_interference.pdf, id=323, 416.52121pt x 180.72618pt>
 File: images/cochannel_interference.pdf Graphic file (type pdf)
 
 <use images/cochannel_interference.pdf>
@@ -1110,7 +1110,7 @@ n.2.1}) has been already used, duplicate ignored
 \@EveryShipout@Output ...@Org@Shipout \box \@cclv 
                                                   
 l.208 
-      ] <images/traffic_models.pdf, id=335, 654.97182pt x 271.06892pt>
+      ] <images/traffic_models.pdf, id=337, 654.97182pt x 271.06892pt>
 File: images/traffic_models.pdf Graphic file (type pdf)
 
 <use images/traffic_models.pdf>
@@ -1136,14 +1136,14 @@ Overfull \hbox (1.2908pt too wide) in paragraph at lines 289--290
 e the sig-nal strength
  []
 
-<images/dcf_operation.png, id=384, 598.3956pt x 233.14302pt>
+<images/dcf_operation.png, id=386, 598.3956pt x 233.14302pt>
 File: images/dcf_operation.png Graphic file (type png)
 
 <use images/dcf_operation.png>
 Package pdftex.def Info: images/dcf_operation.png used on input line 323.
 (pdftex.def)             Requested size: 341.43306pt x 133.02808pt.
  [8]
-<images/capture_effect.pdf, id=391, 317.88583pt x 166.46571pt>
+<images/capture_effect.pdf, id=393, 317.88583pt x 166.46571pt>
 File: images/capture_effect.pdf Graphic file (type pdf)
 
 <use images/capture_effect.pdf>
@@ -1153,7 +1153,7 @@ Package pdftex.def Info: images/capture_effect.pdf used on input line 347.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<images/rts_cts_mechanism.pdf, id=393, 593.07693pt x 222.5412pt>
+<images/rts_cts_mechanism.pdf, id=395, 593.07693pt x 222.5412pt>
 File: images/rts_cts_mechanism.pdf Graphic file (type pdf)
 
 <use images/rts_cts_mechanism.pdf>
@@ -1164,7 +1164,7 @@ Package pdftex.def Info: images/rts_cts_mechanism.pdf used on input line 357.
 LaTeX Warning: Reference `' on page 10 undefined on input line 377.
 
 [10 <./images/capture_effect.pdf> <./images/rts_cts_mechanism.pdf>]
-<images/ampdu.png, id=549, 1101.11375pt x 511.9125pt>
+<images/ampdu.png, id=551, 1101.11375pt x 511.9125pt>
 File: images/ampdu.png Graphic file (type png)
  <use images/ampdu.png>
 Package pdftex.def Info: images/ampdu.png used on input line 390.
@@ -1173,14 +1173,14 @@ Package pdftex.def Info: images/ampdu.png used on input line 390.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<images/scenario_III.png, id=554, 232.4685pt x 181.8795pt>
+<images/scenario_III.png, id=555, 232.4685pt x 181.8795pt>
 File: images/scenario_III.png Graphic file (type png)
 
 <use images/scenario_III.png>
 Package pdftex.def Info: images/scenario_III.png used on input line 518.
 (pdftex.def)             Requested size: 160.04675pt x 125.225pt.
 
-<images/scenario3_results_sfctmn_komondor.png, id=555, 287.27325pt x 176.45924p
+<images/scenario3_results_sfctmn_komondor.png, id=556, 287.27325pt x 176.45924p
 t>
 File: images/scenario3_results_sfctmn_komondor.png Graphic file (type png)
  <use images/scenario3_results_sfctmn_komondor.png>
@@ -1275,11 +1275,11 @@ LaTeX Warning: There were undefined references.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 927.
  ) 
 Here is how much of TeX's memory you used:
- 24887 strings out of 493014
- 493332 string characters out of 6133351
- 630215 words of memory out of 5000000
- 27782 multiletter control sequences out of 15000+600000
- 25731 words of font info for 72 fonts, out of 8000000 for 9000
+ 24889 strings out of 493014
+ 493356 string characters out of 6133351
+ 630216 words of memory out of 5000000
+ 27783 multiletter control sequences out of 15000+600000
+ 26044 words of font info for 73 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  62i,20n,95p,1138b,768s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}
@@ -1308,11 +1308,12 @@ type1/public/cm-super/sfti0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/ty
 pe1/public/cm-super/sfti0900.pfb></usr/local/texlive/2016/texmf-dist/fonts/type
 1/public/cm-super/sfti1000.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/
 public/cm-super/sftt0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/pu
-blic/cm-super/sftt0900.pfb>
-Output written on komondor_technical_report.pdf (20 pages, 1715092 bytes).
+blic/cm-super/sftt0900.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/publ
+ic/cm-super/sftt1000.pfb>
+Output written on komondor_technical_report.pdf (20 pages, 1736249 bytes).
 PDF statistics:
- 770 PDF objects out of 1000 (max. 8388607)
- 635 compressed objects within 7 object streams
+ 775 PDF objects out of 1000 (max. 8388607)
+ 639 compressed objects within 7 object streams
  105 named destinations out of 1000 (max. 500000)
  379 words of extra memory for PDF output out of 10000 (max. 10000000)
 
