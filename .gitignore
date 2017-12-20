@@ -34,8 +34,9 @@
 *.csv~
 *.csv#
 **.csv
-!Code/output/.gitkeep 
-Code/output/*
+
+Code/output/.keep
+!.gitignore
 
 # Whitelist 
 !Code/input/*
