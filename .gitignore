@@ -31,4 +31,10 @@
 # Komondor
 *.cxx
 *.txt~
-/Code/output/*
+*.csv~
+**.csv
+Code/output/*
+
+# Whitelist 
+!Code/input/*
+!Code/output/.gitkeep 
