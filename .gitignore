@@ -29,7 +29,6 @@
 *.app
 
 # Komondor
-*.csv
 *.cxx
 *.txt~
 /Code/output/*
