@@ -180,7 +180,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	sprintf(simulation_filename_remove, "%s_%s.txt", simulation_filename_root, simulation_code);
 
 	char *simulation_filename_fopen = (char *) malloc(strlen(simulation_filename_remove) + 4);
-	sprintf(simulation_filename_fopen, "./%s", simulation_filename_remove);
+	sprintf(simulation_filename_fopen, "../%s", simulation_filename_remove);
 
 	if(remove(simulation_filename_remove) == 0){
 		if (print_system_logs) printf("%s Simulation output file '%s' found and removed. New one created!\n",
@@ -212,6 +212,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	// fprintf(logger_script.file, "------------------------------------\n");
 	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code, seed);
 	// Read system (environment) file
+
 	SetupEnvironmentByReadingInputFile(system_input_filename);
 
 	// Generate nodes
