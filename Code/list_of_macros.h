@@ -173,15 +173,18 @@
 #define TIME_OUT_EXTRA_TIME			PICO_VALUE	// TO is triggered when exceeded TIME_OUT_EXTRA_TIME
 
 // Path-loss models
-#define PATH_LOSS_LFS 				0	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
-#define PATH_LOSS_OKUMURA_HATA 		1	// Okumura-Hata model - Urban areas
-#define PATH_LOSS_INDOOR 			2   // Indoor model (could suite an apartments building scenario)
-#define PATH_LOSS_INDOOR_2 			3	// Indoor model without variability
-#define PATH_LOSS_SCENARIO_1_TGax	4	// IEEE 802.11ax Scenario 1 (residential)
-#define PATH_LOSS_SCENARIO_2_TGax	5	// IEEE 802.11ax Scenario 2 (enterprise)
-#define PATH_LOSS_SCENARIO_3_TGax	6	// IEEE 802.11ax Scenario 3 (indoor BSS)
-#define PATH_LOSS_SCENARIO_4_TGax	7	// IEEE 802.11ax Scenario 4 (outdoor BSS)
-#define PATH_LOSS_SCENARIO_4a_TGax	8	// IEEE 802.11ax Scenario 4a (outdoor BSS + residential)
+#define PATH_LOSS_LFS 				0		// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
+#define PATH_LOSS_OKUMURA_HATA 		1		// Okumura-Hata model - Urban areas
+#define PATH_LOSS_INDOOR 			2   	// Indoor model (could suite an apartments building scenario)
+#define PATH_LOSS_INDOOR_2 			3		// Indoor model without variability
+#define PATH_LOSS_SCENARIO_1_TGax	4		// IEEE 802.11ax Scenario 1 (residential)
+#define PATH_LOSS_SCENARIO_2_TGax	5		// IEEE 802.11ax Scenario 2 (enterprise)
+#define PATH_LOSS_SCENARIO_3_TGax	6		// IEEE 802.11ax Scenario 3 (indoor BSS)
+#define PATH_LOSS_SCENARIO_4_TGax	7		// IEEE 802.11ax Scenario 4 (outdoor BSS)
+#define PATH_LOSS_SCENARIO_4a_TGax	8		// IEEE 802.11ax Scenario 4a (outdoor BSS + residential)
+#define PATHLOSS_5GHZ_OFFICE_BUILDING	9	// Office building indoor pathloss for 5 GHz
+
+#define PATH_LOSS_DISTANCE_BREAKPOINT_CHANNEL_B	5	// Breakpoint distance for channel model B [m]
 
 // Channel bonding model
 #define CB_ONLY_PRIMARY				0	// Only Primary Channel used if FREE

@@ -49,7 +49,6 @@
 #include <math.h>
 #include <algorithm>
 #include <stddef.h>
-
 #include "../list_of_macros.h"
 
 // Exponential redefinition for convenience
@@ -106,10 +105,6 @@ double ComputeBackoff(int pdf_backoff, int cw, int backoff_type){
 		}
 	}
 
-	// HARDCODED BY SERGIO TO TEST
-	// backoff_time = SLOT_TIME;
-	// END OF HARDCODING
-
 	return backoff_time;
 }
 
@@ -118,7 +113,6 @@ double ComputeBackoff(int pdf_backoff, int cw, int backoff_type){
  * */
 double ComputeRemainingBackoff(int backoff_type, double remaining_backoff){
 
-//	printf("----------------------------------\n");
 //	printf("remaining_backoff = %f\n", remaining_backoff);
 
 	double updated_remaining_backoff;
@@ -161,7 +155,7 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff){
 /*
  * HandleBackoff(): handles the backoff. It is called when backoff may be paused or resumed.
  * */
-int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channel, double cca,
+int HandleBackoff(int pause_or_resume, double **channel_power, int primary_channel, double cca,
 	int packets_in_buffer){
 
 	int resume_backoff = FALSE;
@@ -170,7 +164,7 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 
 		case PAUSE_TIMER:{
 
-			if(channel_power[primary_channel] > cca) resume_backoff = TRUE;
+			if((*channel_power)[primary_channel] > cca) resume_backoff = TRUE;
 			break;
 
 		}
@@ -178,7 +172,7 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 		case RESUME_TIMER:{
 
 			if(packets_in_buffer > 0) {
-				if(channel_power[primary_channel] <= cca) resume_backoff =  TRUE;
+				if((*channel_power)[primary_channel] <= cca) resume_backoff =  TRUE;
 			}
 			break;
 
@@ -201,10 +195,7 @@ int HandleBackoff(int pause_or_resume, double *channel_power, int primary_channe
 void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int* cw_current, int cw_min,
 		int *cw_stage_current, int cw_stage_max) {
 
-//	printf("- cw_current = %d - cw_min = %d - cw_stage_current = %d - cw_stage_max = %d\n",
-//			*cw_current, cw_min, *cw_stage_current, cw_stage_max);
-
-	// http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
+	// CW adaptation: http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
 
 	if(cw_adaptation == TRUE){
 

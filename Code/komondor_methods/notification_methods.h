@@ -49,7 +49,6 @@
 #include <math.h>
 #include <algorithm>
 #include <stddef.h>
-
 #include "../list_of_macros.h"
 
 /*
@@ -244,7 +243,6 @@ void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
 
 		packets_lost ++;
 	} else if(type == PACKET_TYPE_CTS){
-		// TODO
 		rts_cts_lost ++;
 	}
 
@@ -267,8 +265,7 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
 
 	} else {
 
-		// Sergio on 24/10/2017:
-		// - For paper 3, just apply PER to DATA packets
+		// Just apply PER to DATA packets
 		if( (destination_id == node_id) && (packet_type == PACKET_TYPE_DATA) ){
 
 			per = constant_per;
@@ -276,12 +273,6 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
 		}
 
 	}
-
-	// double random_value = (double) rand() / (RAND_MAX);
-
-	// printf("- random_value = %f\n", random_value);
-
-	// packet_lost = random_value < per;
 
 	packet_lost = ((double) rand() / (RAND_MAX)) < per;
 

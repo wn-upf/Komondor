@@ -49,7 +49,6 @@
 #include <math.h>
 #include <algorithm>
 #include <stddef.h>
-
 #include "../list_of_macros.h"
 
 // Exponential redefinition
