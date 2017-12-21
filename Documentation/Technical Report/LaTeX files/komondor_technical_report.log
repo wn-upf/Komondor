@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  20 DEC 2017 12:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  21 DEC 2017 14:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -196,6 +196,36 @@ Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
 )
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/tabularx.sty
+Package: tabularx 2016/02/03 v2.11 `tabularx' package (DPC)
+\TX@col@width=\dimen123
+\TX@old@table=\dimen124
+\TX@old@col=\dimen125
+\TX@target=\dimen126
+\TX@delta=\dimen127
+\TX@cols=\count106
+\TX@ftn=\toks28
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/booktabs/booktabs.sty
+Package: booktabs 2016/04/27 v1.618033 publication quality tables
+\heavyrulewidth=\dimen128
+\lightrulewidth=\dimen129
+\cmidrulewidth=\dimen130
+\belowrulesep=\dimen131
+\belowbottomsep=\dimen132
+\aboverulesep=\dimen133
+\abovetopsep=\dimen134
+\cmidrulesep=\dimen135
+\cmidrulekern=\dimen136
+\defaultaddspace=\dimen137
+\@cmidla=\count107
+\@cmidlb=\count108
+\@aboverulesep=\dimen138
+\@belowrulesep=\dimen139
+\@thisruleclass=\count109
+\@lastruleclass=\count110
+\@thisrulewidth=\dimen140
+)
 (/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/graphicx.sty
 Package: graphicx 2014/10/28 v1.0g Enhanced LaTeX Graphics (DPC,SPQR)
 
@@ -210,8 +240,8 @@ File: graphics.cfg 2016/01/02 v1.10 sample graphics configuration
 )
 Package graphics Info: Driver file: pdftex.def on input line 96.
 )
-\Gin@req@height=\dimen123
-\Gin@req@width=\dimen124
+\Gin@req@height=\dimen141
+\Gin@req@width=\dimen142
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/todonotes/todonotes.sty
 Package: todonotes 2015/07/09 .dtx Todonotes source and documentation.
@@ -225,10 +255,10 @@ Package: xkeyval 2014/12/03 v2.7a package option processing (HA)
 
 (/usr/local/texlive/2016/texmf-dist/tex/generic/xkeyval/xkeyval.tex
 (/usr/local/texlive/2016/texmf-dist/tex/generic/xkeyval/xkvutils.tex
-\XKV@toks=\toks28
-\XKV@tempa@toks=\toks29
+\XKV@toks=\toks29
+\XKV@tempa@toks=\toks30
 )
-\XKV@depth=\count106
+\XKV@depth=\count111
 File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
 ))
 (/usr/local/texlive/2016/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty
@@ -236,9 +266,9 @@ File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
 (/usr/local/texlive/2016/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.te
 x
-\pgfutil@everybye=\toks30
-\pgfutil@tempdima=\dimen125
-\pgfutil@tempdimb=\dimen126
+\pgfutil@everybye=\toks31
+\pgfutil@tempdima=\dimen143
+\pgfutil@tempdimb=\dimen144
 
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/utilities/pgfutil-common-li
 sts.tex))
@@ -256,30 +286,30 @@ Package: pgf 2015/08/07 v3.0.1a (rcs-revision 1.15)
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
 Package: pgfsys 2014/07/09 v3.0.1a (rcs-revision 1.48)
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
-\pgfkeys@pathtoks=\toks31
-\pgfkeys@temptoks=\toks32
+\pgfkeys@pathtoks=\toks32
+\pgfkeys@temptoks=\toks33
 
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/utilities/pgfkeysfiltered.c
 ode.tex
-\pgfkeys@tmptoks=\toks33
+\pgfkeys@tmptoks=\toks34
 ))
-\pgf@x=\dimen127
-\pgf@y=\dimen128
-\pgf@xa=\dimen129
-\pgf@ya=\dimen130
-\pgf@xb=\dimen131
-\pgf@yb=\dimen132
-\pgf@xc=\dimen133
-\pgf@yc=\dimen134
+\pgf@x=\dimen145
+\pgf@y=\dimen146
+\pgf@xa=\dimen147
+\pgf@ya=\dimen148
+\pgf@xb=\dimen149
+\pgf@yb=\dimen150
+\pgf@xc=\dimen151
+\pgf@yc=\dimen152
 \w@pgf@writea=\write3
 \r@pgf@reada=\read1
-\c@pgf@counta=\count107
-\c@pgf@countb=\count108
-\c@pgf@countc=\count109
-\c@pgf@countd=\count110
-\t@pgf@toka=\toks34
-\t@pgf@tokb=\toks35
-\t@pgf@tokc=\toks36
+\c@pgf@counta=\count112
+\c@pgf@countb=\count113
+\c@pgf@countc=\count114
+\c@pgf@countd=\count115
+\t@pgf@toka=\toks35
+\t@pgf@tokb=\toks36
+\t@pgf@tokc=\toks37
 
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg
 File: pgf.cfg 2008/05/14  (rcs-revision 1.7)
@@ -297,8 +327,8 @@ File: pgfsys-common-pdf.def 2013/10/10  (rcs-revision 1.13)
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.
 code.tex
 File: pgfsyssoftpath.code.tex 2013/09/09  (rcs-revision 1.9)
-\pgfsyssoftpath@smallbuffer@items=\count111
-\pgfsyssoftpath@bigbuffer@items=\count112
+\pgfsyssoftpath@smallbuffer@items=\count116
+\pgfsyssoftpath@bigbuffer@items=\count117
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.
 code.tex
@@ -310,12 +340,12 @@ Package: pgfcore 2010/04/11 v3.0.1a (rcs-revision 1.7)
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex)
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex
-\pgfmath@dimen=\dimen135
-\pgfmath@count=\count113
+\pgfmath@dimen=\dimen153
+\pgfmath@count=\count118
 \pgfmath@box=\box29
-\pgfmath@toks=\toks37
-\pgfmath@stack@operand=\toks38
-\pgfmath@stack@operation=\toks39
+\pgfmath@toks=\toks38
+\pgfmath@stack@operand=\toks39
+\pgfmath@stack@operation=\toks40
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.
 tex
@@ -336,37 +366,37 @@ code.tex)
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integ
 erarithmetics.code.tex)))
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex
-\c@pgfmathroundto@lastzeros=\count114
+\c@pgfmathroundto@lastzeros=\count119
 ))
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.co
 de.tex
 File: pgfcorepoints.code.tex 2013/10/07  (rcs-revision 1.27)
-\pgf@picminx=\dimen136
-\pgf@picmaxx=\dimen137
-\pgf@picminy=\dimen138
-\pgf@picmaxy=\dimen139
-\pgf@pathminx=\dimen140
-\pgf@pathmaxx=\dimen141
-\pgf@pathminy=\dimen142
-\pgf@pathmaxy=\dimen143
-\pgf@xx=\dimen144
-\pgf@xy=\dimen145
-\pgf@yx=\dimen146
-\pgf@yy=\dimen147
-\pgf@zx=\dimen148
-\pgf@zy=\dimen149
+\pgf@picminx=\dimen154
+\pgf@picmaxx=\dimen155
+\pgf@picminy=\dimen156
+\pgf@picmaxy=\dimen157
+\pgf@pathminx=\dimen158
+\pgf@pathmaxx=\dimen159
+\pgf@pathminy=\dimen160
+\pgf@pathmaxy=\dimen161
+\pgf@xx=\dimen162
+\pgf@xy=\dimen163
+\pgf@yx=\dimen164
+\pgf@yy=\dimen165
+\pgf@zx=\dimen166
+\pgf@zy=\dimen167
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconst
 ruct.code.tex
 File: pgfcorepathconstruct.code.tex 2013/10/07  (rcs-revision 1.29)
-\pgf@path@lastx=\dimen150
-\pgf@path@lasty=\dimen151
+\pgf@path@lastx=\dimen168
+\pgf@path@lasty=\dimen169
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage
 .code.tex
 File: pgfcorepathusage.code.tex 2014/11/02  (rcs-revision 1.24)
-\pgf@shorten@end@additional=\dimen152
-\pgf@shorten@start@additional=\dimen153
+\pgf@shorten@end@additional=\dimen170
+\pgf@shorten@start@additional=\dimen171
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.co
 de.tex
@@ -374,19 +404,19 @@ File: pgfcorescopes.code.tex 2015/05/08  (rcs-revision 1.46)
 \pgfpic=\box30
 \pgf@hbox=\box31
 \pgf@layerbox@main=\box32
-\pgf@picture@serial@count=\count115
+\pgf@picture@serial@count=\count120
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicst
 ate.code.tex
 File: pgfcoregraphicstate.code.tex 2014/11/02  (rcs-revision 1.12)
-\pgflinewidth=\dimen154
+\pgflinewidth=\dimen172
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransform
 ations.code.tex
 File: pgfcoretransformations.code.tex 2015/08/07  (rcs-revision 1.20)
-\pgf@pt@x=\dimen155
-\pgf@pt@y=\dimen156
-\pgf@pt@temp=\dimen157
+\pgf@pt@x=\dimen173
+\pgf@pt@y=\dimen174
+\pgf@pt@temp=\dimen175
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.cod
 e.tex
@@ -403,13 +433,13 @@ File: pgfcorepathprocessing.code.tex 2013/09/09  (rcs-revision 1.9)
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.co
 de.tex
 File: pgfcorearrows.code.tex 2015/05/14  (rcs-revision 1.43)
-\pgfarrowsep=\dimen158
+\pgfarrowsep=\dimen176
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.cod
 e.tex
 File: pgfcoreshade.code.tex 2013/07/15  (rcs-revision 1.15)
-\pgf@max=\dimen159
-\pgf@sys@shading@range@num=\count116
+\pgf@max=\dimen177
+\pgf@sys@shading@range@num=\count121
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.cod
 e.tex
@@ -444,8 +474,8 @@ File: pgfmoduleplot.code.tex 2015/08/03  (rcs-revision 1.13)
 (/usr/local/texlive/2016/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version
 -0-65.sty
 Package: pgfcomp-version-0-65 2007/07/03 v3.0.1a (rcs-revision 1.7)
-\pgf@nodesepstart=\dimen160
-\pgf@nodesepend=\dimen161
+\pgf@nodesepstart=\dimen178
+\pgf@nodesepend=\dimen179
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version
 -1-18.sty
@@ -460,10 +490,10 @@ Package: pgfcomp-version-1-18 2007/07/23 v3.0.1a (rcs-revision 1.1)
 Package: pgffor 2013/12/13 v3.0.1a (rcs-revision 1.25)
 
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex)
-\pgffor@iter=\dimen162
-\pgffor@skip=\dimen163
-\pgffor@stack=\toks40
-\pgffor@toks=\toks41
+\pgffor@iter=\dimen180
+\pgffor@skip=\dimen181
+\pgffor@stack=\toks41
+\pgffor@toks=\toks42
 ))
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.cod
 e.tex
@@ -472,32 +502,32 @@ Package: tikz 2015/08/07 v3.0.1a (rcs-revision 1.151)
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothan
 dlers.code.tex
 File: pgflibraryplothandlers.code.tex 2013/08/31 v3.0.1a (rcs-revision 1.20)
-\pgf@plot@mark@count=\count117
-\pgfplotmarksize=\dimen164
+\pgf@plot@mark@count=\count122
+\pgfplotmarksize=\dimen182
 )
-\tikz@lastx=\dimen165
-\tikz@lasty=\dimen166
-\tikz@lastxsaved=\dimen167
-\tikz@lastysaved=\dimen168
-\tikzleveldistance=\dimen169
-\tikzsiblingdistance=\dimen170
+\tikz@lastx=\dimen183
+\tikz@lasty=\dimen184
+\tikz@lastxsaved=\dimen185
+\tikz@lastysaved=\dimen186
+\tikzleveldistance=\dimen187
+\tikzsiblingdistance=\dimen188
 \tikz@figbox=\box35
 \tikz@figbox@bg=\box36
 \tikz@tempbox=\box37
 \tikz@tempbox@bg=\box38
-\tikztreelevel=\count118
-\tikznumberofchildren=\count119
-\tikznumberofcurrentchild=\count120
-\tikz@fig@count=\count121
+\tikztreelevel=\count123
+\tikznumberofchildren=\count124
+\tikznumberofcurrentchild=\count125
+\tikz@fig@count=\count126
 
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.cod
 e.tex
 File: pgfmodulematrix.code.tex 2013/09/17  (rcs-revision 1.8)
-\pgfmatrixcurrentrow=\count122
-\pgfmatrixcurrentcolumn=\count123
-\pgf@matrix@numberofcolumns=\count124
+\pgfmatrixcurrentrow=\count127
+\pgfmatrixcurrentcolumn=\count128
+\pgf@matrix@numberofcolumns=\count129
 )
-\tikz@expandcount=\count125
+\tikz@expandcount=\count130
 
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/frontendlayer/tikz/librarie
 s/tikzlibrarytopaths.code.tex
@@ -509,18 +539,18 @@ File: tikzlibrarypositioning.code.tex 2008/10/06 v3.0.1a (rcs-revision 1.7)
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/tools/calc.sty
 Package: calc 2014/10/28 v4.3 Infix arithmetic (KKT,FJ)
-\calc@Acount=\count126
-\calc@Bcount=\count127
-\calc@Adimen=\dimen171
-\calc@Bdimen=\dimen172
+\calc@Acount=\count131
+\calc@Bcount=\count132
+\calc@Adimen=\dimen189
+\calc@Bdimen=\dimen190
 \calc@Askip=\skip49
 \calc@Bskip=\skip50
 LaTeX Info: Redefining \setlength on input line 80.
 LaTeX Info: Redefining \addtolength on input line 81.
-\calc@Ccount=\count128
+\calc@Ccount=\count133
 \calc@Cskip=\skip51
 )
-\c@@todonotes@numberoftodonotes=\count129
+\c@@todonotes@numberoftodonotes=\count134
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hyperref.sty
 Package: hyperref 2016/05/05 v6.83n Hypertext links for LaTeX
@@ -574,14 +604,14 @@ Package: auxhook 2016/05/16 v1.4 Hooks for auxiliary files (HO)
 (/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/kvoptions.sty
 Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
 )
-\@linkdim=\dimen173
-\Hy@linkcounter=\count130
-\Hy@pagecounter=\count131
+\@linkdim=\dimen191
+\Hy@linkcounter=\count135
+\Hy@pagecounter=\count136
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/pd1enc.def
 File: pd1enc.def 2016/05/05 v6.83n Hyperref: PDFDocEncoding definition (HO)
 )
-\Hy@SavedSpaceFactor=\count132
+\Hy@SavedSpaceFactor=\count137
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/latexconfig/hyperref.cfg
 File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
@@ -594,17 +624,17 @@ Package hyperref Info: Plain pages OFF on input line 4461.
 Package hyperref Info: Backreferencing OFF on input line 4466.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4691.
-\c@Hy@tempcnt=\count133
+\c@Hy@tempcnt=\count138
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/url/url.sty
 \Urlmuskip=\muskip11
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
 LaTeX Info: Redefining \url on input line 5044.
-\XeTeXLinkMargin=\dimen174
-\Fld@menulength=\count134
-\Field@Width=\dimen175
-\Fld@charsize=\dimen176
+\XeTeXLinkMargin=\dimen192
+\Fld@menulength=\count139
+\Field@Width=\dimen193
+\Fld@charsize=\dimen194
 Package hyperref Info: Hyper figures OFF on input line 6298.
 Package hyperref Info: Link nesting OFF on input line 6303.
 Package hyperref Info: Hyper index ON on input line 6306.
@@ -614,17 +644,17 @@ Package hyperref Info: Link coloring with OCG OFF on input line 6323.
 Package hyperref Info: PDF/A mode OFF on input line 6328.
 LaTeX Info: Redefining \ref on input line 6368.
 LaTeX Info: Redefining \pageref on input line 6372.
-\Hy@abspage=\count135
-\c@Item=\count136
-\c@Hfootnote=\count137
+\Hy@abspage=\count140
+\c@Item=\count141
+\c@Hfootnote=\count142
 )
 
 Package hyperref Message: Driver (autodetected): hpdftex.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hpdftex.def
 File: hpdftex.def 2016/05/05 v6.83n Hyperref driver for pdfTeX
-\Fld@listcount=\count138
-\c@bookmark@seq@number=\count139
+\Fld@listcount=\count143
+\c@bookmark@seq@number=\count144
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty
 Package: rerunfilecheck 2016/05/16 v1.8 Rerun checks for auxiliary files (HO)
@@ -638,7 +668,7 @@ Package: tkz-tab 2011/04/17 v1.4c variations (ctan version)
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/etex-pkg/etex.sty
 Package: etex 2016/01/11 v2.6 eTeX basic definition package (PEB,DPC)
-\et@xins=\count140
+\et@xins=\count145
 )
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/frontendlayer/tikz/librarie
 s/tikzlibraryarrows.code.tex
@@ -647,7 +677,7 @@ File: tikzlibraryarrows.code.tex 2008/01/09 v3.0.1a (rcs-revision 1.1)
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.
 code.tex
 File: pgflibraryarrows.code.tex 2013/09/23 v3.0.1a (rcs-revision 1.16)
-\arrowsize=\dimen177
+\arrowsize=\dimen195
 ))
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/frontendlayer/tikz/librarie
 s/tikzlibrarypatterns.code.tex
@@ -657,34 +687,35 @@ File: tikzlibrarypatterns.code.tex 2008/01/15 v3.0.1a (rcs-revision 1.2)
 s.code.tex
 File: pgflibrarypatterns.code.tex 2008/03/03 v3.0.1a (rcs-revision 1.13)
 ))
-\tkz@XF=\dimen178
-\tkz@YF=\dimen179
-\c@tkz@cnt@line=\count141
-\c@tkz@cnt@lg=\count142
-\c@tkz@cnt@cl=\count143
-\c@tkz@cnt@pred=\count144
-\c@tkz@cnt@temp=\count145
-\c@tkz@cnt@arrow=\count146
-\c@tkz@cnt@zone=\count147
-\c@tkz@cnt@lgnext=\count148
-\c@tkz@cnt@clnext=\count149
-\c@tkz@cnt@pair=\count150
-\c@tkz@cnt@impair=\count151
-\c@tkz@cnt@aw=\count152
+\tkz@XF=\dimen196
+\tkz@YF=\dimen197
+\c@tkz@cnt@line=\count146
+\c@tkz@cnt@lg=\count147
+\c@tkz@cnt@cl=\count148
+\c@tkz@cnt@pred=\count149
+\c@tkz@cnt@temp=\count150
+\c@tkz@cnt@arrow=\count151
+\c@tkz@cnt@zone=\count152
+\c@tkz@cnt@lgnext=\count153
+\c@tkz@cnt@clnext=\count154
+\c@tkz@cnt@pair=\count155
+\c@tkz@cnt@impair=\count156
+\c@tkz@cnt@aw=\count157
 ) (/usr/local/texlive/2016/texmf-dist/tex/latex/caption/caption.sty
 Package: caption 2016/02/21 v3.3-144 Customizing captions (AR)
 (/usr/local/texlive/2016/texmf-dist/tex/latex/caption/caption3.sty
 Package: caption3 2016/02/04 v1.7-139 caption3 kernel (AR)
 Package caption3 Info: TeX engine: e-TeX on input line 67.
-\captionmargin=\dimen180
-\captionmargin@=\dimen181
-\captionwidth=\dimen182
-\caption@tempdima=\dimen183
-\caption@indent=\dimen184
-\caption@parindent=\dimen185
-\caption@hangindent=\dimen186
+\captionmargin=\dimen198
+\captionmargin@=\dimen199
+Normal \dimen register pool exhausted, switching to extended pool.
+\captionwidth=\dimen256
+\caption@tempdima=\dimen257
+\caption@indent=\dimen258
+\caption@parindent=\dimen259
+\caption@hangindent=\dimen260
 )
-\c@ContinuedFloat=\count153
+\c@ContinuedFloat=\count158
 Package caption Info: hyperref package is loaded.
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/latexsym.sty
@@ -705,8 +736,8 @@ LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 ))
 (/usr/local/texlive/2016/texmf-dist/tex/latex/caption/subcaption.sty
 Package: subcaption 2016/02/20 v1.1-142 Sub-captions (AR)
-\c@subfigure=\count154
-\c@subtable=\count155
+\c@subfigure=\count159
+\c@subtable=\count160
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/mathtools/mathtools.sty
 Package: mathtools 2015/11/12 v1.18 mathematical typesetting tools
@@ -718,37 +749,37 @@ LaTeX Info: Thecontrolsequence`\('isalreadyrobust on input line 129.
 LaTeX Info: Thecontrolsequence`\)'isalreadyrobust on input line 129.
 LaTeX Info: Thecontrolsequence`\['isalreadyrobust on input line 129.
 LaTeX Info: Thecontrolsequence`\]'isalreadyrobust on input line 129.
-\g_MT_multlinerow_int=\count156
-\l_MT_multwidth_dim=\dimen187
+\g_MT_multlinerow_int=\count161
+\l_MT_multwidth_dim=\dimen261
 \origjot=\skip53
-\l_MT_shortvdotswithinadjustabove_dim=\dimen188
-\l_MT_shortvdotswithinadjustbelow_dim=\dimen189
-\l_MT_above_intertext_sep=\dimen190
-\l_MT_below_intertext_sep=\dimen191
-\l_MT_above_shortintertext_sep=\dimen192
-\l_MT_below_shortintertext_sep=\dimen193
+\l_MT_shortvdotswithinadjustabove_dim=\dimen262
+\l_MT_shortvdotswithinadjustbelow_dim=\dimen263
+\l_MT_above_intertext_sep=\dimen264
+\l_MT_below_intertext_sep=\dimen265
+\l_MT_above_shortintertext_sep=\dimen266
+\l_MT_below_shortintertext_sep=\dimen267
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/multirow/multirow.sty
-\bigstrutjot=\dimen194
+\bigstrutjot=\dimen268
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/listings/listings.sty
-\lst@mode=\count157
+\lst@mode=\count162
 \lst@gtempboxa=\box39
-\lst@token=\toks42
-\lst@length=\count158
-\lst@currlwidth=\dimen195
-\lst@column=\count159
-\lst@pos=\count160
-\lst@lostspace=\dimen196
-\lst@width=\dimen197
-\lst@newlines=\count161
-\lst@lineno=\count162
-\lst@maxwidth=\dimen198
+\lst@token=\toks43
+\lst@length=\count163
+\lst@currlwidth=\dimen269
+\lst@column=\count164
+\lst@pos=\count165
+\lst@lostspace=\dimen270
+\lst@width=\dimen271
+\lst@newlines=\count166
+\lst@lineno=\count167
+\lst@maxwidth=\dimen272
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
-\c@lstnumber=\count163
-\lst@skipnumbers=\count164
+\c@lstnumber=\count168
+\lst@skipnumbers=\count169
 \lst@framebox=\box40
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/listings/listings.cfg
@@ -758,9 +789,8 @@ Package: listings 2015/06/04 1.6 (Carsten Heinz)
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/epsfig.sty
 Package: epsfig 1999/02/16 v1.7a (e)psfig emulation (SPQR)
-\epsfxsize=\dimen199
-Normal \dimen register pool exhausted, switching to extended pool.
-\epsfysize=\dimen256
+\epsfxsize=\dimen273
+\epsfysize=\dimen274
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/epstopdf.sty
 Package: epstopdf 2016/05/15 v2.6 Conversion with epstopdf on the fly (HO)
@@ -780,35 +810,17 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 )))
-(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/tabularx.sty
-Package: tabularx 2016/02/03 v2.11 `tabularx' package (DPC)
-\TX@col@width=\dimen257
-\TX@old@table=\dimen258
-\TX@old@col=\dimen259
-\TX@target=\dimen260
-\TX@delta=\dimen261
-\TX@cols=\count165
-\TX@ftn=\toks43
-)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/booktabs/booktabs.sty
-Package: booktabs 2016/04/27 v1.618033 publication quality tables
-\heavyrulewidth=\dimen262
-\lightrulewidth=\dimen263
-\cmidrulewidth=\dimen264
-\belowrulesep=\dimen265
-\belowbottomsep=\dimen266
-\aboverulesep=\dimen267
-\abovetopsep=\dimen268
-\cmidrulesep=\dimen269
-\cmidrulekern=\dimen270
-\defaultaddspace=\dimen271
-\@cmidla=\count166
-\@cmidlb=\count167
-\@aboverulesep=\dimen272
-\@belowrulesep=\dimen273
-\@thisruleclass=\count168
-\@lastruleclass=\count169
-\@thisrulewidth=\dimen274
+(/usr/local/texlive/2016/texmf-dist/tex/latex/soul/soul.sty
+Package: soul 2003/11/17 v2.4 letterspacing/underlining (mf)
+\SOUL@word=\toks44
+\SOUL@lasttoken=\toks45
+\SOUL@cmds=\toks46
+\SOUL@buffer=\toks47
+\SOUL@token=\toks48
+\SOUL@spaceskip=\skip54
+\SOUL@ttwidth=\dimen275
+\SOUL@uldp=\dimen276
+\SOUL@ulht=\dimen277
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
@@ -911,14 +923,14 @@ s/tikzlibrarydecorations.pathmorphing.code.tex
 s/tikzlibrarydecorations.code.tex
 (/usr/local/texlive/2016/texmf-dist/tex/generic/pgf/modules/pgfmoduledecoration
 s.code.tex
-\pgfdecoratedcompleteddistance=\dimen275
-\pgfdecoratedremainingdistance=\dimen276
-\pgfdecoratedinputsegmentcompleteddistance=\dimen277
-\pgfdecoratedinputsegmentremainingdistance=\dimen278
-\pgf@decorate@distancetomove=\dimen279
+\pgfdecoratedcompleteddistance=\dimen278
+\pgfdecoratedremainingdistance=\dimen279
+\pgfdecoratedinputsegmentcompleteddistance=\dimen280
+\pgfdecoratedinputsegmentremainingdistance=\dimen281
+\pgf@decorate@distancetomove=\dimen282
 \pgf@decorate@repeatstate=\count170
-\pgfdecorationsegmentamplitude=\dimen280
-\pgfdecorationsegmentlength=\dimen281
+\pgfdecorationsegmentamplitude=\dimen283
+\pgfdecorationsegmentlength=\dimen284
 )
 \tikz@lib@dec@box=\box61
 )
@@ -934,20 +946,20 @@ s/tikzlibrarydecorations.shapes.code.tex
 brarydecorations.shapes.code.tex))) (./komondor_technical_report.aux)
 \openout1 = `komondor_technical_report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 85.
+LaTeX Font Info:    ... okay on input line 85.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 85.
+LaTeX Font Info:    ... okay on input line 85.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 85.
+LaTeX Font Info:    ... okay on input line 85.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 85.
+LaTeX Font Info:    ... okay on input line 85.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 85.
+LaTeX Font Info:    ... okay on input line 85.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 85.
+LaTeX Font Info:    ... okay on input line 85.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 85.
+LaTeX Font Info:    ... okay on input line 85.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/ucs/ucsencs.def
 File: ucsencs.def 2011/01/21 Fixes to fontencodings LGR, T3
@@ -989,19 +1001,19 @@ File: ucsencs.def 2011/01/21 Fixes to fontencodings LGR, T3
 (/usr/local/texlive/2016/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count171
-\scratchdimen=\dimen282
+\scratchdimen=\dimen285
 \scratchbox=\box62
 \nofMPsegments=\count172
 \nofMParguments=\count173
-\everyMPshowfont=\toks44
+\everyMPshowfont=\toks49
 \MPscratchCnt=\count174
-\MPscratchDim=\dimen283
+\MPscratchDim=\dimen286
 \MPnumerator=\count175
 \makeMPintoPDFobject=\count176
-\everyMPtoPDFconversion=\toks45
+\everyMPtoPDFconversion=\toks50
 ) ABD: EveryShipout initializing macros
 \AtBeginShipoutBox=\box63
-Package hyperref Info: Link coloring ON on input line 76.
+Package hyperref Info: Link coloring ON on input line 85.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -1011,9 +1023,9 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count177
 )
-LaTeX Info: Redefining \ref on input line 76.
-LaTeX Info: Redefining \pageref on input line 76.
-LaTeX Info: Redefining \nameref on input line 76.
+LaTeX Info: Redefining \ref on input line 85.
+LaTeX Info: Redefining \pageref on input line 85.
+LaTeX Info: Redefining \nameref on input line 85.
 
 (./komondor_technical_report.out) (./komondor_technical_report.out)
 \@outlinefile=\write4
@@ -1023,202 +1035,208 @@ Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: listings package is loaded.
 Package caption Info: End \AtBeginDocument code.
 \c@lstlisting=\count178
-LaTeX Font Info:    Try loading font information for U+lasy on input line 78.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 87.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-LaTeX Font Info:    Try loading font information for U+msa on input line 78.
+LaTeX Font Info:    Try loading font information for U+msa on input line 87.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 78.
+LaTeX Font Info:    Try loading font information for U+msb on input line 87.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for T1+cmtt on input line 80.
-
-(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1cmtt.fd
-File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
-)
-Overfull \hbox (6.21964pt too wide) in paragraph at lines 80--81
+Overfull \hbox (6.21964pt too wide) in paragraph at lines 89--90
 []\T1/cmr/m/n/9 Komondor is a wire-less net-work sim-u-la-tor that in-cludes no
 vel mech-a-nisms for next-generation
  []
 
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 91.
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1cmtt.fd
+File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+)
 (./komondor_technical_report.toc [1
 
 {/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}])
 \tf@toc=\write5
 \openout5 = `komondor_technical_report.toc'.
 
- (./komondor_technical_report.lof)
+ (./komondor_technical_report.lof
+Overfull \hbox (0.7121pt too wide) in paragraph at lines 9--9
+ [][] [][][]\T1/cmr/m/n/10 CSMA/CA tem-po-ral evo-lu-tion of a node op-er-at-in
+g un-der AM and the IEEE 802.11ax 
+ []
+
+)
 \tf@lof=\write6
 \openout6 = `komondor_technical_report.lof'.
 
-
-(./komondor_technical_report.lot)
+ (./komondor_technical_report.lot)
 \tf@lot=\write7
 \openout7 = `komondor_technical_report.lot'.
 
  [2]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 108.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 122.
 
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 108.
-
-Overfull \hbox (22.35938pt too wide) in paragraph at lines 114--115
-[]\T1/cmr/m/n/10 Dynamic Mod-u-la-tion Cod-ing Scheme (MCS): the MCS is ne-go-t
-i-ated be-tween any transmitter-
- []
-
-[3] <images/cost.pdf, id=299, 472.1896pt x 163.94438pt>
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 122.
+ [3]
+<images/cost.pdf, id=301, 472.1896pt x 163.94438pt>
 File: images/cost.pdf Graphic file (type pdf)
  <use images/cost.pdf>
-Package pdftex.def Info: images/cost.pdf used on input line 128.
+Package pdftex.def Info: images/cost.pdf used on input line 144.
 (pdftex.def)             Requested size: 199.16928pt x 69.15135pt.
 
 [4 <./images/cost.pdf>]
-<images/cochannel_interference.pdf, id=323, 416.52121pt x 180.72618pt>
+<images/cochannel_interference.pdf, id=325, 416.52121pt x 180.72618pt>
 File: images/cochannel_interference.pdf Graphic file (type pdf)
 
 <use images/cochannel_interference.pdf>
 Package pdftex.def Info: images/cochannel_interference.pdf used on input line 2
-04.
+25.
 (pdftex.def)             Requested size: 256.0748pt x 111.11423pt.
  [5pdfTeX warning (ext4): destination with the same identifier (name{equation.2
 .1}) has been already used, duplicate ignored
 
 \@EveryShipout@Output ...@Org@Shipout \box \@cclv 
                                                   
-l.208 
+l.229 
       pdfTeX warning (ext4): destination with the same identifier (name{equatio
 n.2.1}) has been already used, duplicate ignored
 
 \@EveryShipout@Output ...@Org@Shipout \box \@cclv 
                                                   
-l.208 
+l.229 
       pdfTeX warning (ext4): destination with the same identifier (name{equatio
 n.2.1}) has been already used, duplicate ignored
 
 \@EveryShipout@Output ...@Org@Shipout \box \@cclv 
                                                   
-l.208 
-      ] <images/traffic_models.pdf, id=337, 654.97182pt x 271.06892pt>
+l.229 
+      ] <images/traffic_models.pdf, id=340, 654.24055pt x 270.4243pt>
 File: images/traffic_models.pdf Graphic file (type pdf)
 
 <use images/traffic_models.pdf>
-Package pdftex.def Info: images/traffic_models.pdf used on input line 231.
-(pdftex.def)             Requested size: 256.0748pt x 105.97702pt.
+Package pdftex.def Info: images/traffic_models.pdf used on input line 252.
+(pdftex.def)             Requested size: 256.0748pt x 105.8488pt.
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 240.
+               Default added (so using `tbp') on input line 261.
 
-
-Overfull \hbox (3.33316pt too wide) in paragraph at lines 265--266
+[6 <./images/cochannel_interference.pdf>]
+Overfull \hbox (3.33316pt too wide) in paragraph at lines 286--287
 []\T1/cmr/m/n/10 So far, link adap-ta-tion is not con-sid-ered[][][][][]. In-st
 ead, the MCS to be used be-tween each transmitter-
  []
 
-[6 <./images/cochannel_interference.pdf>] [7 <./images/traffic_models.pdf>]
-Overfull \hbox (1.2908pt too wide) in paragraph at lines 289--290
-[]\T1/cmr/m/n/10 PACKET_LOST_LOW_SIGNAL: the packet can-not be de-coded be-caus
-e the sig-nal strength
- []
-
-<images/dcf_operation.png, id=386, 598.3956pt x 233.14302pt>
+[7 <./images/traffic_models.pdf>]
+<images/dcf_operation.png, id=387, 598.3956pt x 233.14302pt>
 File: images/dcf_operation.png Graphic file (type png)
 
 <use images/dcf_operation.png>
-Package pdftex.def Info: images/dcf_operation.png used on input line 323.
+Package pdftex.def Info: images/dcf_operation.png used on input line 344.
 (pdftex.def)             Requested size: 341.43306pt x 133.02808pt.
  [8]
-<images/capture_effect.pdf, id=393, 317.88583pt x 166.46571pt>
+<images/capture_effect.pdf, id=394, 293.84842pt x 165.02654pt>
 File: images/capture_effect.pdf Graphic file (type pdf)
 
 <use images/capture_effect.pdf>
-Package pdftex.def Info: images/capture_effect.pdf used on input line 347.
-(pdftex.def)             Requested size: 256.0748pt x 134.09985pt.
+Package pdftex.def Info: images/capture_effect.pdf used on input line 369.
+(pdftex.def)             Requested size: 256.0748pt x 143.81364pt.
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<images/rts_cts_mechanism.pdf, id=395, 593.07693pt x 222.5412pt>
+<images/rts_cts_mechanism.pdf, id=397, 593.07693pt x 222.5412pt>
 File: images/rts_cts_mechanism.pdf Graphic file (type pdf)
 
 <use images/rts_cts_mechanism.pdf>
-Package pdftex.def Info: images/rts_cts_mechanism.pdf used on input line 357.
+Package pdftex.def Info: images/rts_cts_mechanism.pdf used on input line 379.
 (pdftex.def)             Requested size: 341.43306pt x 128.1164pt.
  [9 <./images/dcf_operation.png>]
-
-LaTeX Warning: Reference `' on page 10 undefined on input line 377.
+<images/dcb_dcf.png, id=405, 458.9145pt x 101.178pt>
+File: images/dcb_dcf.png Graphic file (type png)
+ <use images/dcb_dcf.png>
+Package pdftex.def Info: images/dcb_dcf.png used on input line 395.
+(pdftex.def)             Requested size: 405.45047pt x 89.39198pt.
 
 [10 <./images/capture_effect.pdf> <./images/rts_cts_mechanism.pdf>]
-<images/ampdu.png, id=551, 1101.11375pt x 511.9125pt>
+<images/cb_policy_flowchart.png, id=556, 219.82124pt x 72.27pt>
+File: images/cb_policy_flowchart.png Graphic file (type png)
+
+<use images/cb_policy_flowchart.png>
+Package pdftex.def Info: images/cb_policy_flowchart.png used on input line 407.
+
+(pdftex.def)             Requested size: 273.1462pt x 89.80463pt.
+
+<images/ampdu.png, id=557, 1101.11375pt x 511.9125pt>
 File: images/ampdu.png Graphic file (type png)
  <use images/ampdu.png>
-Package pdftex.def Info: images/ampdu.png used on input line 390.
+Package pdftex.def Info: images/ampdu.png used on input line 418.
 (pdftex.def)             Requested size: 284.52756pt x 132.27394pt.
 
+[11 <./images/dcb_dcf.png> <./images/cb_policy_flowchart.png> <./images/ampdu.p
+ng>]
+Underfull \hbox (badness 10000) in alignment at lines 484--484
+[][][] 
+ []
 
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-<images/scenario_III.png, id=555, 232.4685pt x 181.8795pt>
+[12] <images/scenario_III.png, id=575, 232.4685pt x 181.8795pt>
 File: images/scenario_III.png Graphic file (type png)
 
 <use images/scenario_III.png>
-Package pdftex.def Info: images/scenario_III.png used on input line 518.
+Package pdftex.def Info: images/scenario_III.png used on input line 553.
 (pdftex.def)             Requested size: 160.04675pt x 125.225pt.
 
-<images/scenario3_results_sfctmn_komondor.png, id=556, 287.27325pt x 176.45924p
+<images/scenario3_results_sfctmn_komondor.png, id=576, 287.27325pt x 176.45924p
 t>
 File: images/scenario3_results_sfctmn_komondor.png Graphic file (type png)
  <use images/scenario3_results_sfctmn_komondor.png>
 Package pdftex.def Info: images/scenario3_results_sfctmn_komondor.png used on i
-nput line 524.
+nput line 559.
 (pdftex.def)             Requested size: 202.72523pt x 124.52763pt.
- [11 <./images/ampdu.png>] <images/scenario_I.png, id=565, 100.57574pt x 25.294
-5pt>
+
+<images/scenario_I.png, id=579, 100.57574pt x 25.2945pt>
 File: images/scenario_I.png Graphic file (type png)
 
 <use images/scenario_I.png>
-Package pdftex.def Info: images/scenario_I.png used on input line 608.
+Package pdftex.def Info: images/scenario_I.png used on input line 643.
 (pdftex.def)             Requested size: 202.72849pt x 50.99178pt.
 
-<images/scenario_II.png, id=566, 99.9735pt x 25.2945pt>
+<images/scenario_II.png, id=580, 99.9735pt x 25.2945pt>
 File: images/scenario_II.png Graphic file (type png)
 
 <use images/scenario_II.png>
-Package pdftex.def Info: images/scenario_II.png used on input line 613.
+Package pdftex.def Info: images/scenario_II.png used on input line 648.
 (pdftex.def)             Requested size: 202.72849pt x 51.29475pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[12] [13 <./images/scenario_III.png> <./images/scenario3_results_sfctmn_komondo
-r.png> <./images/scenario_I.png> <./images/scenario_II.png>]
-<images/komondor_flowchart.pdf, id=581, 939.33148pt x 346.18874pt>
+ [13 <./images/scenario_III.png> <./images/scenario3_results_sfctmn_komondor.pn
+g> <./images/scenario_I.png> <./images/scenario_II.png>] [14] <images/komondor_
+flowchart.pdf, id=596, 939.33148pt x 346.18874pt>
 File: images/komondor_flowchart.pdf Graphic file (type pdf)
 
 <use images/komondor_flowchart.pdf>
-Package pdftex.def Info: images/komondor_flowchart.pdf used on input line 672.
+Package pdftex.def Info: images/komondor_flowchart.pdf used on input line 707.
 (pdftex.def)             Requested size: 426.79134pt x 157.29425pt.
- [14 <./images/komondor_flowchart.pdf>]
-[15]
-Overfull \hbox (34.84004pt too wide) in paragraph at lines 759--791
+
+Overfull \hbox (20.87907pt too wide) in paragraph at lines 723--724
+[]\T1/cmr/bx/n/10 List of macros\T1/cmr/m/n/10 : all the static pa-ram-e-ters (
+e.g., con-stants) are con-tained in the \T1/cmtt/m/n/10 list_of_macros.h
+ []
+
+[15 <./images/komondor_flowchart.pdf>] [16]
+Overfull \hbox (34.84004pt too wide) in paragraph at lines 806--838
  [][] 
  []
 
@@ -1226,94 +1244,91 @@ Overfull \hbox (34.84004pt too wide) in paragraph at lines 759--791
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-Overfull \hbox (5.38176pt too wide) in paragraph at lines 800--801
+Overfull \hbox (5.38176pt too wide) in paragraph at lines 847--848
 []\T1/cmr/m/it/10 multiple_inputs_script.sh\T1/cmr/m/n/10 : pro-cesses all the 
 in-put files con-tained in ./in-put/script_input_files
  []
 
-[16] <images/nodes_statistics_example.png, id=635, 840.13875pt x 660.4675pt>
+[17] <images/nodes_statistics_example.png, id=651, 840.13875pt x 660.4675pt>
 File: images/nodes_statistics_example.png Graphic file (type png)
 
 <use images/nodes_statistics_example.png>
 Package pdftex.def Info: images/nodes_statistics_example.png used on input line
- 816.
+ 863.
 (pdftex.def)             Requested size: 341.43306pt x 268.41504pt.
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<images/general_statistics_example.png, id=636, 824.07875pt x 714.67pt>
+<images/general_statistics_example.png, id=652, 824.07875pt x 714.67pt>
 File: images/general_statistics_example.png Graphic file (type png)
 
 <use images/general_statistics_example.png>
 Package pdftex.def Info: images/general_statistics_example.png used on input li
-ne 823.
+ne 870.
 (pdftex.def)             Requested size: 341.43306pt x 296.10269pt.
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[17]
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[18 <./images/nodes_statistics_example.png> <./images/general_statistics_exampl
-e.png>] [19] (./komondor_technical_report.bbl) [20]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 927.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 927.
+[18] [19 <./images/nodes_statistics_example.png> <./images/general_statistics_e
+xample.png>] [20] (./komondor_technical_report.bbl) [21]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 974.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 974.
 
 (./komondor_technical_report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 927.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 927.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 974.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 974.
 Package rerunfilecheck Info: File `komondor_technical_report.out' has not chang
 ed.
-(rerunfilecheck)             Checksum: 0B53B74CA8A8D3275B446A93D1562626;2581.
-
-
-LaTeX Warning: There were undefined references.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 927.
+(rerunfilecheck)             Checksum: 1C65C571E0E4A1245A7AA7F1CFBA0734;2532.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 974.
  ) 
 Here is how much of TeX's memory you used:
- 24889 strings out of 493014
- 493356 string characters out of 6133351
- 630216 words of memory out of 5000000
- 27783 multiletter control sequences out of 15000+600000
- 26044 words of font info for 73 fonts, out of 8000000 for 9000
+ 25074 strings out of 493014
+ 495786 string characters out of 6133351
+ 634231 words of memory out of 5000000
+ 27958 multiletter control sequences out of 15000+600000
+ 26745 words of font info for 74 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,20n,95p,1138b,768s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 62i,20n,95p,1122b,768s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}
-</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
-/usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></u
-sr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr
-/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/l
-ocal/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/loca
-l/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/t
-exlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/te
-xlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texl
-ive/2016/texmf-dist/fonts/type1/public/cm-super/sfbx0700.pfb></usr/local/texliv
-e/2016/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/
-2016/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/20
-16/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2016
-/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2016/t
-exmf-dist/fonts/type1/public/cm-super/sfrm0500.pfb></usr/local/texlive/2016/tex
-mf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2016/texmf
--dist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2016/texmf-d
-ist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2016/texmf-dis
-t/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2016/texmf-dist/
-fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2016/texmf-dist/fo
-nts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2016/texmf-dist/font
-s/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2016/texmf-dist/fonts/
-type1/public/cm-super/sfti0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/ty
-pe1/public/cm-super/sfti0900.pfb></usr/local/texlive/2016/texmf-dist/fonts/type
-1/public/cm-super/sfti1000.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/
-public/cm-super/sftt0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/pu
-blic/cm-super/sftt0900.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/publ
-ic/cm-super/sftt1000.pfb>
-Output written on komondor_technical_report.pdf (20 pages, 1736249 bytes).
+</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
+/usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></
+usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></us
+r/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/
+local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/lo
+cal/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local
+/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/te
+xlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/tex
+live/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texli
+ve/2016/texmf-dist/fonts/type1/public/cm-super/sfbi1000.pfb></usr/local/texlive
+/2016/texmf-dist/fonts/type1/public/cm-super/sfbx0700.pfb></usr/local/texlive/2
+016/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/201
+6/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2016/
+texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2016/te
+xmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2016/texm
+f-dist/fonts/type1/public/cm-super/sfrm0500.pfb></usr/local/texlive/2016/texmf-
+dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2016/texmf-di
+st/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2016/texmf-dist
+/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2016/texmf-dist/f
+onts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2016/texmf-dist/fon
+ts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2016/texmf-dist/fonts
+/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2016/texmf-dist/fonts/t
+ype1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2016/texmf-dist/fonts/typ
+e1/public/cm-super/sfti0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1
+/public/cm-super/sfti0900.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/p
+ublic/cm-super/sfti1000.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/pub
+lic/cm-super/sftt0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/publi
+c/cm-super/sftt0900.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/
+cm-super/sftt1000.pfb>
+Output written on komondor_technical_report.pdf (21 pages, 1931668 bytes).
 PDF statistics:
- 775 PDF objects out of 1000 (max. 8388607)
- 639 compressed objects within 7 object streams
- 105 named destinations out of 1000 (max. 500000)
- 379 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 796 PDF objects out of 1000 (max. 8388607)
+ 655 compressed objects within 7 object streams
+ 108 named destinations out of 1000 (max. 500000)
+ 381 words of extra memory for PDF output out of 10000 (max. 10000000)
 
