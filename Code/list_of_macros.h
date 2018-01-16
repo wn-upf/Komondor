@@ -347,6 +347,8 @@
 #define IX_CENTRAL_FREQ				23
 #define IX_LAMBDA					24
 #define IX_IEEE_PROTOCOL_TYPE		25
+#define IX_TRAFFIC_LOAD				26
+
 
 // APs file
 #define IX_AP_WLAN_CODE					1
@@ -374,6 +376,7 @@
 #define IX_AP_CENTRAL_FREQ				23
 #define IX_AP_LAMBDA					24
 #define IX_AP_IEEE_PROTOCOL_TYPE		25
+#define IX_AP_TRAFFIC_LOAD				26
 
 
 /* *********************
