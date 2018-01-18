@@ -86,6 +86,7 @@ component Node : public TypeII{
 		void HandleSlottedBackoffCollision();
 		void StartSavingLogs();
 		void RecoverFromCtsTimeout();
+		void MeasureRho();
 
 		// Packets
 		Notification GenerateNotification(int packet_type, int destination_id,
@@ -219,6 +220,7 @@ component Node : public TypeII{
 		int num_delay_measurements;							// Number of delay measurements for averaging
 		double sum_delays;									// Sum of delays for averaging
 		double average_delay;								// Average delay from packet generation to ACK
+		double average_rho;									// Average rho metric (prob. of having packets in buffer and channel free)
 
 	// Private items (just for node operation)
 	private:
@@ -297,6 +299,12 @@ component Node : public TypeII{
 		double *timestampt_channel_becomes_free;	// Timestamp when channel becomes free (when P(channel) < CCA)
 		double time_to_trigger;				// Auxiliar time to trigger an specific trigger (used for almost every .Set() function)
 
+		// Rho measurement
+		int flag_measure_rho;			// Flag for activating rho measurement
+		double delta_measure_rho;		// Time [s] between two rho measurements
+		int num_measures_rho;			// Number of measures to get the average rho metric
+		int num_measures_rho_accomplished;	// Number of measures that rho condition (packet in buffer and channel free) is given
+
 	// Connections and timers
 	public:
 
@@ -332,7 +340,7 @@ component Node : public TypeII{
 		Timer <trigger_t> trigger_wait_collisions; 		// Trigger for waiting just in case more RTS collisions are detected at the same time
 		Timer <trigger_t> trigger_start_saving_logs; 	// Trigger for starting saving logs
 		Timer <trigger_t> trigger_recover_cts_timeout; 	// Trigger for waiting part of EIFS after CTS timeout detected
-
+		Timer <trigger_t> trigger_rho_measurement; 		// Trigger for periodically measuring the rho metric
 
 		// Every time the timer expires execute this
 		inport inline void EndBackoff(trigger_t& t1);
@@ -350,6 +358,7 @@ component Node : public TypeII{
 		inport inline void CallSensing(trigger_t& t1);
 		inport inline void StartSavingLogs(trigger_t& t1);
 		inport inline void RecoverFromCtsTimeout(trigger_t& t1);
+		inport inline void MeasureRho(trigger_t& t1);
 
 		// Connect timers to methods
 		Node () {
@@ -368,6 +377,7 @@ component Node : public TypeII{
 			connect trigger_wait_collisions.to_component,CallSensing;
 			connect trigger_start_saving_logs.to_component,StartSavingLogs;
 			connect trigger_recover_cts_timeout.to_component,RecoverFromCtsTimeout;
+			connect trigger_rho_measurement.to_component,MeasureRho;
 		}
 };
 
@@ -410,7 +420,11 @@ void Node :: Start(){
 
 	// Start backoff procedure only if node is able to transmit
 	if(node_is_transmitter) {
+
 		TrafficGenerator();
+
+		if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
+
 	} else {
 		current_destination_id = wlan.ap_id;	// TODO: for uplink traffic. Set STAs destination to the GW
 	}
@@ -3198,6 +3212,35 @@ void Node:: RecoverFromCtsTimeout(trigger_t &) {
 
 }
 
+void Node:: MeasureRho(trigger_t &){
+
+
+	// if ( (buffer.QueueSize() > 0) && (channel_power[primary_channel] < current_cca)){
+
+	if (node_state == STATE_SENSING && channel_power[primary_channel]<current_cca){
+
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Sensing\n",
+				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
+
+		num_measures_rho ++;
+
+		// if (trigger_end_backoff.Active()){
+		if (buffer.QueueSize()>0 ){
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: BO too!\n",
+							SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4);
+			num_measures_rho_accomplished ++;
+		} else {
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Not in BO!\n",
+					SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4);
+		}
+
+	}
+
+
+
+	trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
+
+}
 
 
 /************************/
@@ -3321,6 +3364,8 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 
 	if (num_delay_measurements > 0) average_delay = sum_delays / (double) num_delay_measurements;
 
+	if (flag_measure_rho && num_measures_rho > 0) average_rho = (double) num_measures_rho_accomplished/(double) num_measures_rho;
+
 	tx_init_failure_percentage = double(num_tx_init_not_possible * 100)/double(num_tx_init_tried);
 
 	if (data_packets_sent > 0) {
@@ -3356,6 +3401,13 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Delay
 				printf("%s Average delay from %d measurements = %f s (%.2f ms)\n", LOG_LVL2,
 						num_delay_measurements, average_delay, average_delay * 1000);
+
+				// Rho
+				printf("%s Average rho = %f (%.2f %%)\n", LOG_LVL2,
+						average_rho, average_rho * 100);
+
+				printf("%s %d/%d\n", LOG_LVL3,
+						num_measures_rho_accomplished, num_measures_rho);
 
 				// RTS/CTS sent and lost
 				printf("%s RTS/CTS sent = %d - RTS/CTS lost = %d  (%.2f %% lost)\n",
@@ -3574,6 +3626,15 @@ void Node :: InitializeVariables() {
 	max_pw_interference = 0;
 	rts_lost_slotted_bo = 0;
 	last_packet_generated_id = 0;
+
+	num_delay_measurements = 0;
+	sum_delays = 0;
+	average_delay = 0;
+
+	flag_measure_rho = TRUE;
+	delta_measure_rho = 0.001;
+	num_measures_rho = 0;
+	num_measures_rho_accomplished = 0;
 
 	// Output file - logger
 	node_logger.save_logs = save_node_logs;
