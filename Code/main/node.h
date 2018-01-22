@@ -423,7 +423,8 @@ void Node :: Start(){
 
 		TrafficGenerator();
 
-		if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
+		// if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
+		if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + 1900);
 
 	} else {
 		current_destination_id = wlan.ap_id;	// TODO: for uplink traffic. Set STAs destination to the GW
@@ -3217,22 +3218,27 @@ void Node:: MeasureRho(trigger_t &){
 
 	// if ( (buffer.QueueSize() > 0) && (channel_power[primary_channel] < current_cca)){
 
-	if (node_state == STATE_SENSING && channel_power[primary_channel]<current_cca){
+	if (node_state == STATE_SENSING && channel_power[primary_channel] < current_cca){
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Sensing\n",
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Sensing + free\n",
 				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 
 		num_measures_rho ++;
 
-		// if (trigger_end_backoff.Active()){
-		if (buffer.QueueSize()>0 ){
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: BO too!\n",
+		// DIFS condition: !trigger_start_backoff.Active()
+		if (buffer.QueueSize() > 0){
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Packet in buffer\n",
 							SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4);
 			num_measures_rho_accomplished ++;
 		} else {
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Not in BO!\n",
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Not packet in buffer\n",
 					SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4);
 		}
+
+	} else {
+
+//		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s No RHO!\n",
+//						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 
 	}
 
@@ -3632,7 +3638,7 @@ void Node :: InitializeVariables() {
 	average_delay = 0;
 
 	flag_measure_rho = TRUE;
-	delta_measure_rho = 0.001;
+	delta_measure_rho = 0.00001;
 	num_measures_rho = 0;
 	num_measures_rho_accomplished = 0;
 

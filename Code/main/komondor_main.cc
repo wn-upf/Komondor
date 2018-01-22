@@ -398,6 +398,17 @@ void Komondor :: Stop(){
 
 	}
 
+	// Sergio test for unsaturation validation
+	fprintf(logger_script.file, ";%.0f;%.0f;%.2f;%.2f;%.4f;%.4f;%.2f;%.2f\n",
+			node_container[0].num_packets_generated,
+			node_container[2].num_packets_generated,
+			node_container[0].throughput/ (packet_length * num_packets_aggregated),
+			node_container[2].throughput/ (packet_length * num_packets_aggregated),
+			node_container[0].average_rho,
+			node_container[2].average_rho,
+			node_container[0].average_delay * 1000,
+			node_container[2].average_delay * 1000);
+
 	// End of logs
 	fclose(simulation_output_file);
 	fclose(script_output_file);
