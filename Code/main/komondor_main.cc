@@ -58,6 +58,7 @@
 #include "../structures/notification.h"
 #include "../structures/wlan.h"
 #include "node.h"
+#include "agent.h"
 
 /* Sequential simulation engine from where the system to be simulated is derived. */
 component Komondor : public CostSimEng {
@@ -77,6 +78,8 @@ component Komondor : public CostSimEng {
 		void GenerateNodesByReadingNodesInputFile(char *nodes_filename);
 		void GenerateNodesByReadingAPsInputFile(char *nodes_filename);
 
+		void GenerateAgents();
+
 		int GetNumOfLines(char *nodes_filename);
 		int GetNumOfNodes(char *nodes_filename, int node_type, char *wlan_code);
 
@@ -90,7 +93,7 @@ component Komondor : public CostSimEng {
 	// Public items (to shared with the nodes)
 	public:
 
-		Node[] node_container;	// Container of nodes (i.e., APs, STAs, ...)
+		Node[] node_container;			// Container of nodes (i.e., APs, STAs, ...)
 		Wlan *wlan_container;			// Container of WLANs
 		int total_nodes_number;			// Total number of nodes
 		int total_wlans_number;			// Total number of WLANs
@@ -123,6 +126,9 @@ component Komondor : public CostSimEng {
 		int backoff_type;				// Type of Backoff (0: Slotted 1: Continuous)
 		int cw_adaptation;				// CW adaptation (0: constant, 1: bineary exponential backoff)
 		int pifs_activated;				// PIFS mechanism activation
+
+		// Agents info
+		Agent[] agent_container;
 
 	// Private items
 	private:
@@ -220,6 +226,9 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	// Generate nodes
 	GenerateNodes(nodes_input_filename);
 
+	// Generate agents
+	GenerateAgents();
+
 	if (print_system_logs) {
 		printf("%s System configuration: \n", LOG_LVL2);
 		printSystemInfo();
@@ -257,6 +266,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	}
 
 	// Set connections among nodes
+	int counter_agents_connected = 0; // Auxiliary variable to keep track of connected agents
 	for(int n = 0; n < total_nodes_number; n++){
 
 		for(int m=0; m < total_nodes_number; m++) {
@@ -269,6 +279,19 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 				connect node_container[n].outportAskForTxModulation,node_container[m].InportMCSRequestReceived;
 				connect node_container[n].outportAnswerTxModulation,node_container[m].InportMCSResponseReceived;
 			}
+		}
+
+		// Set connections among APs and Agents
+		if ( node_container[n].node_type == NODE_TYPE_AP ) {
+
+			//printf("Connecting node %d with agent %d...\n", node_container[n].node_id, n);
+
+			connect agent_container[counter_agents_connected].outportRequestInformationToAp,node_container[n].InportReceivingRequestFromAgent;
+			connect node_container[n].outportAnswerToAgent,agent_container[counter_agents_connected].InportReceivingInformationFromAp;
+			connect agent_container[counter_agents_connected].outportSendInfoToAp,node_container[n].InportReceivingInstructionsFromAgent;
+
+			counter_agents_connected += 1;
+
 		}
 	}
 };
@@ -297,7 +320,7 @@ void Komondor :: Stop(){
 
 	for(int m=0; m < total_nodes_number; m++){
 
-		if( node_container[m].node_type == NODE_TYPE_AP){
+		if( node_container[m].node_type == NODE_TYPE_AP ){
 			total_data_packets_sent += node_container[m].data_packets_sent;
 			total_throughput += node_container[m].throughput;
 			total_rts_lost_slotted_bo += node_container[m].rts_lost_slotted_bo;
@@ -674,6 +697,20 @@ void Komondor :: GenerateNodes(char *nodes_filename) {
 }
 
 /*
+ * GenerateNodes(): generates the nodes randomely if AP file is used, or deterministically if NODE file is used.
+ * Input arguments:
+ * - nodes_filename: AP or nodes filename
+ */
+void Komondor :: GenerateAgents() {
+
+	agent_container.SetSize(total_wlans_number);
+	for(int i = 0; i < total_wlans_number; i ++){
+		agent_container[i].agent_id = i;
+	}
+
+}
+
+/*
  * GenerateNodesByReadingAPsInputFile(): generates the nodes RANDOMLY according to APs input file
  * Input arguments:
  * - nodes_filename: APs input file
@@ -1002,8 +1039,8 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 		int num_stas_in_wlan = GetNumOfNodes(nodes_filename, NODE_TYPE_STA, wlan_container[w].wlan_code);
 		wlan_container[w].num_stas = num_stas_in_wlan;
 		wlan_container[w].SetSizeOfSTAsArray(num_stas_in_wlan);
-	}
 
+	}
 
 	// Generate nodes (without wlan item), finsih WLAN with ID lists, and set the wlan item of each STA.
 	total_nodes_number = GetNumOfNodes(nodes_filename, NODE_TYPE_UNKWNOW, NULL);

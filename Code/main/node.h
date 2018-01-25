@@ -316,6 +316,9 @@ component Node : public TypeII{
 		inport void inline InportMCSRequestReceived(Notification &notification);
 		inport void inline InportMCSResponseReceived(Notification &notification);
 
+		inport void inline InportReceivingRequestFromAgent();
+		inport void inline InportReceivingInstructionsFromAgent();
+
 		// OUTPORT connections for sending notifications
 		outport void outportSelfStartTX(Notification &notification);
 		outport void outportSelfFinishTX(Notification &notification);
@@ -323,6 +326,8 @@ component Node : public TypeII{
 
 		outport void outportAskForTxModulation(Notification &notification);
 		outport void outportAnswerTxModulation(Notification &notification);
+
+		outport void outportAnswerToAgent(int message_ap);
 
 		// Triggers
 		Timer <trigger_t> trigger_sim_time;				// Timer for displaying the exectuion time status (progress bar)
@@ -2072,6 +2077,31 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 	} else {	// If node IS NOT THE DESTINATION
 		// Do nothing
 	}
+}
+
+
+/*
+ * InportReceivingRequestFromAgent(): called when some agent answers for information to the AP
+ * Input arguments:
+ * -
+ */
+void Node :: InportReceivingRequestFromAgent() {
+
+	printf("Node #%d: Agent is asking for information\n", node_id);
+	int response = 101;
+	outportAnswerToAgent(response);
+
+}
+
+/*
+ * InportReceivingInstructionsFromAgent(): called when some agent sends instructions to the AP
+ * Input arguments:
+ * -
+ */
+void Node :: InportReceivingInstructionsFromAgent() {
+
+	printf("Node #%d: Agent is sending a new configuration\n", node_id);
+
 }
 
 /*

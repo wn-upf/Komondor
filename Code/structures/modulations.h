@@ -152,7 +152,3 @@ int getNumberSubcarriers(int num_channels){
 
 	return num_subcarriers;
 }
-
-
-
-
