@@ -52,6 +52,7 @@
 #include <stddef.h>
 
 #include "../list_of_macros.h"
+#include "../structures/node_configuration.h"
 
 // Agent component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Agent : public TypeII{
@@ -68,7 +69,9 @@ component Agent : public TypeII{
 		void InitializeAgent();
 		void RequestInformationToAp();
 		void ComputeNewConfiguration();
-		void SendInfoToAp();
+		void SendNewConfigurationToAp();
+
+		Configuration GenerateNewConfiguration(double timestamp);
 
 	// Public items (entered by nodes constructor in Komondor simulation)
 	public:
@@ -76,19 +79,24 @@ component Agent : public TypeII{
 		// Specific to a node
 		int agent_id; 				// Node identifier
 
+		// FRANKY: HARDCODED data for testing agents basic structure
+		int time_between_requests; // Time between two information requests to the AP (for a given measurement)
+		// ...
+
 	// Private items (just for node operation)
 	private:
-		int testa;
+		Configuration configuration;
+		Configuration new_configuration;
 
 	// Connections and timers
 	public:
 
 		// INPORT connections for receiving notifications
-		inport void inline InportReceivingInformationFromAp(int message_ap);
+		inport void inline InportReceivingInformationFromAp(Configuration &configuration);
 
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAp();
-		outport void outportSendInfoToAp();
+		outport void outportSendConfigurationToAp(Configuration &new_configuration);
 
 };
 
@@ -120,41 +128,86 @@ void Agent :: Stop(){
 /*
  * InportReceivingInformationFromAp(): called when some node (this one included) starts a TX
  * Input arguments:
- * - notification: notification containing the information of the transmission start perceived
+ * - to be defined
  */
-void Agent :: InportReceivingInformationFromAp(int message_ap){
+void Agent :: InportReceivingInformationFromAp(Configuration &configuration){
 
-	testa = message_ap;
+	printf("%s Agent #%d: Message received from the AP\n", LOG_LVL1, agent_id);
 
-	printf("Agent #%d: Message received from the AP: %d \n", agent_id, testa);
+	configuration.PrintConfiguration();
 
 	ComputeNewConfiguration();
 
 };
 
-
-
+/*
+ * RequestInformationToAp():
+ * Input arguments:
+ * - to be defined
+ */
 void Agent :: RequestInformationToAp(){
 
-	printf("Agent #%d: Requesting information to AP\n", agent_id);
+	printf("%s Agent #%d: Requesting information to AP\n", LOG_LVL1, agent_id);
 	outportRequestInformationToAp();
 
 };
 
+/*
+ * ComputeNewConfiguration():
+ * Input arguments:
+ * - to be defined
+ */
 void Agent :: ComputeNewConfiguration(){
 
-	printf("Agent #%d: Computing a new configuration\n", agent_id);
-	SendInfoToAp();
+	printf("%s Agent #%d: Computing a new configuration\n", LOG_LVL1, agent_id);
+
+	// TODO: Implement X algorithm according to current configuration and performance
+	// ...
+
+	// Generate new configuration according to the algorithm's output
+	// ...
+
+	// HARDCODED: generate new configuration
+	new_configuration = GenerateNewConfiguration(SimTime());
+
+	SendNewConfigurationToAp();
 
 }
 
-void Agent :: SendInfoToAp(){
+/*
+ * SendNewConfigurationToAp():
+ * Input arguments:
+ * - to be defined
+ */
+void Agent :: SendNewConfigurationToAp(){
 
-	printf("Agent #%d: Sending new configuration to AP\n", agent_id);
-	outportSendInfoToAp();
-
+	printf("%s Agent #%d: Sending new configuration to AP\n", LOG_LVL1, agent_id);
+	outportSendConfigurationToAp(new_configuration);
 
 };
+
+
+/*
+ * GenerateNewConfiguration: encapsulates the configuration of a node to be sent
+ **/
+Configuration Agent :: GenerateNewConfiguration(double timestamp){
+
+	Configuration new_configuration;
+
+	new_configuration.timestamp = timestamp;
+
+	new_configuration.destination_id = configuration.destination_id;
+	new_configuration.lambda = configuration.lambda;
+	new_configuration.primary_channel = configuration.primary_channel;
+	new_configuration.num_channels_allowed = configuration.num_channels_allowed;
+	double new_power = 100.0;
+	new_configuration.tpc_default = new_power;
+	new_configuration.cca_default = configuration.cca_default;
+	new_configuration.channel_bonding_model = configuration.channel_bonding_model;
+
+	return new_configuration;
+
+}
 
 /*****************************/
 /*****************************/
@@ -169,5 +222,9 @@ void Agent :: InitializeAgent() {
 
 	printf("Agent #%d says: I'm alive!\n", agent_id);
 	RequestInformationToAp();
+
+	// TODO: instead of starting requesting information to the AP,
+	// call a "generator" of requests, which is governed by input
+	// parameters (to be defined in "komondor_main")
 
 }

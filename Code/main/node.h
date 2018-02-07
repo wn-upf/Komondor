@@ -63,6 +63,7 @@
 #include "../structures/wlan.h"
 #include "../structures/logger.h"
 #include "../structures/FIFO.h"
+#include "../structures/node_configuration.h"
 
 // Node component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Node : public TypeII{
@@ -109,6 +110,11 @@ component Node : public TypeII{
 		// Backoff
 		void PauseBackoff();
 		void ResumeBackoff();
+
+		// Configuration (to be sent to the agent)
+		Configuration GenerateConfiguration(double timestamp);
+		void ApplyNewConfiguration(Configuration &new_configuration);
+		void BroadcastNewConfigurationToStas(Configuration &new_configuration);
 
 	// Public items (entered by nodes constructor in Komondor simulation)
 	public:
@@ -249,10 +255,10 @@ component Node : public TypeII{
 		double current_cca;					// Current CCA (variable "sensitivity")	[dBm]
 		int current_destination_id;			// Current destination node ID
 		double current_tx_duration;			// Duration of the TX being done [s]
-		double current_nav_time;					// Current NAV duration
+		double current_nav_time;			// Current NAV duration
 		int packet_id;						// Notification ID
 		double current_sinr;				// SINR perceived in current TX [linear ratio]
-		int loss_reason;	// Packet loss reason (if any)
+		int loss_reason;					// Packet loss reason (if any)
 
 		// Notifications
 		Notification rts_notification;		// RTS to be filled before sending it
@@ -305,6 +311,19 @@ component Node : public TypeII{
 		int num_measures_rho;			// Number of measures to get the average rho metric
 		int num_measures_rho_accomplished;	// Number of measures that rho condition (packet in buffer and channel free) is given
 
+		// Configurations sent/received to/from the agent
+		Configuration configuration;
+		Configuration new_configuration;
+
+		// Measurements done for agents
+		int last_measurement_throughput;
+		int last_measurement_throughput_lost;
+		int last_measurement_data_packets_sent;
+		int last_measurement_data_packets_lost;
+		int last_measurement_rts_cts_packets_sent;
+		int last_measurement_rts_cts_packets_lost;
+		// ...
+
 	// Connections and timers
 	public:
 
@@ -317,7 +336,8 @@ component Node : public TypeII{
 		inport void inline InportMCSResponseReceived(Notification &notification);
 
 		inport void inline InportReceivingRequestFromAgent();
-		inport void inline InportReceivingInstructionsFromAgent();
+		inport void inline InportReceiveConfigurationFromAgent(Configuration &new_configuration);
+		inport void inline InportNewWlanConfigurationReceived(Configuration &new_configuration);
 
 		// OUTPORT connections for sending notifications
 		outport void outportSelfStartTX(Notification &notification);
@@ -327,7 +347,8 @@ component Node : public TypeII{
 		outport void outportAskForTxModulation(Notification &notification);
 		outport void outportAnswerTxModulation(Notification &notification);
 
-		outport void outportAnswerToAgent(int message_ap);
+		outport void outportAnswerToAgent(Configuration &configuration);
+		outport void outportSetNewWlanConfiguration(Configuration &new_configuration);
 
 		// Triggers
 		Timer <trigger_t> trigger_sim_time;				// Timer for displaying the exectuion time status (progress bar)
@@ -2079,31 +2100,6 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 	}
 }
 
-
-/*
- * InportReceivingRequestFromAgent(): called when some agent answers for information to the AP
- * Input arguments:
- * -
- */
-void Node :: InportReceivingRequestFromAgent() {
-
-	printf("Node #%d: Agent is asking for information\n", node_id);
-	int response = 101;
-	outportAnswerToAgent(response);
-
-}
-
-/*
- * InportReceivingInstructionsFromAgent(): called when some agent sends instructions to the AP
- * Input arguments:
- * -
- */
-void Node :: InportReceivingInstructionsFromAgent() {
-
-	printf("Node #%d: Agent is sending a new configuration\n", node_id);
-
-}
-
 /*
  * TrafficGenerator(): called each time a packet is generated to start a new packet generation
  */
@@ -2676,9 +2672,8 @@ void Node :: SelectDestination(){
 /*
  * GenerateNotification: generates a Notification
  **/
-Notification Node :: GenerateNotification(
-		int packet_type, int destination_id, int packet_id, double timestamp_generated, double tx_duration){
-
+Notification Node :: GenerateNotification(int packet_type, int destination_id,
+		int packet_id, double timestamp_generated, double tx_duration){
 
 	Notification notification;
 
@@ -3086,6 +3081,145 @@ void Node :: ResumeBackoff(trigger_t &){
 //				SimTime(), node_id, node_state, LOG_D02, LOG_LVL3,
 //				trigger_start_backoff.Active(), trigger_start_backoff.GetTime() - SimTime(),
 //				trigger_end_backoff.Active(), trigger_end_backoff.GetTime() - SimTime());
+
+}
+
+/*********************/
+/*********************/
+/*  AGENTS MANAGMENT */
+/*********************/
+/*********************/
+
+/*
+ * GenerateConfiguration: encapsulates the configuration of a node to be sent
+ **/
+Configuration Node :: GenerateConfiguration(double timestamp){
+
+	Configuration configuration;
+
+	configuration.timestamp = timestamp;
+
+	configuration.node_id = node_id;
+	configuration.x = x;
+	configuration.y = y;
+	configuration.z = z;
+	configuration.node_type = node_type;
+	configuration.destination_id = destination_id;
+	configuration.lambda = lambda;
+	configuration.traffic_load = traffic_load;
+	configuration.ieee_protocol = ieee_protocol;
+	configuration.primary_channel = primary_channel;
+	configuration.min_channel_allowed = min_channel_allowed;
+	configuration.max_channel_allowed = max_channel_allowed;
+	configuration.num_channels_allowed = num_channels_allowed;
+	configuration.tpc_min = tpc_min;
+	configuration.tpc_default = tpc_default;
+	configuration.tpc_max = tpc_max;
+	configuration.cca_min = cca_min;
+	configuration.cca_default = cca_default;
+	configuration.cca_max = cca_max;
+	configuration.tx_gain = tx_gain;
+	configuration.rx_gain = rx_gain;
+	configuration.channel_bonding_model = channel_bonding_model;
+	configuration.modulation_default = modulation_default;
+
+	return configuration;
+
+}
+
+/*
+ * InportReceivingRequestFromAgent(): called when some agent answers for information to the AP
+ * Input arguments:
+ * -
+ */
+void Node :: InportReceivingRequestFromAgent() {
+
+	printf("%s Node #%d: New information request received from the Agent\n", LOG_LVL1, node_id);
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New information request received from the Agent\n",
+		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+	// Generate configuration to be sent to the agent
+	Configuration configuration = GenerateConfiguration(SimTime());
+	// Generate encapsulated information to be sent to the agent
+	// TODO (define a structure, as well)
+	// Answer to the agent
+	outportAnswerToAgent(configuration);
+
+}
+
+/*
+ * InportReceiveConfigurationFromAgent(): called when some agent sends instructions to the AP
+ * Input arguments:
+ * -
+ */
+void Node :: InportReceiveConfigurationFromAgent(Configuration &new_configuration) {
+
+	printf("%s Node #%d: New configuration received from the Agent\n", LOG_LVL1, node_id);
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the Agent\n",
+		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+	// Apply changes recommended by the agent
+	ApplyNewConfiguration(new_configuration);
+	// Broadcast the new configuration to the associated STAs
+	BroadcastNewConfigurationToStas(new_configuration);
+
+}
+
+/*
+ * ApplyNewConfiguration(): apply the new configuration received from either
+ * the Agent (in case of being an AP) or the AP (in case of being an STA)
+ * Input arguments:
+ * - new_configuration: structure containing the new configuration to be applied
+ */
+void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
+
+	// TODO: think about recommendation levels done by agents
+
+	printf("%s Node #%d: Applying the new received configuration\n", LOG_LVL1, node_id);
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Applying the new received configuration\n",
+		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+
+	destination_id = new_configuration.destination_id;
+	lambda = new_configuration.lambda;
+	primary_channel = new_configuration.primary_channel;
+	num_channels_allowed = new_configuration.num_channels_allowed;
+	tpc_default = new_configuration.tpc_default;
+	cca_default = new_configuration.cca_default;
+	channel_bonding_model = new_configuration.channel_bonding_model;
+
+	// Print new configuration
+	PrintNodeInfo(INFO_DETAIL_LEVEL_2);
+
+}
+
+/*
+ * BroadcastNewConfigurationToStas():
+ * Input arguments:
+ * -
+ */
+void Node :: BroadcastNewConfigurationToStas(Configuration &new_configuration) {
+	// ONLY APs connected to agents
+	printf("%s Node #%d: Broadcasting the new configuration to STAs\n", LOG_LVL1, node_id);
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Broadcasting the new configuration to STAs\n",
+		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+
+	outportSetNewWlanConfiguration(new_configuration);
+
+}
+
+/*
+ * InportNewWlanConfigurationReceived():
+ * Input arguments:
+ * -
+ */
+void Node :: InportNewWlanConfigurationReceived(Configuration &new_configuration) {
+
+	printf("%s Node #%d: New configuration received from the AP\n", LOG_LVL1, node_id);
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the AP\n",
+		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+
+	InitializeVariables();
+
+	ApplyNewConfiguration(new_configuration);
+	//InitializeVariables();
 
 }
 

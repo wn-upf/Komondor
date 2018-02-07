@@ -276,8 +276,11 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			connect node_container[n].outportSendLogicalNack,node_container[m].InportNackReceived;
 
 			if(strcmp(node_container[n].wlan_code,node_container[m].wlan_code) == 0) {
+				// Connections regarding MCS
 				connect node_container[n].outportAskForTxModulation,node_container[m].InportMCSRequestReceived;
 				connect node_container[n].outportAnswerTxModulation,node_container[m].InportMCSResponseReceived;
+				// Connections regarding changes in the WLAN
+				connect node_container[n].outportSetNewWlanConfiguration,node_container[m].InportNewWlanConfigurationReceived;
 			}
 		}
 
@@ -288,7 +291,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 
 			connect agent_container[counter_agents_connected].outportRequestInformationToAp,node_container[n].InportReceivingRequestFromAgent;
 			connect node_container[n].outportAnswerToAgent,agent_container[counter_agents_connected].InportReceivingInformationFromAp;
-			connect agent_container[counter_agents_connected].outportSendInfoToAp,node_container[n].InportReceivingInstructionsFromAgent;
+			connect agent_container[counter_agents_connected].outportSendConfigurationToAp,node_container[n].InportReceiveConfigurationFromAgent;
 
 			counter_agents_connected += 1;
 
@@ -708,6 +711,9 @@ void Komondor :: GenerateAgents() {
 		agent_container[i].agent_id = i;
 	}
 
+	// TODO Ideas:
+	//  * File containing different parameters of each agent (e.g., method applied, time between actions, etc.)
+	//  * File defining general features of agents (e.g., time between actions, information requested, etc.)
 }
 
 /*
