@@ -112,9 +112,10 @@ component Node : public TypeII{
 		void ResumeBackoff();
 
 		// Configuration (to be sent to the agent)
-		Configuration GenerateConfiguration(double timestamp);
-		void ApplyNewConfiguration(Configuration &new_configuration);
-		void BroadcastNewConfigurationToStas(Configuration &new_configuration);
+		Configuration GenerateConfiguration();
+		void ApplyNewConfiguration(Configuration &received_configuration);
+		void BroadcastNewConfigurationToStas(Configuration &received_configuration);
+		void RestartPerformanceMetrics();
 
 	// Public items (entered by nodes constructor in Komondor simulation)
 	public:
@@ -323,6 +324,8 @@ component Node : public TypeII{
 		int last_measurement_rts_cts_packets_sent;
 		int last_measurement_rts_cts_packets_lost;
 		// ...
+
+		int flag_apply_new_configuration;
 
 	// Connections and timers
 	public:
@@ -2826,6 +2829,7 @@ void Node :: SendResponsePacket(trigger_t &){
 			time_to_trigger = SimTime() + current_tx_duration;
 			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,13,12));
 			data_packets_sent++;
+			last_measurement_data_packets_sent ++;
 			if(save_node_logs) fprintf(node_logger.file,
 					"%.15f;N%d;S%d;%s;%s Data TX will be finished at %.15f\n",
 					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3,
@@ -3093,11 +3097,11 @@ void Node :: ResumeBackoff(trigger_t &){
 /*
  * GenerateConfiguration: encapsulates the configuration of a node to be sent
  **/
-Configuration Node :: GenerateConfiguration(double timestamp){
+Configuration Node :: GenerateConfiguration(){
 
 	Configuration configuration;
 
-	configuration.timestamp = timestamp;
+	configuration.timestamp = SimTime();
 
 	configuration.node_id = node_id;
 	configuration.x = x;
@@ -3123,6 +3127,12 @@ Configuration Node :: GenerateConfiguration(double timestamp){
 	configuration.channel_bonding_model = channel_bonding_model;
 	configuration.modulation_default = modulation_default;
 
+	Report report;
+
+	report.data_packets_sent = last_measurement_data_packets_sent;
+
+	configuration.report = report;
+
 	return configuration;
 
 }
@@ -3134,13 +3144,16 @@ Configuration Node :: GenerateConfiguration(double timestamp){
  */
 void Node :: InportReceivingRequestFromAgent() {
 
-	printf("%s Node #%d: New information request received from the Agent\n", LOG_LVL1, node_id);
+//	printf("%s Node #%d: New information request received from the Agent\n", LOG_LVL1, node_id);
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New information request received from the Agent\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+
 	// Generate configuration to be sent to the agent
-	Configuration configuration = GenerateConfiguration(SimTime());
-	// Generate encapsulated information to be sent to the agent
-	// TODO (define a structure, as well)
+	Configuration configuration = GenerateConfiguration();
+
+	// Restart performance metrics for future requests
+	RestartPerformanceMetrics();
+
 	// Answer to the agent
 	outportAnswerToAgent(configuration);
 
@@ -3151,13 +3164,16 @@ void Node :: InportReceivingRequestFromAgent() {
  * Input arguments:
  * -
  */
-void Node :: InportReceiveConfigurationFromAgent(Configuration &new_configuration) {
+void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configuration) {
 
-	printf("%s Node #%d: New configuration received from the Agent\n", LOG_LVL1, node_id);
+//	printf("%s Node #%d: New configuration received from the Agent\n", LOG_LVL1, node_id);
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the Agent\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
-	// Apply changes recommended by the agent
-	ApplyNewConfiguration(new_configuration);
+
+	new_configuration = received_configuration;
+	// Set flag to true in order to apply the new configuration next time the node restarts
+	flag_apply_new_configuration = TRUE;
+
 	// Broadcast the new configuration to the associated STAs
 	BroadcastNewConfigurationToStas(new_configuration);
 
@@ -3173,10 +3189,11 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 
 	// TODO: think about recommendation levels done by agents
 
-	printf("%s Node #%d: Applying the new received configuration\n", LOG_LVL1, node_id);
+//	printf("%s Node #%d: Applying the new received configuration\n", LOG_LVL1, node_id);
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Applying the new received configuration\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
+	// Set new configuration according to received instructions
 	destination_id = new_configuration.destination_id;
 	lambda = new_configuration.lambda;
 	primary_channel = new_configuration.primary_channel;
@@ -3186,7 +3203,7 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 	channel_bonding_model = new_configuration.channel_bonding_model;
 
 	// Print new configuration
-	PrintNodeInfo(INFO_DETAIL_LEVEL_2);
+	//PrintNodeInfo(INFO_DETAIL_LEVEL_2);
 
 }
 
@@ -3197,10 +3214,11 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
  */
 void Node :: BroadcastNewConfigurationToStas(Configuration &new_configuration) {
 	// ONLY APs connected to agents
-	printf("%s Node #%d: Broadcasting the new configuration to STAs\n", LOG_LVL1, node_id);
+//	printf("%s Node #%d: Broadcasting the new configuration to STAs\n", LOG_LVL1, node_id);
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Broadcasting the new configuration to STAs\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
+	// Send the new configuration to the associated STAs
 	outportSetNewWlanConfiguration(new_configuration);
 
 }
@@ -3210,16 +3228,26 @@ void Node :: BroadcastNewConfigurationToStas(Configuration &new_configuration) {
  * Input arguments:
  * -
  */
-void Node :: InportNewWlanConfigurationReceived(Configuration &new_configuration) {
+void Node :: InportNewWlanConfigurationReceived(Configuration &received_configuration) {
 
-	printf("%s Node #%d: New configuration received from the AP\n", LOG_LVL1, node_id);
+//	printf("%s Node #%d: New configuration received from the AP\n", LOG_LVL1, node_id);
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the AP\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
-	InitializeVariables();
+	// Set new configuration
+	new_configuration = received_configuration;
 
-	ApplyNewConfiguration(new_configuration);
-	//InitializeVariables();
+	// Set flag to true in order to apply the new configuration next time the node restarts
+	flag_apply_new_configuration = TRUE;
+
+}
+
+/*
+ * RestartPerformanceMetrics():
+ **/
+void Node :: RestartPerformanceMetrics() {
+
+	last_measurement_data_packets_sent = 0;
 
 }
 
@@ -3260,6 +3288,14 @@ void Node :: RestartNode(int called_by_time_out){
 	for(int c = current_left_channel; c <= current_right_channel; c++){
 		total_time_transmitting_per_channel[c] += current_tx_duration;
 	}
+
+	// Apply new configuration (if it is the case)
+	if (flag_apply_new_configuration) {
+		ApplyNewConfiguration(new_configuration);
+	}
+	// Turn flag off
+	flag_apply_new_configuration = FALSE;
+	//PrintNodeInfo(INFO_DETAIL_LEVEL_2);
 
 	// Reinitialize parameters
 	current_tx_duration = 0;
@@ -3325,7 +3361,6 @@ void Node :: RestartNode(int called_by_time_out){
 void Node:: CallSensing(trigger_t &){
 
 	node_state = STATE_SENSING;
-
 
 }
 
@@ -3411,7 +3446,6 @@ void Node:: MeasureRho(trigger_t &){
 	trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
 
 }
-
 
 /************************/
 /************************/
@@ -3962,87 +3996,9 @@ void Node :: InitializeVariables() {
 	num_tx_init_not_possible = 0;
 	num_tx_init_tried = 0;
 
-}
+	// Measurements to be sent to agents
+	last_measurement_data_packets_sent = 0;
 
-double truncate_Sergio(double number, int floating_position){
+	flag_apply_new_configuration = FALSE;
 
-    double x = pow(10,floating_position) * number;
-    double y = x / pow(10,floating_position);
-    return y;
-
-}
-
-double round_to_digits(double value, int digits)
-{
-    if (value == 0.0) // otherwise it will return 'nan' due to the log10() of zero
-        return 0.0;
-
-    // denominator
-    double factor = pow(10.0, digits);
-
-    double rounded_numerator =  round(value * factor);
-
-    double rounded_value = rounded_numerator / factor;
-
-    // printf("%.24f - %.24f - %.24f\n", value, rounded_numerator, rounded_value);
-
-    return rounded_value;
-}
-
-double round_to_digits_float(float value, int digits)
-{
-    if (value == 0.0) // otherwise it will return 'nan' due to the log10() of zero
-        return 0.0;
-
-    // denominator
-    float factor = pow(10.0, digits);
-
-    float rounded_numerator =  round(value * factor);
-
-    float rounded_value = rounded_numerator / factor;
-
-    printf("%.24f - %.24f - %.24f\n", value, rounded_numerator, rounded_value);
-
-//    printf("------------------------\n");
-//    printf(" - value = %.18f\n", value);
-//    printf(" - digits = %d\n", digits);
-    //printf(" - fabs = %.18f\n", fabs(value));
-    //printf(" - log10 = %.18f\n", log10(fabs(value)));
-    //printf(" - ceil = %.18f\n", ceil(log10(fabs(value))));
-    //printf(" - factor = %.18f\n", factor);
-//    printf(" - rounded_value = %.18f\n", rounded_value);
-
-    return rounded_value;
-}
-
-double fix_time_offset(double time_value, int trunc_pos, int round_pos){
-
-	double truncated_value = 0;
-	double rounded_value = 0;
-	double fixed_time_value = 0;
-	// double diff = 0;
-
-	if (trunc_pos != 0) {
-
-		truncated_value = truncate_Sergio(time_value, trunc_pos);
-		rounded_value = round_to_digits(truncated_value,round_pos);
-		fixed_time_value = rounded_value;
-
-//		printf("---------------------------------\n");
-//		printf("- time_value = %.15f \n- truncated_value = %.15f \n- rounded_value = %.15f"
-//				"\n- diff = %.15f\n- fixed_time_value = %.15f\n",
-//				time_value, truncated_value, rounded_value, diff, fixed_time_value);
-
-
-	} else {
-		rounded_value = round_to_digits(time_value,round_pos);
-		fixed_time_value = rounded_value;
-	}
-
-
-//	printf("---------------------------------\n");
-//	printf("- time_value = %.15f \n- truncated_value = %.15f -\n -diff = %.15f\n- fixed_time_value = %.15f\n",
-//			time_value, truncated_value, diff, fixed_time_value);
-
-	return fixed_time_value;
 }

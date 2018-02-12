@@ -43,25 +43,43 @@
  * -----------------------------------------------------------------
  * File description: this is the main Komondor file
  *
- * - This file contains the methods related to "time" operations
+ * - This file defines a WLAN and provides basic displaying methods
  */
 
-#include <math.h>
-#include <algorithm>
-#include <stddef.h>
 #include "../list_of_macros.h"
+#include "logger.h"
 
-// Exponential redefinition
-double	Random( double v=1.0)	{ return v*drand48();}
-int	Random( int v)	{ return (int)(v*drand48()); }
-double	Exponential(double mean){ return -mean*log(Random());}
+// Action info
+struct Action
+{
+	int channel;	// Channel selected
+	double cca;		// CCA level
+	double tx_power;	// Tx Power
+//	int *list_sta_id;	// List of STAs IDs belonging to the WLAN
+//
+//	/*
+//	 * SetSizeOfSTAsArray(): sets the size of the array list_sta_id
+//	 */
+//	void SetSizeOfSTAsArray(int num_stas){
+//
+//		list_sta_id = (int *) malloc(num_stas * sizeof(*list_sta_id));
+//
+//		for(int s = 0; s < num_stas; s++){
+//			list_sta_id[s] = NODE_ID_NONE;
+//		}
+//	}
 
-/*
- * UpdateStatistics(): Updates the statistics since the last agent interaction
- * (e.g. packets lost since last change)
- **/
-double UpdateStatistics(int ){
+	/*
+	 * PrintStaIds(): prints the list of STAs IDs belonging to the WLAN
+	 */
+	void PrintAction(){
+
+		printf("------------\n Action:\n");
+		printf(" * channel = %d\n", channel);
+		printf(" * cca = %f\n", cca);
+		printf(" * tx_power = %f\n", tx_power);
+		printf("------------\n");
+	}
 
 
-
-}
+};

@@ -51,6 +51,9 @@
 #include <stddef.h>
 #include "../list_of_macros.h"
 
+#ifndef _AUX_METHODS_
+#define _AUX_METHODS_
+
 /*
  * PickRandomElementFromArray(): pick uniformely random an element of an array
  */
@@ -182,3 +185,88 @@ double RandomDouble(double min, double max)
     double f = (double)rand() / RAND_MAX;
     return min + f * (max - min);
 }
+
+double truncate_Sergio(double number, int floating_position){
+
+    double x = pow(10,floating_position) * number;
+    double y = x / pow(10,floating_position);
+    return y;
+
+}
+
+double round_to_digits(double value, int digits)
+{
+    if (value == 0.0) // otherwise it will return 'nan' due to the log10() of zero
+        return 0.0;
+
+    // denominator
+    double factor = pow(10.0, digits);
+
+    double rounded_numerator =  round(value * factor);
+
+    double rounded_value = rounded_numerator / factor;
+
+    // printf("%.24f - %.24f - %.24f\n", value, rounded_numerator, rounded_value);
+
+    return rounded_value;
+}
+
+double round_to_digits_float(float value, int digits)
+{
+    if (value == 0.0) // otherwise it will return 'nan' due to the log10() of zero
+        return 0.0;
+
+    // denominator
+    float factor = pow(10.0, digits);
+
+    float rounded_numerator =  round(value * factor);
+
+    float rounded_value = rounded_numerator / factor;
+
+    printf("%.24f - %.24f - %.24f\n", value, rounded_numerator, rounded_value);
+
+//    printf("------------------------\n");
+//    printf(" - value = %.18f\n", value);
+//    printf(" - digits = %d\n", digits);
+    //printf(" - fabs = %.18f\n", fabs(value));
+    //printf(" - log10 = %.18f\n", log10(fabs(value)));
+    //printf(" - ceil = %.18f\n", ceil(log10(fabs(value))));
+    //printf(" - factor = %.18f\n", factor);
+//    printf(" - rounded_value = %.18f\n", rounded_value);
+
+    return rounded_value;
+}
+
+double fix_time_offset(double time_value, int trunc_pos, int round_pos){
+
+	double truncated_value = 0;
+	double rounded_value = 0;
+	double fixed_time_value = 0;
+	// double diff = 0;
+
+	if (trunc_pos != 0) {
+
+		truncated_value = truncate_Sergio(time_value, trunc_pos);
+		rounded_value = round_to_digits(truncated_value,round_pos);
+		fixed_time_value = rounded_value;
+
+//		printf("---------------------------------\n");
+//		printf("- time_value = %.15f \n- truncated_value = %.15f \n- rounded_value = %.15f"
+//				"\n- diff = %.15f\n- fixed_time_value = %.15f\n",
+//				time_value, truncated_value, rounded_value, diff, fixed_time_value);
+
+
+	} else {
+		rounded_value = round_to_digits(time_value,round_pos);
+		fixed_time_value = rounded_value;
+	}
+
+
+//	printf("---------------------------------\n");
+//	printf("- time_value = %.15f \n- truncated_value = %.15f -\n -diff = %.15f\n- fixed_time_value = %.15f\n",
+//			time_value, truncated_value, diff, fixed_time_value);
+
+	return fixed_time_value;
+}
+
+#endif

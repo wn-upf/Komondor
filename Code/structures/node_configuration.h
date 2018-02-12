@@ -49,6 +49,23 @@
 #ifndef _AUX_CONFIGURATION_
 #define _AUX_CONFIGURATION_
 
+struct Report
+{
+
+	int data_packets_sent;
+
+	// Function to print the node's report
+	void PrintReport(void){
+
+		printf("%s Report:\n", LOG_LVL4);
+		printf("%s data_packets_sent = %d\n", LOG_LVL5, data_packets_sent);
+
+		printf("\n");
+
+	}
+
+};
+
 // Node's configuration
 struct Configuration
 {
@@ -77,6 +94,8 @@ struct Configuration
 	double rx_gain;				// Antenna reception gain [linear]
 	int channel_bonding_model;	// Channel bonding model (definition of models in function GetTxChannelsByChannelBonding())
 	int modulation_default;		// Default modulation
+
+	Report report;
 
 	// Function to print the node's configuration
 	void PrintConfiguration(void){

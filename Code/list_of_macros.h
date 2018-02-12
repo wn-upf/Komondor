@@ -349,7 +349,6 @@
 #define IX_IEEE_PROTOCOL_TYPE		25
 #define IX_TRAFFIC_LOAD				26
 
-
 // APs file
 #define IX_AP_WLAN_CODE					1
 #define IX_AP_POSITION_X				2
@@ -378,6 +377,12 @@
 #define IX_AP_IEEE_PROTOCOL_TYPE		25
 #define IX_AP_TRAFFIC_LOAD				26
 
+// Agents file
+#define IX_AGENT_WLAN_CODE				1
+#define IX_AGENT_TIME_BW_REQUESTS		2
+#define IX_AGENT_CHANNEL_VALUES			3
+#define IX_AGENT_CCA_VALUES				4
+#define IX_AGENT_TX_POWER_VALUES		5
 
 /* *********************
  * * LOG TYPE ENCODING *
