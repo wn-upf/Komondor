@@ -53,6 +53,7 @@
 
 #include "../list_of_macros.h"
 #include "../structures/node_configuration.h"
+#include "../structures/performance_report.h"
 #include "../structures/action.h"
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
@@ -125,6 +126,8 @@ component Agent : public TypeII{
 		Configuration configuration;
 		Configuration new_configuration;
 
+		Report report;
+
 		// File for writting node logs
 		FILE *output_log_file;				// File for logs in which the agent is involved
 		char own_file_path[32];				// Name of the file for agent logs
@@ -135,7 +138,7 @@ component Agent : public TypeII{
 	public:
 
 		// INPORT connections for receiving notifications
-		inport void inline InportReceivingInformationFromAp(Configuration &configuration);
+		inport void inline InportReceivingInformationFromAp(Configuration &configuration, Report &report);
 
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAp();
@@ -234,7 +237,7 @@ void Agent :: RequestInformationToAp(trigger_t &){
  * Input arguments:
  * - to be defined
  */
-void Agent :: InportReceivingInformationFromAp(Configuration &received_configuration){
+void Agent :: InportReceivingInformationFromAp(Configuration &received_configuration, Report &received_report){
 
 //	printf("%s Agent #%d: Message received from the AP\n", LOG_LVL1, agent_id);
 
@@ -246,14 +249,16 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	configuration = received_configuration;
 
+	report = received_report;
+
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Current conf (Tx Power) = %f dBm\n",
 			SimTime(), agent_id, LOG_C00, LOG_LVL2, ConvertPower(PW_TO_DBM,configuration.selected_tx_power));
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s throughput = %f dBm\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, configuration.report.throughput);
+			SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %f dBm\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, configuration.report.max_bound_throughput);
+			SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput);
 
 	// Generate the reward for the last selected action
 	GenerateRewardSelectedArm();
@@ -377,8 +382,8 @@ void Agent :: GenerateRewardSelectedArm() {
 		 * 	 that can be sent in each interval (e.g., packets that were sent but lost)
 		 */
 		case REWARD_TYPE_PACKETS_SENT:{
-			reward = configuration.report.data_packets_sent /
-					configuration.report.data_packets_lost;
+			reward = report.data_packets_sent /
+					report.data_packets_lost;
 			break;
 		}
 
@@ -389,18 +394,18 @@ void Agent :: GenerateRewardSelectedArm() {
 		 */
 		case REWARD_TYPE_THROUGHPUT:{
 
-			if (configuration.report.max_bound_throughput == 0) {
+			if (report.max_bound_throughput == 0) {
 				reward = 0;
 			} else {
-				reward = configuration.report.throughput /
-						configuration.report.max_bound_throughput;
+				reward = report.throughput /
+						report.max_bound_throughput;
 			}
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s throughput = %f dBm\n",
-					SimTime(), agent_id, LOG_C00, LOG_LVL2, configuration.report.throughput);
+					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput);
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %f dBm\n",
-					SimTime(), agent_id, LOG_C00, LOG_LVL2, configuration.report.max_bound_throughput);
+					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput);
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s reward = %f\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2, reward);
@@ -412,9 +417,9 @@ void Agent :: GenerateRewardSelectedArm() {
 		 * -
 		 */
 		case REWARD_TYPE_PACKETS_GENERATED:{
-			reward = (configuration.report.num_packets_generated -
-					configuration.report.num_packets_dropped) /
-					configuration.report.num_packets_generated;
+			reward = (report.num_packets_generated -
+					report.num_packets_dropped) /
+					report.num_packets_generated;
 			break;
 		}
 

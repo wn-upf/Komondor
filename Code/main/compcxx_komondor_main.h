@@ -18,6 +18,6 @@ typedef void  (compcxx_component::*Node_outportSelfFinishTX_f_t)(Notification &n
 typedef void  (compcxx_component::*Node_outportSendLogicalNack_f_t)(LogicalNack &logical_nack_info);
 typedef void  (compcxx_component::*Node_outportAskForTxModulation_f_t)(Notification &notification);
 typedef void  (compcxx_component::*Node_outportAnswerTxModulation_f_t)(Notification &notification);
-typedef void  (compcxx_component::*Node_outportAnswerToAgent_f_t)(Configuration &configuration);
+typedef void  (compcxx_component::*Node_outportAnswerToAgent_f_t)(Configuration &configuration, Report &report);
 typedef void  (compcxx_component::*Node_outportSetNewWlanConfiguration_f_t)(Configuration &new_configuration);
 };

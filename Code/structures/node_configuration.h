@@ -49,36 +49,6 @@
 #ifndef _AUX_CONFIGURATION_
 #define _AUX_CONFIGURATION_
 
-struct Report
-{
-
-	double throughput;
-	double max_bound_throughput;
-	int data_packets_sent;
-	int data_packets_lost;
-	int rts_cts_packets_sent;
-	int rts_cts_packets_lost;
-	double num_packets_generated;
-	double num_packets_dropped;
-
-	// Function to print the node's report
-	void PrintReport(void){
-
-		printf("%s Report:\n", LOG_LVL4);
-		printf("%s throughput = %f\n", LOG_LVL5, throughput);
-		printf("%s max_bound_throughput = %f\n", LOG_LVL5, max_bound_throughput);
-		printf("%s data_packets_sent = %d\n", LOG_LVL5, data_packets_sent);
-		printf("%s data_packets_lost = %d\n", LOG_LVL5, data_packets_lost);
-		printf("%s rts_cts_packets_sent = %d\n", LOG_LVL5, rts_cts_packets_sent);
-		printf("%s rts_cts_packets_lost = %d\n", LOG_LVL5, rts_cts_packets_lost);
-		printf("%s num_packets_generated = %f\n", LOG_LVL5, num_packets_generated);
-		printf("%s num_packets_dropped = %f\n", LOG_LVL5, num_packets_dropped);
-		printf("\n");
-
-	}
-
-};
-
 struct Capabilities
 {
 	int node_id;				// Node id
@@ -146,33 +116,26 @@ struct Configuration
 	double selected_cca;		// Selected CCA ("sensitivity" threshold) [pW]
 	double selected_tx_power;	// Selected Tx Power [pW]
 
-	Report report;
 	Capabilities capabilities;
 
 	// Function to print the node's configuration
 	void PrintConfiguration(int origin){
 
 		if (origin == ORIGIN_AGENT) {
-
 			printf("%s Recommended configuration by the agent:\n", LOG_LVL3);
-			printf("%s selected_primary = %d\n", LOG_LVL4, selected_primary);
-			printf("%s selected_left_channel = %d\n", LOG_LVL4, selected_left_channel);
-			printf("%s selected_right_channel = %d\n", LOG_LVL4, selected_right_channel);
-			printf("%s cca_default = %f pW (%f dBm)\n", LOG_LVL4, selected_cca, ConvertPower(PW_TO_DBM, selected_cca));
-			printf("%s tpc_default = %f pW (%f dBm)\n", LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
-
-			printf("\n");
-
 		} else if (origin == ORIGIN_AP) {
-
-			report.PrintReport();
-			//capabilities.PrintCapabilities();
-
+			printf("%s Current configuration of the WLAN:\n", LOG_LVL3);
 		} else {
-
 			printf("ERROR: bad origin\n");
-
 		}
+
+		printf("%s selected_primary = %d\n", LOG_LVL4, selected_primary);
+		printf("%s selected_left_channel = %d\n", LOG_LVL4, selected_left_channel);
+		printf("%s selected_right_channel = %d\n", LOG_LVL4, selected_right_channel);
+		printf("%s cca_default = %f pW (%f dBm)\n", LOG_LVL4, selected_cca, ConvertPower(PW_TO_DBM, selected_cca));
+		printf("%s tpc_default = %f pW (%f dBm)\n", LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
+
+		printf("\n");
 
 	}
 };

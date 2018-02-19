@@ -64,6 +64,7 @@
 #include "../structures/logger.h"
 #include "../structures/FIFO.h"
 #include "../structures/node_configuration.h"
+#include "../structures/performance_report.h"
 
 // Node component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Node : public TypeII{
@@ -116,6 +117,7 @@ component Node : public TypeII{
 
 		// Configuration (to be sent to the agent)
 		void GenerateConfiguration();
+		void GeneratePerformanceReport();
 		void ApplyNewConfiguration(Configuration &received_configuration);
 		void BroadcastNewConfigurationToStas(Configuration &received_configuration);
 		void RestartPerformanceMetrics();
@@ -320,6 +322,8 @@ component Node : public TypeII{
 		Configuration configuration;
 		Configuration new_configuration;
 
+		Report performance_report;
+
 		// Measurements done for agents
 		double last_time_measured;
 		int last_measurement_throughput;
@@ -358,7 +362,7 @@ component Node : public TypeII{
 		outport void outportAskForTxModulation(Notification &notification);
 		outport void outportAnswerTxModulation(Notification &notification);
 
-		outport void outportAnswerToAgent(Configuration &configuration);
+		outport void outportAnswerToAgent(Configuration &configuration, Report &report);
 		outport void outportSetNewWlanConfiguration(Configuration &new_configuration);
 
 		// Triggers
@@ -3174,24 +3178,8 @@ void Node :: GenerateConfiguration(){
 	capabilities.channel_bonding_model = channel_bonding_model;
 	capabilities.modulation_default = modulation_default;
 
-	// Report
-	Report report;
-
-	last_measurement_throughput = (((double)(last_measurement_data_packets_sent-last_measurement_data_packets_lost)
-			* packet_length * num_packets_aggregated)) / (SimTime()-last_time_measured);
-
-	report.throughput = last_measurement_throughput;
-	report.max_bound_throughput = last_measurement_max_bound_throughput;
-	report.data_packets_sent = last_measurement_data_packets_sent;
-	report.data_packets_lost = last_measurement_data_packets_lost;
-	report.rts_cts_packets_sent = last_measurement_rts_cts_packets_sent;
-	report.rts_cts_packets_lost = last_measurement_rts_cts_packets_lost;
-	report.num_packets_generated = last_measurement_num_packets_generated;
-	report.num_packets_dropped = last_measurement_num_packets_dropped;
-
 	// Configuration
 	configuration.capabilities = capabilities;
-	configuration.report = report;
 
 //	if (node_id == 0) {
 //	printf("current_left_channel = %d\n",
@@ -3215,6 +3203,31 @@ void Node :: GenerateConfiguration(){
 }
 
 /*
+ * GeneratePerformanceReport: encapsulates the performance of a node to be sent
+ **/
+void Node :: GeneratePerformanceReport(){
+
+	last_measurement_throughput = (((double)(last_measurement_data_packets_sent-last_measurement_data_packets_lost)
+			* packet_length * num_packets_aggregated)) / (SimTime()-last_time_measured);
+
+	performance_report.throughput = last_measurement_throughput;
+	performance_report.max_bound_throughput = last_measurement_max_bound_throughput;
+	performance_report.data_packets_sent = last_measurement_data_packets_sent;
+	performance_report.data_packets_lost = last_measurement_data_packets_lost;
+	performance_report.rts_cts_packets_sent = last_measurement_rts_cts_packets_sent;
+	performance_report.rts_cts_packets_lost = last_measurement_rts_cts_packets_lost;
+	performance_report.num_packets_generated = last_measurement_num_packets_generated;
+	performance_report.num_packets_dropped = last_measurement_num_packets_dropped;
+
+	// Restart performance metrics for future requests
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Restarting performance metrics (to be updated on the next request)\n",
+		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+
+	RestartPerformanceMetrics();
+
+}
+
+/*
  * InportReceivingRequestFromAgent(): called when some agent answers for information to the AP
  * Input arguments:
  * -
@@ -3227,24 +3240,20 @@ void Node :: InportReceivingRequestFromAgent() {
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New information request received from the Agent\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
-	// Generate configuration to be sent to the agent
+	// Generate the configuration to be sent to the agent
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Generating configuration to be answered\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 	GenerateConfiguration();
 
+	// Generate the performance report to be sent to the agent
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Generating report to be answered\n",
+		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+	GeneratePerformanceReport();
+
 	// Answer to the agent
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Answering to the agent with current information\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
-	outportAnswerToAgent(configuration);
-
-//	configuration.PrintConfiguration(ORIGIN_AGENT);
-//	configuration.report.PrintReport();
-
-	// Restart performance metrics for future requests
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Restarting performance metrics (to be updated on the next request)\n",
-		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
-
-	RestartPerformanceMetrics();
+	outportAnswerToAgent(configuration, performance_report);
 
 	if(save_node_logs) fprintf(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
