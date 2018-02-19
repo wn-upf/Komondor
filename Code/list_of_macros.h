@@ -263,6 +263,13 @@
 #define IEEE_AX_CTS_LENGTH				112					// CTS length [bits]
 #define IEEE_AX_BACK_LENGTH				240					// Block-ACK length [bits]
 
+// Agents
+#define ORIGIN_AGENT	0		// To determine the source of a received configuration (agent)
+#define ORIGIN_AP		1		// To determine the source of a received configuration (AP)
+
+#define REWARD_TYPE_PACKETS_SENT 		0	// To determine the reward according to the type of performance indicator
+#define REWARD_TYPE_THROUGHPUT 			1	// To determine the reward according to the type of performance indicator
+#define REWARD_TYPE_PACKETS_GENERATED 	2
 
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
@@ -270,9 +277,10 @@
  */
 
 // CONSOLE ARGUMENTS
-#define NUM_FULL_ARGUMENTS_CONSOLE		11		// Number of arguments entered per console corresponding to full config
-#define NUM_PARTIAL_ARGUMENTS_CONSOLE	5		// Number of arguments entered per console corresponding to partial config
-#define NUM_PARTIAL_ARGUMENTS_SCRIPT	6		// Number of arguments entered per script corresponding to partial config
+#define NUM_FULL_ARGUMENTS_CONSOLE				14		// Number of arguments entered per console corresponding to full config
+#define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	11		// Number of arguments entered per console corresponding to full config (NO AGENTS)
+#define NUM_PARTIAL_ARGUMENTS_CONSOLE			5		// Number of arguments entered per console corresponding to partial config
+#define NUM_PARTIAL_ARGUMENTS_SCRIPT			6		// Number of arguments entered per script corresponding to partial config
 
 #define IX_SYSTEM_INPUT_FILE		1
 #define IX_NODES_INPUT_FILE			2
@@ -383,6 +391,7 @@
 #define IX_AGENT_CHANNEL_VALUES			3
 #define IX_AGENT_CCA_VALUES				4
 #define IX_AGENT_TX_POWER_VALUES		5
+#define IX_AGENT_TYPE_OF_REWARD			6
 
 /* *********************
  * * LOG TYPE ENCODING *

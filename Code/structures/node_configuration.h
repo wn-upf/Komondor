@@ -52,26 +52,36 @@
 struct Report
 {
 
+	double throughput;
+	double max_bound_throughput;
 	int data_packets_sent;
+	int data_packets_lost;
+	int rts_cts_packets_sent;
+	int rts_cts_packets_lost;
+	double num_packets_generated;
+	double num_packets_dropped;
 
 	// Function to print the node's report
 	void PrintReport(void){
 
 		printf("%s Report:\n", LOG_LVL4);
+		printf("%s throughput = %f\n", LOG_LVL5, throughput);
+		printf("%s max_bound_throughput = %f\n", LOG_LVL5, max_bound_throughput);
 		printf("%s data_packets_sent = %d\n", LOG_LVL5, data_packets_sent);
-
+		printf("%s data_packets_lost = %d\n", LOG_LVL5, data_packets_lost);
+		printf("%s rts_cts_packets_sent = %d\n", LOG_LVL5, rts_cts_packets_sent);
+		printf("%s rts_cts_packets_lost = %d\n", LOG_LVL5, rts_cts_packets_lost);
+		printf("%s num_packets_generated = %f\n", LOG_LVL5, num_packets_generated);
+		printf("%s num_packets_dropped = %f\n", LOG_LVL5, num_packets_dropped);
 		printf("\n");
 
 	}
 
 };
 
-// Node's configuration
-struct Configuration
+struct Capabilities
 {
-	double timestamp;
-
-	int node_id; 				// Node identifier
+	int node_id;				// Node id
 	double x;					// X position coordinate
 	double y;					// Y position coordinate
 	double z;					// Z position coordinate
@@ -95,12 +105,10 @@ struct Configuration
 	int channel_bonding_model;	// Channel bonding model (definition of models in function GetTxChannelsByChannelBonding())
 	int modulation_default;		// Default modulation
 
-	Report report;
+	// Function to print the node's capabilities
+	void PrintCapabilities(){
 
-	// Function to print the node's configuration
-	void PrintConfiguration(void){
-
-		printf("%s Configuration of node %d info:\n", LOG_LVL3, node_id);
+		printf("%s Capabilities of node %d:\n", LOG_LVL3, node_id);
 		printf("%s node_type = %d\n", LOG_LVL4, node_type);
 		printf("%s position = (%.2f, %.2f, %.2f)\n", LOG_LVL4, x, y, z);
 		printf("%s primary_channel = %d\n", LOG_LVL4, primary_channel);
@@ -122,6 +130,49 @@ struct Configuration
 		printf("%s modulation_default = %d\n", LOG_LVL4, modulation_default);
 
 		printf("\n");
+
+	}
+
+};
+
+// Node's configuration
+struct Configuration
+{
+	double timestamp;
+
+	int selected_primary;		// Selected primary channel
+	int selected_left_channel;	// Selected left channel
+	int selected_right_channel;	// Selected right channel
+	double selected_cca;		// Selected CCA ("sensitivity" threshold) [pW]
+	double selected_tx_power;	// Selected Tx Power [pW]
+
+	Report report;
+	Capabilities capabilities;
+
+	// Function to print the node's configuration
+	void PrintConfiguration(int origin){
+
+		if (origin == ORIGIN_AGENT) {
+
+			printf("%s Recommended configuration by the agent:\n", LOG_LVL3);
+			printf("%s selected_primary = %d\n", LOG_LVL4, selected_primary);
+			printf("%s selected_left_channel = %d\n", LOG_LVL4, selected_left_channel);
+			printf("%s selected_right_channel = %d\n", LOG_LVL4, selected_right_channel);
+			printf("%s cca_default = %f pW (%f dBm)\n", LOG_LVL4, selected_cca, ConvertPower(PW_TO_DBM, selected_cca));
+			printf("%s tpc_default = %f pW (%f dBm)\n", LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
+
+			printf("\n");
+
+		} else if (origin == ORIGIN_AP) {
+
+			report.PrintReport();
+			//capabilities.PrintCapabilities();
+
+		} else {
+
+			printf("ERROR: bad origin\n");
+
+		}
 
 	}
 };

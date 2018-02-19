@@ -41,7 +41,7 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
+ * File description: this file contains functions related to the agents' operation
  *
  * - This file contains the methods related to "time" operations
  */
@@ -53,11 +53,6 @@
 
 #ifndef _AUX_AGENT_METHODS_
 #define _AUX_AGENT_METHODS_
-
-//// Exponential redefinition
-//double	Random( double v=1.0)	{ return v*drand48();}
-//int	Random( int v)	{ return (int)(v*drand48()); }
-//double	Exponential(double mean){ return -mean*log(Random());}
 
 /*********************/
 /*********************/
@@ -73,22 +68,26 @@ int PickArmEgreedy(int num_actions, double *reward_per_arm, double epsilon) {
 	//int num_actions = sizeof(reward_per_arm)/sizeof(reward_per_arm[0]);
 
 	double rand_number = ((double) rand() / (RAND_MAX));
-
 	int arm_index;
 
 	if (rand_number < epsilon) {
 		//EXPLORE
 		arm_index = rand() % num_actions;
+//		printf("EXPLORE: arm_index = %d\n", arm_index);
 	} else {
 		//EXPLOIT
 		double max = 0;
 		for (int i = 0; i < num_actions; i ++) {
-			if(reward_per_arm[i] > max) {
+//			printf("reward_per_arm[%d] = %f\n",i,reward_per_arm[i]);
+			if(reward_per_arm[i] >= max) {
 				max = reward_per_arm[i];
 				arm_index = i;
 			}
 		}
+
+//		printf("EXPLOIT: arm_index = %d\n", arm_index);
 	}
+
 
 	return arm_index;
 
@@ -112,8 +111,7 @@ int PickArmEgreedy(int num_actions, double *reward_per_arm, double epsilon) {
  * OUTPUT:
  *  - fills "indexes", which indicates the index of the parameter in each of the lists
  */
-void index2values(int *indexes, int ix, int size_channels,
-		int size_cca, int size_tx_power) {
+void index2values(int *indexes, int ix, int size_channels, int size_cca, int size_tx_power) {
 
 	// Determine channel index
 	int channel_ix = (ix+1) % size_channels;
@@ -172,36 +170,104 @@ void FindIndexesOfConfiguration(int *indexes_selected_arm, Configuration &config
 		int size_channels, int size_cca, int size_tx_power, int *list_of_channels,
 		double *list_of_cca_values, double *list_of_tx_power_values) {
 
-	int index_channel = 0;
-	int index_cca = 0;
-	int index_tx_power = 0;
+	int index_channel = -1;
+	int index_cca = -1;
+	int index_tx_power = -1;
 
 	// Channel
+	//printf("Channels list: ");
 	for(int i = 0; i < size_channels; i ++) {
-		if(configuration.primary_channel == list_of_channels[i]) {
+		//printf("%d ",list_of_channels[i]);
+		if(configuration.selected_left_channel == list_of_channels[i]) {
 			index_channel = i;
 			break;
 		}
 	}
+	//printf("\n");
 	// CCA
+	//printf("CCA list: ");
 	for(int i = 0; i < size_cca; i ++) {
-		if(ConvertPower(PW_TO_DBM, configuration.cca_default) == list_of_cca_values[i]) {
+		//printf("%f ",ConvertPower(PW_TO_DBM,list_of_cca_values[i]));
+		if(configuration.selected_cca == list_of_cca_values[i]) {
 			index_cca = i;
 			break;
 		}
 	}
+	//printf("\n");
 	// Tx Power
+	//printf("TX Power list: ");
 	for(int i = 0; i < size_tx_power; i ++) {
-		if(ConvertPower(PW_TO_DBM, configuration.tpc_default) == list_of_tx_power_values[i]) {
+		//printf("%f ",ConvertPower(PW_TO_DBM,list_of_tx_power_values[i]));
+		if(configuration.selected_tx_power == list_of_tx_power_values[i]) {
 			index_tx_power = i;
 			break;
 		}
 	}
+	//printf("\n");
 
 	indexes_selected_arm[0] = index_channel;
 	indexes_selected_arm[1] = index_cca;
 	indexes_selected_arm[2] = index_tx_power;
 
+	//printf("Indexes: %d, %d, %d\n", indexes_selected_arm[0],indexes_selected_arm[1],indexes_selected_arm[2]);
+
 }
+
+
+/*
+ * printOrWriteNodesTransmitting: prints (or writes) the array representing the transmitting nodes.
+ */
+void PrintOrWriteRewardPerArm(int write_or_print, int save_agent_logs,
+		int print_agent_logs, Logger agent_logger, int size_actions,
+		double *reward_per_arm, double *cumulative_reward_per_arm,
+		int *times_arm_has_been_selected, int agent_id, double sim_time) {
+
+	switch(write_or_print){
+		case PRINT_LOG:{
+			if(print_agent_logs){
+				printf("Reward per arm: ");
+				for(int n = 0; n < size_actions; n++){
+					printf("%f  ", reward_per_arm[n]);
+				}
+				printf("\nCumulative reward per arm: ");
+				for(int n = 0; n < size_actions; n++){
+					printf("%f  ", cumulative_reward_per_arm[n]);
+				}
+				printf("\nTimes each arm has been selected: ");
+				for(int n = 0; n < size_actions; n++){
+					printf("%d  ", times_arm_has_been_selected[n]);
+				}
+				printf("\n");
+			}
+			break;
+		}
+		case WRITE_LOG:{
+			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Reward per arm: ",
+				sim_time, agent_id, LOG_C00, LOG_LVL2);
+			for(int n = 0; n < size_actions; n++){
+				 if(save_agent_logs){
+					 fprintf(agent_logger.file, "%f  ", reward_per_arm[n]);
+				 }
+			}
+			if(save_agent_logs) fprintf(agent_logger.file, "\n%.15f;A%d;%s;%s Cumulative reward per arm: ",
+				sim_time, agent_id, LOG_C00, LOG_LVL2);
+			for(int n = 0; n < size_actions; n++){
+				 if(save_agent_logs){
+					 fprintf(agent_logger.file, "%f  ", cumulative_reward_per_arm[n]);
+				 }
+			}
+			fprintf(agent_logger.file, "\n%.15f;A%d;%s;%s Times each arm has been selected: ",
+							sim_time, agent_id, LOG_C00, LOG_LVL2);
+			for(int n = 0; n < size_actions; n++){
+				if(save_agent_logs){
+					fprintf(agent_logger.file, "%d ", times_arm_has_been_selected[n]);
+				}
+			}
+			if(save_agent_logs) fprintf(agent_logger.file, "\n");
+			break;
+		}
+	}
+}
+
 
 #endif

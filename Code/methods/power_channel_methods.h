@@ -638,7 +638,7 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intere
  **/
 void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_model, int *channels_free,
     int min_channel_allowed, int max_channel_allowed, int primary_channel, int **mcs_per_node,
-	int ix_mcs_per_node, int num_channels_system){
+	int ix_mcs_per_node, int num_channels_system, int node_id){
 
 	// Reset channels for transmitting
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
@@ -917,7 +917,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 								if(aux_throughput > max_throughput){
 									// TX channels found!
 									for(int c = left_tx_ch; c <= right_tx_ch; c++){
-									channels_for_tx[c] = TRUE;
+										channels_for_tx[c] = TRUE;
 									}
 								}
 							}

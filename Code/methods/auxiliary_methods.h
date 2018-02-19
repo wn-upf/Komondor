@@ -135,7 +135,7 @@ void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, in
 /*
  * GetFirstOrLastTrueElemOfArray(): pick the first or last TRUE element of an array
  */
-int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size){
+int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size, int max_or_min_bound){
 
 	int left_ix = 0;
 	int left_ix_is_set = 0;
@@ -153,15 +153,23 @@ int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size){
 
 	switch(first_or_last){
 		case LAST_TRUE_IN_ARRAY:{
-			return right_ix; //LAST
+			if(max_or_min_bound < right_ix) {
+				return max_or_min_bound; //LAST
+			} else {
+				return right_ix; //LAST
+			}
 			break;
 		}
 		case FIRST_TRUE_IN_ARRAY:{
-			return left_ix; //FIRST
+			if(max_or_min_bound > left_ix) {
+				return max_or_min_bound; //FIRST
+			} else {
+				return left_ix; //FIRST
+			}
 			break;
 		}
 		default:{
-			printf("Backoff type not found!\n");
+			printf("Type of getting element not found!\n");
 			exit(EXIT_FAILURE);
 			break;
 		}
