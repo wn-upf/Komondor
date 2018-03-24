@@ -40,3 +40,4 @@ Code/output/.keep
 
 # Whitelist 
 !Code/input/*
+/Apps/CentralNodePostProcessing/build/

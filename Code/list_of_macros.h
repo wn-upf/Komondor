@@ -204,8 +204,9 @@
 #define TRAFFIC_FULL_BUFFER			0	// Transmitters always have packets to transmit
 #define TRAFFIC_POISSON				1	// Traffic is generated randomly according to a Poisson distribution
 #define TRAFFIC_DETERMINISTIC		2	// Traffic is generated at fixed intervals
+#define TRAFFIC_POISSON_BURST		3	// Traffic is generated in bursts following a Poisson distribution
 
-#define PACKET_BUFFER_SIZE		256		// Size of the packets buffer
+#define PACKET_BUFFER_SIZE		128		// Size of the packets buffer
 
 // Protocols
 #define INCREASE_CW 1		// Command to increase contention window

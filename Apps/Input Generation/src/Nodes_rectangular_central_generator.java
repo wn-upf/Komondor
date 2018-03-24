@@ -1,4 +1,5 @@
 
+import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -23,7 +24,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author Sergio Barrachina-Munoz (sergio.barrachina@upf.edu)
  */
-public class Nodes_rectangular_generator {
+public class Nodes_rectangular_central_generator {
 
     static Wlan[] wlan_container = null;
 
@@ -42,6 +43,7 @@ public class Nodes_rectangular_generator {
     static int cont_wind_stage;     // CW stage 
     static int channel_bonding_model;
     static int ieee_protocol;       // IEEE protocol type
+    static double traffic_load;
     // -------------------
     static final int destination_id = -1;
     static double tpc_min;
@@ -78,7 +80,7 @@ public class Nodes_rectangular_generator {
         String line;
 
         System.out.println("Reading input file...");
-        
+
         boolean first_line_skipped = false;
 
         try (BufferedReader br = new BufferedReader(new FileReader(input_path))) {
@@ -156,6 +158,11 @@ public class Nodes_rectangular_generator {
         double x = 0;
         double y = 0;
         double z = 0;
+        int channel_bonding_aux;
+
+        double angle = 0;
+        double d_ap_sta = 0;
+        double rand_value;
 
         boolean aps_separated;  // Relocate APs until separated
 
@@ -176,7 +183,12 @@ public class Nodes_rectangular_generator {
             // Channel allocation
             primary_channel = ThreadLocalRandom.current().nextInt(0, c_sys_width);
 
-            num_channels_allowed_ix = ThreadLocalRandom.current().nextInt(0, log(c_sys_width, 2) + 1);
+            // If WLAN A
+            if (w == 0) {
+                num_channels_allowed_ix = 3;
+            } else {
+                num_channels_allowed_ix = ThreadLocalRandom.current().nextInt(0, log(c_sys_width, 2) + 1);
+            }
 
             System.out.println("num_channels_allowed: " + num_channels_allowed_ix);
 
@@ -254,8 +266,18 @@ public class Nodes_rectangular_generator {
 
                 aps_separated = true;
 
-                x = map_width * new Random().nextDouble();
-                y = map_heigth * new Random().nextDouble();
+                // If WLAN A
+                if (w == 0) {
+                    x = map_width / 2;
+                    y = map_heigth / 2;
+                    // to be later set
+                    channel_bonding_aux = -1;
+
+                } else {
+                    x = map_width * new Random().nextDouble();
+                    y = map_heigth * new Random().nextDouble();
+                    channel_bonding_aux = 2 * ThreadLocalRandom.current().nextInt(0, 4);
+                }
 
                 if (w > 0) {
                     for (int w2 = 0; w2 < w; w2++) {
@@ -277,7 +299,31 @@ public class Nodes_rectangular_generator {
 
             wlan_aux = new Wlan(wlan_id, wlan_code, num_stas, ap_code,
                     list_sta_code, primary_channel, min_ch_allowed,
-                    max_ch_allowed, wlan_80211ax, x, y, z, channel_bonding_model, 0);
+                    max_ch_allowed, wlan_80211ax, x, y, z, channel_bonding_aux, 0);
+
+            Point[] stas_position_list = new Point[wlan_aux.num_stas];
+
+            // Set STAs location
+            for (int n = 0; n < wlan_aux.num_stas; n++) {
+
+                /* Choose the angle uniformly but for the radius an 
+                 intermediate value z is generated uniformly between 0 and 1 
+                 and then r is calculated as r = sqrt(z)*R.
+                 */
+                angle = 360 * new Random().nextDouble();
+                rand_value = new Random().nextDouble();
+                d_ap_sta = d_min_AP_STA
+                        + Math.sqrt(rand_value) * (d_max_AP_STA - d_min_AP_STA);
+
+                x = wlan_aux.x + Math.cos(Math.toRadians(angle)) * d_ap_sta;
+                y = wlan_aux.y + Math.sin(Math.toRadians(angle)) * d_ap_sta;
+
+                Point point = new Point();
+                point.setLocation(x, y);
+                stas_position_list[n] = point;
+                wlan_aux.set_stas_positions(stas_position_list);
+
+            }
 
             wlan_container[w] = wlan_aux;
 
@@ -334,7 +380,8 @@ public class Nodes_rectangular_generator {
                 + "modulation_default" + CSV_SEPARATOR
                 + "central_freq (GHz)" + CSV_SEPARATOR
                 + "lambda" + CSV_SEPARATOR
-                + "ieee_protocol";
+                + "ieee_protocol" + CSV_SEPARATOR
+                + "traffic_load[pkt/s]";
 
         // System.out.println(csv_header_line);
         out.println(csv_header_line);
@@ -347,7 +394,7 @@ public class Nodes_rectangular_generator {
 
             line = getCompleteLine(wlan.ap_code, node_type, wlan.wlan_code, wlan.x,
                     wlan.y, wlan.z, wlan.primary_channel, wlan.min_ch_allowed,
-                    wlan.max_ch_allowed, wlan.channel_bonding_model);
+                    wlan.max_ch_allowed, wlan.channel_bonding_model, wlan.traffic_load);
 
             // System.out.println(line);
             out.println(line);
@@ -355,26 +402,12 @@ public class Nodes_rectangular_generator {
             node_type = 1;
 
             // Set STAs location
-                            
             for (int n = 0; n < wlan.num_stas; n++) {
 
-                /* Choose the angle uniformly but for the radius an 
-                intermediate value z is generated uniformly between 0 and 1 
-                and then r is calculated as r = sqrt(z)*R.
-                */
-                angle = 360 * new Random().nextDouble();
-                rand_value = new Random().nextDouble();
-                d_ap_sta = d_min_AP_STA +
-                        Math.sqrt(rand_value) * (d_max_AP_STA - d_min_AP_STA);
-                
-                x = wlan.x + Math.cos(Math.toRadians(angle)) * d_ap_sta;
-                y = wlan.y + Math.sin(Math.toRadians(angle)) * d_ap_sta;
-                z = 0;
-
                 line = getCompleteLine(wlan.list_sta_code[n], node_type,
-                        wlan.wlan_code, x, y, z, wlan.primary_channel,
+                        wlan.wlan_code, wlan.stas_position_list[n].x, wlan.stas_position_list[n].y, 0, wlan.primary_channel,
                         wlan.min_ch_allowed, wlan.max_ch_allowed,
-                        wlan.channel_bonding_model);
+                        wlan.channel_bonding_model, wlan.traffic_load);
 
                 // System.out.println(line);
                 out.println(line);
@@ -389,13 +422,13 @@ public class Nodes_rectangular_generator {
 
     static String getCompleteLine(String node_code, int node_type,
             String wlan_code, double x, double y, double z, int primary_channel,
-            int min_channel_allowed, int max_channel_allowed, int channel_bonding_model) {
+            int min_channel_allowed, int max_channel_allowed, int channel_bonding_model, double traffic_load) {
 
         // Round position coordinates to limited number of decimals
         NumberFormat nf = NumberFormat.getNumberInstance(Locale.UK);
         nf.setGroupingUsed(true);
         nf.setMaximumFractionDigits(4);
-                
+
         String line = node_code + CSV_SEPARATOR
                 + node_type + CSV_SEPARATOR
                 + wlan_code + CSV_SEPARATOR
@@ -420,7 +453,8 @@ public class Nodes_rectangular_generator {
                 + modulation_default + CSV_SEPARATOR
                 + central_freq + CSV_SEPARATOR
                 + lambda + CSV_SEPARATOR
-                + ieee_protocol;
+                + ieee_protocol + CSV_SEPARATOR
+                + traffic_load;
 
         return line;
     }
@@ -446,48 +480,80 @@ public class Nodes_rectangular_generator {
 //        System.out.println("Creating map...");
 //        String map_viewer_args[] = {output_path};
 //        Map_viewer.main(map_viewer_args);
-        
         // CODE FOR SEVERAL OUTPUTS WITH DIFFERENT CHANNEL ALLOCATION AND POSITION
         // String input_path = args[0];
         String input_path = "input_template_rectangular.csv";
         System.out.println("input_path: " + input_path);
         String output_path = "";
-        
-        int num_outputs = 20;
-        
-        for(int out_ix = 0; out_ix < num_outputs; out_ix++){
-          
+
+        // double[] traffic_loads = {1, 25, 50, 75, 100};
+        // double[] traffic_loads = {1, 25};
+        double[] traffic_loads = {1, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240};
+
+        int num_outputs = 200;
+
+        Random r = new Random();
+
+        for (int out_ix = 1; out_ix <= num_outputs; out_ix++) {
+
             input_attributes(input_path);
-                    
-            // Always-max
-            channel_bonding_model = 4;   
+
+            // Generate static deployment (WLANs position)
             generate_wlans();
-            output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb4.csv";
-            System.out.println("output_path: " + output_path);
-            genearate_file(output_path);
-            
-            // SCB
-            channel_bonding_model = 2;   
-            generate_wlans();
-            output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb2.csv";
-            System.out.println("output_path: " + output_path);
-            genearate_file(output_path);
-            
-            // OP
-            channel_bonding_model = 0;   
-            generate_wlans();
-            output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb0.csv";
-            System.out.println("output_path: " + output_path);
-            genearate_file(output_path);
-            
-            // Prob. uniform
-            channel_bonding_model = 6;   
-            generate_wlans();
-            output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb6.csv";
-            System.out.println("output_path: " + output_path);
-            genearate_file(output_path);
-            
-     
+
+            for (int w = 1; w < num_wlans; w++) {
+                // In case of random traffic in the rest of WLANs
+                double random_traffic_load = traffic_loads[0]
+                        + (traffic_loads[traffic_loads.length - 1]
+                        - traffic_loads[0]) * r.nextDouble();
+                wlan_container[w].traffic_load = random_traffic_load;
+
+            }
+
+            // Assign traffic load
+            for (int load_ix = 0; load_ix < traffic_loads.length; load_ix++) {
+
+//                for (int w = 1; w < num_wlans; w++) {
+//
+//                    // Determinsitc traffic load
+//                    wlan_container[w].traffic_load = traffic_loads[load_ix];
+//                }
+
+                wlan_container[0].traffic_load = traffic_loads[load_ix];
+
+                // Assign central WLAN's channel bonding model
+                // Always-max
+                channel_bonding_model = 4;
+                wlan_container[0].channel_bonding_model = channel_bonding_model;
+                output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb" + channel_bonding_model
+                        + "_load" + String.format("%03d", (int) traffic_loads[load_ix]) + ".csv";
+                System.out.println("output_path: " + output_path);
+                genearate_file(output_path);
+
+                // SCB
+                channel_bonding_model = 2;
+                wlan_container[0].channel_bonding_model = channel_bonding_model;
+                output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb" + channel_bonding_model
+                        + "_load" + String.format("%03d", (int) traffic_loads[load_ix]) + ".csv";
+                System.out.println("output_path: " + output_path);
+                genearate_file(output_path);
+
+                // OP
+                channel_bonding_model = 0;
+                wlan_container[0].channel_bonding_model = channel_bonding_model;
+                output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb" + channel_bonding_model
+                        + "_load" + String.format("%03d", (int) traffic_loads[load_ix]) + ".csv";
+                System.out.println("output_path: " + output_path);
+                genearate_file(output_path);
+
+                // Prob. uniform
+                channel_bonding_model = 6;
+                wlan_container[0].channel_bonding_model = channel_bonding_model;
+                output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb" + channel_bonding_model
+                        + "_load" + String.format("%03d", (int) traffic_loads[load_ix]) + ".csv";
+                System.out.println("output_path: " + output_path);
+                genearate_file(output_path);
+            }
         }
     }
 }

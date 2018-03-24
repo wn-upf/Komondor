@@ -323,7 +323,10 @@ public class Nodes_deterministic_generator {
 
     public static void main(String args[]) throws IOException {
 
-        input_attributes(args[0]);
+         // String input_path = args[0];
+        String input_path = "input_template_rectangular.csv";
+        
+        input_attributes(input_path);
 
         generate_csv();
 

@@ -398,6 +398,48 @@ void Komondor :: Stop(){
 
 	}
 
+	// Sergio test for unsaturation validation
+//	fprintf(logger_script.file, ";%.0f;%.0f;%.2f;%.2f;%.4f;%.4f;%.2f;%.2f;%.4f;%.4f;%.4f;%.4f\n",
+//			node_container[0].num_packets_generated,
+//			node_container[2].num_packets_generated,
+//			node_container[0].throughput/ (packet_length * num_packets_aggregated),
+//			node_container[2].throughput/ (packet_length * num_packets_aggregated),
+//			node_container[0].average_rho,
+//			node_container[2].average_rho,
+//			node_container[0].average_delay * 1000,
+//			node_container[2].average_delay * 1000,
+//			node_container[0].average_utilization,
+//			node_container[2].average_utilization,
+//			node_container[0].generation_drop_ratio,
+//			node_container[2].generation_drop_ratio);
+
+	// Sergio logs for central WLAN scenario
+	fprintf(logger_script.file, ";%.0f;%.2f;%.2f;%.4f;%.2f;%.4f;%.4f\n",
+				node_container[0].num_packets_generated,
+				node_container[0].num_packets_generated / SimTime(),
+				node_container[0].throughput/ (packet_length * num_packets_aggregated),
+				node_container[0].average_rho,
+				node_container[0].average_delay * 1000,
+				node_container[0].average_utilization,
+				node_container[0].generation_drop_ratio);
+
+	// Sergio logs for 2 WLANs overlap scenario
+//	fprintf(logger_script.file, ";%d;%d;%.0f;%.0f;%.0f;%.0f;%.2f;%.2f;%.4f;%.4f;%.2f;%.2f;%.4f;%.4f\n",
+//				node_container[0].channel_bonding_model,
+//				node_container[2].channel_bonding_model,
+//				node_container[0].traffic_load,
+//				node_container[2].traffic_load,
+//				node_container[0].num_packets_generated,
+//				node_container[2].num_packets_generated,
+//				node_container[0].throughput/ (packet_length * num_packets_aggregated),
+//				node_container[2].throughput/ (packet_length * num_packets_aggregated),
+//				node_container[0].average_rho,
+//				node_container[2].average_rho,
+//				node_container[0].average_delay * 1000,
+//				node_container[2].average_delay * 1000,
+//				node_container[0].average_utilization,
+//				node_container[2].average_utilization);
+
 	// End of logs
 	fclose(simulation_output_file);
 	fclose(script_output_file);
