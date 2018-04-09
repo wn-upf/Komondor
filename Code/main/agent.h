@@ -249,6 +249,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	configuration = received_configuration;
 
+
 	report = received_report;
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Current conf (Tx Power) = %f dBm\n",
@@ -265,6 +266,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	// Compute a new configuration according to the updated rewards
 	ComputeNewConfiguration();
+
 
 };
 
@@ -373,6 +375,7 @@ void Agent :: GenerateRewardSelectedArm() {
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
 	double reward;
+
 	// Switch to select the reward according to the metric used (rewards must be normalized)
 	switch(type_of_reward){
 
@@ -455,7 +458,7 @@ void Agent :: GenerateRewardSelectedArm() {
 	}
 
 	int print_agent_logs = TRUE;
-	PrintOrWriteRewardPerArm(WRITE_LOG, save_agent_logs, print_agent_logs, agent_logger,
+	if(save_agent_logs) PrintOrWriteRewardPerArm(WRITE_LOG, save_agent_logs, print_agent_logs, agent_logger,
 			num_actions, reward_per_arm, cumulative_reward_per_arm, times_arm_has_been_selected, agent_id, SimTime());
 
 }

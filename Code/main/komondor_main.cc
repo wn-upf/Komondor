@@ -734,17 +734,22 @@ void Komondor :: GenerateNodes(char *nodes_filename) {
  */
 void Komondor :: GenerateAgents(char *agents_filename) {
 
-	if (print_system_logs) printf("%s Generating agents for each WLAN...\n", LOG_LVL2);
+	if (print_system_logs) printf("%s Generating agents...\n", LOG_LVL2);
+
+	if (print_system_logs) printf("%s Reading agents input file '%s'...\n", LOG_LVL2, agents_filename);
 
 	// STEP 1: set size of the agents container
 	total_agents_number = GetNumOfLines(agents_filename);
 	agent_container.SetSize(total_agents_number);
+
+	if (print_system_logs) printf("%s Num. of agents (WLANs): %d/%d\n", LOG_LVL3, total_agents_number, total_wlans_number);
 
 //	for(int i = 0; i < total_wlans_number; i ++){
 //		agent_container[i].agent_id = i;
 //	}
 
 	// STEP 2: read the input file to determine the action space
+	if (print_system_logs) printf("%s Setting action space...\n", LOG_LVL4);
 	FILE* stream_agents = fopen(agents_filename, "r");
 	char line_agents[CHAR_BUFFER_SIZE];
 	first_line_skiped_flag = 0;	// Flag for skipping first informative line of input file
@@ -813,7 +818,10 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 
 		}
 	}
+	if (print_system_logs) printf("%s Action space set!\n", LOG_LVL4);
 
+	// STEP 3: set agents parameters
+	if (print_system_logs) printf("%s Setting agents parameters...\n", LOG_LVL4);
 	stream_agents = fopen(agents_filename, "r");
 	first_line_skiped_flag = 0;		// Flag for skipping first informative line of input file
 
@@ -916,6 +924,8 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 
 		}
 	}
+
+	if (print_system_logs) printf("%s Agents parameters set!\n", LOG_LVL4);
 
 	//
 
@@ -1207,7 +1217,8 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
  */
 void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 
-	if (print_system_logs) printf("%s Computing the number of STAs in each WLAN...\n", LOG_LVL2);
+	if (print_system_logs) printf("%s Reading nodes input file '%s'...\n", LOG_LVL2, nodes_filename);
+
 	total_wlans_number = GetNumOfNodes(nodes_filename, NODE_TYPE_AP, NULL);
 	wlan_container = (Wlan *) malloc(total_wlans_number * sizeof(*wlan_container));
 
@@ -1453,6 +1464,8 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			}
 		}
 	}
+
+	if (print_system_logs) printf("%s Nodes generated!\n", LOG_LVL3);
 
 }
 

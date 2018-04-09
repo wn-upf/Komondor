@@ -443,7 +443,7 @@ void Node :: Start(){
 	if(save_node_logs) {
 		// Name node log file accordingly to the node_id
 		// Sergio on 16 Jan: changed path to adapt to new directory hierarchy
-		sprintf(own_file_path,"%s_%s_N%d_%s.txt","../output/logs_output_", simulation_code, node_id, node_code);
+		sprintf(own_file_path,"%s_%s_N%d_%s.txt","../output/logs_output", simulation_code, node_id, node_code);
 		remove(own_file_path);
 		output_log_file = fopen(own_file_path, "at");
 		node_logger.save_logs = save_node_logs;
