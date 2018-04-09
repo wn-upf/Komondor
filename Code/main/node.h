@@ -2141,40 +2141,14 @@ void Node :: TrafficGenerator() {
 
 			printf("WARNING: FULL BUFFER NOT IMPLEMENTED! SIMULATE IT: just use Poisson traffic with large traffic loads\n");
 
-			// Sergio on 16 Jan: proposal (change to Poisson)
+			// Change to Poisson with huge traffic load to simulate saturation
 			traffic_model = TRAFFIC_POISSON;
 			traffic_load = 10000;
 
-//			num_packets_in_buffer = PACKET_BUFFER_SIZE;
-//
-//			if(node_is_transmitter){
-//
-//				// Identify if backoff can be resumed
-//				int resume = HandleBackoff(RESUME_TIMER, &channel_power, primary_channel, current_cca,
-//						num_packets_in_buffer);
-//
-//				if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Start DFIS (%.12f)\n",
-//						SimTime(), node_id, node_state, LOG_G00, LOG_LVL3, DIFS);
-//
-//				if (resume) {
-//					time_to_trigger = SimTime() + DIFS;
-//					trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
-//				}
-//			}
-
-			// Sergio on 15 Jan 2018: think about how to implement a "real" full buffer
-			// - I would refill again the whole buffer (but put this on NewPacketGenerated()?
-//			Notification new_packet;
-//
-//			for(int i = 0; i < PACKET_BUFFER_SIZE - buffer.QueueSize(); i++){
-//
-//				new_packet.timestamp_generated = SimTime();
-//				new_packet.tx_info.packet_id = last_packet_generated_id;
-//				last_packet_generated_id++;
-//				buffer.PutPacket(packet);
-//
-//			}
-
+			// --- Poisson ---
+			time_for_next_packet = Exponential(1/traffic_load);
+			time_to_trigger = SimTime() + time_for_next_packet;
+			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
 			break;
 		}
 
