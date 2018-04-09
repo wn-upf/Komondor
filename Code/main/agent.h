@@ -172,7 +172,7 @@ void Agent :: Start(){
 	// Create agent logs file if required
 	if(save_agent_logs) {
 		// Name agent log file accordingly to the agent_id
-		sprintf(own_file_path,"%s_A%d_%s.txt","../output/logs_output_", agent_id, wlan_code);
+		sprintf(own_file_path,"%s_A%d_%s.txt","../output/logs_output", agent_id, wlan_code);
 		remove(own_file_path);
 		output_log_file = fopen(own_file_path, "at");
 		agent_logger.save_logs = save_agent_logs;
@@ -255,12 +255,11 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Current conf (Tx Power) = %f dBm\n",
 			SimTime(), agent_id, LOG_C00, LOG_LVL2, ConvertPower(PW_TO_DBM,configuration.selected_tx_power));
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s throughput = %f dBm\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput);
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s [DATA-THR]throughput = %.2f Mbps\n",
+			SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput * pow(10,-6));
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %f dBm\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput);
-
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %.2f Mbps\n",
+			SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput * pow(10,-6));
 	// Generate the reward for the last selected action
 	GenerateRewardSelectedArm();
 
@@ -404,11 +403,11 @@ void Agent :: GenerateRewardSelectedArm() {
 						report.max_bound_throughput;
 			}
 
-			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s throughput = %f dBm\n",
-					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput);
+			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s throughput = %.2f Mbps\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput * pow(10,-6));
 
-			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %f dBm\n",
-					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput);
+			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %f Mbps\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput * pow(10,-6));
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s reward = %f\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2, reward);
