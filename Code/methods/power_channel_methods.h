@@ -550,6 +550,7 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 			break;
 		}
 	}
+
 }
 
 /*
@@ -590,6 +591,8 @@ void UpdateChannelsPower(double x, double y, double z, double **channel_power, N
 		else if (update_type == TX_INITIATED) (*channel_power)[c] += total_power[c];
 
 	}
+
+	free(total_power);
 
 
 }
@@ -638,7 +641,7 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intere
  **/
 void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_model, int *channels_free,
     int min_channel_allowed, int max_channel_allowed, int primary_channel, int **mcs_per_node,
-	int ix_mcs_per_node, int num_channels_system, int node_id){
+	int ix_mcs_per_node, int num_channels_system){
 
 	// Reset channels for transmitting
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){

@@ -72,7 +72,7 @@ struct Capabilities
 	double cca_max;				// Max. CCA ("sensitivity" threshold)
 	double tx_gain;				// Antenna transmission gain [linear]
 	double rx_gain;				// Antenna reception gain [linear]
-	int channel_bonding_model;	// Channel bonding model (definition of models in function GetTxChannelsByChannelBonding())
+	int dcb_policy;	// Selected DCB policy
 	int modulation_default;		// Default modulation
 
 	// Function to print the node's capabilities
@@ -84,8 +84,7 @@ struct Capabilities
 		printf("%s primary_channel = %d\n", LOG_LVL4, primary_channel);
 		printf("%s min_channel_allowed = %d\n", LOG_LVL4, min_channel_allowed);
 		printf("%s max_channel_allowed = %d\n", LOG_LVL4, max_channel_allowed);
-		printf("%s channel_bonding_model = %d\n", LOG_LVL4, channel_bonding_model);
-
+		printf("%s dcb_policy = %d\n", LOG_LVL4, dcb_policy);
 		printf("%s lambda = %f packets/s\n", LOG_LVL4, lambda);
 		printf("%s traffic_load = %.2f packets/s\n", LOG_LVL4, traffic_load);
 		printf("%s destination_id = %d\n", LOG_LVL4, destination_id);
@@ -110,11 +109,12 @@ struct Configuration
 {
 	double timestamp;
 
-	int selected_primary;		// Selected primary channel
-	int selected_left_channel;	// Selected left channel
-	int selected_right_channel;	// Selected right channel
+	int selected_primary_channel;		// Selected primary channel
+	// int selected_left_channel;	// Selected left channel
+	// int selected_right_channel;	// Selected right channel
 	double selected_cca;		// Selected CCA ("sensitivity" threshold) [pW]
 	double selected_tx_power;	// Selected Tx Power [pW]
+	int selected_dcb_policy;	// Selected DCB policy
 
 	Capabilities capabilities;
 
@@ -129,12 +129,12 @@ struct Configuration
 			printf("ERROR: bad origin\n");
 		}
 
-		printf("%s selected_primary = %d\n", LOG_LVL4, selected_primary);
-		printf("%s selected_left_channel = %d\n", LOG_LVL4, selected_left_channel);
-		printf("%s selected_right_channel = %d\n", LOG_LVL4, selected_right_channel);
+		printf("%s selected_primary = %d\n", LOG_LVL4, selected_primary_channel);
+		// printf("%s selected_left_channel = %d\n", LOG_LVL4, selected_left_channel);
+		// printf("%s selected_right_channel = %d\n", LOG_LVL4, selected_right_channel);
 		printf("%s cca_default = %f pW (%f dBm)\n", LOG_LVL4, selected_cca, ConvertPower(PW_TO_DBM, selected_cca));
 		printf("%s tpc_default = %f pW (%f dBm)\n", LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
-
+		printf("%s selected_dcb_policy = %d\n", LOG_LVL4, selected_dcb_policy);
 		printf("\n");
 
 	}

@@ -141,6 +141,7 @@ component Komondor : public CostSimEng {
 		int num_actions_channel;
 		int num_actions_cca;
 		int num_actions_tx_power;
+		int num_actions_dcb_policy;
 
 		double *actions_cca;
 		double *actions_tx_power;
@@ -340,6 +341,7 @@ void Komondor :: Stop(){
 
 	int total_data_packets_sent = 0;
 	double total_throughput = 0;
+	double min_throughput = 999999999999999999;
 	double proportional_fairness = 0;
 	double jains_fairness = 0;
 	double jains_fairness_aux = 0;
@@ -353,6 +355,7 @@ void Komondor :: Stop(){
 		if( node_container[m].node_type == NODE_TYPE_AP ){
 			total_data_packets_sent += node_container[m].data_packets_sent;
 			total_throughput += node_container[m].throughput;
+			if(node_container[m].throughput < min_throughput) min_throughput = node_container[m].throughput;
 			total_rts_lost_slotted_bo += node_container[m].rts_lost_slotted_bo;
 			total_rts_cts_sent += node_container[m].rts_cts_sent;
 			total_prob_slotted_bo_collision += node_container[m].prob_slotted_bo_collision;
@@ -370,6 +373,7 @@ void Komondor :: Stop(){
 
 		printf("\n%s General Statistics:\n", LOG_LVL1);
 		printf("%s Average throughput per WLAN = %.2f Mbps\n", LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number));
+		printf("%s Min throughput = %.2f Mbps\n", LOG_LVL3, (min_throughput * pow(10,-6)/total_wlans_number));
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, total_throughput * pow(10,-6));
 		printf("%s Total number of packets sent = %d\n", LOG_LVL3, total_data_packets_sent);
 		printf("%s Average number of data packets successfully sent per WLAN = %.2f\n",
@@ -451,16 +455,8 @@ void Komondor :: Stop(){
 
 	}
 
-//	// Sergio test for unsaturation validation
-//	fprintf(logger_script.file, ";%.0f;%.0f;%.2f;%.2f;%.4f;%.4f;%.2f;%.2f\n",
-//			node_container[0].num_packets_generated,
-//			node_container[2].num_packets_generated,
-//			node_container[0].throughput/ (packet_length * num_packets_aggregated),
-//			node_container[2].throughput/ (packet_length * num_packets_aggregated),
-//			node_container[0].average_rho,
-//			node_container[2].average_rho,
-//			node_container[0].average_delay * 1000,
-//			node_container[2].average_delay * 1000);
+	// Sergio test
+	fprintf(logger_script.file, ";%.2f\n", (total_throughput * pow(10,-6)/total_wlans_number));
 
 	// End of logs
 	fclose(simulation_output_file);
@@ -520,10 +516,10 @@ void Komondor :: InputChecker(){
 		}
 
 		// Channel values (min <= primary <= max)
-		if (node_container[i].primary_channel > node_container[i].max_channel_allowed
-				|| node_container[i].primary_channel < node_container[i].min_channel_allowed
+		if (node_container[i].current_primary_channel > node_container[i].max_channel_allowed
+				|| node_container[i].current_primary_channel < node_container[i].min_channel_allowed
 				|| node_container[i].min_channel_allowed > node_container[i].max_channel_allowed
-				|| node_container[i].primary_channel > num_channels_komondor
+				|| node_container[i].current_primary_channel > num_channels_komondor
 				|| node_container[i].min_channel_allowed > (num_channels_komondor-1)
 				|| node_container[i].max_channel_allowed > (num_channels_komondor-1)) {
 			printf("\nERROR: Channels are not properly configured at node in line %d\n\n",i+2);
@@ -744,10 +740,6 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 
 	if (print_system_logs) printf("%s Num. of agents (WLANs): %d/%d\n", LOG_LVL3, total_agents_number, total_wlans_number);
 
-//	for(int i = 0; i < total_wlans_number; i ++){
-//		agent_container[i].agent_id = i;
-//	}
-
 	// STEP 2: read the input file to determine the action space
 	if (print_system_logs) printf("%s Setting action space...\n", LOG_LVL4);
 	FILE* stream_agents = fopen(agents_filename, "r");
@@ -813,6 +805,22 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 			// Set the length of Tx power actions to agent's field
 			agent_container[agent_ix].num_actions_tx_power = num_actions_tx_power;
 
+			// Find the length of the DCB actions actions array
+			tmp_agents = strdup(line_agents);
+			const char *policy_values_aux = GetField(tmp_agents, IX_AGENT_DCB_POLICY);
+			char *policy_values_text = (char *) malloc(strlen(policy_values_aux) + 1);
+			sprintf(policy_values_text, "%s", policy_values_aux);
+			char *policy_aux;
+			policy_aux = strtok (policy_values_text,",");
+			num_actions_dcb_policy = 0;
+			while (policy_aux != NULL) {
+				policy_aux = strtok (NULL, ",");
+				num_actions_dcb_policy ++;
+			}
+
+			// Set the length of DCB actions to agent's field
+			agent_container[agent_ix].num_actions_dcb_policy = num_actions_dcb_policy;
+
 			agent_ix++;
 			free(tmp_agents);
 
@@ -859,8 +867,6 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 			char *channel_values_text = (char *) malloc(strlen(channel_values_aux) + 1);
 			sprintf(channel_values_text, "%s", channel_values_aux);
 
-//			int *channel_actions = (int *) malloc(num_actions_channel / sizeof(channel_actions[0]));
-
 			// Fill the channel actions array
 			char *channel_aux_2;
 			channel_aux_2 = strtok (channel_values_text,",");
@@ -877,8 +883,6 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 			const char *cca_values_aux = GetField(tmp_agents, IX_AGENT_CCA_VALUES);
 			char *cca_values_text = (char *) malloc(strlen(cca_values_aux) + 1);
 			sprintf(cca_values_text, "%s", cca_values_aux);
-
-//			int *cca_actions = (int *) malloc(num_actions_cca / sizeof(cca_actions[0]));
 
 			// Fill the CCA actions array
 			char *cca_aux_2;
@@ -897,9 +901,7 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 			char *tx_power_values_text = (char *) malloc(strlen(tx_power_values_aux) + 1);
 			sprintf(tx_power_values_text, "%s", tx_power_values_aux);
 
-//			int *tx_power_actions = (int *) malloc(num_actions_tx_power / sizeof(cca_actions[0]));
-
-			// Fill the CCA actions array
+			// Fill the TX power actions array
 			char *tx_power_aux_2;
 			tx_power_aux_2 = strtok (tx_power_values_text,",");
 			ix = 0;
@@ -907,6 +909,23 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 				int a = atoi(tx_power_aux_2);
 				agent_container[agent_ix].list_of_tx_power_values[ix] = ConvertPower(DBM_TO_PW, a);
 				tx_power_aux_2 = strtok (NULL, ",");
+				ix ++;
+			}
+
+			// DCB policy values
+			tmp_agents = strdup(line_agents);
+			const char *dcb_policy_values_aux = GetField(tmp_agents, IX_AGENT_DCB_POLICY);
+			char *dcb_policy_values_text = (char *) malloc(strlen(dcb_policy_values_aux) + 1);
+			sprintf(dcb_policy_values_text, "%s", dcb_policy_values_aux);
+
+			// Fill the DCB policy actions array
+			char *policy_aux_2;
+			policy_aux_2 = strtok (dcb_policy_values_text,",");
+			ix = 0;
+			while (policy_aux_2 != NULL) {
+				int a = atoi(policy_aux_2);
+				agent_container[agent_ix].list_of_dcb_policy[ix] = a;
+				policy_aux_2 = strtok (NULL, ",");
 				ix ++;
 			}
 
@@ -1026,7 +1045,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 			// Primary channel
 			tmp_nodes = strdup(line_nodes);
-			int primary_channel = atoi(GetField(tmp_nodes, IX_AP_PRIMARY_CHANNEL));
+			int current_primary_channel = atoi(GetField(tmp_nodes, IX_AP_PRIMARY_CHANNEL));
 
 			// Min channel allowed
 			tmp_nodes = strdup(line_nodes);
@@ -1075,10 +1094,6 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 			tmp_nodes = strdup(line_nodes);
 			double rx_gain_db = atoi(GetField(tmp_nodes, IX_AP_RX_GAIN));
 			double rx_gain = ConvertPower(DB_TO_LINEAR, rx_gain_db);
-
-			// Channel bonding model
-			tmp_nodes = strdup(line_nodes);
-			int channel_bonding_model = atoi(GetField(tmp_nodes, IX_AP_CHANNEL_BONDING_MODEL));
 
 			// Default modulation
 			tmp_nodes = strdup(line_nodes);
@@ -1145,7 +1160,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].destination_id = NODE_ID_NONE;
 				node_container[node_ix].cw_min = cw_min;
 				node_container[node_ix].cw_stage_max = cw_stage_max;
-				node_container[node_ix].primary_channel = primary_channel;
+				node_container[node_ix].current_primary_channel = current_primary_channel;
 				node_container[node_ix].min_channel_allowed = min_channel_allowed;
 				node_container[node_ix].max_channel_allowed = max_channel_allowed;
 				node_container[node_ix].tpc_min = tpc_min;
@@ -1156,7 +1171,6 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].cca_max = cca_max;
 				node_container[node_ix].tx_gain = tx_gain;
 				node_container[node_ix].rx_gain = rx_gain;
-				node_container[node_ix].channel_bonding_model = channel_bonding_model;
 				node_container[node_ix].modulation_default = modulation_default;
 
 				// System
@@ -1343,7 +1357,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 
 			// Primary channel
 			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].primary_channel = atoi(GetField(tmp_nodes, IX_PRIMARY_CHANNEL));
+			node_container[node_ix].current_primary_channel = atoi(GetField(tmp_nodes, IX_PRIMARY_CHANNEL));
 
 			// Min channel allowed
 			tmp_nodes = strdup(line_nodes);
@@ -1392,10 +1406,6 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			tmp_nodes = strdup(line_nodes);
 			double rx_gain_db = atoi(GetField(tmp_nodes, IX_RX_GAIN));
 			node_container[node_ix].rx_gain = ConvertPower(DB_TO_LINEAR, rx_gain_db);
-
-			// Channel bonding model
-			tmp_nodes = strdup(line_nodes);
-			node_container[node_ix].channel_bonding_model = atoi(GetField(tmp_nodes, IX_CHANNEL_BONDING_MODEL));
 
 			// Default modulation
 			tmp_nodes = strdup(line_nodes);

@@ -104,32 +104,46 @@ int PickArmEgreedy(int num_actions, double *reward_per_arm, double epsilon) {
  * according to the index of the joint action (which considers each parameter)
  * INPUT:
  * 	- indexes: array we want to fill (3 positions, one for each parameter - channel, CCA, Tx power)
- * 	- ix: index of the action, which represents a combination of channel, CCA and tx power
+ * 	- action_ix: index of the action, which represents a combination of channel, CCA and tx power
  * 	- size_channels: size of channels possibilities
  * 	- size_cca: size of CCA possibilities
  * 	- size_tx_power: size of Tx power possibilities
+ * 	- size_dcb_policy: size of the DCB policy possibilities
  * OUTPUT:
  *  - fills "indexes", which indicates the index of the parameter in each of the lists
  */
-void index2values(int *indexes, int ix, int size_channels, int size_cca, int size_tx_power) {
+void index2values(int *indexes, int action_ix, int size_channels, int size_cca, int size_tx_power, int size_dcb_policy) {
 
-	// Determine channel index
-	int channel_ix = (ix+1) % size_channels;
-	if (channel_ix == 0) { channel_ix = size_channels; }
-//	printf("channel_ix = %d\n",channel_ix-1);
-	// Determine CCA index
-	int y = (ix+1) % (size_channels * size_cca);
-	double cca_ix = ceil((double)y/(double)size_channels);
-	if ((int)cca_ix == 0) { cca_ix = size_cca; }
-//	printf("cca_ix = %d\n",(int)cca_ix-1);
-	// Determine Tx Power index
-	double tx_power_ix = ceil((double)(ix+1) / (double)(size_channels * size_cca));
-	if (tx_power_ix > size_tx_power) { tx_power_ix = size_tx_power; }
-//	printf("tx_power_ix = %d\n",(int)tx_power_ix-1);
+//	// Determine channel index
+//	int channel_ix = (ix+1) % size_channels;
+//	if (channel_ix == 0) { channel_ix = size_channels; }
+////	printf("channel_ix = %d\n",channel_ix-1);
+//	// Determine CCA index
+//	int y = (ix+1) % (size_channels * size_cca);
+//	double cca_ix = ceil((double)y/(double)size_channels);
+//	if ((int)cca_ix == 0) { cca_ix = size_cca; }
+////	printf("cca_ix = %d\n",(int)cca_ix-1);
+//	// Determine Tx Power index
+//	double tx_power_ix = ceil((double)(ix+1) / (double)(size_channels * size_cca));
+//	if (tx_power_ix > size_tx_power) { tx_power_ix = size_tx_power; }
+////	printf("tx_power_ix = %d\n",(int)tx_power_ix-1);
+//	// Determine DCB policy index
+//	int dcb_policy_ix = (ix+1) % size_dcb_policy;
+//	if (dcb_policy_ix == 0) { dcb_policy_ix = size_dcb_policy; }
+//
+//	indexes[0] = channel_ix-1;
+//	indexes[1] = cca_ix-1;
+//	indexes[2] = (int)tx_power_ix-1;
+//	indexes[3] = dcb_policy_ix-1;
 
-	indexes[0] = channel_ix-1;
-	indexes[1] = cca_ix-1;
-	indexes[2] = (int)tx_power_ix-1;
+
+	indexes[0] = (int) action_ix/(size_cca * size_tx_power * size_dcb_policy);
+	indexes[1] = (int) (action_ix - indexes[0] * (size_cca * size_tx_power * size_dcb_policy))
+			/(size_tx_power * size_dcb_policy);
+	indexes[2] = (int) (action_ix -  indexes[0] * (size_cca * size_tx_power * size_dcb_policy)
+			- indexes[1] * (size_tx_power * size_dcb_policy))
+			/(size_dcb_policy);
+	indexes[3] = action_ix % size_dcb_policy;
 
 }
 
@@ -144,10 +158,21 @@ void index2values(int *indexes, int ix, int size_channels, int size_cca, int siz
  * OUTPUT:
  *  - index: index of the action, which represents a combination of channel, CCA and tx power
  */
-int values2index(int *indexes, int size_channels, int size_cca) {
+//int values2index(int *indexes, int size_channels, int size_cca) {
+//
+//	int index = (indexes[0] + 1) + indexes[1] * size_channels +
+//			indexes[2] * size_channels * size_cca -1;
+//
+//	return index;
+//
+//}
 
-	int index = (indexes[0] + 1) + indexes[1] * size_channels +
-			indexes[2] * size_channels * size_cca -1;
+int values2index(int *indexes, int size_channels, int size_cca, int size_tx_power, int size_dcb_policy) {
+
+	int index = indexes[0] * (size_cca * size_tx_power * size_dcb_policy)
+						+ indexes[1] * (size_tx_power * size_dcb_policy)
+						+ indexes[2] * size_dcb_policy
+						+ indexes[3];
 
 	return index;
 
@@ -167,18 +192,19 @@ int values2index(int *indexes, int size_channels, int size_cca) {
  * 	- list_of_tx_power_values: list of tx power values
  */
 void FindIndexesOfConfiguration(int *indexes_selected_arm, Configuration &configuration,
-		int size_channels, int size_cca, int size_tx_power, int *list_of_channels,
-		double *list_of_cca_values, double *list_of_tx_power_values) {
+		int size_channels, int size_cca, int size_tx_power, int size_dcb_policy, int *list_of_channels,
+		double *list_of_cca_values, double *list_of_tx_power_values, int *list_of_dcb_policy) {
 
 	int index_channel = -1;
 	int index_cca = -1;
 	int index_tx_power = -1;
+	int index_dcb_policy = -1;
 
 	// Channel
 	//printf("Channels list: ");
 	for(int i = 0; i < size_channels; i ++) {
 		//printf("%d ",list_of_channels[i]);
-		if(configuration.selected_left_channel == list_of_channels[i]) {
+		if(configuration.selected_primary_channel == list_of_channels[i]) {
 			index_channel = i;
 			break;
 		}
@@ -204,10 +230,19 @@ void FindIndexesOfConfiguration(int *indexes_selected_arm, Configuration &config
 		}
 	}
 	//printf("\n");
+	// DCB policy
+	for(int i = 0; i < size_dcb_policy; i ++) {
+		if(configuration.selected_dcb_policy == list_of_dcb_policy[i]) {
+			index_dcb_policy = i;
+			break;
+		}
+	}
+	//printf("\n");
 
 	indexes_selected_arm[0] = index_channel;
 	indexes_selected_arm[1] = index_cca;
 	indexes_selected_arm[2] = index_tx_power;
+	indexes_selected_arm[3] = index_dcb_policy;
 
 	//printf("Indexes: %d, %d, %d\n", indexes_selected_arm[0],indexes_selected_arm[1],indexes_selected_arm[2]);
 
@@ -243,21 +278,21 @@ void PrintOrWriteRewardPerArm(int write_or_print, int save_agent_logs,
 		}
 		case WRITE_LOG:{
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Reward per arm: ",
-				sim_time, agent_id, LOG_C00, LOG_LVL2);
+				sim_time, agent_id, LOG_C00, LOG_LVL3);
 			for(int n = 0; n < size_actions; n++){
 				 if(save_agent_logs){
 					 fprintf(agent_logger.file, "%f  ", reward_per_arm[n]);
 				 }
 			}
 			if(save_agent_logs) fprintf(agent_logger.file, "\n%.15f;A%d;%s;%s Cumulative reward per arm: ",
-				sim_time, agent_id, LOG_C00, LOG_LVL2);
+				sim_time, agent_id, LOG_C00, LOG_LVL3);
 			for(int n = 0; n < size_actions; n++){
 				 if(save_agent_logs){
 					 fprintf(agent_logger.file, "%f  ", cumulative_reward_per_arm[n]);
 				 }
 			}
 			fprintf(agent_logger.file, "\n%.15f;A%d;%s;%s Times each arm has been selected: ",
-							sim_time, agent_id, LOG_C00, LOG_LVL2);
+							sim_time, agent_id, LOG_C00, LOG_LVL3);
 			for(int n = 0; n < size_actions; n++){
 				if(save_agent_logs){
 					fprintf(agent_logger.file, "%d ", times_arm_has_been_selected[n]);

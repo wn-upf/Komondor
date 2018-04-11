@@ -55,6 +55,7 @@ struct Action
 	int channel;	// Channel selected
 	double cca;		// CCA level
 	double tx_power;	// Tx Power
+	int dcb_policy;
 //	int *list_sta_id;	// List of STAs IDs belonging to the WLAN
 //
 //	/*
@@ -78,6 +79,7 @@ struct Action
 		printf(" * channel = %d\n", channel);
 		printf(" * cca = %f\n", cca);
 		printf(" * tx_power = %f\n", tx_power);
+		printf(" * dcb_policy = %d\n", dcb_policy);
 		printf("------------\n");
 	}
 

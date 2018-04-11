@@ -84,7 +84,7 @@ component Agent : public TypeII{
 
 		// Print methods
 		void PrintAgentInfo();
-		void PrintAction(int action_ix);
+		void PrintAction(int action_ix, int detail);
 		//void WriteActionReport(int action_ix);
 
 		void WriteConfiguration(Configuration configuration_to_write);
@@ -100,11 +100,14 @@ component Agent : public TypeII{
 		int *list_of_channels; 	// List of channels
 		double *list_of_cca_values;	// List of CCA values
 		double *list_of_tx_power_values;	// List of tx power values
+		int *list_of_dcb_policy;	// List of DCB policies
 		Action *actions;		// List of actions
 		int num_actions;		// Number of actions (depends on the configuration parameters - CCA, TPC, channels, etc.)
 		int num_actions_channel;
 		int num_actions_cca;
 		int num_actions_tx_power;
+		int num_actions_dcb_policy;
+		int num_requests;		// Number of requests made by the agent to the AP
 
 		int ix_selected_arm; 	// Index of the current selected arm
 
@@ -116,6 +119,9 @@ component Agent : public TypeII{
 		int type_of_reward;
 		double time_between_requests; 	// Time between two information requests to the AP (for a given measurement)
 		double initial_reward;			// Initial reward assigned to each arm
+		double epsilon;					// Epsilon parameter of the epsilon-greedy
+		double initial_epsilon;			// Initial value of epsilon
+		int num_epsilon_iterations;		// Number of epsilon-greedy iterations
 		// ...
 
 		int save_agent_logs;
@@ -185,7 +191,8 @@ void Agent :: Start(){
 
 	// Generate the first request, to be triggered after "time_between_requests"
 	// *** We generate here the first request in order to obtain the AP's configuration
-	trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
+	double extra_wait_test = 0.005 * (double) agent_id;
+	trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests + extra_wait_test,13,12));
 
 };
 
@@ -222,13 +229,15 @@ void Agent :: RequestInformationToAp(trigger_t &){
 //	printf("%s Agent #%d: Requesting information to AP\n", LOG_LVL1, agent_id);
 	if(save_agent_logs) fprintf(agent_logger.file, "----------------------------------------------------------------\n");
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s RequestInformationToAp()\n",
-			SimTime(), agent_id, LOG_F00, LOG_LVL1);
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s RequestInformationToAp() %d\n",
+			SimTime(), agent_id, LOG_F00, LOG_LVL1, num_requests);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Requesting information to AP\n",
 			SimTime(), agent_id, LOG_C00, LOG_LVL2);
 
 	outportRequestInformationToAp();
+
+	num_requests ++;
 
 };
 
@@ -249,17 +258,10 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	configuration = received_configuration;
 
+	if(save_agent_logs) WriteConfiguration(configuration);
 
 	report = received_report;
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Current conf (Tx Power) = %f dBm\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, ConvertPower(PW_TO_DBM,configuration.selected_tx_power));
-
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s [DATA-THR]throughput = %.2f Mbps\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput * pow(10,-6));
-
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %.2f Mbps\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput * pow(10,-6));
 	// Generate the reward for the last selected action
 	GenerateRewardSelectedArm();
 
@@ -288,11 +290,16 @@ void Agent :: ComputeNewConfiguration(){
 	// ...
 
 	// Generate new configuration according to the algorithm's output
-	double epsilon = 0.1;
+	epsilon = initial_epsilon / sqrt( (double) num_epsilon_iterations);
 
 	ix_selected_arm = PickArmEgreedy(num_actions, average_reward_per_arm, epsilon);
 	//printf("ix_selected_arm = %d\n",ix_selected_arm);
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Epsilon-greedy iteration #%d (eps = %.3f) selected arm %d\n",
+				SimTime(), agent_id, LOG_C00, LOG_LVL2,
+				num_epsilon_iterations, epsilon, ix_selected_arm);
+
 	times_arm_has_been_selected[ix_selected_arm]++;
+	num_epsilon_iterations++;
 	//PrintSelectedAction();
 
 	// Generate new configuration
@@ -338,8 +345,9 @@ void Agent :: SendNewConfigurationToAp(){
 Configuration Agent :: GenerateNewConfiguration(){
 
 	// Step 1: According to the selected arm, find each configuration
-	int indexes_selected_arm[3];
-	index2values(indexes_selected_arm, ix_selected_arm, num_actions_channel, num_actions_cca, num_actions_tx_power);
+	int indexes_selected_arm[NUM_FEATURES_ACTIONS]; // 4 features considered
+	index2values(indexes_selected_arm, ix_selected_arm,
+			num_actions_channel, num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
 
 	// Step 2: build configuration accordingly
 	Configuration new_configuration;
@@ -347,11 +355,12 @@ Configuration Agent :: GenerateNewConfiguration(){
 
 	new_configuration.timestamp = SimTime();
 	// TODO: by now, consider only 1 channel (left ch. = right ch.)
-	new_configuration.selected_primary = list_of_channels[indexes_selected_arm[0]];
-	new_configuration.selected_left_channel = list_of_channels[indexes_selected_arm[0]];
-	new_configuration.selected_right_channel = list_of_channels[indexes_selected_arm[0]];
+	new_configuration.selected_primary_channel = list_of_channels[indexes_selected_arm[0]];
+	//new_configuration.selected_left_channel = list_of_channels[indexes_selected_arm[0]];
+	//new_configuration.selected_right_channel = list_of_channels[indexes_selected_arm[0]];
 	new_configuration.selected_cca = list_of_cca_values[indexes_selected_arm[1]];
 	new_configuration.selected_tx_power = list_of_tx_power_values[indexes_selected_arm[2]];
+	new_configuration.selected_dcb_policy = list_of_dcb_policy[indexes_selected_arm[3]];
 
 	return new_configuration;
 
@@ -401,10 +410,14 @@ void Agent :: GenerateRewardSelectedArm() {
 			} else {
 				reward = report.throughput /
 						report.max_bound_throughput;
+
 			}
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s throughput = %.2f Mbps\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput * pow(10,-6));
+
+//			if(save_agent_logs) fprintf(agent_logger.file, "[DATA-THR];%.5f;A%d;%d;%.2f;%.5f\n",
+//							SimTime(), agent_id, ix_selected_arm, report.throughput * pow(10,-6), reward);
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %f Mbps\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput * pow(10,-6));
@@ -436,15 +449,19 @@ void Agent :: GenerateRewardSelectedArm() {
 //	WriteConfiguration(configuration);
 
 	// Step 1: find index according to the current configuration
-	int indexes_selected_arm[3];
+	int indexes_selected_arm[NUM_FEATURES_ACTIONS];	// 4 features considered (primary, CCA, Pow tx, DCB policy)
 
-	FindIndexesOfConfiguration(indexes_selected_arm, configuration, num_actions_channel, num_actions_cca,
-			num_actions_tx_power, list_of_channels, list_of_cca_values, list_of_tx_power_values);
+	FindIndexesOfConfiguration(indexes_selected_arm, configuration,
+			num_actions_channel, num_actions_cca, num_actions_tx_power, num_actions_dcb_policy,
+			list_of_channels, list_of_cca_values, list_of_tx_power_values, list_of_dcb_policy);
 
-	ix_selected_arm = values2index(indexes_selected_arm, num_actions_channel, num_actions_cca);
+	ix_selected_arm = values2index(indexes_selected_arm,
+			num_actions_channel, num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s ix_selected_arm = %d\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, ix_selected_arm);
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s ix_selected_arm = %d ([%d %d %d %d])\n",
+			SimTime(), agent_id, LOG_C00, LOG_LVL2,
+			ix_selected_arm, indexes_selected_arm[0], indexes_selected_arm[1],
+			indexes_selected_arm[2], indexes_selected_arm[3]);
 
 	// Step 2: set the reward accordingly
 	if(ix_selected_arm >= 0) {
@@ -475,11 +492,14 @@ void Agent :: InitializeAgent() {
 
 	//printf("Agent #%d says: I'm alive!\n", agent_id);
 
+	num_requests = 0;
+
 	list_of_channels = (int *) malloc(num_actions_channel * sizeof(*list_of_channels));
 	list_of_cca_values = (double *) malloc(num_actions_cca * sizeof(*list_of_cca_values));
 	list_of_tx_power_values = (double *) malloc(num_actions_tx_power * sizeof(*list_of_tx_power_values));
+	list_of_dcb_policy = (int *) malloc(num_actions_dcb_policy * sizeof(*list_of_dcb_policy));
 
-	num_actions = num_actions_channel * num_actions_cca * num_actions_tx_power;
+	num_actions = num_actions_channel * num_actions_cca * num_actions_tx_power * num_actions_dcb_policy;
 
 	// Generate actions
 	actions = (Action *) malloc(num_actions	* sizeof(*actions));
@@ -488,10 +508,13 @@ void Agent :: InitializeAgent() {
 	reward_per_arm = (double *) malloc(num_actions * sizeof(*reward_per_arm));
 	cumulative_reward_per_arm = (double *) malloc(num_actions * sizeof(*cumulative_reward_per_arm));
 	average_reward_per_arm = (double *) malloc(num_actions * sizeof(*average_reward_per_arm));
+
 	// Initialize the array containing the times each arm has been played
 	times_arm_has_been_selected = (int *) malloc(num_actions * sizeof(*times_arm_has_been_selected));
 
 	initial_reward = 0;
+	initial_epsilon = 1;
+	num_epsilon_iterations = 1;
 
 	for(int i = 0; i < num_actions; i++){
 		reward_per_arm[i] = initial_reward;	// Set the initial reward
@@ -541,6 +564,12 @@ void Agent :: PrintAgentInfo(){
 	}
 	printf("\n");
 
+	printf("%s list_of_dcb_policy: ", LOG_LVL4);
+	for (int i = 0; i < num_actions_dcb_policy; i ++) {
+		printf("%d  ", list_of_dcb_policy[i]);
+	}
+	printf("\n");
+
 	printf("%s save_agent_logs: %d\n", LOG_LVL4, save_agent_logs);
 	printf("%s print_agent_logs: %d\n", LOG_LVL4, print_agent_logs);
 
@@ -551,19 +580,27 @@ void Agent :: PrintAgentInfo(){
 /*
  * PrintAction(): prints Agent's selected action
  */
-void Agent :: PrintAction(int action_ix){
+void Agent :: PrintAction(int action_ix, int detail){
 
-	int indexes_selected_arm[3];
+	int indexes_selected_arm[NUM_FEATURES_ACTIONS];	// 4 features considered
 
 	index2values(indexes_selected_arm, action_ix, num_actions_channel,
-			num_actions_cca, num_actions_tx_power);
+			num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
 
-	printf("%s Action %d:\n", LOG_LVL2, action_ix),
-	printf("%s Channel: %d\n", LOG_LVL3, list_of_channels[indexes_selected_arm[0]]);
-	printf("%s CCA: %f (%f dBm)\n", LOG_LVL3, list_of_cca_values[indexes_selected_arm[1]],
-			ConvertPower(PW_TO_DBM, list_of_cca_values[indexes_selected_arm[1]]));
-	printf("%s Tx Power: %f (%f dBm)\n", LOG_LVL3, list_of_tx_power_values[indexes_selected_arm[2]],
-			ConvertPower(PW_TO_DBM, list_of_tx_power_values[indexes_selected_arm[2]]));
+	printf("%s Action %d ([%d %d %d %d]\n", LOG_LVL2,
+			action_ix, indexes_selected_arm[0], indexes_selected_arm[1], indexes_selected_arm[2], indexes_selected_arm[3]);
+
+	if(detail){
+
+		printf("%s Channel: %d\n", LOG_LVL3,
+					 list_of_channels[indexes_selected_arm[0]]);
+		printf("%s CCA: %.2f dBm\n", LOG_LVL3,
+				ConvertPower(PW_TO_DBM, list_of_cca_values[indexes_selected_arm[1]]));
+		printf("%s Tx Power: %.2f dBm\n", LOG_LVL3,
+				ConvertPower(PW_TO_DBM, list_of_tx_power_values[indexes_selected_arm[2]]));
+		printf("%s DCB policy: %d\n", LOG_LVL3,
+				list_of_dcb_policy[indexes_selected_arm[3]]);
+	}
 
 }
 
@@ -574,10 +611,18 @@ void Agent :: WriteConfiguration(Configuration configuration_to_write) {
 
 	fprintf(agent_logger.file, "%.15f;A%d;%s;%s Configuration:\n", SimTime(), agent_id, LOG_C03, LOG_LVL2);
 
-	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_left_channel = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3, configuration_to_write.selected_left_channel);
-	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_right_channel = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3, configuration_to_write.selected_right_channel);
-	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_cca = %f (%f dBm)\n", SimTime(), agent_id, LOG_C03, LOG_LVL3, configuration_to_write.selected_cca, ConvertPower(PW_TO_DBM,new_configuration.selected_cca));
-	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_tx_power = %f (%f dBm)\n", SimTime(), agent_id, LOG_C03, LOG_LVL3, configuration_to_write.selected_tx_power, ConvertPower(PW_TO_DBM,new_configuration.selected_tx_power));
+	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_primary_channel = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
+			configuration_to_write.selected_primary_channel);
+//	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_left_channel = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
+//			configuration_to_write.selected_left_channel);
+//	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_right_channel = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
+//			configuration_to_write.selected_right_channel);
+	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_cca = %f dBm\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
+			ConvertPower(PW_TO_DBM,configuration_to_write.selected_cca));
+	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_tx_power = %f dBm\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
+			ConvertPower(PW_TO_DBM,configuration_to_write.selected_tx_power));
+	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_dcb_policy = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
+			configuration_to_write.selected_dcb_policy);
 
 }
 
@@ -600,7 +645,8 @@ void Agent :: PrintOrWriteAgentStatistics(int write_or_print) {
 				// Detailed summary of arms
 				for(int i = 0; i < num_actions; i++){
 					// Print logs
-					if (print_agent_logs) PrintAction(i);
+					if (print_agent_logs) PrintAction(i, FALSE);
+					//if (print_agent_logs) actions[i].PrintAction();
 					if (print_agent_logs) printf("%s times_arm_has_been_selected  = %d\n", LOG_LVL3, times_arm_has_been_selected[i]);
 					if (print_agent_logs) printf("%s average_reward_per_arm  = %f\n", LOG_LVL3, average_reward_per_arm[i]);
 				}
@@ -616,11 +662,11 @@ void Agent :: PrintOrWriteAgentStatistics(int write_or_print) {
 				fprintf(agent_logger.file, "******************************************\n");
 
 				// Detailed summary of arms
-				int indexes_selected_arm[3];
+				int indexes_selected_arm[NUM_FEATURES_ACTIONS];
 				for(int i = 0; i < num_actions; i++){
 
 					index2values(indexes_selected_arm, i, num_actions_channel,
-							num_actions_cca, num_actions_tx_power);
+							num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
 					// Write logs
 
 					fprintf(agent_logger.file, "%.15f;A%d;%s;%s Action %d:\n", SimTime(), agent_id, LOG_C03, LOG_LVL2, i);
@@ -629,6 +675,7 @@ void Agent :: PrintOrWriteAgentStatistics(int write_or_print) {
 							ConvertPower(PW_TO_DBM, list_of_cca_values[indexes_selected_arm[1]]));
 					fprintf(agent_logger.file, "%.15f;A%d;%s;%s Tx Power: %f (%f dBm)\n", SimTime(), agent_id, LOG_C03, LOG_LVL3, list_of_tx_power_values[indexes_selected_arm[2]],
 							ConvertPower(PW_TO_DBM, list_of_tx_power_values[indexes_selected_arm[2]]));
+					fprintf(agent_logger.file, "%.15f;A%d;%s;%s DCB policy: %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,list_of_dcb_policy[indexes_selected_arm[3]]);
 
 					fprintf(agent_logger.file, "%.15f;A%d;%s;%s times_arm_has_been_selected = %d\n",
 							SimTime(), agent_id, LOG_C03, LOG_LVL3, times_arm_has_been_selected[i]);

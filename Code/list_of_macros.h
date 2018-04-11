@@ -391,7 +391,10 @@
 #define IX_AGENT_CHANNEL_VALUES			3
 #define IX_AGENT_CCA_VALUES				4
 #define IX_AGENT_TX_POWER_VALUES		5
-#define IX_AGENT_TYPE_OF_REWARD			6
+#define IX_AGENT_DCB_POLICY				6
+#define IX_AGENT_TYPE_OF_REWARD			7
+
+#define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, CCA, P_tx, DCB policy)
 
 /* *********************
  * * LOG TYPE ENCODING *
