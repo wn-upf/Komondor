@@ -109,6 +109,7 @@
 #define PACKET_LOST_RX_IN_NAV			7	// Received a packet when being in NAV state
 #define PACKET_LOST_BO_COLLISION		8
 #define PACKET_LOST_OUTSIDE_CH_RANGE	9	// Packet was transmitted outside the primary channel of the receiver
+#define NUM_PACKET_LOST_REASONS			10
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1
@@ -205,7 +206,7 @@
 #define TRAFFIC_POISSON				1	// Traffic is generated randomly according to a Poisson distribution
 #define TRAFFIC_DETERMINISTIC		2	// Traffic is generated at fixed intervals
 
-#define PACKET_BUFFER_SIZE		256		// Size of the packets buffer
+#define PACKET_BUFFER_SIZE		100		// Size of the packets buffer
 
 // Protocols
 #define INCREASE_CW 1		// Command to increase contention window

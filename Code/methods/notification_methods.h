@@ -208,6 +208,16 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 				break;
 			}
 
+			case PACKET_LOST_OUTSIDE_CH_RANGE:{	// Destination was already transmitting when the packet transmission was attempted
+
+				printf("%.12f;N%d;S%d;%s;%s AP is sending packets outside STAs range!\n",
+						sim_time, node_id, node_state, LOG_H02, LOG_LVL2);
+
+				exit(-1);
+
+				break;
+			}
+
 			default:{
 
 				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Unknown reason for packet loss\n",

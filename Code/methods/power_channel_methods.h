@@ -48,8 +48,11 @@
 
 #include <stddef.h>
 #include <math.h>
+#include <iostream>
+
 #include "../list_of_macros.h"
 #include "../structures/modulations.h"
+#include "auxiliary_methods.h"
 
 /***********************/
 /***********************/
@@ -460,12 +463,10 @@ void UpdatePowerSensedPerNode(int primary_channel, double *power_received_per_no
  * ApplyAdjacentChannelInterferenceModel: applies a cochannel interference model
  **/
 void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
-		int adjacent_channel_model, double **total_power, Notification notification,
+		int adjacent_channel_model, double total_power[], Notification notification,
 		int num_channels_komondor, double rx_gain, double central_frequency, int path_loss_model){
 
-	*total_power = (double *) malloc(sizeof(double)*num_channels_komondor);
-
-	for (int i = 0 ; i < num_channels_komondor ; i++) (*total_power)[i] = 0;
+	for (int i = 0 ; i < num_channels_komondor ; i++) (total_power)[i] = 0;
 
 	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
 		notification.tx_info.z);
@@ -476,7 +477,7 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 	// Direct power (power of the channels used for transmitting)
 	for(int i = notification.left_channel; i <= notification.right_channel; i++){
 
-		(*total_power)[i] = pw_received;
+		(total_power)[i] = pw_received;
 
 	}
 
@@ -501,19 +502,19 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 
 						pw_loss_db = 20 * abs(c-notification.left_channel);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
-						(*total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
+						(total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					} else if(c > notification.right_channel) {
 
 						pw_loss_db = 20 * abs(c-notification.right_channel);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
-						(*total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
+						(total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					}
 
-					if((*total_power)[c] < MIN_VALUE_C_LANGUAGE){
+					if((total_power)[c] < MIN_VALUE_C_LANGUAGE){
 
-						(*total_power)[c] = 0;
+						(total_power)[c] = 0;
 
 					}
 
@@ -534,9 +535,9 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 
 						pw_loss_db = 20 * abs(c-j);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
-						(*total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
+						(total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
-						if((*total_power)[c] < MIN_DOUBLE_VALUE_KOMONDOR) (*total_power)[c] = 0;
+						if((total_power)[c] < MIN_DOUBLE_VALUE_KOMONDOR) (total_power)[c] = 0;
 
 					}
 				}
@@ -567,13 +568,12 @@ void UpdateChannelsPower(double x, double y, double z, double **channel_power, N
 	}
 
 	// Total power [pW] (of interest and interference) generated ONLY by the incoming or outgoing TX
-	double *total_power;
-	total_power = (double *) malloc(num_channels_komondor * sizeof(*total_power));
+	double total_power[num_channels_komondor];
 	for(int i = 0; i < num_channels_komondor; i++) {
 		total_power[i] = 0;
 	}
 
-	ApplyAdjacentChannelInterferenceModel(x, y , z, adjacent_channel_model, &total_power,
+	ApplyAdjacentChannelInterferenceModel(x, y , z, adjacent_channel_model, total_power,
 			notification, num_channels_komondor, rx_gain, central_frequency, path_loss_model);
 
 	// Increase/decrease power sensed if TX started/finished
@@ -591,9 +591,6 @@ void UpdateChannelsPower(double x, double y, double z, double **channel_power, N
 		else if (update_type == TX_INITIATED) (*channel_power)[c] += total_power[c];
 
 	}
-
-	free(total_power);
-
 
 }
 
@@ -1195,5 +1192,4 @@ void PrintOrWriteChannelForTx(int write_or_print,
 		}
 	}
 }
-
 

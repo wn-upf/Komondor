@@ -49,6 +49,8 @@
 #include <math.h>
 #include <algorithm>
 #include <stddef.h>
+#include <iostream>
+
 #include "../list_of_macros.h"
 
 #ifndef _AUX_AGENT_METHODS_

@@ -50,6 +50,8 @@
 #include <math.h>
 #include <algorithm>
 #include <stddef.h>
+#include <iostream>
+#include <stdlib.h>
 
 #include "../list_of_macros.h"
 #include "../structures/node_configuration.h"
@@ -96,7 +98,7 @@ component Agent : public TypeII{
 
 		// Specific to each agent
 		int agent_id; 			// Node identifier
-		char *wlan_code;
+		std::string wlan_code;
 		int *list_of_channels; 	// List of channels
 		double *list_of_cca_values;	// List of CCA values
 		double *list_of_tx_power_values;	// List of tx power values
@@ -178,7 +180,7 @@ void Agent :: Start(){
 	// Create agent logs file if required
 	if(save_agent_logs) {
 		// Name agent log file accordingly to the agent_id
-		sprintf(own_file_path,"%s_A%d_%s.txt","../output/logs_output", agent_id, wlan_code);
+		sprintf(own_file_path,"%s_A%d_%s.txt","../output/logs_output", agent_id, wlan_code.c_str());
 		remove(own_file_path);
 		output_log_file = fopen(own_file_path, "at");
 		agent_logger.save_logs = save_agent_logs;
@@ -494,23 +496,23 @@ void Agent :: InitializeAgent() {
 
 	num_requests = 0;
 
-	list_of_channels = (int *) malloc(num_actions_channel * sizeof(*list_of_channels));
-	list_of_cca_values = (double *) malloc(num_actions_cca * sizeof(*list_of_cca_values));
-	list_of_tx_power_values = (double *) malloc(num_actions_tx_power * sizeof(*list_of_tx_power_values));
-	list_of_dcb_policy = (int *) malloc(num_actions_dcb_policy * sizeof(*list_of_dcb_policy));
+	list_of_channels = new int[num_actions_channel];
+	list_of_cca_values = new double[num_actions_cca];
+	list_of_tx_power_values = new double[num_actions_tx_power];
+	list_of_dcb_policy = new int[num_actions_dcb_policy];
 
 	num_actions = num_actions_channel * num_actions_cca * num_actions_tx_power * num_actions_dcb_policy;
 
 	// Generate actions
-	actions = (Action *) malloc(num_actions	* sizeof(*actions));
+	actions = new Action[num_actions];
 
 	// Initialize the rewards assigned to each arm
-	reward_per_arm = (double *) malloc(num_actions * sizeof(*reward_per_arm));
-	cumulative_reward_per_arm = (double *) malloc(num_actions * sizeof(*cumulative_reward_per_arm));
-	average_reward_per_arm = (double *) malloc(num_actions * sizeof(*average_reward_per_arm));
+	reward_per_arm = new double[num_actions];
+	cumulative_reward_per_arm = new double[num_actions];
+	average_reward_per_arm = new double[num_actions];
 
 	// Initialize the array containing the times each arm has been played
-	times_arm_has_been_selected = (int *) malloc(num_actions * sizeof(*times_arm_has_been_selected));
+	times_arm_has_been_selected = new int[num_actions];
 
 	initial_reward = 0;
 	initial_epsilon = 1;
@@ -542,7 +544,7 @@ void Agent :: InitializeAgent() {
 void Agent :: PrintAgentInfo(){
 
 	printf("%s Agent %d info:\n", LOG_LVL3, agent_id);
-	printf("%s wlan_code = %s\n", LOG_LVL4, wlan_code);
+	printf("%s wlan_code = %s\n", LOG_LVL4, wlan_code.c_str());
 	printf("%s time_between_requests = %f\n", LOG_LVL4, time_between_requests);
 	printf("%s type_of_reward = %d\n", LOG_LVL4, type_of_reward);
 	printf("%s initial_reward = %f\n", LOG_LVL4, initial_reward);
@@ -640,7 +642,7 @@ void Agent :: PrintOrWriteAgentStatistics(int write_or_print) {
 		case PRINT_LOG:{
 
 			if (print_agent_logs) {
-				printf("------- Agent A%d (WLAN %s) ------\n", agent_id, wlan_code);
+				printf("------- Agent A%d (WLAN %s) ------\n", agent_id, wlan_code.c_str());
 				printf("* Actions report:\n");
 				// Detailed summary of arms
 				for(int i = 0; i < num_actions; i++){

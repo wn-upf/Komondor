@@ -53,11 +53,9 @@ struct Logger
 {
 	int save_logs;		// Flag for activating the log writting
 	FILE *file;			// File for writting logs
-	char *head_string;	// Header string (to be passed as argument when it is needed to write info from other class or component)
+	char head_string[INTEGER_SIZE];	// Header string (to be passed as argument when it is needed to write info from other class or component)
 
 	void SetVoidHeadString(){
-
-		head_string = (char *) malloc(INTEGER_SIZE);
 		sprintf(head_string, "%s", " ");
 	}
 	// TODO: create 'getter' methods

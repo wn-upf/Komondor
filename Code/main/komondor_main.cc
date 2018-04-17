@@ -49,9 +49,11 @@
  */
 
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <vector>
 #include ".././COST/cost.h"
 #include "../list_of_macros.h"
 #include "../structures/logical_nack.h"
@@ -60,6 +62,9 @@
 #include "node.h"
 #include "agent.h"
 
+int total_nodes_number;			// Total number of nodes
+char* tmp_nodes;
+
 /* Sequential simulation engine from where the system to be simulated is derived. */
 component Komondor : public CostSimEng {
 
@@ -67,37 +72,37 @@ component Komondor : public CostSimEng {
 	public:
 
 		void Setup(double simulation_time_komondor, int save_system_logs, int save_node_logs, int save_agent_logs,
-				int print_node_logs, int print_system_logs, int print_agent_logs, char *system_filename,
-				char *nodes_filename, char *script_filename, char *simulation_code, int seed_console,
-				int agents_enabled, char *agents_filename);
+				int print_node_logs, int print_system_logs, int print_agent_logs, const char *system_filename,
+				const char *nodes_filename, const char *script_filename, const char *simulation_code, int seed_console,
+				int agents_enabled, const char *agents_filename);
 		void Stop();
 		void Start();
 		void InputChecker();
 
-		void SetupEnvironmentByReadingInputFile(char *system_filename);
-		void GenerateNodes(char *nodes_filename);
-		void GenerateNodesByReadingNodesInputFile(char *nodes_filename);
-		void GenerateNodesByReadingAPsInputFile(char *nodes_filename);
+		void SetupEnvironmentByReadingInputFile(const char *system_filename);
+		void GenerateNodes(const char *nodes_filename);
+		void GenerateNodesByReadingNodesInputFile(const char *nodes_filename);
+		void GenerateNodesByReadingAPsInputFile(const char *nodes_filename);
 
-		void GenerateAgents(char *agents_filename);
+		void GenerateAgents(const char *agents_filename);
 
-		int GetNumOfLines(char *nodes_filename);
-		int GetNumOfNodes(char *nodes_filename, int node_type, char *wlan_code);
+		int GetNumOfLines(const char *nodes_filename);
+		int GetNumOfNodes(const char *nodes_filename, int node_type, std::string 	wlan_code);
 
 		void printSystemInfo();
 		void PrintAllWlansInfo();
 		void PrintAllAgentsInfo();
 		void PrintAllNodesInfo(int info_detail_level);
 		void WriteSystemInfo(Logger logger);
-		void WriteAllWlansInfo(Logger logger, char *header_string);
-		void WriteAllNodesInfo(Logger logger, int info_detail_level, char *header_string);
+		void WriteAllWlansInfo(Logger logger, std::string header_str);
+		void WriteAllNodesInfo(Logger logger, int info_detail_level,  std::string header_str);
 
 	// Public items (to shared with the nodes)
 	public:
 
 		Node[] node_container;			// Container of nodes (i.e., APs, STAs, ...)
 		Wlan *wlan_container;			// Container of WLANs
-		int total_nodes_number;			// Total number of nodes
+
 		int total_wlans_number;			// Total number of WLANs
 		int total_agents_number;		// Total number of agents
 
@@ -152,15 +157,16 @@ component Komondor : public CostSimEng {
 		int seed;						// Simulation seed number
 		int save_system_logs;			// Flag for activating the log writting of the Komondor system
 		int print_system_logs;			// Flag for activating the printing of system logs
-		char *simulation_code;			// Komondor simulation code
-		char *nodes_input_filename;		// Filename of the nodes (AP or Deterministic Nodes) input CSV
-		char *agents_input_filename;
+		std::string simulation_code;			// Komondor simulation code
+		const char *nodes_input_filename;		// Filename of the nodes (AP or Deterministic Nodes) input CSV
+		const char *agents_input_filename;
 		FILE *simulation_output_file;	// File for the output logs (including statistics)
 		FILE *script_output_file;		// File for the whole input files included in the script TODO
 		FILE *script_output_file_csv;	// File for the CSV script output
 		Logger logger_simulation;		// Logger for the simulation output file
 		Logger logger_script;			// Logger for the script file (containing 1+ simulations) Readable version
 		Logger logger_script_csv;		// Logger for the script file in CSV format
+
 
 		// Auxiliar variables
 		int first_line_skiped_flag;		// Flag for skipping first informative line of input file
@@ -181,9 +187,9 @@ component Komondor : public CostSimEng {
  */
 void Komondor :: Setup(double sim_time_console, int save_system_logs_console, int save_node_logs_console,
 		int save_agent_logs_console, int print_system_logs_console, int print_node_logs_console,
-		int print_agent_logs_console, char *system_input_filename, char *nodes_input_filename_console,
-		char *script_output_filename, char *simulation_code_console, int seed_console,
-		int agents_enabled_console, char *agents_input_filename_console){
+		int print_agent_logs_console, const char *system_input_filename, const char *nodes_input_filename_console,
+		const char *script_output_filename, const char *simulation_code_console, int seed_console,
+		int agents_enabled_console, const char *agents_input_filename_console){
 
 	simulation_time_komondor = sim_time_console;
 	save_node_logs = save_node_logs_console;
@@ -194,35 +200,34 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	print_agent_logs = print_agent_logs_console;
 	nodes_input_filename = nodes_input_filename_console;
 	agents_input_filename = agents_input_filename_console;
-	simulation_code = (char *) malloc((strlen(simulation_code_console) + 1) * sizeof(*simulation_code));
-	sprintf(simulation_code, "%s", simulation_code_console);
-	total_nodes_number = 0;
+
+	std::string simulation_code;
+	simulation_code.append(ToString(simulation_code_console));
+
 	seed = seed_console;
 	agents_enabled = agents_enabled_console;
+	total_wlans_number = 0;
 
 	// Generate output files
 
 	if (print_system_logs) printf("%s Creating output files\n", LOG_LVL1);
-	const char *simulation_filename_root = "output/simulation_output";
-	char *simulation_filename_remove =
-			(char *) malloc( (strlen(simulation_filename_root) + strlen(simulation_code) + 6)
-			* sizeof(*simulation_filename_remove));
 
-	sprintf(simulation_filename_remove, "%s_%s.txt", simulation_filename_root, simulation_code);
+	std::string simulation_filename_remove;
+	simulation_filename_remove.append("output/simulation_output_").append(simulation_code);
 
-	char *simulation_filename_fopen = (char *) malloc(strlen(simulation_filename_remove) + 4);
-	sprintf(simulation_filename_fopen, "../%s", simulation_filename_remove);
+	std::string simulation_filename_fopen;
+	simulation_filename_fopen.append("../").append(simulation_filename_remove);
 
-	if(remove(simulation_filename_remove) == 0){
+	if(remove(simulation_filename_remove.c_str()) == 0){
 		if (print_system_logs) printf("%s Simulation output file '%s' found and removed. New one created!\n",
-				LOG_LVL2, simulation_filename_remove);
+				LOG_LVL2, simulation_filename_remove.c_str());
 	} else {
 		if (print_system_logs) printf("%s Simulation output file '%s' created!\n",
-							LOG_LVL2, simulation_filename_remove);
+							LOG_LVL2, simulation_filename_remove.c_str());
 	}
 
 	// Get loggers to write in output files
-	simulation_output_file = fopen(simulation_filename_fopen,"at");
+	simulation_output_file = fopen(simulation_filename_fopen.c_str(),"at");
 	logger_simulation.save_logs = SAVE_LOG;
 	logger_simulation.file = simulation_output_file;
 
@@ -231,17 +236,21 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	logger_script.save_logs = SAVE_LOG;
 	logger_script.file = script_output_file;
 
-	// Script output (CSV format)
-	char *script_output_filename_root = script_output_filename;
+	std::string script_output_csv_filename;
+	char *script_output_filename_root = (char *) script_output_filename;
 	script_output_filename_root[strlen(script_output_filename_root)-4] = 0;
-	char *script_output_csv_filename = (char *) malloc(strlen(script_output_filename) + 4);
-	sprintf(script_output_csv_filename, "%s_csv.csv", script_output_filename);
-	script_output_file_csv = fopen(script_output_csv_filename,"at");	// Script output is removed when script is executed
+	std::string script_output_filename_root_str(script_output_filename_root);
+	script_output_csv_filename.append(script_output_filename_root_str).append("_csv.csv");
+
+	printf("%s\n", script_output_csv_filename.c_str());
+
+	// Script output (CSV format)
+	script_output_file_csv = fopen(script_output_csv_filename.c_str(),"at");	// Script output is removed when script is executed
 	logger_script_csv.save_logs = SAVE_LOG;
 	logger_script_csv.file = script_output_file_csv;
 
 	// fprintf(logger_script.file, "------------------------------------\n");
-	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code, seed);
+	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code.c_str(), seed);
 	// Read system (environment) file
 
 	SetupEnvironmentByReadingInputFile(system_input_filename);
@@ -279,18 +288,18 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 		fprintf(logger_script.file, "%s System configuration: \n", LOG_LVL2);
 		WriteSystemInfo(logger_script);
 
-		char *header_string = (char *) malloc(INTEGER_SIZE);
-		sprintf(header_string, "%s", LOG_LVL3);
+		std::string header_str;
+		header_str.append(ToString(LOG_LVL3));
 
 		fprintf(logger_simulation.file, "%s Wlans generated!\n", LOG_LVL2);
-		WriteAllWlansInfo(logger_simulation, header_string);
+		WriteAllWlansInfo(logger_simulation, header_str);
 		fprintf(logger_script.file, "%s Wlans generated!\n", LOG_LVL2);
-		WriteAllWlansInfo(logger_script, header_string);
+		WriteAllWlansInfo(logger_script, header_str);
 
 		fprintf(logger_simulation.file, "%s Nodes generated!\n", LOG_LVL2);
-		WriteAllNodesInfo(logger_simulation, INFO_DETAIL_LEVEL_0, header_string);
+		WriteAllNodesInfo(logger_simulation, INFO_DETAIL_LEVEL_0, header_str);
 		fprintf(logger_script.file, "%s Nodes generated!\n", LOG_LVL2);
-		WriteAllNodesInfo(logger_script, INFO_DETAIL_LEVEL_0, header_string);
+		WriteAllNodesInfo(logger_script, INFO_DETAIL_LEVEL_0, header_str);
 
 	}
 
@@ -303,7 +312,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			connect node_container[n].outportSelfFinishTX,node_container[m].InportSomeNodeFinishTX;
 			connect node_container[n].outportSendLogicalNack,node_container[m].InportNackReceived;
 
-			if(strcmp(node_container[n].wlan_code,node_container[m].wlan_code) == 0) {
+			if(strcmp(node_container[n].wlan_code.c_str(),node_container[m].wlan_code.c_str()) == 0) {
 				// Connections regarding MCS
 				connect node_container[n].outportAskForTxModulation,node_container[m].InportMCSRequestReceived;
 				connect node_container[n].outportAnswerTxModulation,node_container[m].InportMCSResponseReceived;
@@ -316,7 +325,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			// Set connections among APs and Agents
 			if ( node_container[n].node_type == NODE_TYPE_AP ) {
 				for(int w = 0; w < total_agents_number; w++){
-					if (strcmp(node_container[n].wlan_code, agent_container[w].wlan_code) == 0) {
+					if (strcmp(node_container[n].wlan_code.c_str(), agent_container[w].wlan_code.c_str()) == 0) {
 						connect agent_container[w].outportRequestInformationToAp,node_container[n].InportReceivingRequestFromAgent;
 						connect node_container[n].outportAnswerToAgent,agent_container[w].InportReceivingInformationFromAp;
 						connect agent_container[w].outportSendConfigurationToAp,node_container[n].InportReceiveConfigurationFromAgent;
@@ -331,7 +340,8 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
  * Start()
  */
 void Komondor :: Start(){
-	// do nothing
+	// intialize variables
+	// total_nodes_number = 0;
 };
 
 /*
@@ -426,7 +436,7 @@ void Komondor :: Stop(){
 
 		for(int m=0; m < total_nodes_number; m++){
 			fprintf(logger_script.file, "%s Node #%d (%s) Throughput = %f\n", LOG_LVL2, m,
-					node_container[m].node_code, node_container[m].throughput);
+					node_container[m].node_code.c_str(), node_container[m].throughput);
 			avg_throughput += node_container[m].throughput;
 
 			if(node_container[m].node_type == NODE_TYPE_AP){
@@ -435,11 +445,11 @@ void Komondor :: Stop(){
 
 				// Fill CSV script output
 				fprintf(logger_script_csv.file, "%s;", nodes_input_filename);				// Smiluation code
-				fprintf(logger_script_csv.file, "%s;", simulation_code);					// Smiluation code
+				fprintf(logger_script_csv.file, "%s;", simulation_code.c_str());			// Smiluation code
 				fprintf(logger_script_csv.file, "%d;", node_container[m].wlan.wlan_id);		// WLAN ID
-				fprintf(logger_script_csv.file, "%s;", node_container[m].wlan.wlan_code);	// WLAN code
+				fprintf(logger_script_csv.file, "%s;", node_container[m].wlan.wlan_code.c_str());	// WLAN code
 				fprintf(logger_script_csv.file, "%d;", node_container[m].node_id);			// Node ID
-				fprintf(logger_script_csv.file, "%s;", node_container[m].node_code);		// Node code
+				fprintf(logger_script_csv.file, "%s;", node_container[m].node_code.c_str());		// Node code
 				fprintf(logger_script_csv.file, "%f;", node_container[m].throughput * pow(10,-6));	// Throughput [Mbps]
 				fprintf(logger_script_csv.file, "%d;", node_container[m].data_packets_sent);		// Packets sent
 				fprintf(logger_script_csv.file, "%d;", node_container[m].data_packets_lost);		// Packets lost
@@ -462,7 +472,7 @@ void Komondor :: Stop(){
 	fclose(simulation_output_file);
 	fclose(script_output_file);
 
-	printf("%s SIMULATION '%s' FINISHED\n", LOG_LVL1, simulation_code);
+	printf("%s SIMULATION '%s' FINISHED\n", LOG_LVL1, simulation_code.c_str());
 	printf("------------------------------------------\n");
 
 };
@@ -553,10 +563,10 @@ void Komondor :: InputChecker(){
  * Input arguments:
  * - system_filename: system input filename
  */
-void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
+void Komondor :: SetupEnvironmentByReadingInputFile(const char *system_filename) {
 
 	if (print_system_logs) printf("%s Reading system configuration file '%s'...\n", LOG_LVL1, system_filename);
-	fprintf(simulation_output_file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code, seed);
+	fprintf(simulation_output_file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code.c_str(), seed);
 
 	FILE* stream_system = fopen(system_filename, "r");
 	if (!stream_system){
@@ -703,7 +713,7 @@ void Komondor :: SetupEnvironmentByReadingInputFile(char *system_filename) {
  * Input arguments:
  * - nodes_filename: AP or nodes filename
  */
-void Komondor :: GenerateNodes(char *nodes_filename) {
+void Komondor :: GenerateNodes(const char *nodes_filename) {
 
 	if (print_system_logs) printf("%s Generating nodes...\n", LOG_LVL1);
 	fprintf(simulation_output_file, "%s Generating nodes...\n", LOG_LVL1);
@@ -728,7 +738,7 @@ void Komondor :: GenerateNodes(char *nodes_filename) {
  * Input arguments:
  * - nodes_filename: AP or nodes filename
  */
-void Komondor :: GenerateAgents(char *agents_filename) {
+void Komondor :: GenerateAgents(const char *agents_filename) {
 
 	if (print_system_logs) printf("%s Generating agents...\n", LOG_LVL2);
 
@@ -761,10 +771,10 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 			// Find the length of the channel actions array
 			tmp_agents = strdup(line_agents);
 			const char *channel_values_aux = GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES);
-			char *channel_values_text = (char *) malloc(strlen(channel_values_aux) + 1);
-			sprintf(channel_values_text, "%s", channel_values_aux);
-			char *channel_aux;
-			channel_aux = strtok (channel_values_text,",");
+			std::string channel_values_text;
+			channel_values_text.append(ToString(channel_values_aux));
+			const char *channel_aux;
+			channel_aux = strtok ((char*)channel_values_text.c_str(),",");
 			num_actions_channel = 0;
 			while (channel_aux != NULL) {
 				channel_aux = strtok (NULL, ",");
@@ -776,10 +786,10 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 			// Find the length of the CCA actions array
 			tmp_agents = strdup(line_agents);
 			const char *cca_values_aux = GetField(tmp_agents, IX_AGENT_CCA_VALUES);
-			char *cca_values_text = (char *) malloc(strlen(cca_values_aux) + 1);
-			sprintf(cca_values_text, "%s", cca_values_aux);
-			char *cca_aux;
-			cca_aux = strtok (cca_values_text,",");
+			std::string cca_values_text;
+			cca_values_text.append(ToString(cca_values_aux));
+			const char *cca_aux;
+			cca_aux = strtok ((char*)cca_values_text.c_str(),",");
 			num_actions_cca = 0;
 			while (cca_aux != NULL) {
 				cca_aux = strtok (NULL, ",");
@@ -792,10 +802,10 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 			// Find the length of the Tx power actions array
 			tmp_agents = strdup(line_agents);
 			const char *tx_power_values_aux = GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES);
-			char *tx_power_values_text = (char *) malloc(strlen(tx_power_values_aux) + 1);
-			sprintf(tx_power_values_text, "%s", tx_power_values_aux);
-			char *tx_power_aux;
-			tx_power_aux = strtok (tx_power_values_text,",");
+			std::string tx_power_values_text;
+			tx_power_values_text.append(ToString(tx_power_values_aux));
+			const char *tx_power_aux;
+			tx_power_aux = strtok ((char*)tx_power_values_text.c_str(),",");
 			num_actions_tx_power = 0;
 			while (tx_power_aux != NULL) {
 				tx_power_aux = strtok (NULL, ",");
@@ -808,10 +818,10 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 			// Find the length of the DCB actions actions array
 			tmp_agents = strdup(line_agents);
 			const char *policy_values_aux = GetField(tmp_agents, IX_AGENT_DCB_POLICY);
-			char *policy_values_text = (char *) malloc(strlen(policy_values_aux) + 1);
-			sprintf(policy_values_text, "%s", policy_values_aux);
-			char *policy_aux;
-			policy_aux = strtok (policy_values_text,",");
+			std::string policy_values_text;
+			policy_values_text.append(ToString(policy_values_aux));
+			const char *policy_aux;
+			policy_aux = strtok ((char*)policy_values_text.c_str(),",");
 			num_actions_dcb_policy = 0;
 			while (policy_aux != NULL) {
 				policy_aux = strtok (NULL, ",");
@@ -852,9 +862,9 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 			// WLAN code
 			char* tmp_agents = strdup(line_agents);
 			const char *wlan_code_aux = GetField(tmp_agents, IX_AGENT_WLAN_CODE);
-			char *wlan_code = (char *) malloc(strlen(wlan_code_aux) + 1);
-			sprintf(wlan_code, "%s", wlan_code_aux);
-			agent_container[agent_ix].wlan_code = wlan_code;
+			std::string wlan_code;
+			wlan_code.append(ToString(wlan_code_aux));
+			agent_container[agent_ix].wlan_code = wlan_code.c_str();
 
 			// Time between requests
 			tmp_agents = strdup(line_agents);
@@ -863,13 +873,14 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 
 			// Channel values
 			tmp_agents = strdup(line_agents);
-			const char *channel_values_aux = GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES);
-			char *channel_values_text = (char *) malloc(strlen(channel_values_aux) + 1);
-			sprintf(channel_values_text, "%s", channel_values_aux);
+			std::string channel_values_text = ToString(GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
 
-			// Fill the channel actions array
+			// Fill the channel actions arraymal
 			char *channel_aux_2;
-			channel_aux_2 = strtok (channel_values_text,",");
+			char *channel_values_text_char = new char[channel_values_text.length() + 1];
+			strcpy(channel_values_text_char, channel_values_text.c_str());
+			channel_aux_2 = strtok (channel_values_text_char,",");
+
 			int ix = 0;
 			while (channel_aux_2 != NULL) {
 				int a = atoi(channel_aux_2);
@@ -880,13 +891,14 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 
 			// CCA values
 			tmp_agents = strdup(line_agents);
-			const char *cca_values_aux = GetField(tmp_agents, IX_AGENT_CCA_VALUES);
-			char *cca_values_text = (char *) malloc(strlen(cca_values_aux) + 1);
-			sprintf(cca_values_text, "%s", cca_values_aux);
+			std::string cca_values_text = ToString(GetField(tmp_agents, IX_AGENT_CCA_VALUES));
 
 			// Fill the CCA actions array
 			char *cca_aux_2;
-			cca_aux_2 = strtok (cca_values_text,",");
+			char *cca_values_text_char = new char[cca_values_text.length() + 1];
+			strcpy(cca_values_text_char, cca_values_text.c_str());
+			cca_aux_2 = strtok (cca_values_text_char,",");
+
 			ix = 0;
 			while (cca_aux_2 != NULL) {
 				int a = atoi(cca_aux_2);
@@ -897,13 +909,15 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 
 			// Tx Power values
 			tmp_agents = strdup(line_agents);
-			const char *tx_power_values_aux = GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES);
-			char *tx_power_values_text = (char *) malloc(strlen(tx_power_values_aux) + 1);
-			sprintf(tx_power_values_text, "%s", tx_power_values_aux);
+			std::string tx_power_values_text = ToString(GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES));
+
 
 			// Fill the TX power actions array
 			char *tx_power_aux_2;
-			tx_power_aux_2 = strtok (tx_power_values_text,",");
+			char *tx_power_values_text_char = new char[tx_power_values_text.length() + 1];
+			strcpy(tx_power_values_text_char, tx_power_values_text.c_str());
+			tx_power_aux_2 = strtok (tx_power_values_text_char,",");
+
 			ix = 0;
 			while (tx_power_aux_2 != NULL) {
 				int a = atoi(tx_power_aux_2);
@@ -914,13 +928,14 @@ void Komondor :: GenerateAgents(char *agents_filename) {
 
 			// DCB policy values
 			tmp_agents = strdup(line_agents);
-			const char *dcb_policy_values_aux = GetField(tmp_agents, IX_AGENT_DCB_POLICY);
-			char *dcb_policy_values_text = (char *) malloc(strlen(dcb_policy_values_aux) + 1);
-			sprintf(dcb_policy_values_text, "%s", dcb_policy_values_aux);
+			std::string dcb_policy_values_text = ToString(GetField(tmp_agents, IX_AGENT_DCB_POLICY));
 
 			// Fill the DCB policy actions array
 			char *policy_aux_2;
-			policy_aux_2 = strtok (dcb_policy_values_text,",");
+			char *dcb_policy_values_text_char = new char[dcb_policy_values_text.length() + 1];
+			strcpy(dcb_policy_values_text_char, dcb_policy_values_text.c_str());
+			policy_aux_2 = strtok (dcb_policy_values_text_char,",");
+
 			ix = 0;
 			while (policy_aux_2 != NULL) {
 				int a = atoi(policy_aux_2);
@@ -958,10 +973,11 @@ void Komondor :: GenerateAgents(char *agents_filename) {
  * Input arguments:
  * - nodes_filename: APs input file
  */
-void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
+void Komondor :: GenerateNodesByReadingAPsInputFile(const char *nodes_filename){
 
 	total_wlans_number = GetNumOfLines(nodes_filename);
-	wlan_container = (Wlan *) malloc(total_wlans_number * sizeof(*wlan_container));
+
+	wlan_container = new Wlan[total_wlans_number];
 
 	// Compute the number of STAs of each WLAN
 	if (print_system_logs) printf("%s Computing the number of STAs in each WLAN...\n", LOG_LVL2);
@@ -983,17 +999,21 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 			wlan_container[wlan_ix].wlan_id = wlan_ix;
 
 			// WLAN code
-			char* tmp_nodes = strdup(line_nodes);
+			tmp_nodes = strdup(line_nodes);
 			const char *wlan_code_aux = GetField(tmp_nodes, IX_AP_WLAN_CODE);
-			char *wlan_code = (char *) malloc(strlen(wlan_code_aux) + 1);
-			sprintf(wlan_code, "%s", wlan_code_aux);
+			free(tmp_nodes);
+			std::string wlan_code;
+			wlan_code.append(ToString(wlan_code_aux));
+
 			wlan_container[wlan_ix].wlan_code = wlan_code;
 
 			// Number of STAs in the WLAN
 			tmp_nodes = strdup(line_nodes);
 			int min_sta_number = atoi(GetField(tmp_nodes, IX_AP_MIN_NUM_OF_STAS));
+			free(tmp_nodes);
 			tmp_nodes = strdup(line_nodes);
 			int max_sta_number = atoi(GetField(tmp_nodes, IX_AP_MAX_NUM_OF_STAS));
+			free(tmp_nodes);
 			wlan_container[wlan_ix].num_stas = rand()%(max_sta_number-min_sta_number + 1) + min_sta_number;
 
 			total_nodes_number += (wlan_container[wlan_ix].num_stas + 1);
@@ -1024,16 +1044,20 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 			wlan_container[wlan_ix].SetSizeOfSTAsArray(wlan_container[wlan_ix].num_stas);
 
 			// Max distance AP - STA
-			char* tmp_nodes = strdup(line_nodes);
+			tmp_nodes = strdup(line_nodes);
 			int max_distance_sta = atoi(GetField(tmp_nodes, IX_AP_MAX_DISTANCE_AP_STA));
+			free(tmp_nodes);
 
 			// AP position
 			tmp_nodes = strdup(line_nodes);
 			double x = atof(GetField(tmp_nodes, IX_AP_POSITION_X));
+			free(tmp_nodes);
 			tmp_nodes = strdup(line_nodes);
 			double y = atof(GetField(tmp_nodes, IX_AP_POSITION_Y));
+			free(tmp_nodes);
 			tmp_nodes = strdup(line_nodes);
 			double z = atof(GetField(tmp_nodes, IX_AP_POSITION_Z));
+			free(tmp_nodes);
 
 			// Min CW
 			tmp_nodes = strdup(line_nodes);
@@ -1095,6 +1119,10 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 			double rx_gain_db = atoi(GetField(tmp_nodes, IX_AP_RX_GAIN));
 			double rx_gain = ConvertPower(DB_TO_LINEAR, rx_gain_db);
 
+			// Channel bonding model
+			tmp_nodes = strdup(line_nodes);
+			int channel_bonding_model = atoi(GetField(tmp_nodes, IX_AP_CHANNEL_BONDING_MODEL));
+
 			// Default modulation
 			tmp_nodes = strdup(line_nodes);
 			double modulation_default = atoi(GetField(tmp_nodes, IX_AP_MODULATION_DEFAULT));
@@ -1133,8 +1161,10 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 
 					node_container[node_ix].node_type = NODE_TYPE_AP;
 					wlan_container[wlan_ix].ap_id = node_ix;
-					char *node_code = (char *) malloc(strlen(wlan_container[wlan_ix].wlan_code) + INTEGER_SIZE + 1);
-					sprintf(node_code, "%s_%s_%d", wlan_container[wlan_ix].wlan_code, "AP", node_ix);
+
+					std::string node_code;
+					node_code.append(wlan_container[wlan_ix].wlan_code).append(ToString("_AP_")).append(ToString(node_ix));
+
 					node_container[node_ix].node_code = node_code;
 					node_container[node_ix].x = x;
 					node_container[node_ix].y = y;
@@ -1146,8 +1176,10 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 					wlan_container[wlan_ix].list_sta_id[node_id_counter_in_wlan] = node_ix;	// Add node ID to WLAN
 					node_id_counter_in_wlan ++;
 					node_container[node_ix].node_type = NODE_TYPE_STA;
-					char *node_code = (char *) malloc(strlen(wlan_container[wlan_ix].wlan_code + 1) + INTEGER_SIZE + 1);
-					sprintf(node_code, "%s_%s_%d", wlan_container[wlan_ix].wlan_code, "STA", node_ix);
+
+					std::string node_code;
+					node_code.append(wlan_container[wlan_ix].wlan_code).append(ToString("_STA_")).append(ToString(node_ix));
+
 					node_container[node_ix].node_code = node_code;
 
 					node_container[node_ix].x = RandomDouble(x-max_distance_sta, x + max_distance_sta);
@@ -1171,6 +1203,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
 				node_container[node_ix].cca_max = cca_max;
 				node_container[node_ix].tx_gain = tx_gain;
 				node_container[node_ix].rx_gain = rx_gain;
+				node_container[node_ix].current_dcb_policy = channel_bonding_model;
 				node_container[node_ix].modulation_default = modulation_default;
 
 				// System
@@ -1229,12 +1262,15 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(char *nodes_filename){
  * Input arguments:
  * - nodes_filename: nodes input filename
  */
-void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
+void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename){
 
 	if (print_system_logs) printf("%s Reading nodes input file '%s'...\n", LOG_LVL2, nodes_filename);
 
-	total_wlans_number = GetNumOfNodes(nodes_filename, NODE_TYPE_AP, NULL);
-	wlan_container = (Wlan *) malloc(total_wlans_number * sizeof(*wlan_container));
+	total_wlans_number = GetNumOfNodes(nodes_filename, NODE_TYPE_AP, ToString(""));
+
+	if (print_system_logs) printf("%s Num. of WLANs detected: %d\n", LOG_LVL3, total_wlans_number);
+
+	wlan_container = new Wlan[total_wlans_number];
 
 	FILE* stream_nodes = fopen(nodes_filename, "r");
 	char line_nodes[CHAR_BUFFER_SIZE];
@@ -1251,7 +1287,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 		} else{
 
 			// Node type
-			char* tmp_nodes = strdup(line_nodes);
+			tmp_nodes = strdup(line_nodes);
 			int node_type = atoi(GetField(tmp_nodes, IX_NODE_TYPE));
 
 			if(node_type == NODE_TYPE_AP){	// If node is AP
@@ -1261,10 +1297,8 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 
 				// WLAN code
 				tmp_nodes = strdup(line_nodes);
-				const char *wlan_code_aux = GetField(tmp_nodes, IX_WLAN_CODE);
-				char *wlan_code = (char *) malloc(strlen(wlan_code_aux) + 1);
-				sprintf(wlan_code, "%s", wlan_code_aux);
-				wlan_container[wlan_ix].wlan_code = wlan_code;
+				std::string wlan_code_aux = ToString(GetField(tmp_nodes, IX_WLAN_CODE));
+				wlan_container[wlan_ix].wlan_code = wlan_code_aux;
 
 				wlan_ix++;
 				free(tmp_nodes);
@@ -1273,17 +1307,21 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 		}
 	}
 
+	if (print_system_logs) printf("%s WLANs identified\n", LOG_LVL3);
+
 	// Get number of STAs in each WLAN
 	for(int w = 0; w < total_wlans_number; w++){
 
 		int num_stas_in_wlan = GetNumOfNodes(nodes_filename, NODE_TYPE_STA, wlan_container[w].wlan_code);
 		wlan_container[w].num_stas = num_stas_in_wlan;
 		wlan_container[w].SetSizeOfSTAsArray(num_stas_in_wlan);
-
 	}
 
+	if (print_system_logs) printf("%s Num. of STAs per each WLAN identified\n", LOG_LVL3);
+
 	// Generate nodes (without wlan item), finsih WLAN with ID lists, and set the wlan item of each STA.
-	total_nodes_number = GetNumOfNodes(nodes_filename, NODE_TYPE_UNKWNOW, NULL);
+	if (print_system_logs) printf("%s Generating nodes...\n", LOG_LVL3);
+	total_nodes_number = GetNumOfNodes(nodes_filename, NODE_TYPE_UNKWNOW, ToString(""));
 	node_container.SetSize(total_nodes_number);
 
 	stream_nodes = fopen(nodes_filename, "r");
@@ -1303,10 +1341,8 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			node_container[node_ix].node_id = node_ix;
 
 			// Node code
-			char* tmp_nodes = strdup(line_nodes);
-			const char *node_code_aux = GetField(tmp_nodes, IX_NODE_CODE);
-			char *node_code = (char *) malloc(strlen(node_code_aux) + 1);
-			sprintf(node_code, "%s", node_code_aux);
+			tmp_nodes = strdup(line_nodes);
+			std::string node_code = ToString(GetField(tmp_nodes, IX_NODE_CODE));
 			node_container[node_ix].node_code = node_code;
 
 			// Node type
@@ -1317,11 +1353,11 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			// WLAN code: add AP or STA ID to corresponding WLAN
 			tmp_nodes = strdup(line_nodes);
 			const char *wlan_code_aux = GetField(tmp_nodes, IX_WLAN_CODE);
-			char *wlan_code = (char *) malloc(strlen(wlan_code_aux) + 1);
-			sprintf(wlan_code, "%s", wlan_code_aux);
+			std::string wlan_code;
+			wlan_code.append(ToString(wlan_code_aux));
 			node_container[node_ix].wlan_code = wlan_code;
 			for(int w = 0; w < total_wlans_number; w++){
-				if(strcmp(wlan_code, wlan_container[w].wlan_code) == 0){	// If nodes belong to WLAN
+				if(strcmp(wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0){	// If nodes belong to WLAN
 					if(node_container[node_ix].node_type == NODE_TYPE_AP){	// If node is AP
 						wlan_container[w].ap_id = node_container[node_ix].node_id;
 					} else if (node_container[node_ix].node_type == NODE_TYPE_STA){	// If node is STA
@@ -1407,6 +1443,10 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 			double rx_gain_db = atoi(GetField(tmp_nodes, IX_RX_GAIN));
 			node_container[node_ix].rx_gain = ConvertPower(DB_TO_LINEAR, rx_gain_db);
 
+			// Channel bonding model
+			tmp_nodes = strdup(line_nodes);
+			node_container[node_ix].current_dcb_policy = atoi(GetField(tmp_nodes, IX_CHANNEL_BONDING_MODEL));
+
 			// Default modulation
 			tmp_nodes = strdup(line_nodes);
 			node_container[node_ix].modulation_default = atoi(GetField(tmp_nodes, IX_MODULATION_DEFAULT));
@@ -1469,7 +1509,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(char *nodes_filename){
 	// Set corresponding WLAN to each node
 	for(int n = 0; n < total_nodes_number; n++){
 		for(int w = 0; w < total_wlans_number; w++){
-			if (strcmp(node_container[n].wlan_code, wlan_container[w].wlan_code) == 0) {
+			if (strcmp(node_container[n].wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0) {
 				node_container[n].wlan = wlan_container[w];
 			}
 		}
@@ -1580,10 +1620,10 @@ void Komondor :: PrintAllAgentsInfo(){
  * Input arguments:
  * - logger: logger containing the file to write on
  */
-void Komondor :: WriteAllWlansInfo(Logger logger, char *header_string){
+void Komondor :: WriteAllWlansInfo(Logger logger, std::string header_str){
 
 	for(int w = 0; w < total_wlans_number; w++){
-		wlan_container[w].WriteWlanInfo(logger, header_string);
+		wlan_container[w].WriteWlanInfo(logger, header_str.c_str());
 	}
 }
 
@@ -1593,10 +1633,10 @@ void Komondor :: WriteAllWlansInfo(Logger logger, char *header_string){
  * - logger: logger containing the file to write on
  * - info_detail_level: level of detail of the written logs
  */
-void Komondor :: WriteAllNodesInfo(Logger logger, int info_detail_level, char *header_string){
+void Komondor :: WriteAllNodesInfo(Logger logger, int info_detail_level, std::string header_str){
 
 	for(int n = 0; n < total_nodes_number; n++){
-		node_container[n].WriteNodeInfo(logger, info_detail_level, header_string);
+		node_container[n].WriteNodeInfo(logger, info_detail_level, header_str.c_str());
 	}
 }
 
@@ -1607,10 +1647,10 @@ void Komondor :: WriteAllNodesInfo(Logger logger, int info_detail_level, char *h
  * - info_detail_level: level of detail of the written logs
  */
 // TODO: decide if generating log files for agents
-//void Komondor :: WriteAllAgentsInfo(Logger logger, int info_detail_level, char *header_string){
+//void Komondor :: WriteAllAgentsInfo(Logger logger, int info_detail_level, char *header_str){
 //
 //	for(int a = 0; a < total_wlans_number; a++){
-//		agent_container[a].WriteAgentInfo(logger, info_detail_level, header_string);
+//		agent_container[a].WriteAgentInfo(logger, info_detail_level, header_str);
 //	}
 //}
 
@@ -1641,7 +1681,7 @@ const char* GetField(char* line, int num){
  * Input arguments:
  * - filename: CSV filename
  */
-int Komondor :: GetNumOfLines(char *filename){
+int Komondor :: GetNumOfLines(const char *filename){
 	int num_lines = 0;
 	// Nodes file
 	FILE* stream = fopen(filename, "r");
@@ -1666,18 +1706,18 @@ int Komondor :: GetNumOfLines(char *filename){
  * - node_type: type of node to consider in the counting
  * - wlan_id: wlan to consider in the counting
  */
-int Komondor :: GetNumOfNodes(char *nodes_filename, int node_type, char *wlan_code){
+int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::string wlan_code){
 
 	int num_nodes = 0;
 	char line_nodes[CHAR_BUFFER_SIZE];
 	first_line_skiped_flag = 0;
 	int type_found;
-	char *wlan_code_found;
+	std::string wlan_code_found;
 
 	FILE* stream_nodes = fopen(nodes_filename, "r");
 
 	if (!stream_nodes){
-		printf("Nodes configuration file %s not found!\n", nodes_filename);
+		printf("ERROR: Nodes configuration file %s not found!\n", nodes_filename);
 		exit(-1);
 	}
 
@@ -1696,17 +1736,17 @@ int Komondor :: GetNumOfNodes(char *nodes_filename, int node_type, char *wlan_co
 			} else{
 
 				// Node type
-				char* tmp_nodes = strdup(line_nodes);
+				tmp_nodes = strdup(line_nodes);
 				type_found = atof(GetField(tmp_nodes, IX_NODE_TYPE));
+				free(tmp_nodes);
 
 				// WLAN code
 				tmp_nodes = strdup(line_nodes);
-				const char *wlan_code_aux = GetField(tmp_nodes, IX_WLAN_CODE);
-				wlan_code_found = (char *) malloc(strlen(wlan_code_aux) + 1);
-				sprintf(wlan_code_found, "%s", wlan_code_aux);
+				wlan_code_found = ToString(GetField(tmp_nodes, IX_WLAN_CODE));
+				free(tmp_nodes);
 
-				if(wlan_code != NULL){
-					if(type_found == node_type && strcmp(wlan_code_found, wlan_code) == 0) num_nodes++;
+				if(wlan_code.compare(ToString("")) > 0){
+					if(type_found == node_type && strcmp(wlan_code_found.c_str(), wlan_code.c_str()) == 0) num_nodes++;
 				} else {
 					if(type_found == node_type) num_nodes++;
 				}
@@ -1736,8 +1776,8 @@ int main(int argc, char *argv[]){
 	char *system_input_filename;
 	char *nodes_input_filename;
 	char *agents_input_filename;
-	char *script_output_filename;
-	char *simulation_code;
+	std::string script_output_filename;
+	std::string simulation_code;
 	int save_system_logs;
 	int save_node_logs;
 	int save_agent_logs;
@@ -1748,14 +1788,16 @@ int main(int argc, char *argv[]){
 	int seed;
 	int agents_enabled;
 
+total_nodes_number = 0;
+
 	// Get input variables per console
 	if(argc == NUM_FULL_ARGUMENTS_CONSOLE){	// Full configuration entered per console
 
 		system_input_filename = argv[1];
 		nodes_input_filename = argv[2];
 		agents_input_filename = argv[3];
-		script_output_filename = argv[4];
-		simulation_code = argv[5];
+		script_output_filename = ToString(argv[4]);
+		simulation_code = ToString(argv[5]);
 		save_system_logs = atoi(argv[6]);
 		save_node_logs = atoi(argv[7]);
 		save_agent_logs = atoi(argv[8]);
@@ -1773,8 +1815,8 @@ int main(int argc, char *argv[]){
 
 		system_input_filename = argv[1];
 		nodes_input_filename = argv[2];
-		script_output_filename = argv[3];
-		simulation_code = argv[4];
+		script_output_filename = ToString(argv[3]);
+		simulation_code = ToString(argv[4]);
 		save_system_logs = atoi(argv[5]);
 		save_node_logs = atoi(argv[6]);
 		print_system_logs = atoi(argv[7]);
@@ -1794,12 +1836,8 @@ int main(int argc, char *argv[]){
 		seed = atoi(argv[4]);
 
 		// Default values
-		script_output_filename = (char *) malloc(strlen(DEFAULT_SCRIPT_FILENAME) + 1);
-		sprintf(script_output_filename, "%s", DEFAULT_SCRIPT_FILENAME);
-
-		simulation_code = (char *) malloc(strlen(DEFAULT_SIMULATION_CODE) + 1);
-		sprintf(simulation_code, "%s", DEFAULT_SIMULATION_CODE);
-
+		script_output_filename.append(ToString(DEFAULT_SCRIPT_FILENAME));
+		simulation_code.append(ToString(DEFAULT_SIMULATION_CODE));
 		save_system_logs = DEFAULT_WRITE_SYSTEM_LOGS;
 		save_node_logs = DEFAULT_WRITE_NODE_LOGS;
 		print_system_logs = DEFAULT_PRINT_SYSTEM_LOGS;
@@ -1814,13 +1852,13 @@ int main(int argc, char *argv[]){
 
 		system_input_filename = argv[1];
 		nodes_input_filename = argv[2];
-		simulation_code = argv[3];	// For scripts --> usefult to identify simulations
+		simulation_code = ToString(argv[3]);	// For scripts --> usefult to identify simulations
 		sim_time = atof(argv[4]);
 		seed = atoi(argv[5]);
 
 		// Default values
-		script_output_filename = (char *) malloc(strlen(DEFAULT_SCRIPT_FILENAME) + 1);
-		sprintf(script_output_filename, "%s", DEFAULT_SCRIPT_FILENAME);
+		script_output_filename.append(ToString(DEFAULT_SCRIPT_FILENAME));
+
 		save_system_logs = DEFAULT_WRITE_SYSTEM_LOGS;
 		save_node_logs = DEFAULT_WRITE_NODE_LOGS;
 		print_system_logs = DEFAULT_PRINT_SYSTEM_LOGS;
@@ -1849,8 +1887,8 @@ int main(int argc, char *argv[]){
 		printf("%s nodes_input_filename: %s\n", LOG_LVL2, nodes_input_filename);
 		printf("%s agents_enabled: %d\n", LOG_LVL2, agents_enabled);
 		if (agents_enabled) { printf("%s agents_input_filename: %s\n", LOG_LVL2, agents_input_filename); }
-		printf("%s script_output_filename: %s\n", LOG_LVL2, script_output_filename);
-		printf("%s simulation_code: %s\n", LOG_LVL2, simulation_code);
+		printf("%s script_output_filename: %s\n", LOG_LVL2, script_output_filename.c_str());
+		printf("%s simulation_code: %s\n", LOG_LVL2, simulation_code.c_str());
 		printf("%s save_system_logs: %d\n", LOG_LVL2, save_system_logs);
 		printf("%s save_node_logs: %d\n", LOG_LVL2, save_node_logs);
 		printf("%s print_system_logs: %d\n", LOG_LVL2, print_system_logs);
@@ -1866,11 +1904,11 @@ int main(int argc, char *argv[]){
 	srand(seed); // Needed for ensuring randomness dependency on seed
 	test.StopTime(sim_time);
 	test.Setup(sim_time, save_system_logs, save_node_logs, save_agent_logs, print_system_logs, print_node_logs, print_agent_logs,
-			system_input_filename, nodes_input_filename, script_output_filename, simulation_code, seed,
+			system_input_filename, nodes_input_filename, script_output_filename.c_str(), simulation_code.c_str(), seed,
 			agents_enabled, agents_input_filename);
 
 	printf("------------------------------------------\n");
-	printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code);
+	printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());
 
 	test.Run();
 

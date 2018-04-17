@@ -49,10 +49,21 @@
 #include <math.h>
 #include <algorithm>
 #include <stddef.h>
+#include <string>
+#include <sstream>
+
 #include "../list_of_macros.h"
 
 #ifndef _AUX_METHODS_
 #define _AUX_METHODS_
+
+template <typename T>
+std::string ToString(T val)
+{
+    std::stringstream stream;
+    stream << val;
+    return stream.str();
+}
 
 /*
  * PickRandomElementFromArray(): pick uniformely random an element of an array
