@@ -191,12 +191,19 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	  int n_floors = 3;   // Floor frequency (n_floors floors each m)
 	  int L_iw = 5;     // Penetration for a single wall (dB)
 
-	  double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
+	  //double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
+	  int min_d = distance;
+	  if (distance > 5) { min_d = 5; }
+	  double central_frequency_ghz = central_frequency / pow(10,9);
+
+	  double LFS = 40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
+			  18.3*pow((distance/n_floors),(((distance/n_floors)+2)/((distance/n_floors)+1))
+					  - 0.46) + L_iw*(distance/n_walls);
 
 	  int d_BP = 5;    // Break-point distance (m)
-
 	  if (distance >= d_BP) {
-		loss = LFS + 35*log10(distance/d_BP) + 18.3*pow(n_floors,((n_floors+2)/(n_floors+1)) - 0.46) + L_iw*n_walls;
+		loss = LFS + 35*log10(distance/5);
+		//loss = LFS + 35*log10(distance/d_BP) + 18.3*pow(n_floors,((n_floors+2)/(n_floors+1)) - 0.46) + L_iw*n_walls;
 	  } else {
 		loss = LFS;
 	  }
