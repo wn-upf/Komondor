@@ -1,5 +1,5 @@
 # define execution parameters
-SIM_TIME=2000
+SIM_TIME=100
 SEED=1992
 # compile KOMONDOR
 pwd
@@ -42,7 +42,9 @@ do
 	echo ""
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./komondor_main ../input/script_input_files/input_system_conf.csv ../input/script_input_files/nodes/${array[executing_ix]} ../output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
+	
+	./komondor_main ../input/script_input_files/system/input_system_conf.csv ../input/script_input_files/nodes/${array[executing_ix]} ../input/script_input_files/agents/agents.csv ../output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 1 1 $SIM_TIME $SEED >> ../output/logs_console.txt
+
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo ""
 done

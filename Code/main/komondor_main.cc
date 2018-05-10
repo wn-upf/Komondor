@@ -350,6 +350,7 @@ void Komondor :: Start(){
 void Komondor :: Stop(){
 
 	int total_data_packets_sent = 0;
+	double total_num_packets_generated = 0;
 	double total_throughput = 0;
 	double min_throughput = 999999999999999999;
 	double proportional_fairness = 0;
@@ -359,12 +360,15 @@ void Komondor :: Stop(){
 	int total_rts_cts_sent = 0;
 	double total_prob_slotted_bo_collision = 0;
 	int total_num_tx_init_not_possible = 0;
+	double total_delay = 0;
+	double max_delay = 0;
 
 	for(int m=0; m < total_nodes_number; m++){
 
 		if( node_container[m].node_type == NODE_TYPE_AP ){
 			total_data_packets_sent += node_container[m].data_packets_sent;
 			total_throughput += node_container[m].throughput;
+			total_num_packets_generated += node_container[m].num_packets_generated;
 			if(node_container[m].throughput < min_throughput) min_throughput = node_container[m].throughput;
 			total_rts_lost_slotted_bo += node_container[m].rts_lost_slotted_bo;
 			total_rts_cts_sent += node_container[m].rts_cts_sent;
@@ -372,6 +376,8 @@ void Komondor :: Stop(){
 			total_num_tx_init_not_possible += node_container[m].num_tx_init_not_possible;
 			proportional_fairness += log10(node_container[m].throughput);
 			jains_fairness_aux += pow(node_container[m].throughput, 2);
+			total_delay += node_container[m].average_delay;
+			if(node_container[m].average_delay > max_delay) max_delay = node_container[m].average_delay;
 		}
 	}
 
@@ -382,9 +388,12 @@ void Komondor :: Stop(){
 	if (print_system_logs) {
 
 		printf("\n%s General Statistics:\n", LOG_LVL1);
-		printf("%s Average throughput per WLAN = %.2f Mbps\n", LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number));
-		printf("%s Min throughput = %.2f Mbps\n", LOG_LVL3, (min_throughput * pow(10,-6)/total_wlans_number));
-		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, total_throughput * pow(10,-6));
+		printf("%s Average throughput per WLAN = %.2f Mbps (%.2f pkt/s)\n",
+				LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number),
+				(total_throughput / (double) packet_length) /total_wlans_number);
+		printf("%s Min. throughput = %.2f Mbps (%.2f pkt/s)\n",
+				LOG_LVL3, min_throughput * pow(10,-6), (min_throughput / (double) packet_length) * pow(10,-6));
+		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, total_throughput);
 		printf("%s Total number of packets sent = %d\n", LOG_LVL3, total_data_packets_sent);
 		printf("%s Average number of data packets successfully sent per WLAN = %.2f\n",
 				LOG_LVL4, ( (double) total_data_packets_sent/ (double) total_wlans_number));
@@ -396,6 +405,8 @@ void Komondor :: Stop(){
 		printf("%s Proportional Fairness = %.2f\n", LOG_LVL2, proportional_fairness);
 		printf("%s Jain's Fairness = %.2f\n",  LOG_LVL2, jains_fairness);
 		printf("%s Prob. collision by slotted BO = %f\n", LOG_LVL2, total_prob_slotted_bo_collision / total_wlans_number);
+		printf("%s Av. delay = %.2f ms\n", LOG_LVL2, total_delay * pow(10,3) / total_wlans_number);
+		printf("%s Max. delay = %.2f ms\n", LOG_LVL3, max_delay * pow(10,3));
 
 		printf("\n\n");
 	}
@@ -416,6 +427,7 @@ void Komondor :: Stop(){
 				((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
 		fprintf(logger_simulation.file,"%s Average number of packets sent per WLAN = %d\n", LOG_LVL3, (total_data_packets_sent/total_wlans_number));
 		fprintf(logger_simulation.file,"%s Proportional Fairness = %.2f\n", LOG_LVL2, proportional_fairness);
+		fprintf(logger_simulation.file,"%s Jain's Fairness = %.2f\n",  LOG_LVL2, jains_fairness);
 		fprintf(logger_simulation.file,"%s Jain's Fairness = %.2f\n",  LOG_LVL2, jains_fairness);
 		fprintf(logger_simulation.file,"\n");
 
@@ -466,7 +478,16 @@ void Komondor :: Stop(){
 	}
 
 	// Sergio test
-	fprintf(logger_script.file, ";%.2f\n", (total_throughput * pow(10,-6)/total_wlans_number));
+	fprintf(logger_script.file, ";%.0f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.4f;%.4f\n",
+			(total_num_packets_generated / (double) total_wlans_number) /SimTime(),
+			(total_throughput / (double) packet_length) / (double) total_wlans_number,
+			(min_throughput /  (double)  packet_length),
+			total_delay * pow(10,3) / total_wlans_number,
+			max_delay * pow(10,3),
+			proportional_fairness,
+			jains_fairness,
+			((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent),
+			total_prob_slotted_bo_collision);
 
 	// End of logs
 	fclose(simulation_output_file);

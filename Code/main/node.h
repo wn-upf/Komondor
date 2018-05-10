@@ -236,6 +236,8 @@ component Node : public TypeII{
 		double sum_delays;									// Sum of delays for averaging
 		double average_delay;								// Average delay from packet generation to ACK
 		double average_rho;									// Average rho metric (prob. of having packets in buffer and channel free)
+		double average_utilization;							// Average buffer utilization
+		double generation_drop_ratio;						// Probability of dropping a packet
 
 	// Private items (just for node operation)
 	private:
@@ -322,7 +324,14 @@ component Node : public TypeII{
 		int flag_measure_rho;			// Flag for activating rho measurement
 		double delta_measure_rho;		// Time [s] between two rho measurements
 		int num_measures_rho;			// Number of measures to get the average rho metric
-		int num_measures_rho_accomplished;	// Number of measures that rho condition (packet in buffer and channel free) is given
+		int num_measures_rho_accomplished;		// Number of measures that rho condition (packet in buffer and channel free) is given
+		int num_measures_utilization;			// Number of measures for computing the utilization metric
+		int num_measures_buffer_with_packets;	// Number of measures where the buffer had packets
+		int delay_delayed_flag;
+
+		// Burst traffic
+		double burst_rate;				// Average time between two packet generation bursts [bursts/s]
+		int num_bursts;					// Total number of bursts occurred in the simulation
 
 		// Configurations sent/received to/from the agent
 		Configuration configuration;
@@ -2152,7 +2161,7 @@ void Node :: TrafficGenerator() {
 
 			// Change to Poisson with huge traffic load to simulate saturation
 			traffic_model = TRAFFIC_POISSON;
-			traffic_load = 100;
+			traffic_load = 1000;
 
 			// --- Poisson ---
 			time_for_next_packet = Exponential(1/traffic_load);
@@ -2184,6 +2193,23 @@ void Node :: TrafficGenerator() {
 			break;
 		}
 
+		// 3
+		case TRAFFIC_POISSON_BURST:{
+
+			// Sergio on 2nd February 2018
+			// - Input: traffic load and average time between bursts
+
+			time_for_next_packet = Exponential(burst_rate/traffic_load);
+			time_to_trigger = SimTime() + time_for_next_packet;
+
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New generation burst will be triggered in %f ms\n",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+				time_for_next_packet * 1000);
+
+			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
+			break;
+		}
+
 		default:{
 			printf("Wrong traffic model!\n");
 			exit(EXIT_FAILURE);
@@ -2202,45 +2228,108 @@ void Node :: NewPacketGenerated(trigger_t &){
 
 	if(node_is_transmitter){
 
-		num_packets_generated++;
-		last_measurement_num_packets_generated++;
+		if(traffic_model != TRAFFIC_POISSON_BURST) { // NON-BURST TRAFFIC (i.e., packet by packet)
 
-		if (buffer.QueueSize() < PACKET_BUFFER_SIZE) {
+			num_packets_generated++;
+			last_measurement_num_packets_generated++;
 
-			// Include new packet
-			new_packet = null_notification;
-			new_packet.timestamp_generated = SimTime();
-			new_packet.tx_info.packet_id = last_packet_generated_id;
-			buffer.PutPacket(new_packet);
+			if (buffer.QueueSize() < PACKET_BUFFER_SIZE) {
+
+				// Include new packet
+				new_packet = null_notification;
+				new_packet.timestamp_generated = SimTime();
+				new_packet.tx_info.packet_id = last_packet_generated_id;
+				buffer.PutPacket(new_packet);
+
+				if(save_node_logs) fprintf(node_logger.file,
+						"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been generated (queue: %d/%d)\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
+						new_packet.tx_info.packet_id, buffer.QueueSize(), PACKET_BUFFER_SIZE);
+
+				// Attempt to restart BO only if node didn't have any packet before a new packet was generated
+				if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
+
+					if(trigger_end_backoff.Active()) remaining_backoff =
+							ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
+
+					int resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_cca,
+							buffer.QueueSize());
+
+					if (resume) {
+						time_to_trigger = SimTime() + DIFS;
+						trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
+					}
+
+				}
+
+			} else {
+				// Buffer overflow - new packet is lost
+				num_packets_dropped++;
+				last_measurement_num_packets_dropped++;
+			}
+
+			last_packet_generated_id++;
+
+			// End of NON-BURST TRAFFIC
+
+		} else {	// BURST TRAFFIC (i.e., burst of consecutive packets)
+
+			num_bursts ++;
+
+			int num_packets_generated_in_burst = burst_rate;
 
 			if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been generated (queue: %d/%d)\n",
-					SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
-					new_packet.tx_info.packet_id, buffer.QueueSize(), PACKET_BUFFER_SIZE);
+						"%.15f;N%d;S%d;%s;%s New traffic burst (#%d) generated %d packets\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
+						num_bursts,
+						num_packets_generated_in_burst);
 
-			// Attempt to restart BO only if node didn't have any packet before a new packet was generated
-			if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
+			num_packets_generated += num_packets_generated_in_burst;
 
-				if(trigger_end_backoff.Active()) remaining_backoff =
-						ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
+			for(int i = 0; i < num_packets_generated_in_burst; i++){
 
-				int resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_cca,
-						buffer.QueueSize());
+				if (buffer.QueueSize() < PACKET_BUFFER_SIZE) {
 
-				if (resume) {
-					time_to_trigger = SimTime() + DIFS;
-					trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
+					// Include new packet
+					Notification new_packet;
+					new_packet.timestamp_generated = SimTime();
+					new_packet.tx_info.packet_id = last_packet_generated_id;
+					buffer.PutPacket(new_packet);
+
+					if(save_node_logs) fprintf(node_logger.file,
+							"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been generated from burst %d (buffer queue: %d/%d)\n",
+							SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
+							new_packet.tx_info.packet_id,
+							num_bursts,
+							buffer.QueueSize(),
+							PACKET_BUFFER_SIZE);
+
+					// Attempt to restart BO only if node didn't have any packet before a new packet was generated
+					if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
+
+						if(trigger_end_backoff.Active()) remaining_backoff =
+								ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
+
+						int resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_cca,
+								buffer.QueueSize());
+
+						if (resume) {
+							time_to_trigger = SimTime() + DIFS;
+							trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
+						}
+
+					}
+
+				} else {
+					// Buffer overflow - new packet is lost
+					num_packets_dropped++;
 				}
+
+				last_packet_generated_id++;
 
 			}
 
-		} else {
-			// Buffer overflow - new packet is lost
-			num_packets_dropped++;
-			last_measurement_num_packets_dropped++;
-		}
-
-		last_packet_generated_id++;
+		} // End of BURST TRAFFIC
 
 	}
 
@@ -3541,9 +3630,19 @@ void Node:: MeasureRho(trigger_t &){
 
 	}
 
+	// Utilization
+	num_measures_utilization++;
 
+	if (buffer.QueueSize() > 0) num_measures_buffer_with_packets ++;
 
 	trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
+
+	if(delay_delayed_flag){
+		sum_delays = 0;
+		num_delay_measurements = 0;
+		delay_delayed_flag = FALSE;
+	}
+
 
 }
 
@@ -3704,6 +3803,8 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 
 	if (flag_measure_rho && num_measures_rho > 0) average_rho = (double) num_measures_rho_accomplished/(double) num_measures_rho;
 
+	if (num_measures_utilization > 0) average_utilization = (double) num_measures_buffer_with_packets / (double) num_measures_utilization;
+
 	tx_init_failure_percentage = double(num_tx_init_not_possible * 100)/double(num_tx_init_tried);
 
 	if (data_packets_sent > 0) {
@@ -3747,6 +3848,13 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				printf("%s %d/%d\n", LOG_LVL3,
 						num_measures_rho_accomplished, num_measures_rho);
 
+				// Utilization
+				printf("%s Average utilization = %f (%.2f %%)\n", LOG_LVL2,
+						average_utilization, average_utilization * 100);
+
+				printf("%s %d/%d\n", LOG_LVL3,
+						num_measures_buffer_with_packets, num_measures_utilization);
+
 				// RTS/CTS sent and lost
 				printf("%s RTS/CTS sent = %d - RTS/CTS lost = %d  (%.2f %% lost)\n",
 						LOG_LVL2, rts_cts_sent, rts_cts_lost, rts_cts_lost_percentage);
@@ -3764,6 +3872,14 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 						LOG_LVL2,
 						num_packets_generated, num_packets_generated / SimTime(),
 						num_packets_dropped, generation_drop_ratio);
+
+				if(TRAFFIC_POISSON_BURST){
+
+					printf("%s Buffer: num bursts = %d\n",
+						LOG_LVL2,
+						num_bursts);
+
+				}
 
 				// Number of trials to transmit
 				printf("%s num_tx_init_tried = %d - num_tx_init_not_possible = %d (%f %% failed)\n",
@@ -3960,6 +4076,19 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
  */
 void Node :: InitializeVariables() {
 
+	/*
+	 * HARDCODED VARIABLES FOR TESTING PURPOSES
+	 * - This variables are initalized in the code itself
+	 * - While this is not the most efficient approach, it allows us testing new feature
+	 */
+
+	burst_rate = 10;
+	delay_delayed_flag = TRUE;
+
+	/*
+	 * END OF HARDCODED INITIALIZATION
+	 */
+
 	current_sinr = 0;
 	max_pw_interference = 0;
 	rts_lost_slotted_bo = 0;
@@ -3980,6 +4109,10 @@ void Node :: InitializeVariables() {
 	num_measures_rho_accomplished = 0;
 	average_rho = 0;
 	bandwidth_used_txing = 0;
+
+	num_measures_utilization = 0;
+	num_measures_buffer_with_packets = 0;
+	generation_drop_ratio = 0;
 
 	// Output file - logger
 	node_logger.save_logs = save_node_logs;
