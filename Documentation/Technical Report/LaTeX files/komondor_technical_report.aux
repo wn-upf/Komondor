@@ -85,6 +85,7 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Packet Aggregation}{11}{subsection.3.4}}
 \@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Example of packet aggregation in which N MPDUs are concatenated to be sent during the same packet transmission.\relax }}{11}{figure.caption.14}}
 \newlabel{fig:ampdu}{{10}{11}{Example of packet aggregation in which N MPDUs are concatenated to be sent during the same packet transmission.\relax }{figure.caption.14}{}}
+\citation{bianchi2000performance}
 \@writefile{toc}{\contentsline {section}{\numberline {4}Komondor Main Features Validation through CTMN}{12}{section.4}}
 \newlabel{section:validations}{{4}{12}{Komondor Main Features Validation through CTMN}{section.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}IEEE 802.11ax Parameters}{12}{subsection.4.1}}
@@ -93,67 +94,74 @@
 \newlabel{table:appendix_table}{{2}{12}{Parameters considered in the IEEE 802.11ax scenarios.\relax }{table.caption.15}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Basic Operation Validation}{12}{subsection.4.2}}
 \newlabel{section:validations_basic_scenario}{{4.2}{12}{Basic Operation Validation}{subsection.4.2}{}}
-\newlabel{fig:scenario_III}{{11a}{13}{Topologies\relax }{figure.caption.16}{}}
-\newlabel{sub@fig:scenario_III}{{a}{13}{Topologies\relax }{figure.caption.16}{}}
-\newlabel{fig:scenario3_results_sfctmn_komondor}{{11b}{13}{Average throughput\relax }{figure.caption.16}{}}
-\newlabel{sub@fig:scenario3_results_sfctmn_komondor}{{b}{13}{Average throughput\relax }{figure.caption.16}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Scenarios and results for Komondor validations. Yellow and blue arrows indicate the carrier sense range of WLANs A and C, respectively (CST is equal for all the APs). The carrier sense range of WLAN B is not displayed. \textit  {T3-noCE} refers to topology \textit  {T3} when the STA in B does not accomplish the CE condition whenever A, B and C are active. MC and Sim refer to the values obtained through SFCTMN and Komondor, respectively.\relax }}{13}{figure.caption.16}}
-\newlabel{fig:scenario_III_all}{{11}{13}{Scenarios and results for Komondor validations. Yellow and blue arrows indicate the carrier sense range of WLANs A and C, respectively (CST is equal for all the APs). The carrier sense range of WLAN B is not displayed. \textit {T3-noCE} refers to topology \textit {T3} when the STA in B does not accomplish the CE condition whenever A, B and C are active. MC and Sim refer to the values obtained through SFCTMN and Komondor, respectively.\relax }{figure.caption.16}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Dynamic Channel Bonding Validation}{13}{subsection.4.3}}
-\newlabel{section:validations_channel_bonding}{{4.3}{13}{Dynamic Channel Bonding Validation}{subsection.4.3}{}}
-\newlabel{fig:scenario_I}{{12a}{13}{\textit {Scenario I}\relax }{figure.caption.17}{}}
-\newlabel{sub@fig:scenario_I}{{a}{13}{\textit {Scenario I}\relax }{figure.caption.17}{}}
-\newlabel{fig:scenario_II}{{12b}{13}{\textit {Scenario II}\relax }{figure.caption.17}{}}
-\newlabel{sub@fig:scenario_II}{{b}{13}{\textit {Scenario II}\relax }{figure.caption.17}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces WLANs A and B are inside the carrier sense range of each other with potentially overlapping channels 1 and 2.\relax }}{13}{figure.caption.17}}
-\newlabel{fig:cb_scenarios}{{12}{13}{WLANs A and B are inside the carrier sense range of each other with potentially overlapping channels 1 and 2.\relax }{figure.caption.17}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces DCB policy effect on the average throughput [Mbps] in \textit  {Scenario I} and \textit  {Scenario II}. The values obtained through Komondor are displayed in blue, while the other correspond to the CTMN model.\relax }}{14}{table.caption.18}}
-\newlabel{table:cb_policy_effect}{{3}{14}{DCB policy effect on the average throughput [Mbps] in \textit {Scenario I} and \textit {Scenario II}. The values obtained through Komondor are displayed in blue, while the other correspond to the CTMN model.\relax }{table.caption.18}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces SCENARIO I (TEMPORARY IMAGE)\relax }}{13}{figure.caption.16}}
+\newlabel{fig:basic_scenario}{{11}{13}{SCENARIO I (TEMPORARY IMAGE)\relax }{figure.caption.16}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Results for Komondor validations in Scenario I. The average throughput experienced by each device is shown for ns-3, Bianchi and CTMNs simulations.\relax }}{13}{table.caption.17}}
+\newlabel{table:basic_scenario_results}{{3}{13}{Results for Komondor validations in Scenario I. The average throughput experienced by each device is shown for ns-3, Bianchi and CTMNs simulations.\relax }{table.caption.17}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Complex Interactions Validation}{13}{subsection.4.3}}
+\newlabel{section:validations_complex_scenario}{{4.3}{13}{Complex Interactions Validation}{subsection.4.3}{}}
+\newlabel{fig:scenario_III}{{12a}{14}{Topologies\relax }{figure.caption.18}{}}
+\newlabel{sub@fig:scenario_III}{{a}{14}{Topologies\relax }{figure.caption.18}{}}
+\newlabel{fig:scenario3_results_sfctmn_komondor}{{12b}{14}{Average throughput\relax }{figure.caption.18}{}}
+\newlabel{sub@fig:scenario3_results_sfctmn_komondor}{{b}{14}{Average throughput\relax }{figure.caption.18}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Scenarios and results for Komondor validations. Yellow and blue arrows indicate the carrier sense range of WLANs A and C, respectively (CST is equal for all the APs). The carrier sense range of WLAN B is not displayed. \textit  {T3-noCE} refers to topology \textit  {T3} when the STA in B does not accomplish the CE condition whenever A, B and C are active. MC and Sim refer to the values obtained through SFCTMN and Komondor, respectively.\relax }}{14}{figure.caption.18}}
+\newlabel{fig:scenario_III_all}{{12}{14}{Scenarios and results for Komondor validations. Yellow and blue arrows indicate the carrier sense range of WLANs A and C, respectively (CST is equal for all the APs). The carrier sense range of WLAN B is not displayed. \textit {T3-noCE} refers to topology \textit {T3} when the STA in B does not accomplish the CE condition whenever A, B and C are active. MC and Sim refer to the values obtained through SFCTMN and Komondor, respectively.\relax }{figure.caption.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Dynamic Channel Bonding Validation}{14}{subsection.4.4}}
+\newlabel{section:validations_channel_bonding}{{4.4}{14}{Dynamic Channel Bonding Validation}{subsection.4.4}{}}
+\newlabel{fig:scenario_I}{{13a}{14}{\textit {Scenario I}\relax }{figure.caption.19}{}}
+\newlabel{sub@fig:scenario_I}{{a}{14}{\textit {Scenario I}\relax }{figure.caption.19}{}}
+\newlabel{fig:scenario_II}{{13b}{14}{\textit {Scenario II}\relax }{figure.caption.19}{}}
+\newlabel{sub@fig:scenario_II}{{b}{14}{\textit {Scenario II}\relax }{figure.caption.19}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces WLANs A and B are inside the carrier sense range of each other with potentially overlapping channels 1 and 2.\relax }}{14}{figure.caption.19}}
+\newlabel{fig:cb_scenarios}{{13}{14}{WLANs A and B are inside the carrier sense range of each other with potentially overlapping channels 1 and 2.\relax }{figure.caption.19}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces DCB policy effect on the average throughput [Mbps] in \textit  {Scenario I} and \textit  {Scenario II}. The values obtained through Komondor are displayed in blue, while the other correspond to the CTMN model.\relax }}{15}{table.caption.20}}
+\newlabel{table:cb_policy_effect}{{4}{15}{DCB policy effect on the average throughput [Mbps] in \textit {Scenario I} and \textit {Scenario II}. The values obtained through Komondor are displayed in blue, while the other correspond to the CTMN model.\relax }{table.caption.20}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {5}Tutorial and Development Notes}{15}{section.5}}
 \newlabel{section:tutorial_and_development_notes}{{5}{15}{Tutorial and Development Notes}{section.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Brief Tutorial}{15}{subsection.5.1}}
 \newlabel{section:brief_tutorial}{{5.1}{15}{Brief Tutorial}{subsection.5.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Komondor flowchart\relax }}{15}{figure.caption.19}}
-\newlabel{fig:komondor_flowchart}{{13}{15}{Komondor flowchart\relax }{figure.caption.19}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.1}Files Organization}{15}{subsubsection.5.1.1}}
 \newlabel{section:files}{{5.1.1}{15}{Files Organization}{subsubsection.5.1.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Komondor flowchart\relax }}{16}{figure.caption.21}}
+\newlabel{fig:komondor_flowchart}{{14}{16}{Komondor flowchart\relax }{figure.caption.21}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.2}Compilation and Execution}{16}{subsubsection.5.1.2}}
 \newlabel{section:compilation_execution}{{5.1.2}{16}{Compilation and Execution}{subsubsection.5.1.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.3}Input files}{16}{subsubsection.5.1.3}}
-\newlabel{section:input_files}{{5.1.3}{16}{Input files}{subsubsection.5.1.3}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces System input parameters description\relax }}{17}{table.caption.20}}
-\newlabel{table:system_parameters}{{4}{17}{System input parameters description\relax }{table.caption.20}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.3}Input files}{17}{subsubsection.5.1.3}}
+\newlabel{section:input_files}{{5.1.3}{17}{Input files}{subsubsection.5.1.3}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.4}Input scripts}{17}{subsubsection.5.1.4}}
 \newlabel{section:input_scripts}{{5.1.4}{17}{Input scripts}{subsubsection.5.1.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.5}Output files}{17}{subsubsection.5.1.5}}
-\newlabel{section:output_files}{{5.1.5}{17}{Output files}{subsubsection.5.1.5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Nodes input parameters description\relax }}{18}{table.caption.21}}
-\newlabel{table:nodes_parameters}{{5}{18}{Nodes input parameters description\relax }{table.caption.21}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces System input parameters description\relax }}{18}{table.caption.22}}
+\newlabel{table:system_parameters}{{5}{18}{System input parameters description\relax }{table.caption.22}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.5}Output files}{18}{subsubsection.5.1.5}}
+\newlabel{section:output_files}{{5.1.5}{18}{Output files}{subsubsection.5.1.5}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.6}Events Categorization}{18}{subsubsection.5.1.6}}
 \newlabel{section:events_categorization}{{5.1.6}{18}{Events Categorization}{subsubsection.5.1.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Code development}{18}{subsection.5.2}}
 \newlabel{section:code_development}{{5.2}{18}{Code development}{subsection.5.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Example of nodes statistics in Komondor\relax }}{19}{figure.caption.22}}
-\newlabel{fig:nodes_statistics_example}{{14}{19}{Example of nodes statistics in Komondor\relax }{figure.caption.22}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces Example of system statistics in Komondor\relax }}{19}{figure.caption.23}}
-\newlabel{fig:general_statistics_example}{{15}{19}{Example of system statistics in Komondor\relax }{figure.caption.23}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Nodes input parameters description\relax }}{19}{table.caption.23}}
+\newlabel{table:nodes_parameters}{{6}{19}{Nodes input parameters description\relax }{table.caption.23}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Main considerations}{19}{subsubsection.5.2.1}}
 \newlabel{section:development_considerations}{{5.2.1}{19}{Main considerations}{subsubsection.5.2.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Node's event logs encoding\relax }}{20}{table.caption.24}}
-\newlabel{table:event_coding}{{6}{20}{Node's event logs encoding\relax }{table.caption.24}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Miscellaneous}{20}{subsubsection.5.2.2}}
-\newlabel{section:development_miscellany}{{5.2.2}{20}{Miscellaneous}{subsubsection.5.2.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{20}{section.6}}
-\newlabel{section:conclusions}{{6}{20}{Conclusions}{section.6}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Miscellaneous}{19}{subsubsection.5.2.2}}
+\newlabel{section:development_miscellany}{{5.2.2}{19}{Miscellaneous}{subsubsection.5.2.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces Example of nodes statistics in Komondor\relax }}{20}{figure.caption.24}}
+\newlabel{fig:nodes_statistics_example}{{15}{20}{Example of nodes statistics in Komondor\relax }{figure.caption.24}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {16}{\ignorespaces Example of system statistics in Komondor\relax }}{20}{figure.caption.25}}
+\newlabel{fig:general_statistics_example}{{16}{20}{Example of system statistics in Komondor\relax }{figure.caption.25}{}}
 \bibstyle{unsrt}
 \bibdata{bib}
 \bibcite{barrachina2017komondor}{1}
 \bibcite{chen2002reusing}{2}
 \bibcite{tgax2017draft}{3}
 \bibcite{bellalta2016ieee}{4}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Node's event logs encoding\relax }}{21}{table.caption.26}}
+\newlabel{table:event_coding}{{7}{21}{Node's event logs encoding\relax }{table.caption.26}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{21}{section.6}}
+\newlabel{section:conclusions}{{6}{21}{Conclusions}{section.6}{}}
 \bibcite{wilhelmi2017implications}{5}
 \bibcite{wilhelmi2017collaborative}{6}
 \bibcite{maghsudi2015joint}{7}
 \bibcite{maghsudi2015channel}{8}
 \bibcite{hata1980empirical}{9}
 \bibcite{bellalta2014throughput}{10}
+\bibcite{bianchi2000performance}{11}

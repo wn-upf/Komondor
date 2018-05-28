@@ -60,4 +60,11 @@ Boris Bellalta, Alessandro Zocca, Cristina Cano, Alessandro Checco, Jaume
 \newblock In {\em Wireless Networking for Moving Objects}, pages 115--133.
   Springer, 2014.
 
+\bibitem{bianchi2000performance}
+Giuseppe Bianchi.
+\newblock Performance analysis of the ieee 802.11 distributed coordination
+  function.
+\newblock {\em IEEE Journal on selected areas in communications},
+  18(3):535--547, 2000.
+
 \end{thebibliography}

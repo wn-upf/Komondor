@@ -538,7 +538,34 @@ In this Section we provide an overview of the main MAC layer features included i
 %		\caption{Summary of the results obtained for the basic scenarios.}
 %		\label{table:basic_scenarios}
 %	\end{table}	
-	In order to validate the basic operation of Komondor (e.g., DCF, RTS/CTS), we propose the following set of non-fully-overlapping scenarios, which are shown in Figure \ref{fig:scenario_III}:
+		
+	The basic operation of Komondor regarding the DCF implementation with additional features such as RTS/CTS is first validated in the scenario shown in Figure \ref{fig:basic_scenario}, which frames a single WLAN composed by an AP and two STAs. All the devices are within the same range, so that channel access is completely fair. However, in order to give priority to the AP, its CW is smaller than the one used by STAs. The performance achieved by each device is shown in \ref{table:basic_scenario_results}, where Komondor results are compared to equivalent ns-3 simulations, and to the Bianchi's analytical model \cite{bianchi2000performance}. 
+	
+	\begin{figure}[h!]
+		\centering
+		\epsfig{file=images/Seminar3_2.eps, width=7cm}
+		\caption{SCENARIO I (TEMPORARY IMAGE)}
+		\label{fig:basic_scenario}
+	\end{figure}	
+	
+	\begin{table}[h!]
+		\centering
+		\caption{Results for Komondor validations in Scenario I. The average throughput experienced by each device is shown for ns-3, Bianchi and CTMNs simulations.}
+		\label{table:basic_scenario_results}
+		\begin{tabular}{|l|c|c|c|c|}
+			\hline
+			& Komondor & ns-3 & Bianchi & CTMNs \\ \hline
+			$\Gamma_{AP}$ &  &  & & \\ \hline
+			$\Gamma_{STA A}$ &  &  & & \\ \hline
+			$\Gamma_{STA B}$ & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} \\ \hline
+		\end{tabular}
+	\end{table}
+
+	%%% Complex interactions Scenarios
+	\subsection{Complex Interactions Validation}
+	\label{section:validations_complex_scenario}
+	
+	Now, in order to further validate the Komondor simulator, we propose the following set of partial-overlapping scenarios, which are shown in Figure \ref{fig:scenario_III}:
 	\begin{itemize}
 		\item \textbf{Topology 1 (\emph{T1})}: all the nodes are able to listen each other, so that they share the channel on equal terms.
 		\item \textbf{Topology 2 (\emph{T2})}: either $\text{AP}_A$ or $\text{AP}_C$ generate enough interference to contend $\text{AP}_B$'s transmission.
@@ -635,7 +662,7 @@ In this Section we provide an overview of the main MAC layer features included i
 	%%% Channel Bonding Scenarios
 	\subsection{Dynamic Channel Bonding Validation}
 	\label{section:validations_channel_bonding}
-	Now, in order to validate the most important technique included in the first version of the Komondor simulator (i.e., Dynamic Channel Bonding), we introduce the scenarios shown in Figure \ref{fig:cb_scenarios}, which consider two overlapping WLANs.
+	Finally, we validate one of the most important techniques included in the Komondor simulator, which is Dynamic Channel Bonding. In order to do that, we introduce the scenarios shown in Figure \ref{fig:cb_scenarios}, which consider two overlapping WLANs.
 	% Scenario I figure
 	\begin{figure}[h!]
 		\centering
