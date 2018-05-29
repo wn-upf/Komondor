@@ -192,7 +192,7 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	  int L_iw = 5;     // Penetration for a single wall (dB)
 
 	  //double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
-	  int min_d = distance;
+	  double min_d = distance;
 	  if (distance > 5) { min_d = 5; }
 	  double central_frequency_ghz = central_frequency / pow(10,9);
 

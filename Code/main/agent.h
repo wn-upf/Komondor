@@ -77,7 +77,10 @@ component Agent : public TypeII{
 		// Communication with AP
 		void RequestInformationToAp();
 		void ComputeNewConfiguration();
-		void SendNewConfigurationToAp();
+		void SendNewConfigurationToAp(Configuration &configuration_to_send);
+
+		// Communication with other Agents (distributed methods)
+
 
 		// Handle rewards
 		void GenerateRewardSelectedArm();
@@ -98,6 +101,7 @@ component Agent : public TypeII{
 
 		// Specific to each agent
 		int agent_id; 			// Node identifier
+		int centralized;		// Indicates whether the node is controlled by a central entity or not
 		std::string wlan_code;
 		int *list_of_channels; 	// List of channels
 		double *list_of_cca_values;	// List of CCA values
@@ -133,6 +137,7 @@ component Agent : public TypeII{
 	private:
 		Configuration configuration;
 		Configuration new_configuration;
+		Configuration configuration_from_controller;
 
 		Report report;
 
@@ -148,9 +153,16 @@ component Agent : public TypeII{
 		// INPORT connections for receiving notifications
 		inport void inline InportReceivingInformationFromAp(Configuration &configuration, Report &report);
 
+		// INPORT (centralized system only)
+		inport void inline InportReceivingRequestFromController(int destination_agent_id);
+		inport void inline InportReceiveConfigurationFromController(int destination_agent_id, Configuration &new_configuration);
+
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAp();
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
+
+		// OUTPORT (centralized system only)
+		outport void outportAnswerToController(Configuration &configuration, Report &report, int agent_id);
 
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap; // Timer for requesting information to the AP
@@ -191,10 +203,16 @@ void Agent :: Start(){
 	if(save_agent_logs) fprintf(agent_logger.file,"%.18f;A%d;%s;%s Start()\n",
 			SimTime(), agent_id, LOG_B00, LOG_LVL1);
 
-	// Generate the first request, to be triggered after "time_between_requests"
-	// *** We generate here the first request in order to obtain the AP's configuration
-	double extra_wait_test = 0.005 * (double) agent_id;
-	trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests + extra_wait_test,13,12));
+
+	if(centralized) {
+		// --- Do nothing ---
+		// In case of being centralized, wait for a request from the controller
+	} else {
+		// Generate the first request, to be triggered after "time_between_requests"
+		// *** We generate here the first request in order to obtain the AP's configuration
+		double extra_wait_test = 0.005 * (double) agent_id;
+		trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests + extra_wait_test,13,12));
+	}
 
 };
 
@@ -229,9 +247,9 @@ void Agent :: Stop(){
 void Agent :: RequestInformationToAp(trigger_t &){
 
 //	printf("%s Agent #%d: Requesting information to AP\n", LOG_LVL1, agent_id);
-	if(save_agent_logs) fprintf(agent_logger.file, "----------------------------------------------------------------\n");
+	if(save_agent_logs && !centralized) fprintf(agent_logger.file, "----------------------------------------------------------------\n");
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s RequestInformationToAp() %d\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s RequestInformationToAp() (request #%d)\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1, num_requests);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Requesting information to AP\n",
@@ -252,7 +270,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 //	printf("%s Agent #%d: Message received from the AP\n", LOG_LVL1, agent_id);
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s InportReceivingInformationFromAp()\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s InportReceivingInformationFromAp()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s New information has been received from the AP\n",
@@ -264,12 +282,18 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	report = received_report;
 
-	// Generate the reward for the last selected action
-	GenerateRewardSelectedArm();
+	if (centralized) {
+		// Forward the information to the controller
+		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Answering to the controller with current information\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL2);
+		outportAnswerToController(configuration, report, agent_id);
 
-	// Compute a new configuration according to the updated rewards
-	ComputeNewConfiguration();
-
+	} else {
+		// Generate the reward for the last selected action
+		GenerateRewardSelectedArm();
+		// Compute a new configuration according to the updated rewards
+		ComputeNewConfiguration();
+	}
 
 };
 
@@ -282,7 +306,7 @@ void Agent :: ComputeNewConfiguration(){
 
 	//printf("%s Agent #%d: Computing a new configuration\n", LOG_LVL1, agent_id);
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s ComputeNewConfiguration()\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s ComputeNewConfiguration()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Computing a new configuration\n",
@@ -300,43 +324,47 @@ void Agent :: ComputeNewConfiguration(){
 				SimTime(), agent_id, LOG_C00, LOG_LVL2,
 				num_epsilon_iterations, epsilon, ix_selected_arm);
 
-	times_arm_has_been_selected[ix_selected_arm]++;
-	num_epsilon_iterations++;
+	times_arm_has_been_selected[ix_selected_arm] ++;
+	num_epsilon_iterations ++;
 	//PrintSelectedAction();
 
 	// Generate new configuration
 	new_configuration = GenerateNewConfiguration();
 
 	// Send the configuration to the AP
-	SendNewConfigurationToAp();
+	SendNewConfigurationToAp(new_configuration);
 
 }
 
 /*
  * SendNewConfigurationToAp():
  * Input arguments:
- * - to be defined
+ * - configuration_to_send: Configuration struct that is sent to the corresponding AP
  */
-void Agent :: SendNewConfigurationToAp(){
+void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
 
 //	printf("%s Agent #%d: Sending new configuration to AP\n", LOG_LVL1, agent_id);
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s SendNewConfigurationToAp()\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s SendNewConfigurationToAp()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Sending a new configuration to the AP\n",
 			SimTime(), agent_id, LOG_C00, LOG_LVL2);
 
-	if(save_agent_logs) WriteConfiguration(new_configuration);
+	if(save_agent_logs) WriteConfiguration(configuration_to_send);
 
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
-	outportSendConfigurationToAp(new_configuration);
+	outportSendConfigurationToAp(configuration_to_send);
 
-	// Set trigger for next request
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Next request to be sent at %f\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, fix_time_offset(SimTime() + time_between_requests,13,12));
+	// Set trigger for next request in case of being an independent agent (not controlled by a central entity)
+	if (!centralized) {
+		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Next request to be sent at %f\n",
+				SimTime(), agent_id, LOG_C00, LOG_LVL2, fix_time_offset(SimTime() + time_between_requests,13,12));
 
-	trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
+		trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
+	} else {
+		if(save_agent_logs) fprintf(agent_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	}
 
 };
 
@@ -368,6 +396,65 @@ Configuration Agent :: GenerateNewConfiguration(){
 
 }
 
+/*******************************/
+/*******************************/
+/*  CENTRAL CONTROLLER METHODS */
+/*******************************/
+/*******************************/
+
+/*
+ * InportReceivingRequestFromAgent(): called when some agent answers for information to the AP
+ * Input arguments:
+ * -
+ */
+void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
+
+//	printf("%s Agent #%d: New information request received from the Controller\n", LOG_LVL1, agent_id);
+
+	if(agent_id == destination_agent_id) {
+
+		if(save_agent_logs) fprintf(agent_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+
+		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s New information request received from the Controller for Agent %d\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
+
+		trigger_request_information_to_ap.Set(fix_time_offset(SimTime(),13,12));
+
+	} else {
+
+//		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s I am NOT the destination!\n",
+//			SimTime(), agent_id, LOG_F02, LOG_LVL3);
+
+	}
+
+}
+
+/*
+ * InportReceiveConfigurationFromAgent(): called when some agent sends instructions to the AP
+ * Input arguments:
+ * -
+ */
+void Agent :: InportReceiveConfigurationFromController(int destination_agent_id, Configuration &received_configuration) {
+
+	if(agent_id == destination_agent_id) {
+
+		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s New configuration received from the Controller to Agent %d\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
+
+		//	printf("%s Agent #%d: New configuration received from the Controller\n", LOG_LVL1, agent_id);
+
+		configuration_from_controller = received_configuration;
+		SendNewConfigurationToAp(configuration_from_controller);
+
+	} else {
+
+//		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s I am NOT the destination!\n",
+//			SimTime(), agent_id, LOG_F02, LOG_LVL3);
+
+	}
+
+}
+
 /********************/
 /********************/
 /*  ACTION METHODS  */
@@ -381,7 +468,7 @@ Configuration Agent :: GenerateNewConfiguration(){
  */
 void Agent :: GenerateRewardSelectedArm() {
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s GenerateRewardSelectedArm()\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s GenerateRewardSelectedArm()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
 	double reward;
@@ -545,6 +632,7 @@ void Agent :: PrintAgentInfo(){
 
 	printf("%s Agent %d info:\n", LOG_LVL3, agent_id);
 	printf("%s wlan_code = %s\n", LOG_LVL4, wlan_code.c_str());
+	printf("%s centralized = %d\n", LOG_LVL4, centralized);
 	printf("%s time_between_requests = %f\n", LOG_LVL4, time_between_requests);
 	printf("%s type_of_reward = %d\n", LOG_LVL4, type_of_reward);
 	printf("%s initial_reward = %f\n", LOG_LVL4, initial_reward);

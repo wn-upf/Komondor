@@ -389,12 +389,13 @@
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1
-#define IX_AGENT_TIME_BW_REQUESTS		2
-#define IX_AGENT_CHANNEL_VALUES			3
-#define IX_AGENT_CCA_VALUES				4
-#define IX_AGENT_TX_POWER_VALUES		5
-#define IX_AGENT_DCB_POLICY				6
-#define IX_AGENT_TYPE_OF_REWARD			7
+#define IX_CENTRALIZED_FLAG				2
+#define IX_AGENT_TIME_BW_REQUESTS		3
+#define IX_AGENT_CHANNEL_VALUES			4
+#define IX_AGENT_CCA_VALUES				5
+#define IX_AGENT_TX_POWER_VALUES		6
+#define IX_AGENT_DCB_POLICY				7
+#define IX_AGENT_TYPE_OF_REWARD			8
 
 #define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, CCA, P_tx, DCB policy)
 

@@ -61,6 +61,7 @@
 #include "../structures/wlan.h"
 #include "node.h"
 #include "agent.h"
+#include "central_controller.h"
 
 int total_nodes_number;			// Total number of nodes
 char* tmp_nodes;
@@ -86,12 +87,15 @@ component Komondor : public CostSimEng {
 
 		void GenerateAgents(const char *agents_filename);
 
+		void GenerateCentralController();
+
 		int GetNumOfLines(const char *nodes_filename);
 		int GetNumOfNodes(const char *nodes_filename, int node_type, std::string 	wlan_code);
 
 		void printSystemInfo();
 		void PrintAllWlansInfo();
 		void PrintAllAgentsInfo();
+		void PrintCentralControllerInfo();
 		void PrintAllNodesInfo(int info_detail_level);
 		void WriteSystemInfo(Logger logger);
 		void WriteAllWlansInfo(Logger logger, std::string header_str);
@@ -103,8 +107,9 @@ component Komondor : public CostSimEng {
 		Node[] node_container;			// Container of nodes (i.e., APs, STAs, ...)
 		Wlan *wlan_container;			// Container of WLANs
 
-		int total_wlans_number;			// Total number of WLANs
-		int total_agents_number;		// Total number of agents
+		int total_wlans_number;				// Total number of WLANs
+		int total_agents_number;			// Total number of agents
+		int total_controlled_agents_number;	// Total number of agents attached to the central controller
 
 		// Parameters entered per console
 		int save_node_logs;					// Flag for activating the log writting of nodes
@@ -139,7 +144,7 @@ component Komondor : public CostSimEng {
 
 		int agents_enabled;				// Determined according to the input (for generating agents or not)
 
-	// Public items (to shared with the agents)
+		// Public items (to shared with the agents)
 		public:
 		// Agents info
 		Agent[] agent_container;
@@ -150,6 +155,9 @@ component Komondor : public CostSimEng {
 
 		double *actions_cca;
 		double *actions_tx_power;
+
+		// Central controller info
+		CentralController[] central_controller;
 
 	// Private items
 	private:
@@ -167,9 +175,10 @@ component Komondor : public CostSimEng {
 		Logger logger_script;			// Logger for the script file (containing 1+ simulations) Readable version
 		Logger logger_script_csv;		// Logger for the script file in CSV format
 
-
 		// Auxiliar variables
 		int first_line_skiped_flag;		// Flag for skipping first informative line of input file
+
+		int central_controller_flag; 	// In order to allow the generation of the central controller
 };
 
 /*
@@ -259,7 +268,10 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	GenerateNodes(nodes_input_filename);
 
 	// Generate agents
+	central_controller_flag = 0;
 	if (agents_enabled) { GenerateAgents(agents_input_filename); }
+
+	if (agents_enabled && central_controller_flag) { GenerateCentralController(); }
 
 	if (print_system_logs) {
 		printf("%s System configuration: \n", LOG_LVL2);
@@ -273,8 +285,11 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 		if (agents_enabled) {
 			printf("%s Agents generated!\n\n", LOG_LVL2);
 			PrintAllAgentsInfo();
+			if (central_controller_flag) {
+				printf("%s Central Controller generated!\n\n", LOG_LVL2);
+				central_controller[0].PrintCentralControllerInfo();
+			}
 		}
-
 	}
 
 	InputChecker();
@@ -325,6 +340,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			// Set connections among APs and Agents
 			if ( node_container[n].node_type == NODE_TYPE_AP ) {
 				for(int w = 0; w < total_agents_number; w++){
+					// Connect the agent to the corresponding AP, according to "wlan_code"
 					if (strcmp(node_container[n].wlan_code.c_str(), agent_container[w].wlan_code.c_str()) == 0) {
 						connect agent_container[w].outportRequestInformationToAp,node_container[n].InportReceivingRequestFromAgent;
 						connect node_container[n].outportAnswerToAgent,agent_container[w].InportReceivingInformationFromAp;
@@ -334,6 +350,18 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			}
 		}
 	}
+
+	// Connect the agents to the central controller, if applicable
+	if (agents_enabled) {
+		for(int w = 0; w < total_agents_number; w++){
+			if (agent_container[w].centralized) {
+				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
+				connect agent_container[w].outportAnswerToController,central_controller[0].InportReceivingInformationFromAgent;
+				connect central_controller[0].outportSendConfigurationToAgent,agent_container[w].InportReceiveConfigurationFromController;
+			}
+		}
+	}
+
 };
 
 /*
@@ -755,9 +783,9 @@ void Komondor :: GenerateNodes(const char *nodes_filename) {
 }
 
 /*
- * GenerateNodes(): generates the nodes randomely if AP file is used, or deterministically if NODE file is used.
+ * GenerateAgents(): generates the agents according to the information in the input file.
  * Input arguments:
- * - nodes_filename: AP or nodes filename
+ * - agents_filename: agents filename
  */
 void Komondor :: GenerateAgents(const char *agents_filename) {
 
@@ -887,11 +915,19 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			wlan_code.append(ToString(wlan_code_aux));
 			agent_container[agent_ix].wlan_code = wlan_code.c_str();
 
+			//  Centralized flag
+			tmp_agents = strdup(line_agents);
+			int centralized_flag = atoi(GetField(tmp_agents, IX_CENTRALIZED_FLAG));
+			agent_container[agent_ix].centralized = centralized_flag;
+			if(centralized_flag) {
+				total_controlled_agents_number++;
+				central_controller_flag = 1;
+			}
+
 			// Time between requests
 			tmp_agents = strdup(line_agents);
 			double time_between_requests = atof(GetField(tmp_agents, IX_AGENT_TIME_BW_REQUESTS));
 			agent_container[agent_ix].time_between_requests = time_between_requests;
-
 			// Channel values
 			tmp_agents = strdup(line_agents);
 			std::string channel_values_text = ToString(GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
@@ -982,11 +1018,52 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 
 	if (print_system_logs) printf("%s Agents parameters set!\n", LOG_LVL4);
 
-	//
+}
 
-	// TODO Ideas:
-	//  * File containing different parameters of each agent (e.g., method applied, time between actions, etc.)
-	//  * File defining general features of agents (e.g., time between actions, information requested, etc.)
+/*
+ * GenerateCentralController(): generates the central controller (if applicable)
+ * Input arguments:
+ * -
+ */
+void Komondor :: GenerateCentralController() {
+
+	if (print_system_logs) printf("%s Generating the Central Controller...\n", LOG_LVL2);
+
+	// Despite we only have a single controller, it must be declared as an array,
+	// in order to properly perform inport & outport connections
+	central_controller.SetSize(1);
+
+	if (total_controlled_agents_number > 0) {
+
+		central_controller[0].InitializeCentralController();
+
+		central_controller[0].agents_number = total_controlled_agents_number;
+
+		int *agents_list;
+		agents_list = new int[total_controlled_agents_number];
+
+		int agent_list_ix = 0;					// Index considering the agents attached to the central entity
+		double max_time_between_requests = 0;	// To determine the maximum time between requests for agents
+
+		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; agent_ix ++) {
+			if(agent_container[agent_ix].centralized) {
+				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
+				double agent_time_between_requests = agent_container[agent_list_ix].time_between_requests;
+				if (agent_time_between_requests > max_time_between_requests) {
+					central_controller[0].time_between_requests = agent_time_between_requests;
+				}
+
+				agent_list_ix ++;
+			}
+		}
+
+		// The overall "time between requests" is set to the maximum among all the agents
+		central_controller[0].list_of_agents = agents_list;
+
+	} else {
+		printf("%s WARNING: THE CENTRAL CONTROLLER DOES NOT HAVE ANY ATTACHED AGENT! CHECK YOUR AGENTS' INPUT FILE\n", LOG_LVL2);
+	}
+
 }
 
 /*
@@ -1620,7 +1697,6 @@ void Komondor :: PrintAllNodesInfo(int info_detail_level){
  * PrintAllWlansInfo(): prints the WLANs info
  */
 void Komondor :: PrintAllWlansInfo(){
-
 	for(int w = 0; w < total_wlans_number; w ++){
 		wlan_container[w].PrintWlanInfo();
 	}
@@ -1634,6 +1710,7 @@ void Komondor :: PrintAllAgentsInfo(){
 	for(int a = 0; a < total_agents_number; a ++){
 		agent_container[a].PrintAgentInfo();
 	}
+
 }
 
 /*
