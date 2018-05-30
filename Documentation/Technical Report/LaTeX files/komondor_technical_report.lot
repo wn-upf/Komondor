@@ -1,7 +1,8 @@
 \select@language {english}
 \contentsline {table}{\numberline {1}{\ignorespaces Data rates granted per MCS in IEEE 802.11ax. Guard Intervals (GI) of 1600 ns are only considered.\relax }}{7}{table.caption.7}
 \contentsline {table}{\numberline {2}{\ignorespaces Parameters considered in the IEEE 802.11ax scenarios.\relax }}{12}{table.caption.15}
-\contentsline {table}{\numberline {3}{\ignorespaces DCB policy effect on the average throughput [Mbps] in \textit {Scenario I} and \textit {Scenario II}. The values obtained through Komondor are displayed in blue, while the other correspond to the CTMN model.\relax }}{14}{table.caption.18}
-\contentsline {table}{\numberline {4}{\ignorespaces System input parameters description\relax }}{17}{table.caption.20}
-\contentsline {table}{\numberline {5}{\ignorespaces Nodes input parameters description\relax }}{18}{table.caption.21}
-\contentsline {table}{\numberline {6}{\ignorespaces Node's event logs encoding\relax }}{20}{table.caption.24}
+\contentsline {table}{\numberline {3}{\ignorespaces Results for Komondor validations in Scenario I. The average throughput experienced by each device is shown for ns-3, Bianchi and CTMNs simulations.\relax }}{13}{table.caption.17}
+\contentsline {table}{\numberline {4}{\ignorespaces DCB policy effect on the average throughput [Mbps] in \textit {Scenario I} and \textit {Scenario II}. The values obtained through Komondor are displayed in blue, while the other correspond to the CTMN model.\relax }}{15}{table.caption.20}
+\contentsline {table}{\numberline {5}{\ignorespaces System input parameters description\relax }}{18}{table.caption.22}
+\contentsline {table}{\numberline {6}{\ignorespaces Nodes input parameters description\relax }}{19}{table.caption.23}
+\contentsline {table}{\numberline {7}{\ignorespaces Node's event logs encoding\relax }}{21}{table.caption.26}
