@@ -63,8 +63,10 @@ struct TxInfo
 	double rts_duration;
 	double cts_duration;
 
+	double preoccupancy_duration;
 	double tx_power;			// Transmission power in [pW]
 	double tx_gain;				// Transmission gain [linear ratio]
+	double bits_ofdm_sym; 			// Rate at which data is transmitted
 	double data_rate; 			// Rate at which data is transmitted
 	int modulation_schemes[4];	// Modulation scheme used
 	double x;						// X position of source node

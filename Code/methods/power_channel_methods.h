@@ -336,6 +336,43 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 
 	}
 
+	/*
+	 * Xu et al. Indoor Office Propagation Measurements and Path Loss Models at 5.25 GHz“, IEEE VTC 2007.
+	 * one-slope log-distance model in in-room LoS condition
+	 */
+	case PATHLOSS_INROOM_LOSS_5250KHZ:{
+
+		double pl_overall_db = 47.8 + 14.8 * log10(distance);		// Overall path loss
+
+		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+
+		break;
+
+	}
+
+	/*
+	 * Xu et al. Indoor Office Propagation Measurements and Path Loss Models at 5.25 GHz“, IEEE VTC 2007.
+	 * dual-slope log-distance model in room-corridor condition
+	 */
+	case PATHLOSS_ROOM_CORRIDOR_5250KHZ:{
+
+		double pl_overall_db;
+
+		if(distance <=  9){
+			pl_overall_db = 53.2 + 25.8 * log10(distance);		// Overall path loss
+		} else {
+			pl_overall_db = 56.4 + 29.1 * log10(distance);		// Overall path loss
+		}
+
+		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+
+		break;
+
+	}
 	default:{
 	  printf("Path loss model not found!\n");
 	  break;
@@ -636,8 +673,6 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intere
 		}
 	}
 }
-
-
 
 /*
  * GetTxChannelsByChannelBonding: identifies the channels to TX in depending on the channel_bonding scheme

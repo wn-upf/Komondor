@@ -377,6 +377,8 @@ void Komondor :: Start(){
  */
 void Komondor :: Stop(){
 
+	printf("%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code.c_str(), seed);
+
 	int total_data_packets_sent = 0;
 	double total_num_packets_generated = 0;
 	double total_throughput = 0;
@@ -390,6 +392,9 @@ void Komondor :: Stop(){
 	int total_num_tx_init_not_possible = 0;
 	double total_delay = 0;
 	double max_delay = 0;
+	int ix_wlan_min_throughput = 99999;	// Index of the WLAN experiencing less throughput
+	double total_bandiwdth_tx = 0;
+	double av_expected_backoff = 0;
 
 	for(int m=0; m < total_nodes_number; m++){
 
@@ -397,7 +402,7 @@ void Komondor :: Stop(){
 			total_data_packets_sent += node_container[m].data_packets_sent;
 			total_throughput += node_container[m].throughput;
 			total_num_packets_generated += node_container[m].num_packets_generated;
-			if(node_container[m].throughput < min_throughput) min_throughput = node_container[m].throughput;
+
 			total_rts_lost_slotted_bo += node_container[m].rts_lost_slotted_bo;
 			total_rts_cts_sent += node_container[m].rts_cts_sent;
 			total_prob_slotted_bo_collision += node_container[m].prob_slotted_bo_collision;
@@ -406,8 +411,19 @@ void Komondor :: Stop(){
 			jains_fairness_aux += pow(node_container[m].throughput, 2);
 			total_delay += node_container[m].average_delay;
 			if(node_container[m].average_delay > max_delay) max_delay = node_container[m].average_delay;
+			av_expected_backoff += node_container[m].expected_backoff;
+
+			total_bandiwdth_tx += node_container[m].bandwidth_used_txing;
+
+			if(node_container[m].throughput < min_throughput) {
+				ix_wlan_min_throughput = m;
+				min_throughput = node_container[m].throughput;
+			}
+
 		}
 	}
+
+	av_expected_backoff = av_expected_backoff / total_wlans_number;
 
 	// Supposing that number_aps = number_nodes/2
 	jains_fairness = pow(total_throughput, 2) /
@@ -416,25 +432,28 @@ void Komondor :: Stop(){
 	if (print_system_logs) {
 
 		printf("\n%s General Statistics:\n", LOG_LVL1);
-		printf("%s Average throughput per WLAN = %.2f Mbps (%.2f pkt/s)\n",
+		printf("%s Average throughput per WLAN = %.3f Mbps (%.2f pkt/s)\n",
 				LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number),
 				(total_throughput / (double) packet_length) /total_wlans_number);
 		printf("%s Min. throughput = %.2f Mbps (%.2f pkt/s)\n",
 				LOG_LVL3, min_throughput * pow(10,-6), (min_throughput / (double) packet_length) * pow(10,-6));
-		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, total_throughput);
+		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, total_throughput * pow(10,-6));
 		printf("%s Total number of packets sent = %d\n", LOG_LVL3, total_data_packets_sent);
 		printf("%s Average number of data packets successfully sent per WLAN = %.2f\n",
 				LOG_LVL4, ( (double) total_data_packets_sent/ (double) total_wlans_number));
-		printf("%s Average number of RTS packets lost due to slotted BO = %.2f (%.2f %% loss)\n",
+		printf("%s Average number of RTS packets lost due to slotted BO = %f (%.3f %% loss)\n",
 				LOG_LVL4,
 				(double) total_rts_lost_slotted_bo/(double) total_wlans_number,
 				((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
 		printf("%s Average number of packets sent per WLAN = %d\n", LOG_LVL3, (total_data_packets_sent/total_wlans_number));
 		printf("%s Proportional Fairness = %.2f\n", LOG_LVL2, proportional_fairness);
 		printf("%s Jain's Fairness = %.2f\n",  LOG_LVL2, jains_fairness);
-		printf("%s Prob. collision by slotted BO = %f\n", LOG_LVL2, total_prob_slotted_bo_collision / total_wlans_number);
+		printf("%s Prob. collision by slotted BO = %.3f\n", LOG_LVL2, total_prob_slotted_bo_collision / total_wlans_number);
 		printf("%s Av. delay = %.2f ms\n", LOG_LVL2, total_delay * pow(10,3) / total_wlans_number);
 		printf("%s Max. delay = %.2f ms\n", LOG_LVL3, max_delay * pow(10,3));
+		printf("%s Average bandwidth used for transmitting = %.2f MHz\n",
+							LOG_LVL2,
+							total_bandiwdth_tx / (double) total_wlans_number);
 
 		printf("\n\n");
 	}
@@ -459,11 +478,11 @@ void Komondor :: Stop(){
 		fprintf(logger_simulation.file,"%s Jain's Fairness = %.2f\n",  LOG_LVL2, jains_fairness);
 		fprintf(logger_simulation.file,"\n");
 
-		// Script file (for several simulations in one)
-		double avg_throughput = 0;
-		double min_trhoughput = 10000;
-		double max_trhoughput = -1000;
-		int transmitting_nodes = 0;
+
+
+
+
+
 
 		// If csv file is empty, add header
 		fseek(logger_script_csv.file, 0, SEEK_END);
@@ -477,11 +496,11 @@ void Komondor :: Stop(){
 		for(int m=0; m < total_nodes_number; m++){
 			fprintf(logger_script.file, "%s Node #%d (%s) Throughput = %f\n", LOG_LVL2, m,
 					node_container[m].node_code.c_str(), node_container[m].throughput);
-			avg_throughput += node_container[m].throughput;
+
 
 			if(node_container[m].node_type == NODE_TYPE_AP){
 
-				transmitting_nodes ++;
+
 
 				// Fill CSV script output
 				fprintf(logger_script_csv.file, "%s;", nodes_input_filename);				// Smiluation code
@@ -497,25 +516,123 @@ void Komondor :: Stop(){
 				fprintf(logger_script_csv.file, "%d", node_container[m].rts_cts_lost);		// RTS packets lost
 				fprintf(logger_script_csv.file, "\n");										// End of line
 			}
-			if(node_container[m].throughput > max_trhoughput) max_trhoughput = node_container[m].throughput;
-			if(node_container[m].throughput < min_trhoughput) min_trhoughput = node_container[m].throughput;
 		}
-
-		avg_throughput = avg_throughput/transmitting_nodes;
 
 	}
 
 	// Sergio test
-	fprintf(logger_script.file, ";%.0f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.4f;%.4f\n",
-			(total_num_packets_generated / (double) total_wlans_number) /SimTime(),
-			(total_throughput / (double) packet_length) / (double) total_wlans_number,
-			(min_throughput /  (double)  packet_length),
-			total_delay * pow(10,3) / total_wlans_number,
-			max_delay * pow(10,3),
-			proportional_fairness,
-			jains_fairness,
-			((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent),
-			total_prob_slotted_bo_collision);
+//	fprintf(logger_script.file, ";%.0f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.4f;%.4f\n",
+//			(total_num_packets_generated / (double) total_wlans_number) /SimTime(),
+//			(total_throughput / (double) packet_length) / (double) total_wlans_number,
+//			(min_throughput /  (double)  packet_length),
+//			total_delay * pow(10,3) / total_wlans_number,
+//			max_delay * pow(10,3),
+//			proportional_fairness,
+//			jains_fairness,
+//			((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent),
+//			total_prob_slotted_bo_collision);
+
+	int simulation_index = 2;
+
+	switch(simulation_index){
+
+		case 0:{
+
+				// For toy scenarios
+				fprintf(logger_script.file, ";%.2f;%.2f;%f;%f\n",
+					node_container[0].throughput * pow(10,-6),
+					node_container[2].throughput * pow(10,-6),
+					node_container[0].prob_slotted_bo_collision,
+					node_container[2].prob_slotted_bo_collision);
+
+				break;
+			}
+
+		case 1:{
+
+			// For large scenarios (Node density vs. throughput)
+			fprintf(logger_script.file, ";%.2f;%.2f;%f;%.2f;%d;%.2f\n",
+				(total_throughput * pow(10,-6)/total_wlans_number),
+				proportional_fairness,
+				jains_fairness,
+				min_throughput * pow(10,-6),
+				ix_wlan_min_throughput,
+				total_bandiwdth_tx / (double) total_wlans_number);
+
+			break;
+		}
+
+		case 2:{
+
+				// Sergio logs for central WLAN scenario
+				fprintf(logger_script.file, ";%.1f;%d;%d;%d;%d;%d;%d;%d\n",
+					node_container[0].throughput * pow(10,-6),
+					node_container[0].rts_cts_sent,
+					node_container[0].rts_cts_lost,
+					node_container[0].rts_lost_slotted_bo,
+					node_container[0].data_packets_sent,
+					node_container[0].data_packets_lost,
+					node_container[0].num_tx_init_tried,
+					node_container[0].num_tx_init_not_possible);
+
+				break;
+			}
+
+		case 3:{
+
+				// Biancci multiple WLANs
+				fprintf(logger_script.file, ";%.2f;%.3f;%.5f\n",
+					av_expected_backoff / SLOT_TIME,
+					(total_throughput * pow(10,-6)/total_wlans_number),
+					total_prob_slotted_bo_collision / total_wlans_number);
+
+				break;
+			}
+
+		case 4:{
+
+			// DCB validation
+
+			fprintf(logger_script.file, ";%.5f",
+				total_prob_slotted_bo_collision / total_wlans_number);
+
+			for(int w = 0; w < total_wlans_number; w++) {
+				fprintf(logger_script.file, ";%.3f", node_container[w*2].throughput * pow(10,-6));
+			}
+
+			fprintf(logger_script.file, "\n");
+
+			break;
+
+
+		}
+
+		case 5:{
+
+			// Variability of optimal policies
+
+			for(int w = 0; w < total_wlans_number; w++) {
+
+				fprintf(logger_script.file, ";%.5f", node_container[w*2].prob_slotted_bo_collision);
+			}
+
+			for(int w = 0; w < total_wlans_number; w++) {
+
+				fprintf(logger_script.file, ";%.3f", node_container[w*2].throughput * pow(10,-6));
+			}
+
+			fprintf(logger_script.file, "\n");
+
+			break;
+
+		}
+
+
+		default:{
+		  printf("No simulation type found\n");
+		  break;
+		}
+	}
 
 	// End of logs
 	fclose(simulation_output_file);

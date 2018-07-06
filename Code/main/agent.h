@@ -133,6 +133,7 @@ component Agent : public TypeII{
 		int save_agent_logs;
 		int print_agent_logs;
 
+		std::string simulation_code;				// Simulation code
 	// Private items (just for node operation)
 	private:
 		Configuration configuration;
@@ -199,6 +200,17 @@ void Agent :: Start(){
 		agent_logger.file = output_log_file;
 		agent_logger.SetVoidHeadString();
 	}
+	
+	// TODO: agent output filename
+	// Name agent log file accordingly to the agent_id
+	// sprintf(own_file_path,"../output/agents_output_%s", simulation_code.c_str());
+	// remove(own_file_path);
+	// output_log_file = fopen(own_file_path, "at");
+	// agent_logger.save_logs = save_agent_logs;
+	// agent_logger.file = output_log_file;
+	// agent_logger.SetVoidHeadString();
+	// fprintf(agent_logger.file, "%s;",simulation_code.c_str());
+	// ----
 
 	if(save_agent_logs) fprintf(agent_logger.file,"%.18f;A%d;%s;%s Start()\n",
 			SimTime(), agent_id, LOG_B00, LOG_LVL1);
