@@ -109,6 +109,7 @@
 #define PACKET_LOST_RX_IN_NAV			7	// Received a packet when being in NAV state
 #define PACKET_LOST_BO_COLLISION		8
 #define PACKET_LOST_OUTSIDE_CH_RANGE	9	// Packet was transmitted outside the primary channel of the receiver
+#define NUM_PACKET_LOST_REASONS			10
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1
@@ -183,6 +184,8 @@
 #define PATH_LOSS_SCENARIO_4_TGax	7		// IEEE 802.11ax Scenario 4 (outdoor BSS)
 #define PATH_LOSS_SCENARIO_4a_TGax	8		// IEEE 802.11ax Scenario 4a (outdoor BSS + residential)
 #define PATHLOSS_5GHZ_OFFICE_BUILDING	9	// Office building indoor pathloss for 5 GHz
+#define PATHLOSS_INROOM_LOSS_5250KHZ	10	// In-room LoS for 5.25 GHz
+#define PATHLOSS_ROOM_CORRIDOR_5250KHZ	11	// Room-corridor for 5.25 GHz
 
 #define PATH_LOSS_DISTANCE_BREAKPOINT_CHANNEL_B	5	// Breakpoint distance for channel model B [m]
 
@@ -201,12 +204,13 @@
 #define ADJACENT_CHANNEL_EXTREME	2	// Extreme adjacent channel interference: ALL channels used in the TX affect the rest of channels
 
 // Traffic model
-#define TRAFFIC_FULL_BUFFER			0	// Transmitters always have packets to transmit
-#define TRAFFIC_POISSON				1	// Traffic is generated randomly according to a Poisson distribution
-#define TRAFFIC_DETERMINISTIC		2	// Traffic is generated at fixed intervals
-#define TRAFFIC_POISSON_BURST		3	// Traffic is generated in bursts following a Poisson distribution
+#define TRAFFIC_FULL_BUFFER						0	// Transmitters always have packets to transmit
+#define TRAFFIC_POISSON							1	// Traffic is generated randomly according to a Poisson distribution
+#define TRAFFIC_DETERMINISTIC					2	// Traffic is generated at fixed intervals
+#define TRAFFIC_POISSON_BURST					3	// Traffic is generated in bursts following a Poisson distribution
+#define TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION	99	// Transmitters always have the same packet pending to be transmitted
 
-#define PACKET_BUFFER_SIZE		128		// Size of the packets buffer
+#define PACKET_BUFFER_SIZE		100		// Size of the packets buffer
 
 // Protocols
 #define INCREASE_CW 1		// Command to increase contention window
@@ -251,19 +255,33 @@
 
 // IEEE 802.11ax
 // --- PHY parameters ---
-#define IEEE_AX_OFDM_SYMBOL_DURATION	(16 * MICRO_VALUE)	// Duration of OFDM symbol (CP of 3.2us is included) [s]
-#define IEEE_AX_LEGACY_PHYH_DURATION 	(20 * MICRO_VALUE)	// Duration of legacy PHY header [s]
-#define IEEE_AX_SU_SPATIAL_STREAMS	 	1					// Single user spatial streams
-#define IEEE_AX_HE_PHYH_DURATION	 	(16 + IEEE_AX_SU_SPATIAL_STREAMS*16) * MICRO_VALUE;	// HE PHY header [s]
+#define IEEE_AX_OFDM_SYMBOL_LEGACY			(4 * MICRO_VALUE)	// Duration of an OFDM symbol in legacy mode
+#define IEEE_AX_OFDM_SYMBOL_GI32_DURATION	(16 * MICRO_VALUE)	// Duration of OFDM symbol (for guard interval 3.2) [s]
+#define IEEE_AX_PHY_LEGACY_DURATION 		(20 * MICRO_VALUE)	// Duration of legacy PHY header [s]
+#define IEEE_AX_PHY_HE_SU_DURATION	 		(164 * MICRO_VALUE)	// HE single-user preamble [s]
+// #define IEEE_AX_PHY_HE_SU_DURATION	 		(32 * MICRO_VALUE)	// HE single-user preamble [s]
+
 // --- MAC parameters ---
 #define IEEE_AX_SF_LENGTH				16					// Service field length [bits]
-#define IEEE_AX_TAIL_LENGTH				6					// Tail length [bits]
-#define IEEE_AX_DEL_LENGTH				32					// MPDU delimiter if packet aggregation is used [bits]
-#define IEEE_AX_MACH_LENGTH				272					// MAC header including FCS [bits]
+#define IEEE_AX_MD_LENGTH				32					// MPDU delimiter if packet aggregation is used [bits]
+#define IEEE_AX_MH_LENGTH				320					// MAC header including FCS [bits]
+//#define IEEE_AX_MH_LENGTH				272					// MAC header including FCS [bits]
+#define IEEE_AX_TB_LENGTH				18					// Tail length [bits]
+//#define IEEE_AX_TB_LENGTH				6					// Tail length [bits]
 #define IEEE_AX_RTS_LENGTH				160					// RTS length [bits]
 #define IEEE_AX_CTS_LENGTH				112					// CTS length [bits]
-#define IEEE_AX_BACK_LENGTH				240					// Block-ACK length [bits]
+#define IEEE_AX_BACK_LENGTH				432					// Block-ACK length [bits]
+//#define IEEE_AX_BACK_LENGTH				240					// Block-ACK length [bits]
 
+#define IEEE_AX_SU_SPATIAL_STREAMS		1					// Number of spatial streams
+
+// Agents
+#define ORIGIN_AGENT	0		// To determine the source of a received configuration (agent)
+#define ORIGIN_AP		1		// To determine the source of a received configuration (AP)
+
+#define REWARD_TYPE_PACKETS_SENT 		0	// To determine the reward according to the type of performance indicator
+#define REWARD_TYPE_THROUGHPUT 			1	// To determine the reward according to the type of performance indicator
+#define REWARD_TYPE_PACKETS_GENERATED 	2
 
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
@@ -271,9 +289,10 @@
  */
 
 // CONSOLE ARGUMENTS
-#define NUM_FULL_ARGUMENTS_CONSOLE		11		// Number of arguments entered per console corresponding to full config
-#define NUM_PARTIAL_ARGUMENTS_CONSOLE	5		// Number of arguments entered per console corresponding to partial config
-#define NUM_PARTIAL_ARGUMENTS_SCRIPT	6		// Number of arguments entered per script corresponding to partial config
+#define NUM_FULL_ARGUMENTS_CONSOLE				14		// Number of arguments entered per console corresponding to full config
+#define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	11		// Number of arguments entered per console corresponding to full config (NO AGENTS)
+#define NUM_PARTIAL_ARGUMENTS_CONSOLE			5		// Number of arguments entered per console corresponding to partial config
+#define NUM_PARTIAL_ARGUMENTS_SCRIPT			6		// Number of arguments entered per script corresponding to partial config
 
 #define IX_SYSTEM_INPUT_FILE		1
 #define IX_NODES_INPUT_FILE			2
@@ -350,7 +369,6 @@
 #define IX_IEEE_PROTOCOL_TYPE		25
 #define IX_TRAFFIC_LOAD				26
 
-
 // APs file
 #define IX_AP_WLAN_CODE					1
 #define IX_AP_POSITION_X				2
@@ -379,6 +397,16 @@
 #define IX_AP_IEEE_PROTOCOL_TYPE		25
 #define IX_AP_TRAFFIC_LOAD				26
 
+// Agents file
+#define IX_AGENT_WLAN_CODE				1
+#define IX_AGENT_TIME_BW_REQUESTS		2
+#define IX_AGENT_CHANNEL_VALUES			3
+#define IX_AGENT_CCA_VALUES				4
+#define IX_AGENT_TX_POWER_VALUES		5
+#define IX_AGENT_DCB_POLICY				6
+#define IX_AGENT_TYPE_OF_REWARD			7
+
+#define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, CCA, P_tx, DCB policy)
 
 /* *********************
  * * LOG TYPE ENCODING *

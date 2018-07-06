@@ -54,7 +54,7 @@ struct Mcs_array {
    static const double coding_rates[12];
 };
 
-
+// THIS IS DEPRECATED
 const double Mcs_array::mcs_array[4][12] = {	// rows: modulation type, colums: number of channels (1, 2, 4, 8)
 		{4* pow(10,6),16* pow(10,6),24* pow(10,6),33* pow(10,6),49* pow(10,6),65* pow(10,6),73* pow(10,6),81* pow(10,6),
 				98* pow(10,6),108* pow(10,6),122* pow(10,6),135* pow(10,6)},
@@ -152,7 +152,3 @@ int getNumberSubcarriers(int num_channels){
 
 	return num_subcarriers;
 }
-
-
-
-

@@ -1,7 +1,4 @@
 
-#ifndef _FIFO_QUEUE_
-#define _FIFO_QUEUE_
-
 #include "notification.h"
 #include <deque>
 
@@ -10,12 +7,12 @@
 	FIFO Class
 */
 
-component FIFO : public TypeII
+struct FIFO
 {	
-	private:
 		std::deque <Notification> m_queue;
 		
-	public:
+		int queue_size;
+
 		Notification GetFirstPacket();
 		Notification GetPacketAt(int n);
 		void DelFirstPacket();		
@@ -68,4 +65,3 @@ void FIFO :: DeletePacketIn(int i)
 };
 
 
-#endif

@@ -48,8 +48,11 @@
 
 #include <stddef.h>
 #include <math.h>
+#include <iostream>
+
 #include "../list_of_macros.h"
 #include "../structures/modulations.h"
+#include "auxiliary_methods.h"
 
 /***********************/
 /***********************/
@@ -188,12 +191,20 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	  int n_floors = 3;   // Floor frequency (n_floors floors each m)
 	  int L_iw = 5;     // Penetration for a single wall (dB)
 
-	  double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
+	  //double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
+	  int min_d = distance;
+	  if (distance > 5) { min_d = 5; }
+
+	  double central_frequency_ghz = central_frequency / pow(10,9);
+
+	  double LFS = 40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
+			  18.3*pow((distance/n_floors),(((distance/n_floors)+2)/((distance/n_floors)+1))
+					  - 0.46) + L_iw*(distance/n_walls);
 
 	  int d_BP = 5;    // Break-point distance (m)
-
 	  if (distance >= d_BP) {
-		loss = LFS + 35*log10(distance/d_BP) + 18.3*pow(n_floors,((n_floors+2)/(n_floors+1)) - 0.46) + L_iw*n_walls;
+		loss = LFS + 35*log10(distance/5);
+		//loss = LFS + 35*log10(distance/d_BP) + 18.3*pow(n_floors,((n_floors+2)/(n_floors+1)) - 0.46) + L_iw*n_walls;
 	  } else {
 		loss = LFS;
 	  }
@@ -317,6 +328,50 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 				ConvertPower(LINEAR_TO_DB, tx_gain);
 
 		pl_overall_db = pl_free_space_db + alpha * distance;
+
+		//printf("d = %f\n", distance);
+		//printf("PL = %f\n", pl_overall_db);
+
+		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+
+		//printf("P_rx = %f\n", pw_received_dbm);
+		//printf("-----------------------\n");
+
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+
+		break;
+
+	}
+
+	/*
+	 * Xu et al. Indoor Office Propagation Measurements and Path Loss Models at 5.25 GHz“, IEEE VTC 2007.
+	 * one-slope log-distance model in in-room LoS condition
+	 */
+	case PATHLOSS_INROOM_LOSS_5250KHZ:{
+
+		double pl_overall_db = 47.8 + 14.8 * log10(distance);		// Overall path loss
+
+		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+
+		break;
+
+	}
+
+	/*
+	 * Xu et al. Indoor Office Propagation Measurements and Path Loss Models at 5.25 GHz“, IEEE VTC 2007.
+	 * dual-slope log-distance model in room-corridor condition
+	 */
+	case PATHLOSS_ROOM_CORRIDOR_5250KHZ:{
+
+		double pl_overall_db;
+
+		if(distance <=  9){
+			pl_overall_db = 53.2 + 25.8 * log10(distance);		// Overall path loss
+		} else {
+			pl_overall_db = 56.4 + 29.1 * log10(distance);		// Overall path loss
+		}
 
 		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
 
@@ -460,12 +515,10 @@ void UpdatePowerSensedPerNode(int primary_channel, double *power_received_per_no
  * ApplyAdjacentChannelInterferenceModel: applies a cochannel interference model
  **/
 void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
-		int adjacent_channel_model, double **total_power, Notification notification,
+		int adjacent_channel_model, double total_power[], Notification notification,
 		int num_channels_komondor, double rx_gain, double central_frequency, int path_loss_model){
 
-	*total_power = (double *) malloc(sizeof(double)*num_channels_komondor);
-
-	for (int i = 0 ; i < num_channels_komondor ; i++) (*total_power)[i] = 0;
+	for (int i = 0 ; i < num_channels_komondor ; i++) (total_power)[i] = 0;
 
 	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
 		notification.tx_info.z);
@@ -476,7 +529,7 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 	// Direct power (power of the channels used for transmitting)
 	for(int i = notification.left_channel; i <= notification.right_channel; i++){
 
-		(*total_power)[i] = pw_received;
+		(total_power)[i] = pw_received;
 
 	}
 
@@ -501,19 +554,19 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 
 						pw_loss_db = 20 * abs(c-notification.left_channel);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
-						(*total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
+						(total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					} else if(c > notification.right_channel) {
 
 						pw_loss_db = 20 * abs(c-notification.right_channel);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
-						(*total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
+						(total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					}
 
-					if((*total_power)[c] < MIN_VALUE_C_LANGUAGE){
+					if((total_power)[c] < MIN_VALUE_C_LANGUAGE){
 
-						(*total_power)[c] = 0;
+						(total_power)[c] = 0;
 
 					}
 
@@ -534,9 +587,9 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 
 						pw_loss_db = 20 * abs(c-j);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
-						(*total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
+						(total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
 
-						if((*total_power)[c] < MIN_DOUBLE_VALUE_KOMONDOR) (*total_power)[c] = 0;
+						if((total_power)[c] < MIN_DOUBLE_VALUE_KOMONDOR) (total_power)[c] = 0;
 
 					}
 				}
@@ -550,6 +603,7 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 			break;
 		}
 	}
+
 }
 
 /*
@@ -566,13 +620,12 @@ void UpdateChannelsPower(double x, double y, double z, double **channel_power, N
 	}
 
 	// Total power [pW] (of interest and interference) generated ONLY by the incoming or outgoing TX
-	double *total_power;
-	total_power = (double *) malloc(num_channels_komondor * sizeof(*total_power));
+	double total_power[num_channels_komondor];
 	for(int i = 0; i < num_channels_komondor; i++) {
 		total_power[i] = 0;
 	}
 
-	ApplyAdjacentChannelInterferenceModel(x, y , z, adjacent_channel_model, &total_power,
+	ApplyAdjacentChannelInterferenceModel(x, y , z, adjacent_channel_model, total_power,
 			notification, num_channels_komondor, rx_gain, central_frequency, path_loss_model);
 
 	// Increase/decrease power sensed if TX started/finished
@@ -590,7 +643,6 @@ void UpdateChannelsPower(double x, double y, double z, double **channel_power, N
 		else if (update_type == TX_INITIATED) (*channel_power)[c] += total_power[c];
 
 	}
-
 
 }
 
@@ -629,8 +681,6 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intere
 		}
 	}
 }
-
-
 
 /*
  * GetTxChannelsByChannelBonding: identifies the channels to TX in depending on the channel_bonding scheme
@@ -917,7 +967,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 								if(aux_throughput > max_throughput){
 									// TX channels found!
 									for(int c = left_tx_ch; c <= right_tx_ch; c++){
-									channels_for_tx[c] = TRUE;
+										channels_for_tx[c] = TRUE;
 									}
 								}
 							}
@@ -1050,6 +1100,152 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 	}
 
 }
+
+
+/*
+ * IdentifyStateADCB: identifies the ADCB state
+ **/
+int IdentifyStateADCB(int *channels_free, int min_channel_allowed, int max_channel_allowed,
+		int primary_channel, int num_channels_system){
+
+	int state_adcb = -1;
+	// Get left and right channels available (or free)
+	int left_free_ch_is_set = 0;	// True if left channel could be set true
+	int right_free_ch = 0;
+
+	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
+
+		if(channels_free[c]){
+
+			if(!left_free_ch_is_set){
+				left_free_ch_is_set = TRUE;
+			}
+
+			if(right_free_ch < c){
+				right_free_ch = c;
+			}
+		}
+	}
+
+	// SERGIO 18/09/2017:
+	// - Modify CB policies. Identify first of all the log2 channel ranges available
+	int all_channels_free_in_range = TRUE;	// auxiliar variable for identifying free channel ranges
+
+	// Check primary
+	if(channels_free[primary_channel]) state_adcb = 1;
+
+	// Check primary and 1 secondary
+	if(num_channels_system > 1){
+		if(primary_channel % 2 == 1){	// If primary is odd
+			if(channels_free[primary_channel - 1]) state_adcb = 2;
+		} else{
+			if(channels_free[primary_channel + 1]) state_adcb = 2;
+		}
+	}
+
+	// Check primary and 3 secondaries
+	if(num_channels_system > 3){
+		if(primary_channel > 3){	// primary in channel range 4-7
+			for(int c = 0; c < 4; c++){
+				if(!channels_free[4 + c]) all_channels_free_in_range = FALSE;
+			}
+			if(all_channels_free_in_range) state_adcb = 3;
+
+		} else { // primary in channel range 0-3
+			for(int c = 0; c < 4; c++){
+				if(!channels_free[c]) all_channels_free_in_range = FALSE;
+			}
+			if(all_channels_free_in_range) state_adcb = 3;
+		}
+	}
+
+	// Check primary and 7 secondaries (full system range)
+	if(num_channels_system > 7){
+		for(int c = 0; c < 8; c++){
+			if(!channels_free[c]) all_channels_free_in_range = FALSE;
+		}
+		if(all_channels_free_in_range) state_adcb = 4;
+	}
+
+	return state_adcb;
+
+}
+
+
+/*
+ * GetTxChannelsByADCB: identifies the channels to TX depending on the ADCB state
+ **/
+void GetTxChannelsByADCB(int *channels_for_tx, int mab_action, int min_channel_allowed, int max_channel_allowed,
+		int primary_channel){
+
+	// Reset channels for transmitting
+	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
+		channels_for_tx[c] = FALSE;
+	}
+
+	// mab_action = 0, 1, 2, 3
+	switch(mab_action){
+
+		case 0:{
+			channels_for_tx[primary_channel] = TRUE;
+			break;
+		}
+
+		case 1:{
+
+			channels_for_tx[primary_channel] = TRUE;
+
+			if(primary_channel % 2 == 1){	// If primary is odd
+				channels_for_tx[primary_channel - 1] = TRUE;
+			} else{
+				channels_for_tx[primary_channel + 1] = TRUE;
+			}
+
+			break;
+		}
+
+		case 2:{
+
+			channels_for_tx[primary_channel] = TRUE;
+
+			if(primary_channel % 2 == 1){	// If primary is odd
+				channels_for_tx[primary_channel - 1] = TRUE;
+			} else{
+				channels_for_tx[primary_channel + 1] = TRUE;
+			}
+
+			// Check primary and 3 secondaries
+			if(primary_channel > 3){	// primary in channel range 4-7
+
+				channels_for_tx[4] = TRUE;
+				channels_for_tx[5] = TRUE;
+				channels_for_tx[6] = TRUE;
+				channels_for_tx[7] = TRUE;
+
+			} else { // primary in channel range 0-3
+
+				channels_for_tx[0] = TRUE;
+				channels_for_tx[1] = TRUE;
+				channels_for_tx[2] = TRUE;
+				channels_for_tx[3] = TRUE;
+			}
+
+			break;
+		}
+
+		case 3:{
+
+			for(int c = 0; c < 8; c ++){
+				channels_for_tx[c] = TRUE;
+			}
+
+			break;
+
+		}
+	}
+
+}
+
 
 /*
  * UpdateTimestamptChannelFreeAgain: updates the timestamp at which channels became free again
@@ -1192,5 +1388,4 @@ void PrintOrWriteChannelForTx(int write_or_print,
 		}
 	}
 }
-
 

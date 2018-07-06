@@ -63,10 +63,12 @@ struct TxInfo
 	double rts_duration;
 	double cts_duration;
 
+	double preoccupancy_duration;
+
 	double tx_power;			// Transmission power in [pW]
 	double tx_gain;				// Transmission gain [linear ratio]
-	double data_rate; 			// Rate at which data is transmitted
-	int *modulation_schemes;	// Modulation scheme used
+	double bits_ofdm_sym; 			// Rate at which data is transmitted
+	int modulation_schemes[4];	// Modulation scheme used
 	double x;						// X position of source node
 	double y;						// Y position of source node
 	double z;						// Z position of source node
@@ -83,7 +85,7 @@ struct TxInfo
 	 */
 	void SetSizeOfMCS(int channels_groups){
 
-		modulation_schemes = (int *) malloc(channels_groups * sizeof(*modulation_schemes));
+		//modulation_schemes = new int[channels_groups];
 
 		for(int s = 0; s < channels_groups; s++){
 			modulation_schemes[s] = MODULATION_NONE;
