@@ -277,7 +277,7 @@ public class Nodes_rectangular_generator {
 
             wlan_aux = new Wlan(wlan_id, wlan_code, num_stas, ap_code,
                     list_sta_code, primary_channel, min_ch_allowed,
-                    max_ch_allowed, wlan_80211ax, x, y, z, channel_bonding_model);
+                    max_ch_allowed, wlan_80211ax, x, y, z, channel_bonding_model, 0);
 
             wlan_container[w] = wlan_aux;
 
@@ -448,15 +448,15 @@ public class Nodes_rectangular_generator {
 //        Map_viewer.main(map_viewer_args);
         
         // CODE FOR SEVERAL OUTPUTS WITH DIFFERENT CHANNEL ALLOCATION AND POSITION
-        String input_path = args[0];
+        // String input_path = args[0];
+        String input_path = "input_template_rectangular.csv";
         System.out.println("input_path: " + input_path);
         String output_path = "";
         
         int num_outputs = 20;
         
         for(int out_ix = 0; out_ix < num_outputs; out_ix++){
-
-            
+          
             input_attributes(input_path);
                     
             // Always-max
