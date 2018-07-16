@@ -3044,6 +3044,9 @@ void Node :: AckTimeout(trigger_t &){
 
 	handlePacketLoss(PACKET_TYPE_DATA, total_time_lost_in_num_channels, total_time_lost_per_channel,
 			data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
+	
+	// Sergio on 16 July 2018: [AGENTS] add data packet lost for partial throughput computations
+	last_measurement_data_packets_lost++;
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d lost\n",
 					SimTime(), node_id, node_state, LOG_D17, LOG_LVL4,
