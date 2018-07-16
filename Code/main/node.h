@@ -2566,7 +2566,7 @@ void Node :: EndBackoff(trigger_t &){
 
 			case IEEE_NOT_SPECIFIED:{
 
-				data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1];
+				double data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1];
 				rts_duration = ComputeTxTime(rts_length, data_rate, pdf_tx_time);
 				cts_duration = ComputeTxTime(cts_length, data_rate, pdf_tx_time);
 				data_duration = ComputeTxTime(packet_length * num_packets_aggregated, data_rate, pdf_tx_time);
@@ -2886,7 +2886,6 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id,
 	tx_info.cts_duration = cts_duration;
 	tx_info.tx_power = ComputeTxPowerPerChannel(current_tpc, num_channels_tx);
 	tx_info.tx_gain = tx_gain;
-	tx_info.data_rate = data_rate;
 	tx_info.bits_ofdm_sym = bits_ofdm_sym;
 	tx_info.x = x;
 	tx_info.y = y;
@@ -3767,6 +3766,37 @@ void Node :: PrintNodeInfo(int info_detail_level){
 	printf("\n");
 }
 
+void Node:: CallSensing(trigger_t &){
+
+
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s State changed to sensing due to NAV collision\n",
+		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
+
+	node_state = STATE_SENSING;
+
+	int resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_cca,
+			buffer.QueueSize());
+
+	// Check if node has to freeze the BO (if it is not already frozen)
+	if (resume) {
+
+		if(save_node_logs) fprintf(node_logger.file,
+			"%.15f;N%d;S%d;%s;%s BO can be resumed! Starting DIFS...\n",
+			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
+
+		// time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
+		time_to_trigger = SimTime() + DIFS;
+		trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
+	} else {
+
+		if(save_node_logs) fprintf(node_logger.file,
+			"%.15f;N%d;S%d;%s;%s BO canot be resumed!\n",
+			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
+
+	}
+
+}
+
 /*
  * WriteNodeInfo(): writes Node info
  */
@@ -4345,7 +4375,6 @@ void Node :: InitializeVariables() {
 	null_tx_info.cts_duration = 0;
 	null_tx_info.tx_power = 0;
 	null_tx_info.tx_gain = 0;
-	null_tx_info.data_rate = 0;
 	null_tx_info.bits_ofdm_sym = 0;
 	null_tx_info.SetSizeOfMCS(4);	// TODO: make size dynamic
 	null_tx_info.x = 0;
