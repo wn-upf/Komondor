@@ -31,6 +31,12 @@
 # Komondor
 *.cxx
 *.txt~
-output/*
-Code_RTS_CTS/output/*
-Code_Basic/output/*
+*.csv~
+*.csv#
+**.csv
+
+Code/output/.keep
+!.gitignore
+
+# Whitelist 
+!Code/input/*
