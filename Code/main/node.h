@@ -97,7 +97,7 @@ component Node : public TypeII{
 
 		// Packets
 		Notification GenerateNotification(int packet_type, int destination_id,
-				int packet_id, double timestamp_generated, double tx_duration);
+				int packet_id, int num_packets_aggregated, double timestamp_generated, double tx_duration);
 		void SelectDestination();
 		void SendResponsePacket();
 		void AckTimeout();
@@ -197,8 +197,8 @@ component Node : public TypeII{
 
 		// Packets
 		int pdf_tx_time;					// Probability distribution type of the transmission time (0: exponential, 1: deterministic)
-		int packet_length;					// Notification length [bits]
-		int num_packets_aggregated;			// Number of packets aggregated in one transmission
+		int frame_length;					// Notification length [bits]
+		int max_num_packets_aggregated;			// Number of packets aggregated in one transmission
 		int ack_length;						// ACK length [bits]
 		int rts_length;						// RTS length [bits]
 		int cts_length;						// CTS length [bits]
@@ -221,8 +221,9 @@ component Node : public TypeII{
 															// - Any time a transmissions is done (regardless the packet) the duration of such transmissions is added
 		double throughput;									// Throughput [Mbps]
 		double throughput_loss;								// Throughput of lost packets [Mbps]
-		int data_packets_acked;									// Own packets that have been Acked
-		int data_packets_lost;									// Own packets that have been collided or lost
+		int data_packets_acked;								// Own data packets (aggregated or not) that have been Acked
+		int data_frames_acked;								// Own data frames that have been Acked
+		int data_packets_lost;								// Own packets that have been collided or lost
 		int *num_trials_tx_per_num_channels;				// Number of txs trials per number of channels
 		int rts_cts_lost;
 		int *nacks_received;								// Counter of the type of Nacks received
@@ -273,6 +274,7 @@ component Node : public TypeII{
 		int packet_id;						// Notification ID
 		double current_sinr;				// SINR perceived in current TX [linear ratio]
 		int loss_reason;					// Packet loss reason (if any)
+		int current_num_packets_aggregated;	// Num. of packets aggregated in the packet being transmitted
 
 		// Notifications
 		Notification rts_notification;		// RTS to be filled before sending it
@@ -1739,7 +1741,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						current_tx_duration = ack_duration;
 						current_destination_id = notification.source_id;
 						ack_notification = GenerateNotification(PACKET_TYPE_ACK, current_destination_id,
-								notification.tx_info.packet_id, notification.timestamp_generated, current_tx_duration);
+								notification.tx_info.packet_id, notification.tx_info.num_packets_aggregated,
+								notification.timestamp_generated, current_tx_duration);
 
 						// ------------------------------------------------------------------------
 						// Sergio on 07 Dec 2017: add ACK transmission time to spectrum utilization
@@ -1792,33 +1795,44 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, notification.tx_info.packet_id,
 								notification.source_id);
 
+						// Whole data packet ACKed
 						data_packets_acked++;
+
 						current_tx_duration += (notification.tx_info.tx_duration + SIFS);	// Add ACK time to tx_duration
 
-						// Sergio on 16 Jan 2018:
-						// - Remove successfully sent packet from FIFO buffer and handle delay metric
-						buffer.DelFirstPacket();
-						// - Add antoher packet to the buffer if TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION
-						if(traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION) {
+						// ***************************
+						// Sergio on 17 July 2018: Delete all the aggregated frames contained in the ACKed packet
+						// buffer.DelFirstPacket();
+						for(int i = 0; i < current_num_packets_aggregated; i++){
 
-							new_packet = null_notification;
-							new_packet.timestamp_generated = SimTime();
-							new_packet.tx_info.packet_id = last_packet_generated_id;
-							buffer.PutPacket(new_packet);
-							last_packet_generated_id++;
+							data_frames_acked++;
+							num_delay_measurements ++;
+							sum_delays += (SimTime() - buffer.GetFirstPacket().timestamp_generated);
+							if(save_node_logs) fprintf(node_logger.file,
+								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
+								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
+								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
+								buffer.GetFirstPacket().timestamp_generated);
+
+							buffer.DelFirstPacket();
 
 						}
-						num_delay_measurements ++;
-						double packet_delay = SimTime() - notification.timestamp_generated;
-						sum_delays += packet_delay;
+						// ***************************
+
+						// - Add antoher bunch of packets to the buffer if TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION
+						if(traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION) {
+
+							for(int i = 0; i < max_num_packets_aggregated; i++){
+								new_packet = null_notification;
+								new_packet.timestamp_generated = SimTime();
+								new_packet.tx_info.packet_id = last_packet_generated_id;
+								buffer.PutPacket(new_packet);
+								last_packet_generated_id++;
+							}
+						}
 
 						if(save_node_logs) fprintf(node_logger.file,
-							"%.15f;N%d;S%d;%s;%s Packet delay: %.2f ms (generated at %f and ACKed at %f).\n",
-							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
-							packet_delay * 1000, notification.timestamp_generated, SimTime());
-
-						if(save_node_logs) fprintf(node_logger.file,
-							"%.15f;N%d;S%d;%s;%s Data packet removed from buffer (queue: %d/%d).\n",
+							"%.15f;N%d;S%d;%s;%s Data packet/s removed from buffer (queue: %d/%d).\n",
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
 							buffer.QueueSize(), PACKET_BUFFER_SIZE);
 
@@ -1923,7 +1937,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 								trigger_SIFS.GetTime());
 
 							cts_notification = GenerateNotification(PACKET_TYPE_CTS, current_destination_id,
-									notification.tx_info.packet_id, notification.timestamp_generated, current_tx_duration);
+									notification.tx_info.packet_id, notification.tx_info.num_packets_aggregated,
+									notification.timestamp_generated, current_tx_duration);
 
 						} else {
 							// CANNOT START PACKET TX
@@ -2002,7 +2017,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							trigger_SIFS.GetTime());
 
 						data_notification = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
-								notification.tx_info.packet_id, notification.timestamp_generated, current_tx_duration);
+								notification.tx_info.packet_id,  notification.tx_info.num_packets_aggregated,
+								notification.timestamp_generated, current_tx_duration);
 
 					} else {	// Other packet type transmission finished
 						if(save_node_logs) fprintf(node_logger.file,
@@ -2127,7 +2143,7 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 
 		// Fill and send MCS response
 		Notification response_mcs  = GenerateNotification(PACKET_TYPE_MCS_RESPONSE, notification.source_id,
-				-1, -1, TX_DURATION_NONE);
+				-1, -1, -1, TX_DURATION_NONE);
 
 		outportAnswerTxModulation(response_mcs);
 
@@ -2221,18 +2237,19 @@ void Node :: TrafficGenerator() {
 
 	switch(traffic_model) {
 
+		// 99
 		case TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION:{
 
-			// Include only one packet
-			new_packet = null_notification;
-			new_packet.timestamp_generated = SimTime();
-			new_packet.tx_info.packet_id = last_packet_generated_id;
-			buffer.PutPacket(new_packet);
+			for(int i = 0; i < max_num_packets_aggregated; i++){
+				new_packet = null_notification;
+				new_packet.timestamp_generated = SimTime();
+				new_packet.tx_info.packet_id = last_packet_generated_id;
+				buffer.PutPacket(new_packet);
+				last_packet_generated_id++;
+			}
 
 			time_to_trigger = SimTime() + DIFS;
 			trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
-
-			last_packet_generated_id++;
 
 			break;
 
@@ -2350,6 +2367,10 @@ void Node :: NewPacketGenerated(trigger_t &){
 
 			} else {
 				// Buffer overflow - new packet is lost
+				if(save_node_logs) fprintf(node_logger.file,
+						"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been dropped! (queue: %d/%d)\n",
+						SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
+						last_packet_generated_id, buffer.QueueSize(), PACKET_BUFFER_SIZE);
 				num_packets_dropped++;
 				last_measurement_num_packets_dropped++;
 			}
@@ -2554,6 +2575,24 @@ void Node :: EndBackoff(trigger_t &){
 			"%.15f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
 
+		// ********************************************************
+		// Sergio on 17 July 2018: Flexible packet aggregation
+		// - Number of packets to be aggregated: min(current buffer size, max num packets aggregated)
+		if(buffer.QueueSize() > max_num_packets_aggregated){
+
+			current_num_packets_aggregated = max_num_packets_aggregated;
+
+		} else {
+
+			current_num_packets_aggregated = buffer.QueueSize();
+
+		}
+		if(save_node_logs) fprintf(node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Num. of packets to aggregate: %d/%d\n",
+			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
+			current_num_packets_aggregated, max_num_packets_aggregated);
+		// ********************************************************
+
 		// Compute all packets durations (RTS, CTS, DATA and ACK) and NAV time
 		int ix_num_channels_used = log2(num_channels_tx);
 
@@ -2569,7 +2608,7 @@ void Node :: EndBackoff(trigger_t &){
 				double data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1];
 				rts_duration = ComputeTxTime(rts_length, data_rate, pdf_tx_time);
 				cts_duration = ComputeTxTime(cts_length, data_rate, pdf_tx_time);
-				data_duration = ComputeTxTime(packet_length * num_packets_aggregated, data_rate, pdf_tx_time);
+				data_duration = ComputeTxTime(frame_length * current_num_packets_aggregated, data_rate, pdf_tx_time);
 				ack_duration = ComputeTxTime(ack_length, data_rate, pdf_tx_time);
 
 				break;
@@ -2586,7 +2625,7 @@ void Node :: EndBackoff(trigger_t &){
 						IEEE_AX_SU_SPATIAL_STREAMS;
 				rts_duration = computeRtsTxTime80211ax(bits_ofdm_sym_legacy);
 				cts_duration = computeCtsTxTime80211ax(bits_ofdm_sym_legacy);
-				data_duration = computeDataTxTime80211ax(num_packets_aggregated, packet_length, bits_ofdm_sym);
+				data_duration = computeDataTxTime80211ax(current_num_packets_aggregated, frame_length, bits_ofdm_sym);
 				ack_duration = computeAckTxTime80211ax(bits_ofdm_sym_legacy);
 				break;
 			}
@@ -2601,7 +2640,6 @@ void Node :: EndBackoff(trigger_t &){
 			
 		current_tx_duration = rts_duration;
 		current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
-
 
 		// current_nav_time = round_to_digits(current_nav_time, 6);
 		current_nav_time = fix_time_offset(current_nav_time,13,12);
@@ -2644,7 +2682,8 @@ void Node :: EndBackoff(trigger_t &){
 		Notification first_packet_buffer = buffer.GetFirstPacket();
 
 		rts_notification = GenerateNotification(PACKET_TYPE_RTS, current_destination_id,
-				first_packet_buffer.tx_info.packet_id, first_packet_buffer.timestamp_generated, current_tx_duration);
+				first_packet_buffer.tx_info.packet_id, current_num_packets_aggregated,
+				first_packet_buffer.timestamp_generated, current_tx_duration);
 
 		if(save_node_logs) fprintf(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Transmission of RTS #%d started\n",
@@ -2712,7 +2751,8 @@ void Node :: MyTxFinished(trigger_t &){
 
 			// Set CTS timeout and change state to STATE_WAIT_CTS
 			Notification notification = GenerateNotification(PACKET_TYPE_RTS, current_destination_id,
-					rts_notification.tx_info.packet_id, rts_notification.timestamp_generated, TX_DURATION_NONE);
+					rts_notification.tx_info.packet_id, current_num_packets_aggregated,
+					rts_notification.timestamp_generated, TX_DURATION_NONE);
 
 			outportSelfFinishTX(notification);
 
@@ -2736,7 +2776,8 @@ void Node :: MyTxFinished(trigger_t &){
 		case STATE_TX_CTS:{		// Wait for Data
 
 			Notification notification = GenerateNotification(PACKET_TYPE_CTS, current_destination_id,
-					cts_notification.tx_info.packet_id, cts_notification.timestamp_generated, TX_DURATION_NONE);
+					cts_notification.tx_info.packet_id, cts_notification.tx_info.num_packets_aggregated,
+					cts_notification.timestamp_generated, TX_DURATION_NONE);
 
 			outportSelfFinishTX(notification);
 
@@ -2754,7 +2795,8 @@ void Node :: MyTxFinished(trigger_t &){
 		case STATE_TX_DATA:{ 	// Change state to STATE_WAIT_ACK
 
 			Notification notification = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
-					data_notification.tx_info.packet_id, data_notification.timestamp_generated, TX_DURATION_NONE);
+					data_notification.tx_info.packet_id, data_notification.tx_info.num_packets_aggregated,
+					data_notification.timestamp_generated, TX_DURATION_NONE);
 			outportSelfFinishTX(notification);
 
 			// Set ACK timeout and change state to STATE_WAIT_ACK
@@ -2771,7 +2813,8 @@ void Node :: MyTxFinished(trigger_t &){
 		case STATE_TX_ACK:{		// Restart node
 
 			Notification notification = GenerateNotification(PACKET_TYPE_ACK, current_destination_id,
-					ack_notification.tx_info.packet_id, ack_notification.timestamp_generated, TX_DURATION_NONE);
+					ack_notification.tx_info.packet_id, ack_notification.tx_info.num_packets_aggregated,
+					ack_notification.timestamp_generated, TX_DURATION_NONE);
 			outportSelfFinishTX(notification);
 
 			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s ACK %d tx finished. Restarting node...\n",
@@ -2807,14 +2850,14 @@ void Node :: RequestMCS(){
 	if(node_type == NODE_TYPE_OTHER) {
 		// Send request MCS notification
 		Notification request_modulation = GenerateNotification(PACKET_TYPE_MCS_REQUEST,
-				-1, -1, default_destination_id, TX_DURATION_NONE);
+				-1, -1, -1, default_destination_id, TX_DURATION_NONE);
 		outportAskForTxModulation(request_modulation);
 
 	} else {
 
 		// Send request MCS notification
 		Notification request_modulation = GenerateNotification(PACKET_TYPE_MCS_REQUEST, current_destination_id,
-				-1, -1, TX_DURATION_NONE);
+				-1, -1, -1, TX_DURATION_NONE);
 		outportAskForTxModulation(request_modulation);
 
 		int ix_aux = current_destination_id - wlan.list_sta_id[0];	// Auxiliary variable for correcting the node id offset
@@ -2853,7 +2896,7 @@ void Node :: SelectDestination(){
  * GenerateNotification: generates a Notification
  **/
 Notification Node :: GenerateNotification(int packet_type, int destination_id,
-		int packet_id, double timestamp_generated, double tx_duration){
+		int packet_id, int num_packets_aggregated, double timestamp_generated, double tx_duration){
 
 	Notification notification;
 
@@ -2869,7 +2912,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id,
 		notification.right_channel = current_right_channel;
 	}
 
-	notification.packet_length = -1;
+	notification.frame_length = -1;
 	notification.modulation_id = -1;
 	notification.timestamp = SimTime();
 	notification.timestamp_generated = timestamp_generated;
@@ -2877,7 +2920,25 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id,
 	TxInfo tx_info;
 	tx_info.SetSizeOfMCS(4);	// TODO: make size dynamic
 
-	tx_info.packet_id = packet_id;
+	tx_info.packet_id = packet_id;				// ID of the first packet
+	tx_info.num_packets_aggregated = num_packets_aggregated;
+
+	// Maybe it is not required to transmit the details of all the aggregated frames
+	// If the transmitter keeps the timestamp of the aggregated packets in its buffer may be enough
+
+//	if(num_packets_aggregated > 0){	// Avoid overflow if MCS notification is sent
+//
+//		tx_info.SetSizeOfIdsAggregatedArray(num_packets_aggregated);
+//		tx_info.SetSizeOfTimestampAggregatedArray(num_packets_aggregated);
+//
+//		for(int i = 0; i < num_packets_aggregated; i++) {
+//			tx_info.list_id_aggregated[i] = buffer.GetPacketAt(i).tx_info.packet_id;
+//			tx_info.timestamp_frames_aggregated[i] = buffer.GetPacketAt(i).timestamp_generated;
+//		}
+//
+//	}
+
+
 	tx_info.destination_id = destination_id;
 	tx_info.tx_duration = tx_duration;
 	tx_info.data_duration = data_duration;
@@ -2895,12 +2956,12 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id,
 	switch(packet_type){
 
 		case PACKET_TYPE_DATA:{
-			notification.packet_length = packet_length;
+			notification.frame_length = frame_length;
 			break;
 		}
 
 		case PACKET_TYPE_ACK:{
-			notification.packet_length = ack_length;
+			notification.frame_length = ack_length;
 			break;
 		}
 
@@ -2917,13 +2978,13 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id,
 		}
 
 		case PACKET_TYPE_RTS:{
-			notification.packet_length = rts_length;
+			notification.frame_length = rts_length;
 			tx_info.nav_time = current_nav_time;
 			break;
 		}
 
 		case PACKET_TYPE_CTS:{
-			notification.packet_length = cts_length;
+			notification.frame_length = cts_length;
 			tx_info.nav_time = current_nav_time;
 			break;
 		}
@@ -2936,6 +2997,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id,
 	}
 
 	notification.tx_info = tx_info;
+
 	return notification;
 }
 
@@ -3318,7 +3380,7 @@ void Node :: GenerateConfiguration(){
 void Node :: GeneratePerformanceReport(){
 
 	last_measurement_throughput = (((double)(last_measurement_data_packets_sent-last_measurement_data_packets_lost)
-			* packet_length * num_packets_aggregated)) / (SimTime()-last_time_measured);
+			* frame_length * max_num_packets_aggregated)) / (SimTime()-last_time_measured);
 
 	performance_report.throughput = last_measurement_throughput;
 	performance_report.max_bound_throughput = last_measurement_max_bound_throughput;
@@ -3919,8 +3981,10 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 		generation_drop_ratio = num_packets_dropped * 100/ num_packets_generated;
 	}
 
-	throughput = (((double)(data_packets_sent-data_packets_lost) * packet_length * num_packets_aggregated))
-			/ SimTime();
+//	throughput = (((double)(data_packets_sent-data_packets_lost) * frame_length * max_num_packets_aggregated))
+//			/ SimTime();
+
+	throughput = ((double) data_frames_acked * frame_length) / SimTime();
 
 	for(int c = 0; c < num_channels_komondor; c++){
 		bandwidth_used_txing += (total_time_spectrum_per_channel[c]/SimTime()) * 20;
@@ -3945,7 +4009,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Throughput
 				printf("%s Throughput = %f Mbps (%.2f pkt/s)\n", LOG_LVL2,
 						throughput * pow(10,-6),
-						throughput / (packet_length * num_packets_aggregated));
+						throughput / (frame_length * max_num_packets_aggregated));
 
 				// Delay
 				printf("%s Average delay from %d measurements = %f s (%.2f ms)\n", LOG_LVL2,
@@ -3976,6 +4040,9 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Data packets sent and lost
 				printf("%s Data packets sent = %d - ACKed = %d -  Lost = %d  (%f %% lost)\n",
 						LOG_LVL2, data_packets_sent, data_packets_acked, data_packets_lost, data_packets_lost_percentage);
+
+				printf("%s Frames ACKed = %d, Av. frames sent per packet = %.2f\n",
+						LOG_LVL2, data_frames_acked, (double) data_frames_acked/data_packets_acked);
 
 				// Data packets sent and lost
 				printf("%s Buffer: packets generated = %.0f (%.2f pkt/s) - Packets dropped = %.0f  (%f %% drop ratio)\n",
@@ -4310,6 +4377,7 @@ void Node :: InitializeVariables() {
 	num_average_waiting_time_measurements = 0;
 
 	data_packets_acked = 0;
+	data_frames_acked = 0;
 
 	node_state = STATE_SENSING;
 	current_modulation = modulation_default;
@@ -4360,7 +4428,7 @@ void Node :: InitializeVariables() {
 	null_notification.packet_type = -1;
 	null_notification.left_channel = -1;
 	null_notification.right_channel = -1;
-	null_notification.packet_length = -1;
+	null_notification.frame_length = -1;
 	null_notification.modulation_id = -1;
 	null_notification.timestamp = -1;
 

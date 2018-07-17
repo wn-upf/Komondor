@@ -123,11 +123,11 @@ component Komondor : public CostSimEng {
 		double basic_channel_bandwidth;	// Basic channel bandwidth [Mbps]
 		int pdf_backoff;				// Probability distribution type of the backoff (0: exponential, 1: deterministic)
 		int pdf_tx_time;				// Probability distribution type of the transmission time (0: exponential, 1: deterministic)
-		int packet_length;				// Packet length [bits]
+		int frame_length;				// Packet length [bits]
 		int ack_length;					// ACK length [bits]
 		int rts_length;					// RTS length [bits]
 		int cts_length;					// CTS length [bits]
-		int num_packets_aggregated;		// Number of packets aggregated in one transmission
+		int max_num_packets_aggregated;		// Number of packets aggregated in one transmission
 		int path_loss_model;			// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 		double capture_effect;			// Capture effect threshold [linear ratio]
 		double noise_level;				// Environment noise [pW]
@@ -434,9 +434,9 @@ void Komondor :: Stop(){
 		printf("\n%s General Statistics:\n", LOG_LVL1);
 		printf("%s Average throughput per WLAN = %.3f Mbps (%.2f pkt/s)\n",
 				LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number),
-				(total_throughput / (double) packet_length) /total_wlans_number);
+				(total_throughput / (double) frame_length) /total_wlans_number);
 		printf("%s Min. throughput = %.2f Mbps (%.2f pkt/s)\n",
-				LOG_LVL3, min_throughput * pow(10,-6), (min_throughput / (double) packet_length) * pow(10,-6));
+				LOG_LVL3, min_throughput * pow(10,-6), (min_throughput / (double) frame_length) * pow(10,-6));
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, total_throughput * pow(10,-6));
 		printf("%s Total number of packets sent = %d\n", LOG_LVL3, total_data_packets_sent);
 		printf("%s Average number of data packets successfully sent per WLAN = %.2f\n",
@@ -523,8 +523,8 @@ void Komondor :: Stop(){
 	// Sergio test
 //	fprintf(logger_script.file, ";%.0f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.4f;%.4f\n",
 //			(total_num_packets_generated / (double) total_wlans_number) /SimTime(),
-//			(total_throughput / (double) packet_length) / (double) total_wlans_number,
-//			(min_throughput /  (double)  packet_length),
+//			(total_throughput / (double) frame_length) / (double) total_wlans_number,
+//			(min_throughput /  (double)  frame_length),
 //			total_delay * pow(10,3) / total_wlans_number,
 //			max_delay * pow(10,3),
 //			proportional_fairness,
@@ -777,7 +777,7 @@ void Komondor :: SetupEnvironmentByReadingInputFile(const char *system_filename)
 			// Data packet length
 			tmp = strdup(line_system);
 			const char* packet_length_char = GetField(tmp, IX_PACKET_LENGTH);
-			packet_length = atoi(packet_length_char);
+			frame_length = atoi(packet_length_char);
 
 			// ACK packet length
 			tmp = strdup(line_system);
@@ -787,7 +787,7 @@ void Komondor :: SetupEnvironmentByReadingInputFile(const char *system_filename)
 			// Number of packets aggregated in one transmission
 			tmp = strdup(line_system);
 			const char* num_packets_aggregated_char = GetField(tmp, IX_NUM_PACKETS_AGGREGATED);
-			num_packets_aggregated = atoi(num_packets_aggregated_char);
+			max_num_packets_aggregated = atoi(num_packets_aggregated_char);
 
 			// Path loss model
 			tmp = strdup(line_system);
@@ -1441,8 +1441,8 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(const char *nodes_filename){
 				node_container[node_ix].pdf_backoff = pdf_backoff;
 				node_container[node_ix].path_loss_model = path_loss_model;
 				node_container[node_ix].pdf_tx_time = pdf_tx_time;
-				node_container[node_ix].packet_length = packet_length;
-				node_container[node_ix].num_packets_aggregated = num_packets_aggregated;
+				node_container[node_ix].frame_length = frame_length;
+				node_container[node_ix].max_num_packets_aggregated = max_num_packets_aggregated;
 				node_container[node_ix].ack_length = ack_length;
 				node_container[node_ix].rts_length = rts_length;
 				node_container[node_ix].cts_length = cts_length;
@@ -1705,8 +1705,8 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			node_container[node_ix].pdf_backoff = pdf_backoff;
 			node_container[node_ix].path_loss_model = path_loss_model;
 			node_container[node_ix].pdf_tx_time = pdf_tx_time;
-			node_container[node_ix].packet_length = packet_length;
-			node_container[node_ix].num_packets_aggregated = num_packets_aggregated;
+			node_container[node_ix].frame_length = frame_length;
+			node_container[node_ix].max_num_packets_aggregated = max_num_packets_aggregated;
 			node_container[node_ix].ack_length = ack_length;
 			node_container[node_ix].rts_length = rts_length;
 			node_container[node_ix].cts_length = cts_length;
@@ -1749,7 +1749,7 @@ void Komondor :: printSystemInfo(){
 		printf("%s basic_channel_bandwidth = %f MHz\n", LOG_LVL3, basic_channel_bandwidth);
 		printf("%s pdf_backoff = %d\n", LOG_LVL3, pdf_backoff);
 		printf("%s pdf_tx_time = %d\n", LOG_LVL3, pdf_tx_time);
-		printf("%s packet_length = %d bits\n", LOG_LVL3, packet_length);
+		printf("%s frame_length = %d bits\n", LOG_LVL3, frame_length);
 		printf("%s ack_length = %d bits\n", LOG_LVL3, ack_length);
 		printf("%s cts_length = %d bits\n", LOG_LVL3, cts_length);
 		printf("%s rts_length = %d bits\n", LOG_LVL3, rts_length);
@@ -1757,7 +1757,7 @@ void Komondor :: printSystemInfo(){
 		printf("%s backoff_type = %d\n", LOG_LVL3, backoff_type);
 		printf("%s cw_adaptation = %d\n", LOG_LVL3, cw_adaptation);
 		printf("%s pifs_activated = %d\n", LOG_LVL3, pifs_activated);
-		printf("%s num_packets_aggregated = %d\n", LOG_LVL3, num_packets_aggregated);
+		printf("%s max_num_packets_aggregated = %d\n", LOG_LVL3, max_num_packets_aggregated);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 		printf("%s capture_effect = %f [linear] (%f dB)\n", LOG_LVL3, capture_effect, ConvertPower(LINEAR_TO_DB, capture_effect));
 		printf("%s noise_level = %f pW (%f dBm)\n",
@@ -1785,9 +1785,9 @@ void Komondor :: WriteSystemInfo(Logger logger){
 	fprintf(logger.file, "%s basic_channel_bandwidth = %f\n", LOG_LVL3, basic_channel_bandwidth);
 	fprintf(logger.file, "%s pdf_backoff = %d\n", LOG_LVL3, pdf_backoff);
 	fprintf(logger.file, "%s pdf_tx_time = %d\n", LOG_LVL3, pdf_tx_time);
-	fprintf(logger.file, "%s packet_length = %d bits\n", LOG_LVL3, packet_length);
+	fprintf(logger.file, "%s frame_length = %d bits\n", LOG_LVL3, frame_length);
 	fprintf(logger.file, "%s ack_length = %d bits\n", LOG_LVL3, ack_length);
-	fprintf(logger.file, "%s num_packets_aggregated = %d\n", LOG_LVL3, num_packets_aggregated);
+	fprintf(logger.file, "%s max_num_packets_aggregated = %d\n", LOG_LVL3, max_num_packets_aggregated);
 	fprintf(logger.file, "%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 	fprintf(logger.file, "%s capture_effect = %f\n", LOG_LVL3, capture_effect);
 	fprintf(logger.file, "%s noise_level = %f dBm\n", LOG_LVL3, noise_level);
