@@ -1686,6 +1686,57 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			const char* traffic_load_char = GetField(tmp_nodes, IX_TRAFFIC_LOAD);
 			node_container[node_ix].traffic_load = atof(traffic_load_char);
 
+			// BSS Color (NOT MANDATORY IN NODES FILE)
+			tmp_nodes = strdup(line_nodes);
+			const char* bss_color_char = GetField(tmp_nodes, IX_BSS_COLOR);
+			if (bss_color_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].bss_color = 0;
+				node_container[node_ix].spatial_reuse_activated = FALSE; // DEACTIVATE SR OPERATION
+			} else {
+				node_container[node_ix].bss_color = atof(bss_color_char);
+				if(node_container[node_ix].bss_color > 0) node_container[node_ix].spatial_reuse_activated = TRUE; // ACTIVATE SR OPERATION
+			}
+
+			// Spatial Reuse Group (NOT MANDATORY IN NODES FILE)
+			tmp_nodes = strdup(line_nodes);
+			const char* spatial_reuse_group_char = GetField(tmp_nodes, IX_SPATIAL_REUSE_GROUP);
+			if (bss_color_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].spatial_reuse_group = 0;
+			} else {
+				node_container[node_ix].spatial_reuse_group = atof(spatial_reuse_group_char);
+			}
+
+			// Min OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* obss_pd_min_dbm_char = GetField(tmp_nodes, IX_OBSS_PD_MIN);
+			//double obss_pd_min_dbm = atoi(GetField(tmp_nodes, IX_OBSS_PD_MIN));
+			if (obss_pd_min_dbm_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].obss_pd_min = node_container[node_ix].cca_min;
+			} else {
+				node_container[node_ix].obss_pd_min = ConvertPower(DBM_TO_PW, atoi(obss_pd_min_dbm_char));
+			}
+			// Default OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* obss_pd_default_dbm_char = GetField(tmp_nodes, IX_OBSS_PD_DEFAULT);
+			if (obss_pd_default_dbm_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].obss_pd_default = node_container[node_ix].cca_min;
+			} else {
+				node_container[node_ix].obss_pd_default = ConvertPower(DBM_TO_PW, atoi(obss_pd_default_dbm_char));
+			}
+			// Max OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* obss_pd_max_dbm_char = GetField(tmp_nodes, IX_OBSS_PD_MAX);
+			if (obss_pd_max_dbm_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].obss_pd_max = node_container[node_ix].cca_min;
+			} else {
+				node_container[node_ix].obss_pd_max = ConvertPower(DBM_TO_PW, atoi(obss_pd_max_dbm_char));
+			}
+
 			// System
 			node_container[node_ix].simulation_time_komondor = simulation_time_komondor;
 			node_container[node_ix].total_nodes_number = total_nodes_number;

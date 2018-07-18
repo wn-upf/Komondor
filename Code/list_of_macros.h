@@ -124,6 +124,11 @@
 #define PACKET_TYPE_MCS_RESPONSE 	3 		// MCS response type
 #define PACKET_TYPE_RTS				4		// RTS type
 #define PACKET_TYPE_CTS				5		// CTS type
+#define PACKET_TYPE_TRIGGER_FRAME	6		// TF type
+
+// Packet sources
+#define INTRA_BSS_FRAME			0		// Intra-BSS frame
+#define INTER_BSS_FRAME			1		// Inter-BSS frame
 
 // Backoff types
 #define BACKOFF_SLOTTED		0
@@ -370,6 +375,11 @@
 #define IX_LAMBDA					24
 #define IX_IEEE_PROTOCOL_TYPE		25
 #define IX_TRAFFIC_LOAD				26
+#define IX_BSS_COLOR				27
+#define IX_SPATIAL_REUSE_GROUP		28
+#define IX_OBSS_PD_MIN				29
+#define IX_OBSS_PD_DEFAULT			30
+#define IX_OBSS_PD_MAX				31
 
 // APs file
 #define IX_AP_WLAN_CODE					1

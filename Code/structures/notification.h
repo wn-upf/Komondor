@@ -78,6 +78,10 @@ struct TxInfo
 	double z;						// Z position of source node
 	double nav_time;			// RTS/CTS NAV time
 
+	// Spatial Reuse
+	int bss_color;
+	int spatial_reuse_group;
+
 	void PrintTxInfo(void){
 		printf("packet_id = %d - destination_id = %d - tx_duration = %f - tx_power = %f pw"
 				" - position = (%.2f, %.2f, %.2f)\n",
