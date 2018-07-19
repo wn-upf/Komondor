@@ -53,21 +53,21 @@
 #include "../list_of_macros.h"
 #include "auxiliary_methods.h"
 
-
 /*
  * CheckPacketOrigin(): checks whether the received notification is an intra or a inter-BSS frame
  **/
-int CheckPacketOrigin(Notification notification, int bss_color, int spatial_reuse_group) {
+int CheckPacketOrigin(Notification notification, int bss_color) {
 
 	int type_of_packet;
 
 	// Check if the packet is an intra or an inter-BSS frame
-	if ( (notification.tx_info.bss_color == bss_color &&
-			notification.tx_info.spatial_reuse_group == spatial_reuse_group) ||
-		 (notification.tx_info.bss_color != bss_color &&
-			notification.tx_info.spatial_reuse_group == spatial_reuse_group) ||
-		 (notification.tx_info.bss_color == bss_color &&
-			notification.tx_info.spatial_reuse_group == 0) ) {
+//	if ( (notification.tx_info.bss_color == bss_color &&
+//			notification.tx_info.spatial_reuse_group == spatial_reuse_group) ||
+//		 (notification.tx_info.bss_color != bss_color &&
+//			notification.tx_info.spatial_reuse_group == spatial_reuse_group) ||
+//		 (notification.tx_info.bss_color == bss_color &&
+//			notification.tx_info.spatial_reuse_group == 0) ) {
+	if ( notification.tx_info.bss_color == bss_color && bss_color > 0) {
 
 		type_of_packet = INTRA_BSS_FRAME;
 
@@ -82,10 +82,110 @@ int CheckPacketOrigin(Notification notification, int bss_color, int spatial_reus
 }
 
 /*
+ * CheckPacketOrigin(): checks whether an inter-BSS frame belongs to the same SRG or not
+ **/
+int CheckSrg(Notification notification, int spatial_reuse_group) {
+
+	int same_srg_flag;
+
+	// Check if the packet is an intra or an inter-BSS frame
+	if ( spatial_reuse_group > 0 &&
+			notification.tx_info.spatial_reuse_group == spatial_reuse_group) {
+
+		same_srg_flag = TRUE;
+
+	} else {
+
+		same_srg_flag = FALSE;
+
+	}
+
+	return same_srg_flag;
+
+}
+
+/*
+ * CheckOBSSPDConstraints(): checks if the proposed obss_pd_level is valid, according to
+ * the constraints indicated in the IEEE 802.11ax amendment
+ **/
+int CheckObssPdConstraints(double current_obss_pd, double obss_pd_min, double obss_pd_max,
+		double tx_power_ref, double tx_power) {
+
+	double obss_pd_ref_dbm = std::max(ConvertPower(PW_TO_DBM, obss_pd_min),
+			std::min(ConvertPower(PW_TO_DBM, obss_pd_max), ConvertPower(PW_TO_DBM, obss_pd_min)
+			+ (ConvertPower(PW_TO_DBM, tx_power_ref) - ConvertPower(PW_TO_DBM,tx_power))));
+
+//	printf("obss_pd_ref = %f (%f pW)\n", obss_pd_ref, ConvertPower(DBM_TO_PW, obss_pd_ref));
+//	printf("  - obss_pd_min = %f (%f pW)\n", ConvertPower(PW_TO_DBM, obss_pd_min), obss_pd_min);
+//	printf("  - obss_pd_max = %f (%f pW)\n", ConvertPower(PW_TO_DBM, obss_pd_max), obss_pd_max);
+//	printf("  - tx_power_ref = %f (%f pW)\n", ConvertPower(PW_TO_DBM, tx_power_ref), tx_power_ref);
+//	printf("  - tx_power = %f (%f pW)\n", ConvertPower(PW_TO_DBM,tx_power), tx_power);
+
+	if( ConvertPower(PW_TO_DBM, current_obss_pd) <=  obss_pd_ref_dbm ) {
+		//printf("The OBSS_PD level is appropriate!\n");
+		return 1;
+	} else {
+		//printf("ALERT! The OBSS_PD level is NOT appropriate!\n");
+		return 0;
+	}
+
+}
+
+/*
+ * CheckSrgObssPdConstraints(): checks if the proposed srg_obss_pd_level is valid, according to
+ * the constraints indicated in the IEEE 802.11ax amendment
+ **/
+int CheckSrgObssPdConstraints(double current_srg_obss_pd,
+		double srg_obss_pd_min, double srg_obss_pd_max,
+		double srg_obss_pd_min_offset, double srg_obss_pd_max_offset) {
+
+	if( (ConvertPower(PW_TO_DBM, srg_obss_pd_min_offset) - 82) <= -62 &&
+			(ConvertPower(PW_TO_DBM, srg_obss_pd_min_offset) - 82) >= -82 &&
+			ConvertPower(PW_TO_DBM, srg_obss_pd_min_offset) <= ConvertPower(PW_TO_DBM, srg_obss_pd_max_offset) &&
+			(ConvertPower(PW_TO_DBM, srg_obss_pd_max_offset) - 82) <= -62 &&
+			ConvertPower(PW_TO_DBM, current_srg_obss_pd) >= ConvertPower(PW_TO_DBM, srg_obss_pd_min) &&
+			ConvertPower(PW_TO_DBM, current_srg_obss_pd) <= ConvertPower(PW_TO_DBM, srg_obss_pd_max)) {
+		//printf("The SRG_OBSS_PD level is appropriate!\n");
+		return 1;
+	} else {
+		//printf("ALERT! The SRG_OBSS_PD level is NOT appropriate!\n");
+		return 0;
+	}
+
+}
+
+/*
+ * CheckNonSrgObssPdConstraints(): checks if the proposed non_srg_obss_pd_level is valid, according to
+ * the constraints indicated in the IEEE 802.11ax amendment
+ **/
+int CheckNonSrgObssPdConstraints(double current_non_srg_obss_pd,
+		double non_srg_obss_pd_min, double non_srg_obss_pd_max,
+		double non_srg_obss_pd_max_offset, double srg_obss_pd_max_offset) {
+
+	if( non_srg_obss_pd_max_offset <= srg_obss_pd_max_offset &&
+			ConvertPower(PW_TO_DBM, non_srg_obss_pd_max_offset) -82 <= -62 &&
+			current_non_srg_obss_pd >= non_srg_obss_pd_min &&
+			current_non_srg_obss_pd <= non_srg_obss_pd_max ) {
+		//printf("The NON_SRG_OBSS_PD level is appropriate!\n");
+		return 1;
+	} else {
+		//printf("ALERT! The NON_SRG_OBSS_PD level is NOT appropriate!\n");
+		return 0;
+	}
+
+}
+
+/*
  * CheckPowerConstraints():
  **/
-int CheckPowerConstraints() {
+int CheckPowerConstraints(double current_obss_pd, double obss_pd_min, double obss_pd_max) {
 
-	return 0;
+	if (current_obss_pd <= obss_pd_min) {
+		// Unconstrained
+		return 1;
+	} else {
+		// Apply constraint
+		return 0;
+	}
 
 }

@@ -1691,19 +1691,19 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			const char* bss_color_char = GetField(tmp_nodes, IX_BSS_COLOR);
 			if (bss_color_char == NULL) {
 				// In case this field is not introduced in the input file
-				node_container[node_ix].bss_color = 0;
-				node_container[node_ix].spatial_reuse_activated = FALSE; // DEACTIVATE SR OPERATION
+				node_container[node_ix].bss_color = -1;
+				node_container[node_ix].obss_pd_sr_activated = FALSE; // DEACTIVATE SR OPERATION
 			} else {
 				node_container[node_ix].bss_color = atof(bss_color_char);
-				if(node_container[node_ix].bss_color > 0) node_container[node_ix].spatial_reuse_activated = TRUE; // ACTIVATE SR OPERATION
+				if(node_container[node_ix].bss_color > 0) node_container[node_ix].obss_pd_sr_activated = TRUE; // ACTIVATE SR OPERATION
 			}
 
 			// Spatial Reuse Group (NOT MANDATORY IN NODES FILE)
 			tmp_nodes = strdup(line_nodes);
 			const char* spatial_reuse_group_char = GetField(tmp_nodes, IX_SPATIAL_REUSE_GROUP);
-			if (bss_color_char == NULL) {
+			if (spatial_reuse_group_char == NULL) {
 				// In case this field is not introduced in the input file
-				node_container[node_ix].spatial_reuse_group = 0;
+				node_container[node_ix].spatial_reuse_group = -1;
 			} else {
 				node_container[node_ix].spatial_reuse_group = atof(spatial_reuse_group_char);
 			}
@@ -1714,7 +1714,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			//double obss_pd_min_dbm = atoi(GetField(tmp_nodes, IX_OBSS_PD_MIN));
 			if (obss_pd_min_dbm_char == NULL) {
 				// In case this field is not introduced in the input file
-				node_container[node_ix].obss_pd_min = node_container[node_ix].cca_min;
+				node_container[node_ix].obss_pd_min = -1;
 			} else {
 				node_container[node_ix].obss_pd_min = ConvertPower(DBM_TO_PW, atoi(obss_pd_min_dbm_char));
 			}
@@ -1723,7 +1723,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			const char* obss_pd_default_dbm_char = GetField(tmp_nodes, IX_OBSS_PD_DEFAULT);
 			if (obss_pd_default_dbm_char == NULL) {
 				// In case this field is not introduced in the input file
-				node_container[node_ix].obss_pd_default = node_container[node_ix].cca_min;
+				node_container[node_ix].obss_pd_default = -1;
 			} else {
 				node_container[node_ix].obss_pd_default = ConvertPower(DBM_TO_PW, atoi(obss_pd_default_dbm_char));
 			}
@@ -1732,9 +1732,70 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			const char* obss_pd_max_dbm_char = GetField(tmp_nodes, IX_OBSS_PD_MAX);
 			if (obss_pd_max_dbm_char == NULL) {
 				// In case this field is not introduced in the input file
-				node_container[node_ix].obss_pd_max = node_container[node_ix].cca_min;
+				node_container[node_ix].obss_pd_max = -1;
 			} else {
 				node_container[node_ix].obss_pd_max = ConvertPower(DBM_TO_PW, atoi(obss_pd_max_dbm_char));
+			}
+
+			// TX Power Ref
+			tmp_nodes = strdup(line_nodes);
+			const char* tx_pwr_ref_char = GetField(tmp_nodes, IX_TX_PWR_REF);
+			if (tx_pwr_ref_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].tx_pwr_ref = -1;
+			} else {
+				node_container[node_ix].tx_pwr_ref = ConvertPower(DBM_TO_PW, atoi(tx_pwr_ref_char));
+			}
+
+			// Min Offset SRG OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* srg_obss_pd_min_dbm_char = GetField(tmp_nodes, IX_SRG_OBSS_PD_MIN_OFFSET);
+			if (srg_obss_pd_min_dbm_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].srg_obss_pd_min_offset = -1;
+				node_container[node_ix].srg_offset_present = FALSE; // INDICATE THAT OFFSETS ARE NOT AVAILABLE
+			} else {
+				node_container[node_ix].srg_obss_pd_min_offset = ConvertPower(DBM_TO_PW, atoi(srg_obss_pd_min_dbm_char));
+				node_container[node_ix].srg_offset_present = TRUE; // INDICATE THAT OFFSETS ARE NOT AVAILABLE
+			}
+
+			// Max Offset SRG OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* srg_obss_pd_max_dbm_char = GetField(tmp_nodes, IX_SRG_OBSS_PD_MAX_OFFSET);
+			if (srg_obss_pd_max_dbm_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].srg_obss_pd_max_offset = -1;
+			} else {
+				node_container[node_ix].srg_obss_pd_max_offset = ConvertPower(DBM_TO_PW, atoi(srg_obss_pd_max_dbm_char));
+			}
+
+			// Default SRG OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* srg_obss_pd_default_dbm_char = GetField(tmp_nodes, IX_SRG_OBSS_PD_DEFAULT);
+			if (srg_obss_pd_default_dbm_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].srg_obss_pd_default = -1;
+			} else {
+				node_container[node_ix].srg_obss_pd_default = ConvertPower(DBM_TO_PW, atoi(srg_obss_pd_default_dbm_char));
+			}
+
+			// Max Offset NON-SRG OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* non_srg_obss_pd_max_dbm_char = GetField(tmp_nodes, IX_NON_SRG_OBSS_PD_MAX_OFFSET);
+			if (non_srg_obss_pd_max_dbm_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].non_srg_obss_pd_max_offset = -1;
+			} else {
+				node_container[node_ix].non_srg_obss_pd_max_offset = ConvertPower(DBM_TO_PW, atoi(non_srg_obss_pd_max_dbm_char));
+			}
+			// Default NON-SRG OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* non_srg_obss_pd_default_dbm_char = GetField(tmp_nodes, IX_NON_SRG_OBSS_PD_DEFAULT);
+			if (non_srg_obss_pd_default_dbm_char == NULL) {
+				// In case this field is not introduced in the input file
+				node_container[node_ix].non_srg_obss_pd_default = -1;
+			} else {
+				node_container[node_ix].non_srg_obss_pd_default = ConvertPower(DBM_TO_PW, atoi(non_srg_obss_pd_default_dbm_char));
 			}
 
 			// System

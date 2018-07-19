@@ -82,10 +82,12 @@ component Node : public TypeII{
 
 		// Generic
 		void InitializeVariables();
+		void InitializeSpatialReuseOperation();
 		void RestartNode(int called_by_time_out);
 		void CallRestartSta();
 		void CallSensing();
 		void PrintNodeInfo(int info_detail_level);
+		void SpatialReuseInputChecker();
 		void PrintNodeConfiguration();
 		void WriteNodeInfo(Logger node_logger, int info_detail_level, std::string header_str);
 		void WriteNodeConfiguration(Logger node_logger, std::string header_str);
@@ -208,12 +210,19 @@ component Node : public TypeII{
 		int cw_adaptation;					// CW adaptation (0: constant, 1: bineary exponential backoff)
 
 		// Spatial Reuse
-		int spatial_reuse_activated;		// Field to indicate whether SR operation is enabled or not
+		int obss_pd_sr_activated;		// Field to indicate whether SR operation is enabled or not
 		int bss_color;						// Field indicating the BSS color of the WLAN
 		int spatial_reuse_group;			// Field indicating the SRG to which the WLAN belongs
 		double obss_pd_min;					// Min. OBSS_PD	("sensitivity" threshold)
 		double obss_pd_default;				// Default OBSS_PD	("sensitivity" threshold)
 		double obss_pd_max;					// Max. OBSS_PD ("sensitivity" threshold)
+		double tx_pwr_ref;					// Value that depends on the devices characteristics (between 21 and 25 dBm)
+		int srg_offset_present;				// Field to indicated whether SRG and non-SRG offsets are present
+		double srg_obss_pd_min_offset;		// Min. Offset SRG OBSS_PD	("sensitivity" threshold)
+		double srg_obss_pd_max_offset;		// Max. Offset SRG OBSS_PD ("sensitivity" threshold)
+		double srg_obss_pd_default;			// Default SRG OBSS_PD	("sensitivity" threshold)
+		double non_srg_obss_pd_max_offset;	// Max. Offset on-SRG OBSS_PD ("sensitivity" threshold)
+		double non_srg_obss_pd_default;		// Default Non-SRG OBSS_PD	("sensitivity" threshold)
 
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
@@ -288,6 +297,17 @@ component Node : public TypeII{
 		// Spatial Reuse operation
 		double current_obss_pd;				// Power detection threshold for inter-BSS communications
 		double spatial_reuse_flag; 			// Flag to indicate whether an ongoing transmission has been ignored
+
+		double current_srg_obss_pd;
+		double current_non_srg_obss_pd;
+
+		double srg_obss_pd_min;				// Min. SRG OBSS_PD	("sensitivity" threshold)
+		double srg_obss_pd_max;				// Max. SRG OBSS_PD ("sensitivity" threshold)
+		double non_srg_obss_pd_min;			// Min. Non-SRG OBSS_PD	("sensitivity" threshold)
+		double non_srg_obss_pd_max;			// Max. Non-SRG OBSS_PD ("sensitivity" threshold)
+
+		double temporary_cca;				// Variable to store the current CCA threshold in particular moments
+		double temporary_tpc; 				// Variable to store the current_tpc, which is restored after the next transmission
 
 		// Notifications
 		Notification rts_notification;		// RTS to be filled before sending it
@@ -474,6 +494,9 @@ void Node :: Start(){
 
 	// Initialize variables
 	InitializeVariables();
+
+	// Initialize SR variables
+	if (bss_color > 0) InitializeSpatialReuseOperation();
 
 	// if(print_node_logs) printf("%s(N%d) Start\n", node_code, node_id);
 
@@ -715,8 +738,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							if(node_is_transmitter){
 
-								int pause = HandleBackoff(PAUSE_TIMER, &channel_power, current_primary_channel, current_cca,
-										buffer.QueueSize());
+								int pause = HandleBackoff(PAUSE_TIMER, &channel_power,
+										current_primary_channel, current_cca, buffer.QueueSize());
 
 								// Check if node has to freeze the BO (if it is not already frozen)
 								if (pause) PauseBackoff();
@@ -802,29 +825,57 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									SimTime(), node_id, node_state, LOG_D07, LOG_LVL3);
 							}
 
-							// Save NAV notifcation for comparing timestamps in case of need
+							// Save NAV notification for comparing timestamps in case of need
 							nav_notification = notification;
+
+							int type_of_packet;
+							int same_srg_flag;
+							if (obss_pd_sr_activated) {
+								type_of_packet = CheckPacketOrigin(notification, bss_color);
+								same_srg_flag = CheckSrg(notification, spatial_reuse_group);
+							}
 
 							if(node_is_transmitter){
 
 								int pause;
 								// SPATIAL REUSE OPERATION:
 								//   - Check whether the current transmission is an intra or an inter-BSS one
-								if (spatial_reuse_activated) {
-									int type_of_packet = CheckPacketOrigin(notification, bss_color, spatial_reuse_group);
+								if (obss_pd_sr_activated) {
 									if (type_of_packet == INTER_BSS_FRAME) {
 										// Inter-BSS communication
 										if(save_node_logs) fprintf(node_logger.file,
 											"%.15f;N%d;S%d;%s;%s Inter-BSS transmission detected.\n",
 											SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
-										pause = HandleBackoff(PAUSE_TIMER, &channel_power,
-												current_primary_channel, current_obss_pd, buffer.QueueSize());
+										if (spatial_reuse_group > 0 && same_srg_flag) {
+											// SRG enabled - same SRGs
+											if(save_node_logs) fprintf(node_logger.file,
+												"%.15f;N%d;S%d;%s;%s Same SRG (CS = %f dBm).\n",
+												SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+												ConvertPower(PW_TO_DBM, current_srg_obss_pd));
+											temporary_cca = current_srg_obss_pd;
+										} else if (spatial_reuse_group > 0 && !same_srg_flag) {
+											// SRG enabled - different SRGs
+											if(save_node_logs) fprintf(node_logger.file,
+												"%.15f;N%d;S%d;%s;%s Different SRG (CS = %f dBm).\n",
+												SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+												ConvertPower(PW_TO_DBM, current_non_srg_obss_pd));
+											temporary_cca = current_non_srg_obss_pd;
+										} else {
+											// SRG disabled
+											if(save_node_logs) fprintf(node_logger.file,
+												"%.15f;N%d;S%d;%s;%s SRG disabled (CS = %f dBm).\n",
+												SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+												ConvertPower(PW_TO_DBM, current_obss_pd));
+											temporary_cca = current_obss_pd;
 										}
-								} else {
-									// Intra-BSS communication - Normal operation
-									pause = HandleBackoff(PAUSE_TIMER, &channel_power,
-										current_primary_channel, current_cca, buffer.QueueSize());
+									} else {
+										// Intra-BSS communication - Normal operation
+										temporary_cca = current_cca;
+									}
 								}
+
+								pause = HandleBackoff(PAUSE_TIMER, &channel_power,
+									current_primary_channel, temporary_cca, buffer.QueueSize());
 
 								// Check if node has to freeze the BO (if it is not already frozen)
 
@@ -832,21 +883,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							}
 
-//							printf("N%d spatial_reuse_activated = %d, max_pw = %f, current_obss_pd = %f, "
-//									"notification.tx_info.bss_color = %d, bss_color = %d,"
-//									"notification.tx_info.spatial_reuse_group = %d, spatial_reuse_group = %d\n",
-//									node_id, spatial_reuse_activated,
-//									ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
-//									current_obss_pd, notification.tx_info.bss_color, bss_color,
-//									notification.tx_info.spatial_reuse_group, spatial_reuse_group);
-
-							if (spatial_reuse_activated &&
-									ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]) < current_obss_pd &&
-									(notification.tx_info.bss_color != bss_color ||
-									notification.tx_info.spatial_reuse_group != spatial_reuse_group)) {
+							// Check if node has to switch into NAV
+							if (obss_pd_sr_activated && type_of_packet == INTER_BSS_FRAME &&
+									ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]) <
+									ConvertPower(PW_TO_DBM, temporary_cca) ) {
 								// Ignore current transmission
 								if(save_node_logs) fprintf(node_logger.file,
-									"%.15f;N%d;S%d;%s;%s Ignoring current inter-BSS transmission.\n",
+									"%.15f;N%d;S%d;%s;%s Ignoring current inter-BSS transmission (NOT switching to NAV state).\n",
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
 									spatial_reuse_flag = TRUE;
 							} else {
@@ -918,25 +961,52 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									"%.15f;N%d;S%d;%s;%s Checking if BO must be paused...\n",
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 
-							int pause;
+							int type_of_packet;
+							int same_srg_flag;
+							if (obss_pd_sr_activated) {
+								type_of_packet = CheckPacketOrigin(notification, bss_color);
+								same_srg_flag = CheckSrg(notification, spatial_reuse_group);
+							}
 
+							int pause;
 							// SPATIAL REUSE OPERATION:
 							//   - Check whether the current transmission is an intra or an inter-BSS one
-							if (spatial_reuse_activated) {
-								int type_of_packet = CheckPacketOrigin(notification, bss_color, spatial_reuse_group);
+							if (obss_pd_sr_activated) {
 								if (type_of_packet == INTER_BSS_FRAME) {
 									// Inter-BSS communication
 									if(save_node_logs) fprintf(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s Inter-BSS transmission detected.\n",
 										SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
-									pause = HandleBackoff(PAUSE_TIMER, &channel_power,
-											current_primary_channel, current_obss_pd, buffer.QueueSize());
+									if (spatial_reuse_group > 0 && same_srg_flag) {
+										// SRG enabled - same SRGs
+										if(save_node_logs) fprintf(node_logger.file,
+											"%.15f;N%d;S%d;%s;%s Same SRG (CS = %f dBm).\n",
+											SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+											ConvertPower(PW_TO_DBM, current_srg_obss_pd));
+										temporary_cca = current_srg_obss_pd;
+									} else if (spatial_reuse_group > 0 && !same_srg_flag) {
+										// SRG enabled - different SRGs
+										if(save_node_logs) fprintf(node_logger.file,
+											"%.15f;N%d;S%d;%s;%s Different SRG (CS = %f dBm).\n",
+											SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+											ConvertPower(PW_TO_DBM, current_non_srg_obss_pd));
+										temporary_cca = current_non_srg_obss_pd;
+									} else {
+										// SRG disabled
+										if(save_node_logs) fprintf(node_logger.file,
+											"%.15f;N%d;S%d;%s;%s SRG disabled (CS = %f dBm).\n",
+											SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+											ConvertPower(PW_TO_DBM, current_obss_pd));
+										temporary_cca = current_obss_pd;
 									}
-							} else {
-								// Intra-BSS communication - Normal operation
-								pause = HandleBackoff(PAUSE_TIMER, &channel_power,
-									current_primary_channel, current_cca, buffer.QueueSize());
+								} else {
+									// Intra-BSS communication - Normal operation
+									temporary_cca = current_cca;
+								}
 							}
+
+							pause = HandleBackoff(PAUSE_TIMER, &channel_power,
+								current_primary_channel, temporary_cca, buffer.QueueSize());
 
 							// Check if node has to freeze the BO (if it is not already frozen)
 							if (pause) {
@@ -950,9 +1020,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
 							}
 						}
-
 					}
-
 				}
 
 				break;
@@ -1144,22 +1212,55 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									current_sinr, capture_effect, current_cca,
 									power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
-							if (loss_reason == PACKET_NOT_LOST &&
-								ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > current_cca) {
+							if (loss_reason == PACKET_NOT_LOST) {
 
 								// SPATIAL REUSE OPERATION:
 								//   - Check whether the current transmission is an intra or an inter-BSS one
-								if (spatial_reuse_activated) {
+								if (obss_pd_sr_activated) {
 
-									int type_of_packet = CheckPacketOrigin(notification, bss_color, spatial_reuse_group);
-									if (type_of_packet == INTER_BSS_FRAME) {
-										if(save_node_logs) fprintf(node_logger.file,
-											"%.15f;N%d;S%d;%s;%s Inter-BSS transmission detected and ignored.\n",
-											SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
-										spatial_reuse_flag = TRUE;
+									int type_of_packet;
+									int same_srg_flag;
+									if (obss_pd_sr_activated) {
+										type_of_packet = CheckPacketOrigin(notification, bss_color);
+										same_srg_flag = CheckSrg(notification, spatial_reuse_group);
 									}
 
-								} else {
+									if (type_of_packet == INTER_BSS_FRAME) {
+										// Inter-BSS communication
+										if(save_node_logs) fprintf(node_logger.file,
+											"%.15f;N%d;S%d;%s;%s Inter-BSS transmission detected.\n",
+											SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
+										if (spatial_reuse_group > 0 && same_srg_flag) {
+											// SRG enabled - same SRGs
+											if(save_node_logs) fprintf(node_logger.file,
+												"%.15f;N%d;S%d;%s;%s Same SRG (CS = %f dBm).\n",
+												SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+												ConvertPower(PW_TO_DBM, current_srg_obss_pd));
+											temporary_cca = current_srg_obss_pd;
+										} else if (spatial_reuse_group > 0 && !same_srg_flag) {
+											// SRG enabled - different SRGs
+											if(save_node_logs) fprintf(node_logger.file,
+												"%.15f;N%d;S%d;%s;%s Different SRG (CS = %f dBm).\n",
+												SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+												ConvertPower(PW_TO_DBM, current_non_srg_obss_pd));
+											temporary_cca = current_non_srg_obss_pd;
+										} else {
+											// SRG disabled
+											if(save_node_logs) fprintf(node_logger.file,
+												"%.15f;N%d;S%d;%s;%s SRG disabled (CS = %f dBm).\n",
+												SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+												ConvertPower(PW_TO_DBM, current_obss_pd));
+											temporary_cca = current_obss_pd;
+										}
+									} else {
+										// Intra-BSS communication - Normal operation
+										temporary_cca = current_cca;
+									}
+								}
+
+								// Check if the packet can be decoded according to the adapted CCA
+								if (ConvertPower(PW_TO_DBM, channel_power[current_primary_channel])
+										> ConvertPower(PW_TO_DBM, temporary_cca)) {
 
 									nav_notification = notification;
 
@@ -2586,7 +2687,12 @@ void Node :: EndBackoff(trigger_t &){
 	// Identify free channels
 	num_tx_init_tried ++;
 
-	if(spatial_reuse_flag) {
+	if (spatial_reuse_flag) {
+		// Limit the transmit power
+		temporary_tpc = current_tpc;
+		int power_constraint = CheckPowerConstraints(current_obss_pd, obss_pd_min, obss_pd_max);
+		if (power_constraint) current_tpc = ConvertPower(PW_TO_DBM, current_tpc) -
+				(ConvertPower(PW_TO_DBM, current_obss_pd) - ConvertPower(PW_TO_DBM, obss_pd_min));
 		// Use current_obss_pd instead of current_cca
 		GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free, min_channel_allowed,
 			max_channel_allowed, &channel_power, current_obss_pd, timestampt_channel_becomes_free, SimTime(), PIFS);
@@ -3717,6 +3823,9 @@ void Node :: RestartNode(int called_by_time_out){
 	trigger_recover_cts_timeout.Cancel();
 	trigger_start_backoff.Cancel();
 
+	// Spatial Reuse operation
+	if (spatial_reuse_flag) current_tpc = temporary_tpc;
+
 	// Sergio on June 26 th
 	// - compute average waiting time to access the channel
 	timestamp_new_trial_started = SimTime();
@@ -3923,18 +4032,93 @@ void Node :: PrintNodeInfo(int info_detail_level){
 		printf("%s rx_gain = %f (%f dBi)\n", LOG_LVL4, rx_gain, ConvertPower(LINEAR_TO_DB, rx_gain));
 		printf("%s modulation_default = %d\n", LOG_LVL4, modulation_default);
 		printf("%s central_frequency = %f Hz (%f GHz)\n", LOG_LVL4, central_frequency, central_frequency * pow(10,-9));
-		printf("%s --------------SPATIAL REUSE --------------\n", LOG_LVL4);
-		printf("%s spatial_reuse_activated = %d\n", LOG_LVL4, spatial_reuse_activated);
-		printf("%s bss_color = %d\n", LOG_LVL4, bss_color);
-		printf("%s bss_color = %d\n", LOG_LVL4, bss_color);
-		printf("%s spatial_reuse_group = %d\n", LOG_LVL4, spatial_reuse_group);
-		printf("%s obss_pd_min = %f pW (%f dBm)\n", LOG_LVL4, obss_pd_min, ConvertPower(PW_TO_DBM, obss_pd_min));
-		printf("%s obss_pd_default = %f pW (%f dBm)\n", LOG_LVL4, obss_pd_default, ConvertPower(PW_TO_DBM, obss_pd_default));
-		printf("%s obss_pd_max = %f pW (%f dBm)\n", LOG_LVL4, obss_pd_max, ConvertPower(PW_TO_DBM, obss_pd_max));
 	}
+
 	printf("\n");
+
 }
 
+/*
+ * SpatialReuseInputChecker(): method for checking and printing all the values using for the SR operation
+ **/
+void Node :: SpatialReuseInputChecker() {
+
+
+	// User's input
+	printf("%s SPATIAL REUSE REPORT (NODE #%d):\n", LOG_LVL3, node_id);
+	printf("%s Information introduced by the user:\n", LOG_LVL4);
+	printf("%s bss_color = %d\n", LOG_LVL5, bss_color);
+	printf("%s spatial_reuse_group = %d\n", LOG_LVL5, spatial_reuse_group);
+	printf("%s OBSS_PD:\n", LOG_LVL5);
+	printf("%s obss_pd_min = %f pW (%f dBm)\n", LOG_LVL6, obss_pd_min, ConvertPower(PW_TO_DBM, obss_pd_min));
+	printf("%s obss_pd_default = %f pW (%f dBm)\n", LOG_LVL6, obss_pd_default, ConvertPower(PW_TO_DBM, obss_pd_default));
+	printf("%s obss_pd_max = %f pW (%f dBm)\n", LOG_LVL6, obss_pd_max, ConvertPower(PW_TO_DBM, obss_pd_max));
+	printf("%s tx_pwr_ref = %f pW (%f dBm)\n", LOG_LVL6, tx_pwr_ref, ConvertPower(PW_TO_DBM, tx_pwr_ref));
+	printf("%s SRG:\n", LOG_LVL5);
+	printf("%s srg_obss_pd_min_offset = %f pW (%f dBm)\n", LOG_LVL6, srg_obss_pd_min_offset, ConvertPower(PW_TO_DBM, srg_obss_pd_min_offset));
+	printf("%s srg_obss_pd_max_offset = %f pW (%f dBm)\n", LOG_LVL6, srg_obss_pd_max_offset, ConvertPower(PW_TO_DBM, srg_obss_pd_max_offset));
+	printf("%s srg_obss_pd_default = %f pW (%f dBm)\n", LOG_LVL6, srg_obss_pd_default, ConvertPower(PW_TO_DBM, srg_obss_pd_default));
+	printf("%s non-SRG:\n", LOG_LVL5);
+	printf("%s non_srg_obss_pd_max_offset = %f pW (%f dBm)\n", LOG_LVL6, non_srg_obss_pd_max_offset, ConvertPower(PW_TO_DBM, non_srg_obss_pd_max_offset));
+	printf("%s non_srg_obss_pd_default = %f pW (%f dBm)\n", LOG_LVL6, non_srg_obss_pd_default, ConvertPower(PW_TO_DBM, non_srg_obss_pd_default));
+
+	// Spatial Reuse Validations
+	printf("%s SR Validations:\n", LOG_LVL4);
+	printf("%s obss_pd_sr_activated = %d\n", LOG_LVL5, obss_pd_sr_activated);
+	int obss_pd_levels_ok = CheckObssPdConstraints(current_obss_pd, obss_pd_min,
+		obss_pd_max, tx_pwr_ref, current_tpc);
+	// Check that OBSS_PD constraints are accomplished
+	if (!obss_pd_levels_ok) {
+		printf("%s OBSS_PD:\n", LOG_LVL5);
+		printf("%s OBSS_PD values do not accomplish the standard constraints. "
+				"Setting current_obss_pd to the minimum: %f pW (%f dBm)\n",
+				LOG_LVL6, obss_pd_min, ConvertPower(PW_TO_DBM, obss_pd_min));
+		current_obss_pd = obss_pd_min;
+	} else {
+		printf("%s current_obss_pd = %f pW (%f dBm)\n", LOG_LVL6, current_obss_pd,
+			ConvertPower(PW_TO_DBM, current_obss_pd));
+	}
+	if (spatial_reuse_group > 0) {
+		printf("%s srg_offset_present = %d\n", LOG_LVL5, srg_offset_present);
+		printf("%s SRG OBSS_PD:\n", LOG_LVL5);
+		// Check that SRG OBSS_PD constraints are accomplished
+		int srg_obss_pd_levels_ok = CheckSrgObssPdConstraints(current_srg_obss_pd,
+			srg_obss_pd_min, srg_obss_pd_max, srg_obss_pd_min_offset, srg_obss_pd_max_offset);
+		printf("%s srg_obss_pd_levels_ok: %d\n", LOG_LVL6, srg_obss_pd_levels_ok);
+		if (!srg_obss_pd_levels_ok) {
+			printf("%s SRG OBSS_PD values do not accomplish the standard constraints. "
+				"Setting current_srg_obss_pd to the minimum: %f pW (%f dBm)\n",
+				LOG_LVL6, srg_obss_pd_min, ConvertPower(PW_TO_DBM, srg_obss_pd_min));
+			current_srg_obss_pd = srg_obss_pd_min;
+		}
+		printf("%s srg_obss_pd_min = %f pW (%f dBm)\n", LOG_LVL6, srg_obss_pd_min, ConvertPower(PW_TO_DBM, srg_obss_pd_min));
+		printf("%s srg_obss_pd_max = %f pW (%f dBm)\n", LOG_LVL6, srg_obss_pd_max, ConvertPower(PW_TO_DBM, srg_obss_pd_max));
+		printf("%s current_srg_obss_pd = %f pW (%f dBm)\n", LOG_LVL6, current_srg_obss_pd, ConvertPower(PW_TO_DBM, current_srg_obss_pd));
+		printf("%s non-SRG OBSS_PD:\n", LOG_LVL5);
+		// Check that non-SRG OBSS_PD constraints are accomplished
+		int non_srg_obss_pd_levels_ok = CheckNonSrgObssPdConstraints(current_non_srg_obss_pd,
+			non_srg_obss_pd_min, non_srg_obss_pd_max, non_srg_obss_pd_max_offset, srg_obss_pd_max_offset);
+		printf("%s non_srg_obss_pd_levels_ok: %d\n", LOG_LVL6, non_srg_obss_pd_levels_ok);
+		if (!non_srg_obss_pd_levels_ok) {
+			printf("%s non-SRG OBSS_PD values do not accomplish the standard constraints. "
+				"Setting current_non_srg_obss_pd to the minimum: %f pW (%f dBm)\n",
+				LOG_LVL6, non_srg_obss_pd_min, ConvertPower(PW_TO_DBM, non_srg_obss_pd_min));
+			current_non_srg_obss_pd = non_srg_obss_pd_min;
+		}
+		printf("%s non_srg_obss_pd_min = %f pW (%f dBm)\n", LOG_LVL6, non_srg_obss_pd_min, ConvertPower(PW_TO_DBM, non_srg_obss_pd_min));
+		printf("%s non_srg_obss_pd_max = %f pW (%f dBm)\n", LOG_LVL6, non_srg_obss_pd_max, ConvertPower(PW_TO_DBM, non_srg_obss_pd_max));
+		printf("%s current_non_srg_obss_pd = %f pW (%f dBm)\n", LOG_LVL6, current_non_srg_obss_pd, ConvertPower(PW_TO_DBM, current_non_srg_obss_pd));
+	} else {
+		printf("%s SRG disabled\n", LOG_LVL5);
+	}
+
+	printf("\n");
+
+}
+
+/*
+ * CallSensing():
+ **/
 void Node:: CallSensing(trigger_t &){
 
 
@@ -4386,7 +4570,7 @@ void Node :: InitializeVariables() {
 
 	/*
 	 * HARDCODED VARIABLES FOR TESTING PURPOSES
-	 * - This variables are initalized in the code itself
+	 * - This variables are initialized in the code itself
 	 * - While this is not the most efficient approach, it allows us testing new feature
 	 */
 
@@ -4496,7 +4680,7 @@ void Node :: InitializeVariables() {
 
 		node_is_transmitter = TRUE;
 		remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
-		expected_backoff += remaining_backoff;
+		expected_backoff = remaining_backoff;
 		num_new_backoff_computations++;
 
 	} else {
@@ -4582,8 +4766,37 @@ void Node :: InitializeVariables() {
 
 	flag_apply_new_configuration = FALSE;
 
+}
+
+/*
+ * InitializeSpatialReuseOperation(): initializes all the necessary variables regarding the SR operation
+ */
+void Node :: InitializeSpatialReuseOperation() {
+
 	// Spatial Reuse operation
 	current_obss_pd = obss_pd_default;
+	current_srg_obss_pd = srg_obss_pd_default;
+	current_non_srg_obss_pd = non_srg_obss_pd_default;
+
 	spatial_reuse_flag = FALSE;
+
+	// Define the MIN and MAX SRG and NON-SRG OBSS_PD
+	if (spatial_reuse_group > 0) {
+		srg_obss_pd_min = ConvertPower(DBM_TO_PW, -82 + ConvertPower(PW_TO_DBM, srg_obss_pd_min_offset));
+		srg_obss_pd_max = ConvertPower(DBM_TO_PW, -82 + ConvertPower(PW_TO_DBM, srg_obss_pd_max_offset));
+	} else {
+		// N/A
+	}
+	non_srg_obss_pd_min = ConvertPower(DBM_TO_PW, -82);
+	if (obss_pd_sr_activated > 0 && srg_offset_present) {
+		non_srg_obss_pd_max = ConvertPower(DBM_TO_PW,
+		ConvertPower(PW_TO_DBM, non_srg_obss_pd_max_offset) - 82);
+	} else if (obss_pd_sr_activated) {
+		non_srg_obss_pd_max = ConvertPower(DBM_TO_PW, -62);
+	} else {
+		non_srg_obss_pd_max = ConvertPower(DBM_TO_PW, -82);
+	}
+
+	if (node_is_transmitter && obss_pd_sr_activated) SpatialReuseInputChecker();
 
 }

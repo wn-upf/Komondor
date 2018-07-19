@@ -66,6 +66,7 @@
 #define LOG_LVL3	"    ·"
 #define LOG_LVL4	"       +"
 #define LOG_LVL5	"          *"
+#define LOG_LVL6	"             ^"
 
 // Node states
 #define STATE_UNKNOWN	-1	// Unknown state (e.g. at the beginning of the simulation)
@@ -380,6 +381,13 @@
 #define IX_OBSS_PD_MIN				29
 #define IX_OBSS_PD_DEFAULT			30
 #define IX_OBSS_PD_MAX				31
+#define IX_TX_PWR_REF				32
+#define IX_SRG_OBSS_PD_MIN_OFFSET	33
+#define IX_SRG_OBSS_PD_MAX_OFFSET	34
+#define IX_SRG_OBSS_PD_DEFAULT		35
+#define IX_NON_SRG_OBSS_PD_MAX_OFFSET	36
+#define IX_NON_SRG_OBSS_PD_DEFAULT		37
+
 
 // APs file
 #define IX_AP_WLAN_CODE					1
