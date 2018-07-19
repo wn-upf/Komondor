@@ -1,0 +1,67 @@
+ KOMONDOR SIMULATION 'test' (seed 31)  - System configuration: 
+    · total_nodes_number = 4
+    · total_nodes_number = 4
+    · num_channels_komondor = 2
+    · basic_channel_bandwidth = 20.000000
+    · pdf_backoff = 0
+    · pdf_tx_time = 1
+    · packet_length = 12000 bits
+    · ack_length = 240 bits
+    · num_packets_aggregated = 64
+    · path_loss_model = 4
+    · capture_effect = 10.000000
+    · noise_level = 0.316228 dBm
+    · adjacent_channel_model = 0
+    · collisions_model = 0
+    · SIFS = 0.000016 s
+    · DIFS = 0.000034 s
+    · PIFS = 0.000025 s
+  - Wlans generated!
+    · WLAN A:
+    · - wlan_id: 0
+    · - num_stas: 1
+    · - ap_id: 0
+    · - list of STAs IDs: 1  
+    · WLAN B:
+    · - wlan_id: 1
+    · - num_stas: 1
+    · - ap_id: 2
+    · - list of STAs IDs: 3  
+  - Nodes generated!
+    · Node AP_A info:
+    · - node_id = 0
+    · - node_type = 0
+    · - position = (0.00, 0.00, 0.00)
+    · - current_primary_channel = 0
+    · - min_channel_allowed = 0
+    · - max_channel_allowed = 0
+    · - current_dcb_policy = 4
+    · Node STA_A1 info:
+    · - node_id = 1
+    · - node_type = 1
+    · - position = (0.00, 1.00, 0.00)
+    · - current_primary_channel = 0
+    · - min_channel_allowed = 0
+    · - max_channel_allowed = 0
+    · - current_dcb_policy = 4
+    · Node AP_B info:
+    · - node_id = 2
+    · - node_type = 0
+    · - position = (5.00, 0.00, 0.00)
+    · - current_primary_channel = 0
+    · - min_channel_allowed = 0
+    · - max_channel_allowed = 0
+    · - current_dcb_policy = 4
+    · Node STA_B1 info:
+    · - node_id = 3
+    · - node_type = 1
+    · - position = (5.00, 1.00, 0.00)
+    · - current_primary_channel = 0
+    · - min_channel_allowed = 0
+    · - max_channel_allowed = 0
+    · - current_dcb_policy = 4
+  - Node #0 (AP_A) Throughput = 109056000.000000
+  - Node #1 (STA_A1) Throughput = 0.000000
+  - Node #2 (AP_B) Throughput = 109824000.000000
+  - Node #3 (STA_B1) Throughput = 0.000000
+;109.1;142;0;0;142;0;143;1

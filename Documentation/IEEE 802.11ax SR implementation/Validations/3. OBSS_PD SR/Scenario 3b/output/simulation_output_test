@@ -1,0 +1,75 @@
+ KOMONDOR SIMULATION '' (seed 30) Generating nodes...
+  - Generating nodes DETERMINISTICALLY...
+------------------------------------
+  - System configuration: 
+    · total_nodes_number = 4
+    · total_nodes_number = 4
+    · num_channels_komondor = 2
+    · basic_channel_bandwidth = 20.000000
+    · pdf_backoff = 0
+    · pdf_tx_time = 1
+    · frame_length = 12000 bits
+    · ack_length = 240 bits
+    · max_num_packets_aggregated = 64
+    · path_loss_model = 4
+    · capture_effect = 10.000000
+    · noise_level = 0.316228 dBm
+    · adjacent_channel_model = 0
+    · collisions_model = 0
+    · SIFS = 0.000016 s
+    · DIFS = 0.000034 s
+    · PIFS = 0.000025 s
+  - Wlans generated!
+    · WLAN A:
+    · - wlan_id: 0
+    · - num_stas: 1
+    · - ap_id: 0
+    · - list of STAs IDs: 1  
+    · WLAN B:
+    · - wlan_id: 1
+    · - num_stas: 1
+    · - ap_id: 2
+    · - list of STAs IDs: 3  
+  - Nodes generated!
+    · Node AP_A info:
+    · - node_id = 0
+    · - node_type = 0
+    · - position = (0.00, 0.00, 0.00)
+    · - current_primary_channel = 0
+    · - min_channel_allowed = 0
+    · - max_channel_allowed = 0
+    · - current_dcb_policy = 4
+    · Node STA_A1 info:
+    · - node_id = 1
+    · - node_type = 1
+    · - position = (0.00, 1.00, 0.00)
+    · - current_primary_channel = 0
+    · - min_channel_allowed = 0
+    · - max_channel_allowed = 0
+    · - current_dcb_policy = 4
+    · Node AP_B info:
+    · - node_id = 2
+    · - node_type = 0
+    · - position = (6.00, 0.00, 0.00)
+    · - current_primary_channel = 0
+    · - min_channel_allowed = 0
+    · - max_channel_allowed = 0
+    · - current_dcb_policy = 4
+    · Node STA_B1 info:
+    · - node_id = 3
+    · - node_type = 1
+    · - position = (6.00, 1.00, 0.00)
+    · - current_primary_channel = 0
+    · - min_channel_allowed = 0
+    · - max_channel_allowed = 0
+    · - current_dcb_policy = 4
+  - Average throughput per WLAN = 54.91 Mbps
+    · Total throughput = 109.82 Mbps
+    · Total number of packets sent = 144
+       + Average number of data packets successfully sent per WLAN = 72.00
+       + Average number of RTS packets lost due to slotted BO = 0.00 (0.00 % loss)
+    · Average number of packets sent per WLAN = 72
+  - Proportional Fairness = 15.48
+  - Jain's Fairness = 1.00
+  - Jain's Fairness = 1.00
+
