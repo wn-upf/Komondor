@@ -231,6 +231,7 @@ component Node : public TypeII{
 		int num_tx_init_not_possible;						// Number of TX initiations that have been not possible due to channel state and DCB model
 		int rts_lost_slotted_bo;							// Number of RTS packets lost due to slotted BO
 		double prob_slotted_bo_collision;					// Probability of slotted BO collision
+		double average_waiting_time;						// Average time between two channel accesses
 		double bandwidth_used_txing;						// Average bandiwdth used for transmitting (RTS, CTS, ACK and DATA packets considered).
 															// - Part of the available bandwidth used in average
 															// - e.g., 135 MHz used in average from the 160 MHz (8 channels) available
@@ -333,7 +334,6 @@ component Node : public TypeII{
 		int num_measures_rho_accomplished;		// Number of measures that rho condition (packet in buffer and channel free) is given
 		int num_measures_utilization;			// Number of measures for computing the utilization metric
 		int num_measures_buffer_with_packets;	// Number of measures where the buffer had packets
-		int delay_delayed_flag;
 
 		// Burst traffic
 		double burst_rate;				// Average time between two packet generation bursts [bursts/s]
@@ -3767,12 +3767,6 @@ void Node:: MeasureRho(trigger_t &){
 
 	trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
 
-	if(delay_delayed_flag){
-		sum_delays = 0;
-		num_delay_measurements = 0;
-		delay_delayed_flag = FALSE;
-	}
-
 
 }
 
@@ -3995,7 +3989,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 		if(hidden_nodes_list[i] == 1) hidden_nodes_number++;
 	}
 
-	double average_waiting_time = sum_waiting_time / (double) num_average_waiting_time_measurements;
+	average_waiting_time = sum_waiting_time / (double) num_average_waiting_time_measurements;
 
 	expected_backoff = expected_backoff / (double) num_new_backoff_computations;
 
@@ -4284,8 +4278,7 @@ void Node :: InitializeVariables() {
 	 */
 
 	burst_rate = 10;
-	delay_delayed_flag = TRUE;
-
+	num_bursts = 0;
 	/*
 	 * END OF HARDCODED INITIALIZATION
 	 */
@@ -4375,7 +4368,9 @@ void Node :: InitializeVariables() {
 	sum_waiting_time = 0;
 	timestamp_new_trial_started = 0;
 	num_average_waiting_time_measurements = 0;
-
+	expected_backoff = 0;
+	remaining_backoff = 0;
+	num_new_backoff_computations = 0;
 	data_packets_acked = 0;
 	data_frames_acked = 0;
 
@@ -4412,15 +4407,32 @@ void Node :: InitializeVariables() {
 		mcs_response[n] = 0;
 	}
 
-	int *modulations_list = (int*)calloc(4, sizeof(int));
+//	int *modulations_list = (int*)calloc(4, sizeof(int));
 
-	mcs_per_node = (int**)calloc(wlan.num_stas, sizeof(int*));
+//	mcs_per_node = (int**)calloc(wlan.num_stas, sizeof(int*));
 	change_modulation_flag = new int[wlan.num_stas];
 	for(int n = 0; n < wlan.num_stas; n++){
-		mcs_per_node[n] = modulations_list;
+
+//		mcs_per_node[n] = modulations_list;
 		change_modulation_flag[n] = TRUE;
+
+//		for(int ch = 0; ch < log2(num_channels_komondor) + 1; ch++){
+//			mcs_per_node[n][ch] = 0;
+//		}
 	}
 
+
+	mcs_per_node = new int *[wlan.num_stas] ;
+
+
+	for( int i = 0 ; i < wlan.num_stas ; i++ ) mcs_per_node[i] = new int[NUM_OPTIONS_CHANNEL_LENGTH];
+
+	for ( int i=0; i< wlan.num_stas; i++) {
+		for (int j=0; j< NUM_OPTIONS_CHANNEL_LENGTH; j++) {
+			mcs_per_node[i][j] = -1;
+		}
+	}
+	
 	first_time_requesting_mcs = TRUE;
 
 	/* NULL notification for Valgrind issues */
