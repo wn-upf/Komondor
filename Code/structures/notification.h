@@ -53,7 +53,11 @@
 // Notification specific info (may be not checked by the other nodes)
 struct TxInfo
 {
-	int packet_id;				// Packet identifier
+	int packet_id;							// Packet identifier of the first frame
+	int num_packets_aggregated;				// Number of frames aggregated
+	int *list_id_aggregated;				// List of frame IDs aggregated
+	double *timestamp_frames_aggregated;	// List of timestamps of the frames aggregated
+
 	int destination_id;			// Destination node of the transmission
 	double tx_duration;			// Duration of the transmission
 
@@ -64,10 +68,10 @@ struct TxInfo
 	double cts_duration;
 
 	double preoccupancy_duration;
-
 	double tx_power;			// Transmission power in [pW]
 	double tx_gain;				// Transmission gain [linear ratio]
 	double bits_ofdm_sym; 			// Rate at which data is transmitted
+	double data_rate; 			// Rate at which data is transmitted
 	int modulation_schemes[4];	// Modulation scheme used
 	double x;						// X position of source node
 	double y;						// Y position of source node
@@ -78,6 +82,31 @@ struct TxInfo
 		printf("packet_id = %d - destination_id = %d - tx_duration = %f - tx_power = %f pw"
 				" - position = (%.2f, %.2f, %.2f)\n",
 				packet_id, destination_id, tx_duration, tx_power, x, y, z);
+	}
+
+	/*
+	 * SetSizeOfIdsArray(): sets the size of the array list_id_aggregated
+	 */
+	void SetSizeOfIdsAggregatedArray(int num_packets_aggregated){
+
+		list_id_aggregated = new int[num_packets_aggregated];
+
+		for(int t = 0; t < num_packets_aggregated; t++){
+			list_id_aggregated[t] = 0;
+		}
+	}
+
+
+	/*
+	 * SetSizeOfTimestampAggregatedArray(): sets the size of the array timestamp_frames_aggregated
+	 */
+	void SetSizeOfTimestampAggregatedArray(int num_packets_aggregated){
+
+		timestamp_frames_aggregated = new double[num_packets_aggregated];
+
+		for(int t = 0; t < num_packets_aggregated; t++){
+			timestamp_frames_aggregated[t] = 0;
+		}
 	}
 
 	/*
@@ -102,7 +131,7 @@ struct Notification
 	int packet_type;	// Type of packet: Data, ACK, etc.
 	int left_channel;	// Left channel used in the transmission
 	int right_channel;	// Right channel used in the transmission
-	int packet_length;	// Size of the packet to transmit
+	int frame_length;	// Size of the packet to transmit
 	int modulation_id;	// Modulation being used during the transmission
 	double timestamp;	// Timestamp when notification is sent
 	double timestamp_generated;	// Timestamp when notification was generated
@@ -112,7 +141,7 @@ struct Notification
 
 	void PrintNotification(void){
 		printf("source_id = %d - packet_type = %d - left_channel = %d - right_channel = %d - pkt_length = %d -",
-				source_id, packet_type, left_channel, right_channel, packet_length);
+				source_id, packet_type, left_channel, right_channel, frame_length);
 		printf("tx_info: ");
 		tx_info.PrintTxInfo();
 	}

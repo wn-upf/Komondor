@@ -70,27 +70,24 @@ int PickArmEgreedy(int num_actions, double *reward_per_arm, double epsilon) {
 	//int num_actions = sizeof(reward_per_arm)/sizeof(reward_per_arm[0]);
 
 	double rand_number = ((double) rand() / (RAND_MAX));
-
-	//printf("Epsilon = %f - rand_number = %f\n", epsilon, rand_number);
-
 	int arm_index;
 
 	if (rand_number < epsilon) {
 		//EXPLORE
 		arm_index = rand() % num_actions;
-		//printf("EXPLORE: arm_index = %d\n", arm_index);
+//		printf("EXPLORE: arm_index = %d\n", arm_index);
 	} else {
 		//EXPLOIT
 		double max = 0;
 		for (int i = 0; i < num_actions; i ++) {
-			// printf("reward_per_arm[%d] = %f\n",i,reward_per_arm[i]);
+//			printf("reward_per_arm[%d] = %f\n",i,reward_per_arm[i]);
 			if(reward_per_arm[i] >= max) {
 				max = reward_per_arm[i];
 				arm_index = i;
 			}
 		}
 
-		//printf("EXPLOIT: arm_index = %d\n", arm_index);
+//		printf("EXPLOIT: arm_index = %d\n", arm_index);
 	}
 
 
@@ -152,14 +149,6 @@ void index2values(int *indexes, int action_ix, int size_channels, int size_cca, 
 
 }
 
-void index2valuesADCB(int *indexes, int action_ix) {
-
-	indexes[0] = (int) action_ix/(3 * 4);
-	indexes[1] = (int) (action_ix - indexes[0] * (3*4)) / 4;
-	indexes[2] = action_ix % 4;
-
-}
-
 /*
  * values2index(): given different indexes of actions, outputs the index of the
  * joint action (which represents a combination of each parameter)
@@ -186,16 +175,6 @@ int values2index(int *indexes, int size_channels, int size_cca, int size_tx_powe
 						+ indexes[1] * (size_tx_power * size_dcb_policy)
 						+ indexes[2] * size_dcb_policy
 						+ indexes[3];
-
-	return index;
-
-}
-
-int values2indexADCB(int *indexes) {
-
-	int index = indexes[0] * (3 * 4)
-						+ indexes[1] * (4)
-						+ indexes[2];
 
 	return index;
 
@@ -266,16 +245,6 @@ void FindIndexesOfConfiguration(int *indexes_selected_arm, Configuration &config
 	indexes_selected_arm[1] = index_cca;
 	indexes_selected_arm[2] = index_tx_power;
 	indexes_selected_arm[3] = index_dcb_policy;
-
-	//printf("Indexes: %d, %d, %d\n", indexes_selected_arm[0],indexes_selected_arm[1],indexes_selected_arm[2]);
-
-}
-
-void FindIndexesOfConfigurationADCB(int *indexes_selected_arm, Configuration &configuration) {
-
-	indexes_selected_arm[0] = configuration.a_s2;
-	indexes_selected_arm[1] = configuration.a_s3;
-	indexes_selected_arm[2] = configuration.a_s4;
 
 	//printf("Indexes: %d, %d, %d\n", indexes_selected_arm[0],indexes_selected_arm[1],indexes_selected_arm[2]);
 

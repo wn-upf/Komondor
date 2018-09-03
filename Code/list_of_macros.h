@@ -210,7 +210,7 @@
 #define TRAFFIC_POISSON_BURST					3	// Traffic is generated in bursts following a Poisson distribution
 #define TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION	99	// Transmitters always have the same packet pending to be transmitted
 
-#define PACKET_BUFFER_SIZE		100		// Size of the packets buffer
+#define PACKET_BUFFER_SIZE		150		// Size of the packets buffer
 
 // Protocols
 #define INCREASE_CW 1		// Command to increase contention window
@@ -259,11 +259,13 @@
 #define IEEE_AX_OFDM_SYMBOL_GI32_DURATION	(16 * MICRO_VALUE)	// Duration of OFDM symbol (for guard interval 3.2) [s]
 #define IEEE_AX_PHY_LEGACY_DURATION 		(20 * MICRO_VALUE)	// Duration of legacy PHY header [s]
 #define IEEE_AX_PHY_HE_SU_DURATION	 		(164 * MICRO_VALUE)	// HE single-user preamble [s]
+
 // #define IEEE_AX_PHY_HE_SU_DURATION	 		(32 * MICRO_VALUE)	// HE single-user preamble [s]
 
 // --- MAC parameters ---
 #define IEEE_AX_SF_LENGTH				16					// Service field length [bits]
 #define IEEE_AX_MD_LENGTH				32					// MPDU delimiter if packet aggregation is used [bits]
+
 #define IEEE_AX_MH_LENGTH				320					// MAC header including FCS [bits]
 //#define IEEE_AX_MH_LENGTH				272					// MAC header including FCS [bits]
 #define IEEE_AX_TB_LENGTH				18					// Tail length [bits]
@@ -399,12 +401,13 @@
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1
-#define IX_AGENT_TIME_BW_REQUESTS		2
-#define IX_AGENT_CHANNEL_VALUES			3
-#define IX_AGENT_CCA_VALUES				4
-#define IX_AGENT_TX_POWER_VALUES		5
-#define IX_AGENT_DCB_POLICY				6
-#define IX_AGENT_TYPE_OF_REWARD			7
+#define IX_CENTRALIZED_FLAG				2
+#define IX_AGENT_TIME_BW_REQUESTS		3
+#define IX_AGENT_CHANNEL_VALUES			4
+#define IX_AGENT_CCA_VALUES				5
+#define IX_AGENT_TX_POWER_VALUES		6
+#define IX_AGENT_DCB_POLICY				7
+#define IX_AGENT_TYPE_OF_REWARD			8
 
 #define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, CCA, P_tx, DCB policy)
 

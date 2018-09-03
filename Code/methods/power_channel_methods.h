@@ -192,9 +192,8 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	  int L_iw = 5;     // Penetration for a single wall (dB)
 
 	  //double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
-	  int min_d = distance;
+	  double min_d = distance;
 	  if (distance > 5) { min_d = 5; }
-
 	  double central_frequency_ghz = central_frequency / pow(10,9);
 
 	  double LFS = 40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
@@ -329,13 +328,7 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 
 		pl_overall_db = pl_free_space_db + alpha * distance;
 
-		//printf("d = %f\n", distance);
-		//printf("PL = %f\n", pl_overall_db);
-
 		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
-
-		//printf("P_rx = %f\n", pw_received_dbm);
-		//printf("-----------------------\n");
 
 		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
 
@@ -380,7 +373,6 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 		break;
 
 	}
-
 	default:{
 	  printf("Path loss model not found!\n");
 	  break;
@@ -1100,152 +1092,6 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 	}
 
 }
-
-
-/*
- * IdentifyStateADCB: identifies the ADCB state
- **/
-int IdentifyStateADCB(int *channels_free, int min_channel_allowed, int max_channel_allowed,
-		int primary_channel, int num_channels_system){
-
-	int state_adcb = -1;
-	// Get left and right channels available (or free)
-	int left_free_ch_is_set = 0;	// True if left channel could be set true
-	int right_free_ch = 0;
-
-	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-
-		if(channels_free[c]){
-
-			if(!left_free_ch_is_set){
-				left_free_ch_is_set = TRUE;
-			}
-
-			if(right_free_ch < c){
-				right_free_ch = c;
-			}
-		}
-	}
-
-	// SERGIO 18/09/2017:
-	// - Modify CB policies. Identify first of all the log2 channel ranges available
-	int all_channels_free_in_range = TRUE;	// auxiliar variable for identifying free channel ranges
-
-	// Check primary
-	if(channels_free[primary_channel]) state_adcb = 1;
-
-	// Check primary and 1 secondary
-	if(num_channels_system > 1){
-		if(primary_channel % 2 == 1){	// If primary is odd
-			if(channels_free[primary_channel - 1]) state_adcb = 2;
-		} else{
-			if(channels_free[primary_channel + 1]) state_adcb = 2;
-		}
-	}
-
-	// Check primary and 3 secondaries
-	if(num_channels_system > 3){
-		if(primary_channel > 3){	// primary in channel range 4-7
-			for(int c = 0; c < 4; c++){
-				if(!channels_free[4 + c]) all_channels_free_in_range = FALSE;
-			}
-			if(all_channels_free_in_range) state_adcb = 3;
-
-		} else { // primary in channel range 0-3
-			for(int c = 0; c < 4; c++){
-				if(!channels_free[c]) all_channels_free_in_range = FALSE;
-			}
-			if(all_channels_free_in_range) state_adcb = 3;
-		}
-	}
-
-	// Check primary and 7 secondaries (full system range)
-	if(num_channels_system > 7){
-		for(int c = 0; c < 8; c++){
-			if(!channels_free[c]) all_channels_free_in_range = FALSE;
-		}
-		if(all_channels_free_in_range) state_adcb = 4;
-	}
-
-	return state_adcb;
-
-}
-
-
-/*
- * GetTxChannelsByADCB: identifies the channels to TX depending on the ADCB state
- **/
-void GetTxChannelsByADCB(int *channels_for_tx, int mab_action, int min_channel_allowed, int max_channel_allowed,
-		int primary_channel){
-
-	// Reset channels for transmitting
-	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
-		channels_for_tx[c] = FALSE;
-	}
-
-	// mab_action = 0, 1, 2, 3
-	switch(mab_action){
-
-		case 0:{
-			channels_for_tx[primary_channel] = TRUE;
-			break;
-		}
-
-		case 1:{
-
-			channels_for_tx[primary_channel] = TRUE;
-
-			if(primary_channel % 2 == 1){	// If primary is odd
-				channels_for_tx[primary_channel - 1] = TRUE;
-			} else{
-				channels_for_tx[primary_channel + 1] = TRUE;
-			}
-
-			break;
-		}
-
-		case 2:{
-
-			channels_for_tx[primary_channel] = TRUE;
-
-			if(primary_channel % 2 == 1){	// If primary is odd
-				channels_for_tx[primary_channel - 1] = TRUE;
-			} else{
-				channels_for_tx[primary_channel + 1] = TRUE;
-			}
-
-			// Check primary and 3 secondaries
-			if(primary_channel > 3){	// primary in channel range 4-7
-
-				channels_for_tx[4] = TRUE;
-				channels_for_tx[5] = TRUE;
-				channels_for_tx[6] = TRUE;
-				channels_for_tx[7] = TRUE;
-
-			} else { // primary in channel range 0-3
-
-				channels_for_tx[0] = TRUE;
-				channels_for_tx[1] = TRUE;
-				channels_for_tx[2] = TRUE;
-				channels_for_tx[3] = TRUE;
-			}
-
-			break;
-		}
-
-		case 3:{
-
-			for(int c = 0; c < 8; c ++){
-				channels_for_tx[c] = TRUE;
-			}
-
-			break;
-
-		}
-	}
-
-}
-
 
 /*
  * UpdateTimestamptChannelFreeAgain: updates the timestamp at which channels became free again

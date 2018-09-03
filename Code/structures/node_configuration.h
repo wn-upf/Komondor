@@ -118,11 +118,6 @@ struct Configuration
 
 	Capabilities capabilities;
 
-	// Paper 3 ADCB
-	int a_s2;
-	int a_s3;
-	int a_s4;
-
 	// Function to print the node's configuration
 	void PrintConfiguration(int origin){
 

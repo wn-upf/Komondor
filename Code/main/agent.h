@@ -77,7 +77,10 @@ component Agent : public TypeII{
 		// Communication with AP
 		void RequestInformationToAp();
 		void ComputeNewConfiguration();
-		void SendNewConfigurationToAp();
+		void SendNewConfigurationToAp(Configuration &configuration_to_send);
+
+		// Communication with other Agents (distributed methods)
+
 
 		// Handle rewards
 		void GenerateRewardSelectedArm();
@@ -98,6 +101,7 @@ component Agent : public TypeII{
 
 		// Specific to each agent
 		int agent_id; 			// Node identifier
+		int centralized;		// Indicates whether the node is controlled by a central entity or not
 		std::string wlan_code;
 		int *list_of_channels; 	// List of channels
 		double *list_of_cca_values;	// List of CCA values
@@ -130,11 +134,11 @@ component Agent : public TypeII{
 		int print_agent_logs;
 
 		std::string simulation_code;				// Simulation code
-
 	// Private items (just for node operation)
 	private:
 		Configuration configuration;
 		Configuration new_configuration;
+		Configuration configuration_from_controller;
 
 		Report report;
 
@@ -150,9 +154,16 @@ component Agent : public TypeII{
 		// INPORT connections for receiving notifications
 		inport void inline InportReceivingInformationFromAp(Configuration &configuration, Report &report);
 
+		// INPORT (centralized system only)
+		inport void inline InportReceivingRequestFromController(int destination_agent_id);
+		inport void inline InportReceiveConfigurationFromController(int destination_agent_id, Configuration &new_configuration);
+
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAp();
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
+
+		// OUTPORT (centralized system only)
+		outport void outportAnswerToController(Configuration &configuration, Report &report, int agent_id);
 
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap; // Timer for requesting information to the AP
@@ -189,25 +200,31 @@ void Agent :: Start(){
 		agent_logger.file = output_log_file;
 		agent_logger.SetVoidHeadString();
 	}
-
-	// Paper 3 ADCB
+	
+	// TODO: agent output filename
 	// Name agent log file accordingly to the agent_id
-	sprintf(own_file_path,"../output/agents_output_%s", simulation_code.c_str());
-	remove(own_file_path);
-	output_log_file = fopen(own_file_path, "at");
-	agent_logger.save_logs = save_agent_logs;
-	agent_logger.file = output_log_file;
-	agent_logger.SetVoidHeadString();
+	// sprintf(own_file_path,"../output/agents_output_%s", simulation_code.c_str());
+	// remove(own_file_path);
+	// output_log_file = fopen(own_file_path, "at");
+	// agent_logger.save_logs = save_agent_logs;
+	// agent_logger.file = output_log_file;
+	// agent_logger.SetVoidHeadString();
 	// fprintf(agent_logger.file, "%s;",simulation_code.c_str());
 	// ----
 
 	if(save_agent_logs) fprintf(agent_logger.file,"%.18f;A%d;%s;%s Start()\n",
 			SimTime(), agent_id, LOG_B00, LOG_LVL1);
 
-	// Generate the first request, to be triggered after "time_between_requests"
-	// *** We generate here the first request in order to obtain the AP's configuration
-	double extra_wait_test = 0.005 * (double) agent_id;
-	trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests + extra_wait_test,13,12));
+
+	if(centralized) {
+		// --- Do nothing ---
+		// In case of being centralized, wait for a request from the controller
+	} else {
+		// Generate the first request, to be triggered after "time_between_requests"
+		// *** We generate here the first request in order to obtain the AP's configuration
+		double extra_wait_test = 0.005 * (double) agent_id;
+		trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests + extra_wait_test,13,12));
+	}
 
 };
 
@@ -226,10 +243,6 @@ void Agent :: Stop(){
 	// Close node logs file
 	if(save_agent_logs) fclose(agent_logger.file);
 
-	// Paper 3 ADCB
-	fclose(agent_logger.file);
-	// ----
-
 };
 
 /**************************/
@@ -246,9 +259,9 @@ void Agent :: Stop(){
 void Agent :: RequestInformationToAp(trigger_t &){
 
 //	printf("%s Agent #%d: Requesting information to AP\n", LOG_LVL1, agent_id);
-	if(save_agent_logs) fprintf(agent_logger.file, "----------------------------------------------------------------\n");
+	if(save_agent_logs && !centralized) fprintf(agent_logger.file, "----------------------------------------------------------------\n");
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s RequestInformationToAp() %d\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s RequestInformationToAp() (request #%d)\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1, num_requests);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Requesting information to AP\n",
@@ -269,7 +282,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 //	printf("%s Agent #%d: Message received from the AP\n", LOG_LVL1, agent_id);
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s InportReceivingInformationFromAp()\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s InportReceivingInformationFromAp()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s New information has been received from the AP\n",
@@ -281,12 +294,18 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	report = received_report;
 
-	// Generate the reward for the last selected action
-	GenerateRewardSelectedArm();
+	if (centralized) {
+		// Forward the information to the controller
+		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Answering to the controller with current information\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL2);
+		outportAnswerToController(configuration, report, agent_id);
 
-	// Compute a new configuration according to the updated rewards
-	ComputeNewConfiguration();
-
+	} else {
+		// Generate the reward for the last selected action
+		GenerateRewardSelectedArm();
+		// Compute a new configuration according to the updated rewards
+		ComputeNewConfiguration();
+	}
 
 };
 
@@ -299,7 +318,7 @@ void Agent :: ComputeNewConfiguration(){
 
 	//printf("%s Agent #%d: Computing a new configuration\n", LOG_LVL1, agent_id);
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s ComputeNewConfiguration()\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s ComputeNewConfiguration()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Computing a new configuration\n",
@@ -310,52 +329,54 @@ void Agent :: ComputeNewConfiguration(){
 
 	// Generate new configuration according to the algorithm's output
 	epsilon = initial_epsilon / sqrt( (double) num_epsilon_iterations);
-	ix_selected_arm = PickArmEgreedy(num_actions, average_reward_per_arm, epsilon);
-	//ix_selected_arm = 23;
-	//ix_selected_arm = 0;
 
+	ix_selected_arm = PickArmEgreedy(num_actions, average_reward_per_arm, epsilon);
 	//printf("ix_selected_arm = %d\n",ix_selected_arm);
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Epsilon-greedy iteration #%d (eps = %.3f) selected arm %d\n",
 				SimTime(), agent_id, LOG_C00, LOG_LVL2,
 				num_epsilon_iterations, epsilon, ix_selected_arm);
 
-	times_arm_has_been_selected[ix_selected_arm]++;
-	num_epsilon_iterations++;
+	times_arm_has_been_selected[ix_selected_arm] ++;
+	num_epsilon_iterations ++;
 	//PrintSelectedAction();
 
 	// Generate new configuration
 	new_configuration = GenerateNewConfiguration();
 
 	// Send the configuration to the AP
-	SendNewConfigurationToAp();
+	SendNewConfigurationToAp(new_configuration);
 
 }
 
 /*
  * SendNewConfigurationToAp():
  * Input arguments:
- * - to be defined
+ * - configuration_to_send: Configuration struct that is sent to the corresponding AP
  */
-void Agent :: SendNewConfigurationToAp(){
+void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
 
 //	printf("%s Agent #%d: Sending new configuration to AP\n", LOG_LVL1, agent_id);
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s SendNewConfigurationToAp()\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s SendNewConfigurationToAp()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Sending a new configuration to the AP\n",
 			SimTime(), agent_id, LOG_C00, LOG_LVL2);
 
-	if(save_agent_logs) WriteConfiguration(new_configuration);
+	if(save_agent_logs) WriteConfiguration(configuration_to_send);
 
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
-	outportSendConfigurationToAp(new_configuration);
+	outportSendConfigurationToAp(configuration_to_send);
 
-	// Set trigger for next request
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Next request to be sent at %f\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, fix_time_offset(SimTime() + time_between_requests,13,12));
+	// Set trigger for next request in case of being an independent agent (not controlled by a central entity)
+	if (!centralized) {
+		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Next request to be sent at %f\n",
+				SimTime(), agent_id, LOG_C00, LOG_LVL2, fix_time_offset(SimTime() + time_between_requests,13,12));
 
-	trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
+		trigger_request_information_to_ap.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
+	} else {
+		if(save_agent_logs) fprintf(agent_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	}
 
 };
 
@@ -366,13 +387,9 @@ void Agent :: SendNewConfigurationToAp(){
 Configuration Agent :: GenerateNewConfiguration(){
 
 	// Step 1: According to the selected arm, find each configuration
-//	int indexes_selected_arm[NUM_FEATURES_ACTIONS]; // 4 features considered
-//	index2values(indexes_selected_arm, ix_selected_arm,
-//			num_actions_channel, num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
-
-	// Paper 3 ADCB
-	int indexes_selected_arm[3]; // 3 features considered
-	index2valuesADCB(indexes_selected_arm, ix_selected_arm);
+	int indexes_selected_arm[NUM_FEATURES_ACTIONS]; // 4 features considered
+	index2values(indexes_selected_arm, ix_selected_arm,
+			num_actions_channel, num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
 
 	// Step 2: build configuration accordingly
 	Configuration new_configuration;
@@ -380,18 +397,73 @@ Configuration Agent :: GenerateNewConfiguration(){
 
 	new_configuration.timestamp = SimTime();
 	// TODO: by now, consider only 1 channel (left ch. = right ch.)
-//	new_configuration.selected_primary_channel = list_of_channels[indexes_selected_arm[0]];
-//	new_configuration.selected_cca = list_of_cca_values[indexes_selected_arm[1]];
-//	new_configuration.selected_tx_power = list_of_tx_power_values[indexes_selected_arm[2]];
-//	new_configuration.selected_dcb_policy = list_of_dcb_policy[indexes_selected_arm[3]];
-
-	// Paper 3 ADCB
-
-	new_configuration.a_s2 = indexes_selected_arm[0];
-	new_configuration.a_s3 = indexes_selected_arm[1];
-	new_configuration.a_s4 = indexes_selected_arm[2];
+	new_configuration.selected_primary_channel = list_of_channels[indexes_selected_arm[0]];
+	//new_configuration.selected_left_channel = list_of_channels[indexes_selected_arm[0]];
+	//new_configuration.selected_right_channel = list_of_channels[indexes_selected_arm[0]];
+	new_configuration.selected_cca = list_of_cca_values[indexes_selected_arm[1]];
+	new_configuration.selected_tx_power = list_of_tx_power_values[indexes_selected_arm[2]];
+	new_configuration.selected_dcb_policy = list_of_dcb_policy[indexes_selected_arm[3]];
 
 	return new_configuration;
+
+}
+
+/*******************************/
+/*******************************/
+/*  CENTRAL CONTROLLER METHODS */
+/*******************************/
+/*******************************/
+
+/*
+ * InportReceivingRequestFromAgent(): called when some agent answers for information to the AP
+ * Input arguments:
+ * -
+ */
+void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
+
+//	printf("%s Agent #%d: New information request received from the Controller\n", LOG_LVL1, agent_id);
+
+	if(agent_id == destination_agent_id) {
+
+		if(save_agent_logs) fprintf(agent_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+
+		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s New information request received from the Controller for Agent %d\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
+
+		trigger_request_information_to_ap.Set(fix_time_offset(SimTime(),13,12));
+
+	} else {
+
+//		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s I am NOT the destination!\n",
+//			SimTime(), agent_id, LOG_F02, LOG_LVL3);
+
+	}
+
+}
+
+/*
+ * InportReceiveConfigurationFromAgent(): called when some agent sends instructions to the AP
+ * Input arguments:
+ * -
+ */
+void Agent :: InportReceiveConfigurationFromController(int destination_agent_id, Configuration &received_configuration) {
+
+	if(agent_id == destination_agent_id) {
+
+		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s New configuration received from the Controller to Agent %d\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
+
+		//	printf("%s Agent #%d: New configuration received from the Controller\n", LOG_LVL1, agent_id);
+
+		configuration_from_controller = received_configuration;
+		SendNewConfigurationToAp(configuration_from_controller);
+
+	} else {
+
+//		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s I am NOT the destination!\n",
+//			SimTime(), agent_id, LOG_F02, LOG_LVL3);
+
+	}
 
 }
 
@@ -408,7 +480,7 @@ Configuration Agent :: GenerateNewConfiguration(){
  */
 void Agent :: GenerateRewardSelectedArm() {
 
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;N%d;%s;%s GenerateRewardSelectedArm()\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s GenerateRewardSelectedArm()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
 	double reward;
@@ -445,9 +517,8 @@ void Agent :: GenerateRewardSelectedArm() {
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s throughput = %.2f Mbps\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput * pow(10,-6));
 
-			// Paper 3 ADCB
-			fprintf(agent_logger.file, "%.2f;", report.throughput * pow(10,-6));
-			// ----
+//			if(save_agent_logs) fprintf(agent_logger.file, "[DATA-THR];%.5f;A%d;%d;%.2f;%.5f\n",
+//							SimTime(), agent_id, ix_selected_arm, report.throughput * pow(10,-6), reward);
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %f Mbps\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput * pow(10,-6));
@@ -476,34 +547,22 @@ void Agent :: GenerateRewardSelectedArm() {
 
 	}
 
-	//	WriteConfiguration(configuration);
+//	WriteConfiguration(configuration);
 
 	// Step 1: find index according to the current configuration
-//	int indexes_selected_arm[NUM_FEATURES_ACTIONS];	// 4 features considered (primary, CCA, Pow tx, DCB policy)
-//
-//	FindIndexesOfConfiguration(indexes_selected_arm, configuration,
-//			num_actions_channel, num_actions_cca, num_actions_tx_power, num_actions_dcb_policy,
-//			list_of_channels, list_of_cca_values, list_of_tx_power_values, list_of_dcb_policy);
-//
-//	ix_selected_arm = values2index(indexes_selected_arm,
-//			num_actions_channel, num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
-//
-//	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s ix_selected_arm = %d ([%d %d %d %d])\n",
-//			SimTime(), agent_id, LOG_C00, LOG_LVL2,
-//			ix_selected_arm, indexes_selected_arm[0], indexes_selected_arm[1],
-//			indexes_selected_arm[2], indexes_selected_arm[3]);
+	int indexes_selected_arm[NUM_FEATURES_ACTIONS];	// 4 features considered (primary, CCA, Pow tx, DCB policy)
 
-	// Paper 3 ADCB
-	int indexes_selected_arm[3];	// 3 features considered (a2, a3, a4)
+	FindIndexesOfConfiguration(indexes_selected_arm, configuration,
+			num_actions_channel, num_actions_cca, num_actions_tx_power, num_actions_dcb_policy,
+			list_of_channels, list_of_cca_values, list_of_tx_power_values, list_of_dcb_policy);
 
-	FindIndexesOfConfigurationADCB(indexes_selected_arm, configuration);
+	ix_selected_arm = values2index(indexes_selected_arm,
+			num_actions_channel, num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
 
-	ix_selected_arm = values2indexADCB(indexes_selected_arm);
-
-	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s ix_selected_arm = %d ([%d %d %d])\n",
+	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s ix_selected_arm = %d ([%d %d %d %d])\n",
 			SimTime(), agent_id, LOG_C00, LOG_LVL2,
 			ix_selected_arm, indexes_selected_arm[0], indexes_selected_arm[1],
-			indexes_selected_arm[2]);
+			indexes_selected_arm[2], indexes_selected_arm[3]);
 
 	// Step 2: set the reward accordingly
 	if(ix_selected_arm >= 0) {
@@ -541,12 +600,10 @@ void Agent :: InitializeAgent() {
 	list_of_tx_power_values = new double[num_actions_tx_power];
 	list_of_dcb_policy = new int[num_actions_dcb_policy];
 
-	// num_actions = num_actions_channel * num_actions_cca * num_actions_tx_power * num_actions_dcb_policy;
-	// Paper 3 ADCB
-	num_actions = 2*3*4; // 24
+	num_actions = num_actions_channel * num_actions_cca * num_actions_tx_power * num_actions_dcb_policy;
 
 	// Generate actions
-	actions = new Action[num_actions];	// TODO: this is not used (?)
+	actions = new Action[num_actions];
 
 	// Initialize the rewards assigned to each arm
 	reward_per_arm = new double[num_actions];
@@ -587,6 +644,7 @@ void Agent :: PrintAgentInfo(){
 
 	printf("%s Agent %d info:\n", LOG_LVL3, agent_id);
 	printf("%s wlan_code = %s\n", LOG_LVL4, wlan_code.c_str());
+	printf("%s centralized = %d\n", LOG_LVL4, centralized);
 	printf("%s time_between_requests = %f\n", LOG_LVL4, time_between_requests);
 	printf("%s type_of_reward = %d\n", LOG_LVL4, type_of_reward);
 	printf("%s initial_reward = %f\n", LOG_LVL4, initial_reward);
@@ -626,45 +684,25 @@ void Agent :: PrintAgentInfo(){
  */
 void Agent :: PrintAction(int action_ix, int detail){
 
-//	int indexes_selected_arm[NUM_FEATURES_ACTIONS];	// 4 features considered
-//
-//	index2values(indexes_selected_arm, action_ix, num_actions_channel,
-//			num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
-//
-//	printf("%s Action %d ([%d %d %d %d]\n", LOG_LVL2,
-//			action_ix, indexes_selected_arm[0], indexes_selected_arm[1], indexes_selected_arm[2], indexes_selected_arm[3]);
-//
-//	if(detail){
-//
-//		printf("%s Channel: %d\n", LOG_LVL3,
-//					 list_of_channels[indexes_selected_arm[0]]);
-//		printf("%s CCA: %.2f dBm\n", LOG_LVL3,
-//				ConvertPower(PW_TO_DBM, list_of_cca_values[indexes_selected_arm[1]]));
-//		printf("%s Tx Power: %.2f dBm\n", LOG_LVL3,
-//				ConvertPower(PW_TO_DBM, list_of_tx_power_values[indexes_selected_arm[2]]));
-//		printf("%s DCB policy: %d\n", LOG_LVL3,
-//				list_of_dcb_policy[indexes_selected_arm[3]]);
-//	}
+	int indexes_selected_arm[NUM_FEATURES_ACTIONS];	// 4 features considered
 
-	// PAPER 3 ADCB
-	int indexes_selected_arm[3];
+	index2values(indexes_selected_arm, action_ix, num_actions_channel,
+			num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
 
-		index2valuesADCB(indexes_selected_arm, action_ix);
+	printf("%s Action %d ([%d %d %d %d]\n", LOG_LVL2,
+			action_ix, indexes_selected_arm[0], indexes_selected_arm[1], indexes_selected_arm[2], indexes_selected_arm[3]);
 
-		printf("%s Action %d ([%d %d %d]\n", LOG_LVL2,
-				action_ix, indexes_selected_arm[0], indexes_selected_arm[1], indexes_selected_arm[2]);
+	if(detail){
 
-		if(detail){
-
-			printf("%s Channel: %d\n", LOG_LVL3,
-						 list_of_channels[indexes_selected_arm[0]]);
-			printf("%s CCA: %.2f dBm\n", LOG_LVL3,
-					ConvertPower(PW_TO_DBM, list_of_cca_values[indexes_selected_arm[1]]));
-			printf("%s Tx Power: %.2f dBm\n", LOG_LVL3,
-					ConvertPower(PW_TO_DBM, list_of_tx_power_values[indexes_selected_arm[2]]));
-			printf("%s DCB policy: %d\n", LOG_LVL3,
-					list_of_dcb_policy[indexes_selected_arm[3]]);
-		}
+		printf("%s Channel: %d\n", LOG_LVL3,
+					 list_of_channels[indexes_selected_arm[0]]);
+		printf("%s CCA: %.2f dBm\n", LOG_LVL3,
+				ConvertPower(PW_TO_DBM, list_of_cca_values[indexes_selected_arm[1]]));
+		printf("%s Tx Power: %.2f dBm\n", LOG_LVL3,
+				ConvertPower(PW_TO_DBM, list_of_tx_power_values[indexes_selected_arm[2]]));
+		printf("%s DCB policy: %d\n", LOG_LVL3,
+				list_of_dcb_policy[indexes_selected_arm[3]]);
+	}
 
 }
 
