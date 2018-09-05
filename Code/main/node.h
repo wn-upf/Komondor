@@ -490,7 +490,7 @@ void Node :: Start(){
 		TrafficGenerator();
 
 		// if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
-		if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + 1900);
+		if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + 980);
 
 	} else {
 		current_destination_id = wlan.ap_id;	// TODO: for uplink traffic. Set STAs destination to the GW
@@ -1808,11 +1808,11 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							data_frames_acked++;
 							num_delay_measurements ++;
 							sum_delays += (SimTime() - buffer.GetFirstPacket().timestamp_generated);
-							if(save_node_logs) fprintf(node_logger.file,
-								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
-								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
-								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
-								buffer.GetFirstPacket().timestamp_generated);
+//							if(save_node_logs) fprintf(node_logger.file,
+//								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
+//								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
+//								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
+//								buffer.GetFirstPacket().timestamp_generated);
 
 							buffer.DelFirstPacket();
 
@@ -2170,11 +2170,8 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS per number of channels: ",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
 
-		// printf("- N%d MCS per number of channels: ", current_destination_id);
-
 		// Set receiver modulation to the received one
 		for (int i = 0; i < NUM_OPTIONS_CHANNEL_LENGTH; i++){
-
 			mcs_per_node[ix_aux][i] = notification.tx_info.modulation_schemes[i];
 			if(save_node_logs) fprintf(node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
 
@@ -2330,6 +2327,11 @@ void Node :: TrafficGenerator() {
 void Node :: NewPacketGenerated(trigger_t &){
 
 	if(node_is_transmitter){
+
+		if(buffer.QueueSize() == 0){
+			// - compute average waiting time to access the channel
+			timestamp_new_trial_started = SimTime();
+		}
 
 		if(traffic_model != TRAFFIC_POISSON_BURST) { // NON-BURST TRAFFIC (i.e., packet by packet)
 
@@ -3618,12 +3620,12 @@ void Node :: RestartNode(int called_by_time_out){
 	trigger_recover_cts_timeout.Cancel();
 	trigger_start_backoff.Cancel();
 
-	// Sergio on June 26 th
-	// - compute average waiting time to access the channel
-	timestamp_new_trial_started = SimTime();
-
 	// Generate new BO in case of being a TX node
 	if(node_is_transmitter && buffer.QueueSize() > 0){
+
+		// Sergio on June 26 th
+		// - compute average waiting time to access the channel
+		timestamp_new_trial_started = SimTime();
 
 		// Set the ID of the next packet
 		packet_id++;
@@ -4279,6 +4281,7 @@ void Node :: InitializeVariables() {
 
 	burst_rate = 10;
 	num_bursts = 0;
+
 	/*
 	 * END OF HARDCODED INITIALIZATION
 	 */
@@ -4294,6 +4297,7 @@ void Node :: InitializeVariables() {
 	num_packets_generated = 0;
 	num_packets_dropped = 0;
 
+
 	time_for_next_packet = 0;
 	num_channels_tx = 0;
 
@@ -4301,6 +4305,7 @@ void Node :: InitializeVariables() {
 	delta_measure_rho = 0.00001;
 	num_measures_rho = 0;
 	num_measures_rho_accomplished = 0;
+	average_utilization = 0;
 	average_rho = 0;
 	bandwidth_used_txing = 0;
 
@@ -4371,6 +4376,7 @@ void Node :: InitializeVariables() {
 	expected_backoff = 0;
 	remaining_backoff = 0;
 	num_new_backoff_computations = 0;
+
 	data_packets_acked = 0;
 	data_frames_acked = 0;
 
@@ -4432,7 +4438,7 @@ void Node :: InitializeVariables() {
 			mcs_per_node[i][j] = -1;
 		}
 	}
-	
+
 	first_time_requesting_mcs = TRUE;
 
 	/* NULL notification for Valgrind issues */
