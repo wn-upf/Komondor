@@ -1,4 +1,4 @@
-\begin{thebibliography}{10}
+\begin{thebibliography}{1}
 
 \bibitem{barrachina2017komondor}
 Sergio Barrachina-Mu\~noz and Francesc Wilhelmi.
@@ -20,32 +20,6 @@ Boris Bellalta.
 \newblock Ieee 802.11 ax: High-efficiency wlans.
 \newblock {\em IEEE Wireless Communications}, 23(1):38--46, 2016.
 
-\bibitem{wilhelmi2017implications}
-Francesc Wilhelmi, Boris Bellalta, Cristina Cano, and Anders Jonsson.
-\newblock Implications of decentralized q-learning resource allocation in
-  wireless networks.
-\newblock {\em arXiv preprint arXiv:1705.10508}, 2017.
-
-\bibitem{wilhelmi2017collaborative}
-Francesc Wilhelmi, Boris Bellalta, Jonsson Anders Neu~Gergely Cano, Cristina,
-  and Sergio Barrachina.
-\newblock Collaborative spatial reuse in wireless networks via selfish bandits.
-\newblock {\em arXiv preprint arXiv:1705.10508}, 2017.
-
-\bibitem{maghsudi2015joint}
-Setareh Maghsudi and S{\l}awomir Sta{\'n}czak.
-\newblock Joint channel selection and power control in infrastructureless
-  wireless networks: A multiplayer multiarmed bandit framework.
-\newblock {\em IEEE Transactions on Vehicular Technology}, 64(10):4565--4578,
-  2015.
-
-\bibitem{maghsudi2015channel}
-Setareh Maghsudi and S{\l}awomir Sta{\'n}czak.
-\newblock Channel selection for network-assisted d2d communication via
-  no-regret bandit learning with calibrated forecastingtre.
-\newblock {\em IEEE Transactions on Wireless Communications}, 14(3):1309--1322,
-  2015.
-
 \bibitem{hata1980empirical}
 Masaharu Hata.
 \newblock Empirical formula for propagation loss in land mobile radio services.
@@ -60,11 +34,10 @@ Boris Bellalta, Alessandro Zocca, Cristina Cano, Alessandro Checco, Jaume
 \newblock In {\em Wireless Networking for Moving Objects}, pages 115--133.
   Springer, 2014.
 
-\bibitem{bianchi2000performance}
-Giuseppe Bianchi.
-\newblock Performance analysis of the ieee 802.11 distributed coordination
-  function.
-\newblock {\em IEEE Journal on selected areas in communications},
-  18(3):535--547, 2000.
+\bibitem{barrachina2018performance}
+Sergio Barrachina-Munoz, Francesc Wilhelmi, and Boris Bellalta.
+\newblock Performance analysis of dynamic channel bonding in spatially
+  distributed high density wlans.
+\newblock {\em arXiv preprint arXiv:1801.00594}, 2018.
 
 \end{thebibliography}
