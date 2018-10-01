@@ -272,6 +272,7 @@
 //#define IEEE_AX_TB_LENGTH				6					// Tail length [bits]
 #define IEEE_AX_RTS_LENGTH				160					// RTS length [bits]
 #define IEEE_AX_CTS_LENGTH				112					// CTS length [bits]
+#define IEEE_AX_ACK_LENGTH				112					// ACK length [bits]
 #define IEEE_AX_BACK_LENGTH				432					// Block-ACK length [bits]
 //#define IEEE_AX_BACK_LENGTH				240					// Block-ACK length [bits]
 

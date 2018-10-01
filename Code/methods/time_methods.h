@@ -126,7 +126,7 @@ double computeCtsTxTime80211ax(double bits_ofdm_sym_legacy){
 /*
  * computeDataTxTimeIeee80211ax: computes data transmission time
  **/
-double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_length, double data_rate){
+double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
 
 	double data_duration;
 
@@ -134,14 +134,14 @@ double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_leng
 
 		data_duration = IEEE_AX_PHY_HE_SU_DURATION
 				+ ceil( ( (double) IEEE_AX_SF_LENGTH + (double) IEEE_AX_MH_LENGTH + (double) data_packet_length
-				+ (double) IEEE_AX_TB_LENGTH ) / data_rate ) * IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
+				+ (double) IEEE_AX_TB_LENGTH ) / bits_ofdm_sym ) * IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
 
 	} else {
 
 		data_duration = IEEE_AX_PHY_HE_SU_DURATION
 				+ ceil( ( (double) IEEE_AX_SF_LENGTH + (double) num_packets_aggregated
 				* ( (double) IEEE_AX_MD_LENGTH + (double) IEEE_AX_MH_LENGTH + (double) data_packet_length )
-				+ (double) IEEE_AX_TB_LENGTH ) / data_rate ) * IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
+				+ (double) IEEE_AX_TB_LENGTH ) / bits_ofdm_sym ) * IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
 
 	}
 
@@ -153,10 +153,17 @@ double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_leng
 /*
  * computeAckTxTimeIeee80211ax: computes ACK transmission time
  **/
-double computeAckTxTime80211ax(double bits_ofdm_sym_legacy){
+double computeAckTxTime80211ax(int num_packets_aggregated, double bits_ofdm_sym_legacy){
 
-	double ack_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH + (double) IEEE_AX_BACK_LENGTH
+	double ack_duration;
+
+	if(num_packets_aggregated == 1){
+		ack_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH + (double) IEEE_AX_ACK_LENGTH
 			+ (double) IEEE_AX_TB_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
+	} else {
+		ack_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH + (double) IEEE_AX_BACK_LENGTH
+			+ (double) IEEE_AX_TB_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
+	}
 
 	//printf("ACK = %f\n", ack_duration * pow(10,6));
 

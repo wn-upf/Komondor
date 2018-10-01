@@ -2625,10 +2625,11 @@ void Node :: EndBackoff(trigger_t &){
 						Mcs_array::modulation_bits[current_modulation-1] *
 						Mcs_array::coding_rates[current_modulation-1] *
 						IEEE_AX_SU_SPATIAL_STREAMS;
+
 				rts_duration = computeRtsTxTime80211ax(bits_ofdm_sym_legacy);
 				cts_duration = computeCtsTxTime80211ax(bits_ofdm_sym_legacy);
 				data_duration = computeDataTxTime80211ax(current_num_packets_aggregated, frame_length, bits_ofdm_sym);
-				ack_duration = computeAckTxTime80211ax(bits_ofdm_sym_legacy);
+				ack_duration = computeAckTxTime80211ax(current_num_packets_aggregated, bits_ofdm_sym_legacy);
 				break;
 			}
 
