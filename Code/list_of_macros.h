@@ -258,7 +258,7 @@
 #define IEEE_AX_OFDM_SYMBOL_LEGACY			(4 * MICRO_VALUE)	// Duration of an OFDM symbol in legacy mode
 #define IEEE_AX_OFDM_SYMBOL_GI32_DURATION	(16 * MICRO_VALUE)	// Duration of OFDM symbol (for guard interval 3.2) [s]
 #define IEEE_AX_PHY_LEGACY_DURATION 		(20 * MICRO_VALUE)	// Duration of legacy PHY header [s]
-#define IEEE_AX_PHY_HE_SU_DURATION	 		(164 * MICRO_VALUE)	// HE single-user preamble [s]
+#define IEEE_AX_PHY_HE_SU_DURATION	 		(100 * MICRO_VALUE)	// HE single-user preamble [s]
 
 // #define IEEE_AX_PHY_HE_SU_DURATION	 		(32 * MICRO_VALUE)	// HE single-user preamble [s]
 
