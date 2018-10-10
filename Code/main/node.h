@@ -1067,12 +1067,32 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						} else { // No collision
 
+							if(save_node_logs) fprintf(node_logger.file,
+									"%.15f;N%d;S%d;%s;%s I am not the TX destination (N%d to N%d). Checking if new RTS/CTS can be decoded.\n",
+									SimTime(), node_id, node_state, LOG_D07, LOG_LVL2,
+									notification.source_id, notification.tx_info.destination_id);
+
 							// Check if it can be decoded to update NAV time if required
+							// Can RTS or CTS packet be decoded?
+							power_rx_interest = power_received_per_node[notification.source_id];
+
+							// Compute max interference (the highest one perceived in the reception channel range)
+							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+								notification, node_state, power_received_per_node, &channel_power);
+
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-							loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
-									current_sinr, capture_effect, current_cca,
-									power_rx_interest, constant_per, hidden_nodes_list, node_id);
+							if(save_node_logs) fprintf(node_logger.file,
+								"%.15f;N%d;S%d;%s;%s Pmax_intf[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm, sinr = %f dB\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+								channel_max_intereference, ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
+								ConvertPower(PW_TO_DBM, power_rx_interest),
+								ConvertPower(PW_TO_DBM, max_pw_interference),
+								ConvertPower(LINEAR_TO_DB,current_sinr));
+
+							loss_reason = IsPacketLost(current_primary_channel, notification, notification,
+								current_sinr, capture_effect, current_cca,
+								power_rx_interest, constant_per, hidden_nodes_list, node_id);
 
 							if (loss_reason == PACKET_NOT_LOST &&
 								ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > current_cca) {
@@ -1097,7 +1117,15 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									"%.15f;N%d;S%d;%s;%s New RTS/CTS arrived from (N%d). Setting NAV to new value %.18f\n",
 									SimTime(), node_id, node_state, LOG_D07, LOG_LVL3,
 									notification.source_id, trigger_NAV_timeout.GetTime());
+							} else {
+
+								if(save_node_logs) fprintf(node_logger.file,
+									"%.15f;N%d;S%d;%s;%s RTS/CTS sent from N%d could not be decoded for reason %d\n",
+									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
+									notification.source_id, loss_reason);
+
 							}
+							
 						}
 					}
 				}
