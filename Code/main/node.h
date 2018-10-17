@@ -168,7 +168,8 @@ component Node : public TypeII{
 		double constant_per;				// Constant PER for correct transmissions
 		int save_node_logs;					// Flag for activating the log writting of nodes
 		int print_node_logs;				// Flag for activating the printing of node logs
-		std::string simulation_code;				// Simulation code
+		std::string simulation_code;		// Simulation code
+		int capture_effect_model;			// Capture Effect model
 
 		// Channel
 		int basic_channel_bandwidth;		// Channel unit bandwidth [Hz]
@@ -599,28 +600,18 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				current_cca, num_channels_komondor, SimTime());
 
 		if(save_node_logs) {
-
 			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
-										SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
-
+				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 			for(int i = 0; i < num_channels_komondor; i++){
-
 				fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
-
 			}
 			fprintf(node_logger.file, "\n");
-
 			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
-										SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
-
+				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 			for(int i = 0; i < num_channels_komondor; i++){
-
 				fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
-
 			}
-
 			fprintf(node_logger.file, "\n");
-
 		}
 
 		// Decide action according to current state and Notification initiated
@@ -672,7 +663,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// Check if notification has been lost due to interferences or weak signal strength
 						loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id);
+								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
 
 						if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
@@ -747,7 +738,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					// See if node has to change to NAV
 					if(notification.packet_type == PACKET_TYPE_RTS
-							|| notification.packet_type == PACKET_TYPE_CTS){
+						|| notification.packet_type == PACKET_TYPE_CTS){
 
 						if(save_node_logs) fprintf(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s I am not the TX destination (N%d to N%d). Checking if RTS/CTS can be decoded.\n",
@@ -772,7 +763,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(LINEAR_TO_DB,current_sinr));
 
 						loss_reason = IsPacketLost(current_primary_channel, notification, notification, current_sinr,
-								capture_effect, current_cca, power_rx_interest, constant_per, hidden_nodes_list, node_id);
+								capture_effect, current_cca, power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
 
 						if(loss_reason == PACKET_NOT_LOST) { // RTS/CTS can be decoded
 
@@ -829,7 +820,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
 								notification.source_id, loss_reason);
 
-							// Save NAV notifcation for comparing timestamps in case of need
+							// Save NAV notification for comparing timestamps in case of need
 							outrange_nav_notification = notification;
 
 							// Check if DIFS or BO must be stopped
@@ -925,7 +916,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// Check if notification has been lost due to interferences or weak signal strength
 							loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 									current_sinr, capture_effect, current_cca,
-									power_rx_interest, constant_per, hidden_nodes_list, node_id);
+									power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
 
 							if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
@@ -1001,7 +992,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL4, notification.packet_type);
 						}
 
-					} else { // Notification not detected to happen at the sime time
+					} else { // Notification not detected to happen at the same time
 
 						// Send logical NACK to transmitter sending incoming notification for indicating the loss reason
 						LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type, notification.tx_info.packet_id,
@@ -1016,7 +1007,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					if(notification.packet_type == PACKET_TYPE_RTS ||
 							notification.packet_type == PACKET_TYPE_CTS) {	// PACKET TYPE RTS OR CTS
 
-						// TODO: determine if decodificable!
+						// TODO: determine if can be decoded!
 						if(fabs(nav_notification.timestamp - notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
 
 							if(save_node_logs) fprintf(node_logger.file,
@@ -1039,28 +1030,32 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							} else {
 
-								// if(save_node_logs) fprintf(node_logger.file,
-								//	"%.15f;N%d;S%d;%s;%s Waiting just in case of more collisions.\n",
-								//	SimTime(), node_id, node_state, LOG_D07, LOG_LVL4);
+								if (nav_notification.packet_type == notification.packet_type) {
 
-								trigger_NAV_timeout.Cancel();
+									// if(save_node_logs) fprintf(node_logger.file,
+									//	"%.15f;N%d;S%d;%s;%s Waiting just in case of more collisions.\n",
+									//	SimTime(), node_id, node_state, LOG_D07, LOG_LVL4);
 
-								// Sergio on 27/09/2017
-								// - An AP must wait EIFS after the last packet of external RTSs collisions is finished.
+									trigger_NAV_timeout.Cancel();
 
-								// Sergio on 2018/07/06: EIFS to match Bianchi model
-								time_to_trigger =
-										SimTime() + notification.tx_info.rts_duration
-										+ SIFS + notification.tx_info.cts_duration
-										- notification.tx_info.preoccupancy_duration;
+									// Sergio on 27/09/2017
+									// - An AP must wait EIFS after the last packet of external RTSs collisions is finished.
 
-								trigger_wait_collisions.Set(fix_time_offset(time_to_trigger,13,12));
+									// Sergio on 2018/07/06: EIFS to match Bianchi model
+									time_to_trigger =
+											SimTime() + notification.tx_info.rts_duration
+											+ SIFS + notification.tx_info.cts_duration
+											- notification.tx_info.preoccupancy_duration;
 
-								if(save_node_logs) fprintf(node_logger.file,
-									"%.15f;N%d;S%d;%s;%s Recovering from EIFS at %.12f (preoc. = %.12f)\n",
-									SimTime(), node_id, node_state, LOG_D07, LOG_LVL4,
-									trigger_wait_collisions.GetTime(),
-									notification.tx_info.preoccupancy_duration);	
+									trigger_wait_collisions.Set(fix_time_offset(time_to_trigger,13,12));
+
+									if(save_node_logs) fprintf(node_logger.file,
+										"%.15f;N%d;S%d;%s;%s Recovering from EIFS at %.12f (preoc. = %.12f)\n",
+										SimTime(), node_id, node_state, LOG_D07, LOG_LVL4,
+										trigger_wait_collisions.GetTime(),
+										notification.tx_info.preoccupancy_duration);
+
+								}
 							}
 
 							// Do not send NACK because node is not the destination
@@ -1092,7 +1087,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id);
+								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
 
 							if (loss_reason == PACKET_NOT_LOST &&
 								ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > current_cca) {
@@ -1191,54 +1186,112 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 							current_sinr, capture_effect, current_cca,
-							power_rx_interest, constant_per, hidden_nodes_list, node_id);
+							power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
 
-					if(loss_reason != PACKET_NOT_LOST
-							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If ongoing data packet IS LOST
+					if (capture_effect_model == CE_DEFAULT) {
 
-							// Pure collision (two nodes transmitting to me with enough power)
-							if(save_node_logs) fprintf(node_logger.file,
-									"%.15f;N%d;S%d;%s;%s Pure collision! Already receiving from N%d\n",
-									SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id);
+						if(loss_reason != PACKET_NOT_LOST
+								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If ongoing data packet IS LOST
 
-							loss_reason = PACKET_LOST_PURE_COLLISION;
+								// Pure collision (two nodes transmitting to me with enough power)
+								if(save_node_logs) fprintf(node_logger.file,
+										"%.15f;N%d;S%d;%s;%s Pure collision! Already receiving from N%d\n",
+										SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id);
 
-							// If two or more packets sent at the same time
-							if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
+								loss_reason = PACKET_LOST_PURE_COLLISION;
 
-								// SERGIO HandleSlottedBackoffCollision();
-								loss_reason = PACKET_LOST_BO_COLLISION;
+								// If two or more packets sent at the same time
+								if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
 
-								if(!node_is_transmitter) {
+									// SERGIO HandleSlottedBackoffCollision();
+									loss_reason = PACKET_LOST_BO_COLLISION;
 
-									time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
+									if(!node_is_transmitter) {
 
-									trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
+										time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
 
-								} else {
-									printf("ALARM! Should not happen in downlink traffic\n");
+										trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
+
+									} else {
+										printf("ALARM! Should not happen in downlink traffic\n");
+									}
+
 								}
 
-							}
+								// Send NACK to both ongoing transmitter and incoming interferer nodes
+								LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type, nav_notification.tx_info.packet_id,
+										node_id, nav_notification.source_id, notification.source_id, loss_reason, BER, current_sinr);
 
-							// Send NACK to both ongoing transmitter and incoming interferer nodes
-							LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type, nav_notification.tx_info.packet_id,
-									node_id, nav_notification.source_id, notification.source_id, loss_reason, BER, current_sinr);
+								SendLogicalNack(logical_nack);
+
+
+						} else {	// If ongoing data packet IS NOT LOST (incoming transmission does not affect ongoing reception)
+
+							if(save_node_logs) fprintf(node_logger.file,
+									"%.15f;N%d;S%d;%s;%s Low strength signal received while already receiving from N%d\n",
+								SimTime(), node_id, node_state, LOG_D20, LOG_LVL4, receiving_from_node_id);
+
+							// Send logical NACK to incoming transmitter indicating that node is already receiving
+							LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type, receiving_from_node_id,
+									node_id, notification.source_id, NODE_ID_NONE, PACKET_LOST_LOW_SIGNAL_AND_RX, BER, current_sinr);
 
 							SendLogicalNack(logical_nack);
 
+						}
+					} else if (capture_effect_model == CE_IEEE_802_11) {
 
-					} else {	// If ongoing data packet IS NOT LOST (incoming transmission does not affect ongoing reception)
-
-						if(save_node_logs) fprintf(node_logger.file,
-								"%.15f;N%d;S%d;%s;%s Low strength signal received while already receiving from N%d\n",
-							SimTime(), node_id, node_state, LOG_D20, LOG_LVL4, receiving_from_node_id);
-
-						// Send logical NACK to incoming transmitter indicating that node is already receiving
-						LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type, receiving_from_node_id,
-								node_id, notification.source_id, NODE_ID_NONE, PACKET_LOST_LOW_SIGNAL_AND_RX, BER, current_sinr);
-
-						SendLogicalNack(logical_nack);
+						int capture_effect_condition = power_received_per_node[notification.source_id] >
+							power_received_per_node[receiving_from_node_id] + capture_effect;
+						if (loss_reason == PACKET_NOT_LOST && capture_effect_condition) {
+							if (notification.packet_type == PACKET_TYPE_RTS) {
+								// Start decoding the new packet
+								incoming_notification = notification;
+								// Change state and update receiving info
+								data_duration = notification.tx_info.data_duration;
+								ack_duration = notification.tx_info.ack_duration;
+								rts_duration = notification.tx_info.rts_duration;
+								cts_duration = notification.tx_info.cts_duration;
+								current_left_channel = notification.left_channel;
+								current_right_channel = notification.right_channel;
+								node_state = STATE_RX_RTS;
+								receiving_from_node_id = notification.source_id;
+								receiving_packet_id = notification.tx_info.packet_id;
+								// Pause backoff as node has began a reception
+								if(node_is_transmitter) PauseBackoff();
+								// Send NACK to both ongoing transmitter and incoming interferer nodes
+								LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type, nav_notification.tx_info.packet_id,
+										node_id, NODE_ID_NONE, notification.source_id, PACKET_LOST_CAPTURE_EFFECT, BER, current_sinr);
+								SendLogicalNack(logical_nack);
+							}  else {
+								// Pure collision (two nodes transmitting to me with enough power)
+								if(save_node_logs) fprintf(node_logger.file,
+									"%.15f;N%d;S%d;%s;%s Pure collision! Already receiving from N%d\n",
+									SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id);
+								loss_reason = PACKET_LOST_PURE_COLLISION;
+								// If two or more packets sent at the same time
+								if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME) {
+									loss_reason = PACKET_LOST_BO_COLLISION;
+									if(!node_is_transmitter) {
+										time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
+										trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
+									} else {
+										printf("ALARM! Should not happen in downlink traffic\n");
+									}
+								}
+								// Send NACK to both ongoing transmitter and incoming interferer nodes
+								LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type, nav_notification.tx_info.packet_id,
+										node_id, nav_notification.source_id, notification.source_id, loss_reason, BER, current_sinr);
+								SendLogicalNack(logical_nack);
+							}
+						} else { // If ongoing data packet IS NOT LOST (incoming transmission does not affect ongoing reception)
+								if(save_node_logs) fprintf(node_logger.file,
+										"%.15f;N%d;S%d;%s;%s Low strength signal received while already receiving from N%d\n",
+									SimTime(), node_id, node_state, LOG_D20, LOG_LVL4, receiving_from_node_id);
+								// Send logical NACK to incoming transmitter indicating that node is already receiving
+								LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type, receiving_from_node_id,
+										node_id, notification.source_id, NODE_ID_NONE, PACKET_LOST_LOW_SIGNAL_AND_RX, BER, current_sinr);
+								SendLogicalNack(logical_nack);
+						}
 
 					}
 
@@ -1266,35 +1319,88 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					// Check if the notification that was already being received is lost due to new notification
 					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 							current_sinr, capture_effect, current_cca,
-							power_rx_interest, constant_per, hidden_nodes_list, node_id);
+							power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
 
 					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
 						SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, loss_reason);
 
 					if(loss_reason != PACKET_NOT_LOST) { 	// If ongoing packet reception IS LOST
 
-						// Collision by hidden node
-						if(save_node_logs) fprintf(node_logger.file,
-								"%.15f;N%d;S%d;%s;%s Collision by interferences!\n",
-								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
+//						// Collision by hidden node
+//						if(save_node_logs) fprintf(node_logger.file,
+//								"%.15f;N%d;S%d;%s;%s Collision by interferences!\n",
+//								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
+//
+//						 // If two or more packets sent at the same time
+//						if(node_state == STATE_RX_RTS && notification.packet_type == PACKET_TYPE_RTS){
+//
+//							if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
+//
+//								loss_reason = PACKET_LOST_BO_COLLISION;
+//
+//							}
+//						}
+//						// Send logical NACK to ongoing transmitter
+//						LogicalNack logical_nack = GenerateLogicalNack(incoming_notification.packet_type,
+//								incoming_notification.tx_info.packet_id, node_id, incoming_notification.source_id,
+//								NODE_ID_NONE, loss_reason, BER, current_sinr);
+//
+//						SendLogicalNack(logical_nack);
+//
+//						RestartNode(FALSE);
 
-						 // If two or more packets sent at the same time
-						if(node_state == STATE_RX_RTS && notification.packet_type == PACKET_TYPE_RTS){
+						if (capture_effect_model == CE_DEFAULT) {
 
-							if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
+							// Collision by hidden node
+							if(save_node_logs) fprintf(node_logger.file,
+									"%.15f;N%d;S%d;%s;%s Collision by interferences!\n",
+									SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
 
-								loss_reason = PACKET_LOST_BO_COLLISION;
+							 // If two or more packets sent at the same time
+							if(node_state == STATE_RX_RTS && notification.packet_type == PACKET_TYPE_RTS){
+
+								if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
+
+									loss_reason = PACKET_LOST_BO_COLLISION;
+
+								}
+							}
+							// Send logical NACK to ongoing transmitter
+							LogicalNack logical_nack = GenerateLogicalNack(incoming_notification.packet_type,
+									incoming_notification.tx_info.packet_id, node_id, incoming_notification.source_id,
+									NODE_ID_NONE, loss_reason, BER, current_sinr);
+
+							SendLogicalNack(logical_nack);
+
+							RestartNode(FALSE);
+
+						} else if (capture_effect_model == CE_IEEE_802_11){
+
+							int capture_effect_condition = power_received_per_node[notification.source_id] >
+								power_received_per_node[receiving_from_node_id] + capture_effect;
+
+							if (capture_effect_condition) {
+
+								loss_reason = PACKET_LOST_CAPTURE_EFFECT;
+
+								printf("Node %d was in state RX (from %d), and a new notification arrived from %d:\n", node_id, receiving_from_node_id, notification.source_id);
+								printf("	* New RSSI: %f\n", power_received_per_node[notification.source_id]);
+								printf("	* Old RSSI: %f:\n", power_received_per_node[receiving_from_node_id]);
+								printf("	* CE: %f:\n", capture_effect);
+								printf("	* loss_reason: %d:\n", loss_reason);
+
+								// Send NACK to both ongoing transmitter and incoming interferer nodes
+								LogicalNack logical_nack = GenerateLogicalNack(notification.packet_type, nav_notification.tx_info.packet_id,
+									node_id, nav_notification.source_id, notification.source_id, loss_reason, BER, current_sinr);
+
+								SendLogicalNack(logical_nack);
+
+								RestartNode(FALSE);
 
 							}
+
 						}
-						// Send logical NACK to ongoing transmitter
-						LogicalNack logical_nack = GenerateLogicalNack(incoming_notification.packet_type,
-								incoming_notification.tx_info.packet_id, node_id, incoming_notification.source_id,
-								NODE_ID_NONE, loss_reason, BER, current_sinr);
 
-						SendLogicalNack(logical_nack);
-
-						RestartNode(FALSE);
 					}
 				}
 				break;
@@ -1330,7 +1436,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id);
+								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
 
 						if(loss_reason != PACKET_NOT_LOST
 								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE) {	// If ACK packet IS LOST, send logical Nack
@@ -1423,7 +1529,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id);
+								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
 
 						if(loss_reason != PACKET_NOT_LOST
 								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If CTS packet IS LOST, send logical Nack
@@ -1520,7 +1626,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id);
+								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
 
 						if(loss_reason != PACKET_NOT_LOST
 							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If DATA packet IS LOST, send logical Nack
@@ -1698,7 +1804,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 				if(node_is_transmitter) {
 					if(!trigger_start_backoff.Active()
-							&& !trigger_end_backoff.Active()){	// BO was paused and DIFS not init
+							&& !trigger_end_backoff.Active()){	// BO was paused and DIFS not initiated
 
 						if(save_node_logs) fprintf(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s CASCA\n",
@@ -1967,6 +2073,12 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							cts_notification = GenerateNotification(PACKET_TYPE_CTS, current_destination_id,
 									notification.tx_info.packet_id, notification.tx_info.num_packets_aggregated,
 									notification.timestamp_generated, current_tx_duration);
+
+							// Workaround to solve the e->clock timer issue
+							// (occurs when being in NAV and noticing a collision of two or more CTS frames)
+							if(backoff_type == BACKOFF_SLOTTED){
+								cts_notification.tx_info.preoccupancy_duration = rts_notification.tx_info.preoccupancy_duration;
+							}
 
 						} else {
 							// CANNOT START PACKET TX
