@@ -2801,8 +2801,6 @@ void Node :: EndBackoff(trigger_t &){
 				data_duration = computeDataTxTime80211ax(current_num_packets_aggregated, frame_length, bits_ofdm_sym);
 				ack_duration = computeAckTxTime80211ax(current_num_packets_aggregated, bits_ofdm_sym_legacy);
 
-				printf("N%d, %f, %f, %f, %f\n", node_id, rts_duration, cts_duration, data_duration, ack_duration);
-
 				break;
 			}
 
