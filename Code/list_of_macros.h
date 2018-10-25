@@ -216,7 +216,7 @@
 
 // Protocols
 #define INCREASE_CW 1		// Command to increase contention window
-#define RESET_CW 2	// Command to reset the contention window
+#define RESET_CW 2			// Command to reset the contention window
 #define MAX_POWER 20 		// Maximum power that can be transmitted (dBm)
 
 // CE Model

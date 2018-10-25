@@ -245,6 +245,10 @@ component Node : public TypeII{
 
 		double expected_backoff;							// Average computed BO value
 		int num_new_backoff_computations;					// Number of backoff computed (generated)
+
+		double sum_time_channel_idle;		// Variable to measure the time the channel is idle (no one transmits)
+		double last_time_channel_is_idle;
+
 	// Private items (just for node operation)
 	private:
 
@@ -365,6 +369,7 @@ component Node : public TypeII{
 		double sum_waiting_time;
 		double timestamp_new_trial_started;
 		int num_average_waiting_time_measurements;
+
 	// Connections and timers
 	public:
 
@@ -1689,6 +1694,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			}
 		}
 	}
+
+	// COMPUTE THE TIME CHANNEL IS IDLE (NODE 0) monitors this
+	if (node_id == 0) {
+		sum_time_channel_idle += (SimTime() - last_time_channel_is_idle);
+	}
+
+
 	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX() END\n", SimTime(), node_id, node_state, LOG_D01, LOG_LVL1);
 };
 
@@ -2188,6 +2200,24 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			}
 		}
 	}
+
+	// MEASUREMENTS CHANNEL IDLE (NODE 0)
+	if (node_id == 0) {
+
+		int num_nodes_transmitting = 0;
+		for(int i = 0; i < total_nodes_number; i++){
+			if(nodes_transmitting[i] == 1){
+				num_nodes_transmitting ++;
+			}
+		}
+
+		// Check if nobody is transmitting
+		if (num_nodes_transmitting == 0) {
+			last_time_channel_is_idle = SimTime();
+		}
+
+	}
+
 	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeFinishTX() END",	SimTime(), node_id, node_state, LOG_E01, LOG_LVL1);
 };
 
@@ -2770,6 +2800,9 @@ void Node :: EndBackoff(trigger_t &){
 				cts_duration = computeCtsTxTime80211ax(bits_ofdm_sym_legacy);
 				data_duration = computeDataTxTime80211ax(current_num_packets_aggregated, frame_length, bits_ofdm_sym);
 				ack_duration = computeAckTxTime80211ax(current_num_packets_aggregated, bits_ofdm_sym_legacy);
+
+				printf("N%d, %f, %f, %f, %f\n", node_id, rts_duration, cts_duration, data_duration, ack_duration);
+
 				break;
 			}
 
@@ -3777,7 +3810,6 @@ void Node :: RestartNode(int called_by_time_out){
 		num_new_backoff_computations++;
 
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f (%.0f slots).\n",
-
 						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
 						remaining_backoff, remaining_backoff/SLOT_TIME);
 
@@ -4633,5 +4665,9 @@ void Node :: InitializeVariables() {
 	last_time_measured = 0;
 
 	flag_apply_new_configuration = FALSE;
+
+	// Channel idle measurement
+	sum_time_channel_idle = 0;
+	last_time_channel_is_idle = 0;
 
 }

@@ -466,6 +466,9 @@ void Komondor :: Stop(){
 		printf("%s Average bandwidth used for transmitting = %.2f MHz\n",
 							LOG_LVL2,
 							total_bandiwdth_tx / (double) total_wlans_number);
+		printf("%s Time channel was idle = %.2f s (%f%%)\n",  LOG_LVL2,
+				node_container[0].sum_time_channel_idle, (100*node_container[0].sum_time_channel_idle/simulation_time_komondor));
+
 
 		printf("\n\n");
 	}
