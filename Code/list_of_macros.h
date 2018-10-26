@@ -273,16 +273,13 @@
 #define IEEE_AX_MD_LENGTH				32					// MPDU delimiter if packet aggregation is used [bits]
 
 #define IEEE_AX_MH_LENGTH				320					// MAC header including FCS [bits]
-//#define IEEE_AX_MH_LENGTH				272					// MAC header including FCS [bits]
 #define IEEE_AX_TB_LENGTH				18					// Tail length [bits]
-//#define IEEE_AX_TB_LENGTH				6					// Tail length [bits]
 #define IEEE_AX_RTS_LENGTH				160					// RTS length [bits]
 #define IEEE_AX_CTS_LENGTH				112					// CTS length [bits]
 #define IEEE_AX_ACK_LENGTH				112					// ACK length [bits]
 #define IEEE_AX_BACK_LENGTH				432					// Block-ACK length [bits]
-//#define IEEE_AX_BACK_LENGTH				240					// Block-ACK length [bits]
-
 #define IEEE_AX_SU_SPATIAL_STREAMS		1					// Number of spatial streams
+#define IEEE_AX_MAX_PPDU_DURATION		(5484 * MICRO_VALUE)// Maximum PPDU duration (limits the A-MPDU operation)
 
 // Agents
 #define ORIGIN_AGENT	0		// To determine the source of a received configuration (agent)
@@ -293,6 +290,8 @@
 #define REWARD_TYPE_PACKETS_GENERATED 	2
 
 #define CST_DBM		-68
+
+
 
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *

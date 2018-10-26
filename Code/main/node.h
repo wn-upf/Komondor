@@ -247,7 +247,8 @@ component Node : public TypeII{
 		int num_new_backoff_computations;					// Number of backoff computed (generated)
 
 		double sum_time_channel_idle;		// Variable to measure the time the channel is idle (no one transmits)
-		double last_time_channel_is_idle;
+		double last_time_channel_is_idle;	// Auxiliary variable to measure the time the channel is idle
+		bool channel_idle;					// Variable to determine whether the channel is idle or not
 
 	// Private items (just for node operation)
 	private:
@@ -280,7 +281,8 @@ component Node : public TypeII{
 		int packet_id;						// Notification ID
 		double current_sinr;				// SINR perceived in current TX [linear ratio]
 		int loss_reason;					// Packet loss reason (if any)
-		int current_num_packets_aggregated;	// Num. of packets aggregated in the packet being transmitted
+		int current_num_packets_aggregated;	// Num. of packets aggregated in a single PPDU
+		int limited_num_packets_aggregated; // Num. of limited (due to max PPDU duration) packets aggregated in a single PPDU
 
 		// Notifications
 		Notification rts_notification;		// RTS to be filled before sending it
@@ -782,7 +784,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									SimTime(), node_id, node_state, LOG_D07, LOG_LVL3);
 							}
 
-							// Save NAV notifcation for comparing timestamps in case of need
+							// Save NAV notification for comparing timestamps in case of need
 							nav_notification = notification;
 
 							if(node_is_transmitter){
@@ -930,7 +932,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								if(!node_is_transmitter) {
 
 									// Sergio 18/09/2017:
-									// NAV is no longer valid. It cannot be decoded due to interferences.
+									// NAV is no longer valid. It cannot be decoded due to interference.
 									// Wait MAX_DIFFERENCE_SAME_TIME to detect more transmissions sent at the "same" time
 									// Trigger the restart then.
 
@@ -1695,11 +1697,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 		}
 	}
 
-	// COMPUTE THE TIME CHANNEL IS IDLE (NODE 0) monitors this
-	if (node_id == 0) {
+	// STATISTICS: compute the time the channel is idle (Node 0 is responsible to monitors this)
+	if (node_id == 0 && channel_idle) {
 		sum_time_channel_idle += (SimTime() - last_time_channel_is_idle);
+		channel_idle = false;
 	}
-
 
 	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX() END\n", SimTime(), node_id, node_state, LOG_D01, LOG_LVL1);
 };
@@ -1949,7 +1951,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// ***************************
 						// Sergio on 17 July 2018: Delete all the aggregated frames contained in the ACKed packet
 						// buffer.DelFirstPacket();
-						for(int i = 0; i < current_num_packets_aggregated; i++){
+						for(int i = 0; i < limited_num_packets_aggregated; i++){
 
 							data_frames_acked++;
 							num_delay_measurements ++;
@@ -2201,21 +2203,20 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		}
 	}
 
-	// MEASUREMENTS CHANNEL IDLE (NODE 0)
+	// STATISTICS: compute the time the channel is idle (Node 0 is responsible to monitors this)
 	if (node_id == 0) {
-
 		int num_nodes_transmitting = 0;
 		for(int i = 0; i < total_nodes_number; i++){
 			if(nodes_transmitting[i] == 1){
 				num_nodes_transmitting ++;
 			}
 		}
-
 		// Check if nobody is transmitting
 		if (num_nodes_transmitting == 0) {
+			// If no one is transmitting, set the current SimTime() as the last time the channel has been seen idle
 			last_time_channel_is_idle = SimTime();
+			channel_idle = true;
 		}
-
 	}
 
 	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeFinishTX() END",	SimTime(), node_id, node_state, LOG_E01, LOG_LVL1);
@@ -2747,28 +2748,20 @@ void Node :: EndBackoff(trigger_t &){
 			"%.15f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
 
-		// ********************************************************
-		// Sergio on 17 July 2018: Flexible packet aggregation
-		// - Number of packets to be aggregated: min(current buffer size, max num packets aggregated)
-		if(buffer.QueueSize() > max_num_packets_aggregated){
-
-			current_num_packets_aggregated = max_num_packets_aggregated;
-
-		} else {
-
-			current_num_packets_aggregated = buffer.QueueSize();
-
-		}
-		if(save_node_logs) fprintf(node_logger.file,
-			"%.15f;N%d;S%d;%s;%s Num. of packets to aggregate: %d/%d\n",
-			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
-			current_num_packets_aggregated, max_num_packets_aggregated);
-		// ********************************************************
-
 		// Compute all packets durations (RTS, CTS, DATA and ACK) and NAV time
 		int ix_num_channels_used = log2(num_channels_tx);
 
 		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
+
+		// ********************************************************
+		// Sergio on 17 July 2018: Flexible packet aggregation
+		// - Number of packets to be aggregated: min(current buffer size, max num packets aggregated)
+		if(buffer.QueueSize() > max_num_packets_aggregated){
+			current_num_packets_aggregated = max_num_packets_aggregated;
+		} else {
+			current_num_packets_aggregated = buffer.QueueSize();
+		}
+		// ********************************************************
 
 		// Sergio on 5 Oct 2017:
 		// - Allow computing time in the IEEE 802.11ax
@@ -2796,10 +2789,19 @@ void Node :: EndBackoff(trigger_t &){
 						Mcs_array::coding_rates[current_modulation-1] *
 						IEEE_AX_SU_SPATIAL_STREAMS;
 
+				// Update the number of packets aggregate (just in case that the max PPDU is exceeded with the current MCS)
+				limited_num_packets_aggregated = findMaximumPacketsAggregated(current_num_packets_aggregated, frame_length, bits_ofdm_sym);
+
+				if(save_node_logs) fprintf(node_logger.file,
+					"%.15f;N%d;S%d;%s;%s Num. of packets to aggregate: %d/%d\n",
+					SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
+					limited_num_packets_aggregated, max_num_packets_aggregated);
+
+				// Compute the duration of each frame
 				rts_duration = computeRtsTxTime80211ax(bits_ofdm_sym_legacy);
 				cts_duration = computeCtsTxTime80211ax(bits_ofdm_sym_legacy);
-				data_duration = computeDataTxTime80211ax(current_num_packets_aggregated, frame_length, bits_ofdm_sym);
-				ack_duration = computeAckTxTime80211ax(current_num_packets_aggregated, bits_ofdm_sym_legacy);
+				data_duration = computeDataTxTime80211ax(limited_num_packets_aggregated, frame_length, bits_ofdm_sym);
+				ack_duration = computeAckTxTime80211ax(limited_num_packets_aggregated, bits_ofdm_sym_legacy);
 
 				break;
 			}
@@ -2807,8 +2809,8 @@ void Node :: EndBackoff(trigger_t &){
 		}
 
 		if(save_node_logs) fprintf(node_logger.file,
-			"%.15f;N%d;S%d;%s;%s Transmitting in %d channels using modulation %d (%.0f bits per OFDM symbol ---> %.2f Mbps) \n",
-			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
+			"%.15f;N%d;S%d;%s;%s Transmitting (N_agg = %d) in %d channels using modulation %d (%.0f bits per OFDM symbol ---> %.2f Mbps) \n",
+			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4, limited_num_packets_aggregated,
 			(int) pow(2,ix_num_channels_used), current_modulation, bits_ofdm_sym,
 			bits_ofdm_sym/IEEE_AX_OFDM_SYMBOL_GI32_DURATION * pow(10,-6));
 			
@@ -2819,9 +2821,9 @@ void Node :: EndBackoff(trigger_t &){
 		current_nav_time = fix_time_offset(current_nav_time,13,12);
 
 		if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
-					SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
-					rts_duration, current_nav_time);
+			"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
+			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
+			rts_duration, current_nav_time);
 
 		/*
 		 * IMPORTANT: to avoid synchronization problems in Slotted BO, we put a

@@ -123,8 +123,35 @@ double computeCtsTxTime80211ax(double bits_ofdm_sym_legacy){
 }
 
 /*
+ * findMaximumPacketsAggregated: computes the minimum number of packets to be transmitted
+ * within the maximum PPDU time (IEEE_AX_MAX_PPDU_DURATION)
+ **/
+int findMaximumPacketsAggregated(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
+
+	double data_duration;
+	int limited_num_packets_aggregated = num_packets_aggregated;
+
+	while (limited_num_packets_aggregated > 0) {
+		data_duration = IEEE_AX_PHY_HE_SU_DURATION
+			+ ceil( ( (double) IEEE_AX_SF_LENGTH + (double) limited_num_packets_aggregated
+			* ( (double) IEEE_AX_MD_LENGTH + (double) IEEE_AX_MH_LENGTH + (double) data_packet_length ) )
+			/ bits_ofdm_sym ) * IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
+		if(data_duration <= IEEE_AX_MAX_PPDU_DURATION) {
+			break;
+		} else {
+			limited_num_packets_aggregated--;
+		}
+	}
+
+	return limited_num_packets_aggregated;
+
+}
+
+/*
  * computeDataTxTimeIeee80211ax: computes data transmission time
  **/
+//double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
+
 double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
 
 	double data_duration;
@@ -138,15 +165,14 @@ double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_leng
 	} else {
 
 		data_duration = IEEE_AX_PHY_HE_SU_DURATION
-				+ ceil( ( (double) IEEE_AX_SF_LENGTH + (double) num_packets_aggregated
-				* ( (double) IEEE_AX_MD_LENGTH + (double) IEEE_AX_MH_LENGTH + (double) data_packet_length ) )
-				/ bits_ofdm_sym ) * IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
+			+ ceil( ( (double) IEEE_AX_SF_LENGTH + (double) num_packets_aggregated
+			* ( (double) IEEE_AX_MD_LENGTH + (double) IEEE_AX_MH_LENGTH + (double) data_packet_length ) )
+			/ bits_ofdm_sym ) * IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
 
 	}
 
-//	printf("DATA = %f\n", data_duration * pow(10,6));
-
 	return data_duration;
+
 }
 
 /*
