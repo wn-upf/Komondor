@@ -222,6 +222,18 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 				break;
 			}
 
+			case PACKET_LOST_CAPTURE_EFFECT: {
+
+				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Packet lost by Capture Effect!\n",
+						sim_time, node_id, node_state, LOG_H02, LOG_LVL2);
+
+				reason = PACKET_LOST_CAPTURE_EFFECT;
+				//exit(-1);
+
+				break;
+
+			}
+
 			default:{
 
 				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Unknown reason for packet loss\n",
@@ -298,46 +310,59 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
  **/
 int IsPacketLost(int primary_channel, Notification incoming_notification, Notification new_notification,
 		double sinr, double capture_effect, double cca, double power_rx_interest, double constant_per,
-		int *hidden_nodes_list, int node_id){
+		int *hidden_nodes_list, int node_id, int capture_effect_model){
 
 	int loss_reason = PACKET_NOT_LOST;
 	int is_packet_lost;	// Determines if the current notification has been lost (1) or not (0)
 
+	switch(capture_effect_model) {
 
-	// Sergio on 25 Oct 2017:
-	// - Change the way packets are determined are lost
-	// - Use both incoming (interest) and new (sometimes noisy) notifications
-	// - We were missing some cases. E.g. when RX_DATA and new packet arrived
+		case CE_DEFAULT: {
 
-	// Check if incoming notification (of interest) involves the primary channel
-	if(primary_channel >= incoming_notification.left_channel && primary_channel <= incoming_notification.right_channel){
+			// Sergio on 25 Oct 2017:
+			// - Change the way packets are determined are lost
+			// - Use both incoming (interest) and new (sometimes noisy) notifications
+			// - We were missing some cases. E.g. when RX_DATA and new packet arrived
 
-		// Attempt to decode (or continue decoding) the notification of interest
-		is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per, node_id,
-				new_notification.packet_type, new_notification.tx_info.destination_id);
+			// Check if incoming notification (of interest) involves the primary channel
+			if(primary_channel >= incoming_notification.left_channel && primary_channel <= incoming_notification.right_channel){
 
+				// Attempt to decode (or continue decoding) the notification of interest
+				is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per, node_id,
+						new_notification.packet_type, new_notification.tx_info.destination_id);
 
-		if (is_packet_lost) {	// Incoming packet is lost
+				if (is_packet_lost) {	// Incoming packet is lost
+					if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
+						loss_reason = PACKET_LOST_LOW_SIGNAL;
+						hidden_nodes_list[new_notification.source_id] = TRUE;
+					} else if (sinr < capture_effect){	// Capture effect not accomplished
+						loss_reason = PACKET_LOST_INTERFERENCE;
+					} else {	// Incoming packet lost due to PER
+						loss_reason = PACKET_LOST_SINR_PROB;
+					}
+				}
 
-			if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
+			} else{
 
-				loss_reason = PACKET_LOST_LOW_SIGNAL;
-				hidden_nodes_list[new_notification.source_id] = TRUE;
-
-			} else if (sinr < capture_effect){	// Capture effect not accomplished
-
-				loss_reason = PACKET_LOST_INTERFERENCE;
-
-			} else {	// Incoming packet lost due to PER
-
-				loss_reason = PACKET_LOST_SINR_PROB;
+				loss_reason = PACKET_LOST_OUTSIDE_CH_RANGE;
 
 			}
+
+			break;
 		}
 
-	} else{
+		case CE_IEEE_802_11: {
 
-		loss_reason = PACKET_LOST_OUTSIDE_CH_RANGE;
+			// Check if the RSSI is higher than the CST
+			if (power_rx_interest > cca) {
+				// The packet can be properly decoded
+				loss_reason = -1;
+			} else {
+				loss_reason = PACKET_LOST_LOW_SIGNAL;
+			}
+
+			break;
+		}
 
 	}
 

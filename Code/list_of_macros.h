@@ -110,6 +110,8 @@
 #define PACKET_LOST_BO_COLLISION		8
 #define PACKET_LOST_OUTSIDE_CH_RANGE	9	// Packet was transmitted outside the primary channel of the receiver
 #define NUM_PACKET_LOST_REASONS			10
+#define PACKET_LOST_CAPTURE_EFFECT		11	//
+
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1
@@ -214,8 +216,12 @@
 
 // Protocols
 #define INCREASE_CW 1		// Command to increase contention window
-#define RESET_CW 2	// Command to reset the contention window
+#define RESET_CW 2			// Command to reset the contention window
 #define MAX_POWER 20 		// Maximum power that can be transmitted (dBm)
+
+// CE Model
+#define CE_DEFAULT			0	//
+#define CE_IEEE_802_11		1	//
 
 // Node type
 #define NODE_TYPE_UNKWNOW	-1	// Unknown (none) node type
@@ -286,6 +292,8 @@
 #define REWARD_TYPE_THROUGHPUT 			1	// To determine the reward according to the type of performance indicator
 #define REWARD_TYPE_PACKETS_GENERATED 	2
 
+#define CST_DBM		-68
+
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
  * ************************************************
@@ -343,6 +351,7 @@
 #define IX_CTS_LENGTH				18
 #define IX_CW_ADAPTATION			19
 #define IX_PIFS_ACTIVATION			20
+#define IX_CAPTURE_EFFECT_MODEL		21
 
 // Nodes file
 #define IX_NODE_CODE				1

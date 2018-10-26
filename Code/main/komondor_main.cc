@@ -127,11 +127,11 @@ component Komondor : public CostSimEng {
 		int ack_length;					// ACK length [bits]
 		int rts_length;					// RTS length [bits]
 		int cts_length;					// CTS length [bits]
-		int max_num_packets_aggregated;		// Number of packets aggregated in one transmission
+		int max_num_packets_aggregated;	// Number of packets aggregated in one transmission
 		int path_loss_model;			// Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 		double capture_effect;			// Capture effect threshold [linear ratio]
 		double noise_level;				// Environment noise [pW]
-		int adjacent_channel_model;			// Co-channel interference model
+		int adjacent_channel_model;		// Co-channel interference model
 		int collisions_model;			// Collisions model
 		double SIFS;					// Short Interframe Space (SIFS) [s]
 		double DIFS;					// DCF Interframe Space (DIFS) [s]
@@ -141,6 +141,7 @@ component Komondor : public CostSimEng {
 		int backoff_type;				// Type of Backoff (0: Slotted 1: Continuous)
 		int cw_adaptation;				// CW adaptation (0: constant, 1: bineary exponential backoff)
 		int pifs_activated;				// PIFS mechanism activation
+		int capture_effect_model;		// Capture Effect model (default or IEEE 802.11-based)
 
 		int agents_enabled;				// Determined according to the input (for generating agents or not)
 
@@ -465,6 +466,9 @@ void Komondor :: Stop(){
 		printf("%s Average bandwidth used for transmitting = %.2f MHz\n",
 							LOG_LVL2,
 							total_bandiwdth_tx / (double) total_wlans_number);
+		printf("%s Time channel was idle = %.2f s (%f%%)\n",  LOG_LVL2,
+				node_container[0].sum_time_channel_idle, (100*node_container[0].sum_time_channel_idle/simulation_time_komondor));
+
 
 		printf("\n\n");
 	}
@@ -952,6 +956,11 @@ void Komondor :: SetupEnvironmentByReadingInputFile(const char *system_filename)
 			tmp = strdup(line_system);
 			const char* pifs_activated_char = GetField(tmp, IX_PIFS_ACTIVATION);
 			pifs_activated = atoi(pifs_activated_char);
+
+			// PIFS mechanism activation
+			tmp = strdup(line_system);
+			const char* capture_effect_model_char = GetField(tmp, IX_CAPTURE_EFFECT_MODEL);
+			capture_effect_model = atoi(capture_effect_model_char);
 
 			free(tmp);
 		}
@@ -1545,6 +1554,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(const char *nodes_filename){
 				node_container[node_ix].backoff_type = backoff_type;
 				node_container[node_ix].cw_adaptation = cw_adaptation;
 				node_container[node_ix].pifs_activated = pifs_activated;
+				node_container[node_ix].capture_effect_model = capture_effect_model;
 				node_container[node_ix].lambda = lambda;
 				node_container[node_ix].ieee_protocol = ieee_protocol;
 				node_container[node_ix].traffic_load = traffic_load;
@@ -1809,6 +1819,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			node_container[node_ix].backoff_type = backoff_type;
 			node_container[node_ix].cw_adaptation = cw_adaptation;
 			node_container[node_ix].pifs_activated = pifs_activated;
+			node_container[node_ix].capture_effect_model = capture_effect_model;
 			node_container[node_ix].simulation_code = simulation_code;
 
 			node_ix ++;
@@ -1852,6 +1863,7 @@ void Komondor :: printSystemInfo(){
 		printf("%s backoff_type = %d\n", LOG_LVL3, backoff_type);
 		printf("%s cw_adaptation = %d\n", LOG_LVL3, cw_adaptation);
 		printf("%s pifs_activated = %d\n", LOG_LVL3, pifs_activated);
+		printf("%s capture_effect_model = %d\n", LOG_LVL3, capture_effect_model);
 		printf("%s max_num_packets_aggregated = %d\n", LOG_LVL3, max_num_packets_aggregated);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 		printf("%s capture_effect = %f [linear] (%f dB)\n", LOG_LVL3, capture_effect, ConvertPower(LINEAR_TO_DB, capture_effect));
