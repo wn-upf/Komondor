@@ -253,6 +253,19 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 }
 
 /*
+ * CleanNack(LogicalNack nack): re-initializes the Nack info.
+ */
+void CleanNack(LogicalNack *nack){
+
+	nack->source_id = NODE_ID_NONE;
+	nack->packet_id = NO_PACKET_ID;
+	nack->loss_reason = PACKET_NOT_LOST;
+	nack->node_id_a = NODE_ID_NONE;
+	nack->node_id_b = NODE_ID_NONE;
+
+}
+
+/*
  * handlePacketLoss(): handles a packet loss.
  */
 void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double *total_time_lost_per_channel,
@@ -329,7 +342,7 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 
 				// Attempt to decode (or continue decoding) the notification of interest
 				is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per, node_id,
-						new_notification.packet_type, new_notification.tx_info.destination_id);
+						new_notification.packet_type, new_notification.destination_id);
 
 				if (is_packet_lost) {	// Incoming packet is lost
 					if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
@@ -367,5 +380,134 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 	}
 
 	return loss_reason;
+
+}
+
+//Notification GenerateNotification(int packet_type, int packet_id, int source_id, int destination_id,
+//		double tx_duration, double timestamp, double timestamp_generated, int current_primary_channel,
+//		int current_left_channel, int current_right_channel, double frame_length, double ack_length,
+//		double rts_length, double cts_length, double current_nav_time, int* mcs_response, int first_time_requesting_mcs, TxInfo tx_info) {
+//
+//	Notification notification;
+//
+//	notification.packet_type = packet_type;
+//	notification.packet_id = packet_id;				// ID of the first packet
+//	notification.source_id = source_id;
+//	notification.destination_id = destination_id;
+//	notification.tx_duration = tx_duration;
+//
+//	if(first_time_requesting_mcs) {
+//		notification.left_channel = current_primary_channel;
+//		notification.right_channel = current_primary_channel;
+//	} else {
+//		notification.left_channel = current_left_channel;
+//		notification.right_channel = current_right_channel;
+//	}
+//
+//	notification.frame_length = -1;
+//	notification.modulation_id = -1;
+//	notification.timestamp = timestamp;
+//	notification.timestamp_generated = timestamp_generated;
+//
+//	notification.tx_info = tx_info;
+//
+//	switch(packet_type){
+//
+//		case PACKET_TYPE_DATA:{
+//			notification.frame_length = frame_length;
+//			break;
+//		}
+//
+//		case PACKET_TYPE_ACK:{
+//			notification.frame_length = ack_length;
+//			break;
+//		}
+//
+//		case PACKET_TYPE_MCS_REQUEST:{
+//			// Do nothing
+//			break;
+//		}
+//
+//		case PACKET_TYPE_MCS_RESPONSE:{
+//			for(int i = 0; i < 4; i++) {
+//				tx_info.modulation_schemes[i] = mcs_response[i];
+//			}
+//			break;
+//		}
+//
+//		case PACKET_TYPE_RTS:{
+//			notification.frame_length = rts_length;
+//			tx_info.nav_time = current_nav_time;
+//			break;
+//		}
+//
+//		case PACKET_TYPE_CTS:{
+//			notification.frame_length = cts_length;
+//			tx_info.nav_time = current_nav_time;
+//			break;
+//		}
+//
+//		default:{
+//			printf("ERROR: Packet type unknown\n");
+//			exit(EXIT_FAILURE);
+//			break;
+//		}
+//	}
+//
+//
+//	return notification;
+//}
+//
+//TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration, double ack_duration,
+//		double rts_duration, double cts_duration, double current_tpc, int num_channels_tx,
+//		double tx_gain, int bits_ofdm_sym, int x, int y, int z, int nav_time){
+//
+//	TxInfo tx_info;
+//
+//	tx_info.SetSizeOfMCS(4);	// TODO: make size dynamic
+//
+//	tx_info.num_packets_aggregated = num_packets_aggregated;
+//
+//	tx_info.data_duration = data_duration;
+//	tx_info.ack_duration = ack_duration;
+//	tx_info.rts_duration = rts_duration;
+//	tx_info.cts_duration = cts_duration;
+//	tx_info.tx_power = ComputeTxPowerPerChannel(current_tpc, num_channels_tx);
+//	tx_info.tx_gain = tx_gain;
+//	tx_info.bits_ofdm_sym = bits_ofdm_sym;
+//	tx_info.x = x;
+//	tx_info.y = y;
+//	tx_info.z = z;
+//	tx_info.nav_time = 0;
+//
+//	return tx_info;
+//
+//}
+
+/*
+ * GenerateTxInfo: generates a TxInfo
+ **/
+TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double ack_duration,
+		double rts_duration, double cts_duration, double current_tpc, int num_channels_tx,
+		double tx_gain,	int bits_ofdm_sym, double x, double y, double z) {
+
+	TxInfo tx_info;
+	tx_info.SetSizeOfMCS(4);	// TODO: make size dynamic
+
+	tx_info.num_packets_aggregated = num_packets_aggregated;
+
+	tx_info.data_duration = data_duration;
+	tx_info.ack_duration = ack_duration;
+	tx_info.rts_duration = rts_duration;
+	tx_info.cts_duration = cts_duration;
+	tx_info.tx_power = ComputeTxPowerPerChannel(current_tpc, num_channels_tx);
+	tx_info.tx_gain = tx_gain;
+	tx_info.bits_ofdm_sym = bits_ofdm_sym;
+	tx_info.x = x;
+	tx_info.y = y;
+	tx_info.z = z;
+	tx_info.nav_time = 0;
+
+	return tx_info;
 
 }

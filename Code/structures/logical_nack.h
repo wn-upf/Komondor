@@ -46,7 +46,6 @@
  * - This file defines a LOGICAL NACK and provides basic displaying methods
  */
 
-
 #ifndef _AUX_LOGICAL_NACK_
 #define _AUX_LOGICAL_NACK_
 

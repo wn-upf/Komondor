@@ -46,11 +46,13 @@
  * - This file defines a NOTIFICATION and provides basic displaying methods
  */
 
-#ifndef _AUX_REPORT_
-#define _AUX_REPORT_
+#ifndef _AUX_PERFORMANCE_
+#define _AUX_PERFORMANCE_
 
-struct Report
+struct Performance
 {
+
+	double last_time_measured;
 
 	double throughput;
 	double max_bound_throughput;
@@ -64,7 +66,7 @@ struct Report
 	// Function to print the node's report
 	void PrintReport(void){
 
-		printf("%s Report:\n", LOG_LVL4);
+		printf("%s Report (last measurement in %f):\n", LOG_LVL4, last_time_measured);
 		printf("%s throughput = %f\n", LOG_LVL5, throughput);
 		printf("%s max_bound_throughput = %f\n", LOG_LVL5, max_bound_throughput);
 		printf("%s data_packets_sent = %d\n", LOG_LVL5, data_packets_sent);

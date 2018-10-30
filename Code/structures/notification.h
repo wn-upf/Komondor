@@ -53,13 +53,10 @@
 // Notification specific info (may be not checked by the other nodes)
 struct TxInfo
 {
-	int packet_id;							// Packet identifier of the first frame
+
 	int num_packets_aggregated;				// Number of frames aggregated
 	int *list_id_aggregated;				// List of frame IDs aggregated
 	double *timestamp_frames_aggregated;	// List of timestamps of the frames aggregated
-
-	int destination_id;			// Destination node of the transmission
-	double tx_duration;			// Duration of the transmission
 
 	// For RTS/CTS management
 	double data_duration;
@@ -68,17 +65,17 @@ struct TxInfo
 	double cts_duration;
 
 	double preoccupancy_duration;
-	double tx_power;			// Transmission power in [pW]
-	double tx_gain;				// Transmission gain [linear ratio]
-	double bits_ofdm_sym; 			// Rate at which data is transmitted
-	double data_rate; 			// Rate at which data is transmitted
-	int modulation_schemes[4];	// Modulation scheme used
+	double tx_power;				// Transmission power in [pW]
+	double tx_gain;					// Transmission gain [linear ratio]
+	double bits_ofdm_sym; 			// Bits per OFDM symbol
+	double data_rate; 				// Rate at which data is transmitted
+	int modulation_schemes[4];		// Modulation scheme used
 	double x;						// X position of source node
 	double y;						// Y position of source node
 	double z;						// Z position of source node
-	double nav_time;			// RTS/CTS NAV time
+	double nav_time;				// RTS/CTS NAV time
 
-	void PrintTxInfo(void){
+	void PrintTxInfo(int packet_id, int destination_id, double tx_duration){
 		printf("packet_id = %d - destination_id = %d - tx_duration = %f - tx_power = %f pw"
 				" - position = (%.2f, %.2f, %.2f)\n",
 				packet_id, destination_id, tx_duration, tx_power, x, y, z);
@@ -126,14 +123,17 @@ struct TxInfo
 // Notification info
 struct Notification
 {
-	// ALways read in destination
-	int source_id;		// Node id of the source
-	int packet_type;	// Type of packet: Data, ACK, etc.
-	int left_channel;	// Left channel used in the transmission
-	int right_channel;	// Right channel used in the transmission
-	int frame_length;	// Size of the packet to transmit
-	int modulation_id;	// Modulation being used during the transmission
-	double timestamp;	// Timestamp when notification is sent
+	// Always read in destination
+	int packet_id;				// Packet identifier of the first frame
+	int packet_type;			// Type of packet: Data, ACK, etc.
+	int source_id;				// Node id of the source
+	int destination_id;			// Destination node of the transmission
+	double tx_duration;			// Duration of the transmission
+	int left_channel;			// Left channel used in the transmission
+	int right_channel;			// Right channel used in the transmission
+	int frame_length;			// Size of the packet to transmit
+	int modulation_id;			// Modulation being used during the transmission
+	double timestamp;			// Timestamp when notification is sent
 	double timestamp_generated;	// Timestamp when notification was generated
 
 	// Specific transmission info (may not be checked by the others nodes)
@@ -143,8 +143,9 @@ struct Notification
 		printf("source_id = %d - packet_type = %d - left_channel = %d - right_channel = %d - pkt_length = %d -",
 				source_id, packet_type, left_channel, right_channel, frame_length);
 		printf("tx_info: ");
-		tx_info.PrintTxInfo();
+		tx_info.PrintTxInfo(packet_id, destination_id, tx_duration);
 	}
+
 };
 
 #endif

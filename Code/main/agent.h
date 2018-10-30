@@ -55,10 +55,11 @@
 
 #include "../list_of_macros.h"
 #include "../structures/node_configuration.h"
-#include "../structures/performance_report.h"
+#include "../structures/performance_metrics.h"
 #include "../structures/action.h"
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
+#include "../methods/learning_modules/multi_armed_bandits.h"
 
 // Agent component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Agent : public TypeII{
@@ -90,7 +91,6 @@ component Agent : public TypeII{
 		// Print methods
 		void PrintAgentInfo();
 		void PrintAction(int action_ix, int detail);
-		//void WriteActionReport(int action_ix);
 
 		void WriteConfiguration(Configuration configuration_to_write);
 
@@ -136,11 +136,11 @@ component Agent : public TypeII{
 		std::string simulation_code;				// Simulation code
 	// Private items (just for node operation)
 	private:
+
+		Performance performance;
 		Configuration configuration;
 		Configuration new_configuration;
 		Configuration configuration_from_controller;
-
-		Report report;
 
 		// File for writting node logs
 		FILE *output_log_file;				// File for logs in which the agent is involved
@@ -152,7 +152,7 @@ component Agent : public TypeII{
 	public:
 
 		// INPORT connections for receiving notifications
-		inport void inline InportReceivingInformationFromAp(Configuration &configuration, Report &report);
+		inport void inline InportReceivingInformationFromAp(Configuration &configuration, Performance &performance);
 
 		// INPORT (centralized system only)
 		inport void inline InportReceivingRequestFromController(int destination_agent_id);
@@ -163,7 +163,7 @@ component Agent : public TypeII{
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
 
 		// OUTPORT (centralized system only)
-		outport void outportAnswerToController(Configuration &configuration, Report &report, int agent_id);
+		outport void outportAnswerToController(Configuration &configuration, Performance &performance, int agent_id);
 
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap; // Timer for requesting information to the AP
@@ -278,7 +278,7 @@ void Agent :: RequestInformationToAp(trigger_t &){
  * Input arguments:
  * - to be defined
  */
-void Agent :: InportReceivingInformationFromAp(Configuration &received_configuration, Report &received_report){
+void Agent :: InportReceivingInformationFromAp(Configuration &received_configuration, Performance &received_performance){
 
 //	printf("%s Agent #%d: Message received from the AP\n", LOG_LVL1, agent_id);
 
@@ -292,13 +292,13 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	if(save_agent_logs) WriteConfiguration(configuration);
 
-	report = received_report;
+	performance = received_performance;
 
 	if (centralized) {
 		// Forward the information to the controller
 		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Answering to the controller with current information\n",
 			SimTime(), agent_id, LOG_F02, LOG_LVL2);
-		outportAnswerToController(configuration, report, agent_id);
+		outportAnswerToController(configuration, performance, agent_id);
 
 	} else {
 		// Generate the reward for the last selected action
@@ -494,8 +494,8 @@ void Agent :: GenerateRewardSelectedArm() {
 		 * 	 that can be sent in each interval (e.g., packets that were sent but lost)
 		 */
 		case REWARD_TYPE_PACKETS_SENT:{
-			reward = report.data_packets_sent /
-					report.data_packets_lost;
+			reward = performance.data_packets_sent /
+					performance.data_packets_lost;
 			break;
 		}
 
@@ -506,22 +506,22 @@ void Agent :: GenerateRewardSelectedArm() {
 		 */
 		case REWARD_TYPE_THROUGHPUT:{
 
-			if (report.max_bound_throughput == 0) {
+			if (performance.max_bound_throughput == 0) {
 				reward = 0;
 			} else {
-				reward = report.throughput /
-						report.max_bound_throughput;
+				reward = performance.throughput /
+						performance.max_bound_throughput;
 
 			}
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s throughput = %.2f Mbps\n",
-					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.throughput * pow(10,-6));
+					SimTime(), agent_id, LOG_C00, LOG_LVL2, performance.throughput * pow(10,-6));
 
 //			if(save_agent_logs) fprintf(agent_logger.file, "[DATA-THR];%.5f;A%d;%d;%.2f;%.5f\n",
-//							SimTime(), agent_id, ix_selected_arm, report.throughput * pow(10,-6), reward);
+//							SimTime(), agent_id, ix_selected_arm, performance.throughput * pow(10,-6), reward);
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s max_bound_throughput = %f Mbps\n",
-					SimTime(), agent_id, LOG_C00, LOG_LVL2, report.max_bound_throughput * pow(10,-6));
+					SimTime(), agent_id, LOG_C00, LOG_LVL2, performance.max_bound_throughput * pow(10,-6));
 
 			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s reward = %f\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2, reward);
@@ -533,9 +533,9 @@ void Agent :: GenerateRewardSelectedArm() {
 		 * -
 		 */
 		case REWARD_TYPE_PACKETS_GENERATED:{
-			reward = (report.num_packets_generated -
-					report.num_packets_dropped) /
-					report.num_packets_generated;
+			reward = (performance.num_packets_generated -
+					performance.num_packets_dropped) /
+					performance.num_packets_generated;
 			break;
 		}
 
@@ -743,7 +743,7 @@ void Agent :: PrintOrWriteAgentStatistics(int write_or_print) {
 
 			if (print_agent_logs) {
 				printf("------- Agent A%d (WLAN %s) ------\n", agent_id, wlan_code.c_str());
-				printf("* Actions report:\n");
+				printf("* Actions performance:\n");
 				// Detailed summary of arms
 				for(int i = 0; i < num_actions; i++){
 					// Print logs

@@ -73,9 +73,9 @@ component Komondor : public CostSimEng {
 	public:
 
 		void Setup(double simulation_time_komondor, int save_system_logs, int save_node_logs, int save_agent_logs,
-				int print_node_logs, int print_system_logs, int print_agent_logs, const char *system_filename,
-				const char *nodes_filename, const char *script_filename, const char *simulation_code, int seed_console,
-				int agents_enabled, const char *agents_filename);
+			int print_node_logs, int print_system_logs, int print_agent_logs, const char *system_filename,
+			const char *nodes_filename, const char *script_filename, const char *simulation_code, int seed_console,
+			int agents_enabled, const char *agents_filename);
 		void Stop();
 		void Start();
 		void InputChecker();
@@ -90,7 +90,7 @@ component Komondor : public CostSimEng {
 		void GenerateCentralController();
 
 		int GetNumOfLines(const char *nodes_filename);
-		int GetNumOfNodes(const char *nodes_filename, int node_type, std::string 	wlan_code);
+		int GetNumOfNodes(const char *nodes_filename, int node_type, std::string wlan_code);
 
 		void printSystemInfo();
 		void PrintAllWlansInfo();

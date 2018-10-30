@@ -55,7 +55,7 @@
 
 #include "../list_of_macros.h"
 #include "../structures/node_configuration.h"
-#include "../structures/performance_report.h"
+#include "../structures/performance_metrics.h"
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
 
@@ -100,7 +100,7 @@ component CentralController : public TypeII{
 		Configuration configuration;
 		Configuration new_configuration;
 
-		Report report;
+		Performance performance;
 
 		// File for writting node logs
 		FILE *output_log_file;				// File for logs in which the agent is involved
@@ -114,7 +114,8 @@ component CentralController : public TypeII{
 	public:
 
 		// INPORT connections for receiving notifications
-		inport void inline InportReceivingInformationFromAgent(Configuration &configuration, Report &report, int agent_id);
+		inport void inline InportReceivingInformationFromAgent(Configuration &configuration,
+				Performance &performance, int agent_id);
 
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAgent(int destination_agent_id);
@@ -217,7 +218,8 @@ void CentralController :: RequestInformationToAgent(trigger_t &){
  * Input arguments:
  * - to be defined
  */
-void CentralController :: InportReceivingInformationFromAgent(Configuration &received_configuration, Report &received_report, int agent_id){
+void CentralController :: InportReceivingInformationFromAgent(Configuration &received_configuration,
+		Performance &received_performance, int agent_id){
 
 //	printf("%s Agent #%d: Message received from the AP\n", LOG_LVL1, agent_id);
 
@@ -231,7 +233,7 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
 
 	//if(save_controller_logs) WriteConfiguration(configuration);
 
-	report = received_report;
+	performance = received_performance;
 
 	counter_responses_received ++;
 
