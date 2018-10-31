@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2018)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: komondor_user_guide.aux
+The style file: unsrt.bst
+Database file #1: bib.bib
+Warning--entry type for "tgax2017draft" isn't style-file defined
+--line 169 of file bib.bib
+You've used 3 entries,
+            1791 wiz_defined-function locations,
+            463 strings with 4015 characters,
+and the built_in function-call counts, 632 in all, are:
+= -- 59
+> -- 17
+< -- 1
++ -- 7
+- -- 4
+* -- 24
+:= -- 85
+add.period$ -- 8
+call.type$ -- 3
+change.case$ -- 3
+chr.to.int$ -- 0
+cite$ -- 3
+duplicate$ -- 31
+empty$ -- 75
+format.name$ -- 4
+if$ -- 156
+int.to.chr$ -- 0
+int.to.str$ -- 3
+missing$ -- 1
+newline$ -- 16
+num.names$ -- 2
+pop$ -- 20
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 24
+stack$ -- 0
+substring$ -- 32
+swap$ -- 13
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 5
+width$ -- 4
+write$ -- 30
+(There was 1 warning)

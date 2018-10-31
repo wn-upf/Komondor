@@ -1,0 +1,18 @@
+\begin{thebibliography}{1}
+
+\bibitem{barrachina2017komondor}
+Sergio Barrachina-Mu\~noz and Francesc Wilhelmi.
+\newblock Komondor: An {IEEE} 802.11ax simulator.
+\newblock \url{https://github.com/wn-upf/Komondor}, 2017.
+
+\bibitem{chen2002reusing}
+G.~Chen and B.~K. Szymanski.
+\newblock {Reusing simulation components: cost: a component-oriented discrete
+  event simulator}.
+\newblock In {\em Proceedings of the 34th conference on Winter simulation:
+  exploring new frontiers}, pages 776--782. Winter Simulation Conference, 2002.
+
+\bibitem{tgax2017draft}
+{IEEE} p802.11ax/d2.0, November 2017.
+
+\end{thebibliography}
