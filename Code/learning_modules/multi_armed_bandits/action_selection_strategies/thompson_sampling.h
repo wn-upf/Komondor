@@ -46,78 +46,45 @@
  * - This file contains the methods related to "time" operations
  */
 
-#include "../list_of_macros.h"
+#include "../../../list_of_macros.h"
 
-#ifndef _AUX_AGENT_METHODS_
-#define _AUX_AGENT_METHODS_
+#ifndef _AUX_THOMPSON_SAMPLING_
+#define _AUX_THOMPSON_SAMPLING_
 
 /*
- * RestartPerformanceMetrics(): restarts the performance metrics being tracked by a given AP-agent pair
- **/
-void RestartPerformanceMetrics(Performance *current_performance, double sim_time) {
+ * PickArmThompsonSampling(): selects an action according to the epsilon-greedy strategy
+ * INPUT:
+ * 	- num_actions: number of possible actions
+ * 	- reward_per_arm: array containing the last stored reward for each action
+ * 	- epsilon: current exploration coefficient
+ * OUTPUT:
+ *  - arm_index: index of the selected action
+ */
+int PickArmThompsonSampling(int num_actions,
+	double *estimated_reward_per_arm, int *times_arm_has_been_selected) {
 
-	current_performance->last_time_measured = sim_time;
-	current_performance->throughput = 0;
-	current_performance->max_bound_throughput = 0;
-	current_performance->data_packets_sent = 0;
-	current_performance->data_packets_lost = 0;
-	current_performance->rts_cts_packets_sent = 0;
-	current_performance->rts_cts_packets_lost = 0;
-	current_performance->num_packets_generated = 0;
-	current_performance->num_packets_dropped = 0;
+	//TODO: validate the behavior of this implementation
 
-}
+	int action_ix;
 
-double GenerateReward(int type_of_reward, Performance performance) {
-
-	double reward;
-
-	// Switch to select the reward according to the metric used (rewards must be normalized)
-	switch(type_of_reward){
-
-		/* PERFORMANCE_PACKETS_SENT:
-		 * - The number of packets sent are taken into account
-		 * - The reward must be bounded by the maximum number of data packets
-		 * 	 that can be sent in each interval (e.g., packets that were sent but lost)
-		 */
-		case REWARD_TYPE_PACKETS_SENT:{
-			reward = performance.data_packets_sent/performance.data_packets_lost;
-			break;
-		}
-
-		/* PERFORMANCE_THROUGHPUT:
-		 * - The throughput experienced during the last period is taken into account
-		 * - The reward must be bounded by the maximum throughput that would be experienced
-		 * 	 (e.g., consider the data rate granted by the modulation and the total time)
-		 */
-		case REWARD_TYPE_THROUGHPUT:{
-
-			if (performance.max_bound_throughput == 0) {
-				reward = 0;
-			} else {
-				reward = performance.throughput/performance.max_bound_throughput;
-			}
-			break;
-		}
-
-		/* REWARD_TYPE_PACKETS_GENERATED:
-		 * -
-		 */
-		case REWARD_TYPE_PACKETS_GENERATED:{
-			reward = (performance.num_packets_generated - performance.num_packets_dropped) /
-				performance.num_packets_generated;
-			break;
-		}
-
-		default:{
-			printf("ERROR: %d is not a correct type of performance indicator\n", type_of_reward);
-			exit(EXIT_FAILURE);
-			break;
-		}
-
+	int theta = new int[num_actions];
+	for (int i = 0; i < num_actions; i++) {
+		std::default_random_engine de(time(0)); // seed
+		std:normal_distribution<int> nd(estimated_reward_per_arm[i],
+			times_arm_has_been_selected[i]);
+		theta[i] = nd(de);
 	}
 
-	return reward;
+	double max = 0;
+	for (int i = 0; i < num_actions; i ++) {
+		if(theta[i] >= max) {
+			max = theta[i];
+			action_ix = i;
+		}
+	}
+//		printf("EXPLOIT: arm_index = %d\n", arm_index);
+
+	return action_ix;
 
 }
 

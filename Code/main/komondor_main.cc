@@ -355,7 +355,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	// Connect the agents to the central controller, if applicable
 	if (agents_enabled) {
 		for(int w = 0; w < total_agents_number; w++){
-			if (agent_container[w].centralized) {
+			if (agent_container[w].centralized_flag) {
 				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
 				connect agent_container[w].outportAnswerToController,central_controller[0].InportReceivingInformationFromAgent;
 				connect central_controller[0].outportSendConfigurationToAgent,agent_container[w].InportReceiveConfigurationFromController;
@@ -1106,6 +1106,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 
 		}
 	}
+
 	if (print_system_logs) printf("%s Action space set!\n", LOG_LVL4);
 
 	// STEP 3: set agents parameters
@@ -1139,7 +1140,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			//  Centralized flag
 			tmp_agents = strdup(line_agents);
 			int centralized_flag = atoi(GetField(tmp_agents, IX_CENTRALIZED_FLAG));
-			agent_container[agent_ix].centralized = centralized_flag;
+			agent_container[agent_ix].centralized_flag = centralized_flag;
 			if(centralized_flag) {
 				total_controlled_agents_number++;
 				central_controller_flag = 1;
@@ -1153,7 +1154,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			tmp_agents = strdup(line_agents);
 			std::string channel_values_text = ToString(GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
 
-			// Fill the channel actions arraymal
+			// Fill the channel actions array
 			char *channel_aux_2;
 			char *channel_values_text_char = new char[channel_values_text.length() + 1];
 			strcpy(channel_values_text_char, channel_values_text.c_str());
@@ -1227,6 +1228,11 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			int type_of_reward = atoi(GetField(tmp_agents, IX_AGENT_TYPE_OF_REWARD));
 			agent_container[agent_ix].type_of_reward = type_of_reward;
 
+			// Learning mechanism
+			tmp_agents = strdup(line_agents);
+			int learning_mechanism = atoi(GetField(tmp_agents, IX_AGENT_LEARNING_MECHANISM));
+			agent_container[agent_ix].learning_mechanism = learning_mechanism;
+
 			// System
 			agent_container[agent_ix].save_agent_logs = save_agent_logs;
 			agent_container[agent_ix].print_agent_logs = print_agent_logs;
@@ -1267,7 +1273,7 @@ void Komondor :: GenerateCentralController() {
 		double max_time_between_requests = 0;	// To determine the maximum time between requests for agents
 
 		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; agent_ix ++) {
-			if(agent_container[agent_ix].centralized) {
+			if(agent_container[agent_ix].centralized_flag) {
 				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
 				double agent_time_between_requests = agent_container[agent_list_ix].time_between_requests;
 				if (agent_time_between_requests > max_time_between_requests) {

@@ -3892,10 +3892,9 @@ void Node:: RecoverFromCtsTimeout(trigger_t &) {
 }
 
 /*
- * MeasureRho():
+ * MeasureRho(): measures the utilization of the buffer
  */
 void Node:: MeasureRho(trigger_t &){
-
 
 	// if ( (buffer.QueueSize() > 0) && (channel_power[current_primary_channel] < current_cca)){
 

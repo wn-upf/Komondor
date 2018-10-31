@@ -420,8 +420,16 @@
 #define IX_AGENT_TX_POWER_VALUES		6
 #define IX_AGENT_DCB_POLICY				7
 #define IX_AGENT_TYPE_OF_REWARD			8
+#define IX_AGENT_LEARNING_MECHANISM		9
 
 #define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, CCA, P_tx, DCB policy)
+
+// Learning mechanisms allowed
+#define MULTI_ARMED_BANDITS 			1
+
+// Action-selection strategies (MABs)
+#define STRATEGY_EGREEDY				1
+#define STRATEGY_THOMPSON_SAMPLING		2
 
 /* *********************
  * * LOG TYPE ENCODING *
