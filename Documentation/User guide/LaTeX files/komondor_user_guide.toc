@@ -1,14 +1,21 @@
-\babel@toc {english}{}
-\contentsline {section}{\numberline {1}Introduction}{1}{section.1}
-\contentsline {section}{\numberline {2}Tutorial and Development Notes}{1}{section.2}
-\contentsline {subsection}{\numberline {2.1}Brief Tutorial}{2}{subsection.2.1}
-\contentsline {subsubsection}{\numberline {2.1.1}Files Organization}{2}{subsubsection.2.1.1}
-\contentsline {subsubsection}{\numberline {2.1.2}Compilation and Execution}{3}{subsubsection.2.1.2}
-\contentsline {subsubsection}{\numberline {2.1.3}Input files}{3}{subsubsection.2.1.3}
-\contentsline {subsubsection}{\numberline {2.1.4}Input scripts}{4}{subsubsection.2.1.4}
-\contentsline {subsubsection}{\numberline {2.1.5}Output files}{4}{subsubsection.2.1.5}
-\contentsline {subsubsection}{\numberline {2.1.6}Events Categorization}{5}{subsubsection.2.1.6}
-\contentsline {subsection}{\numberline {2.2}Code development}{5}{subsection.2.2}
-\contentsline {subsubsection}{\numberline {2.2.1}Main considerations}{6}{subsubsection.2.2.1}
-\contentsline {subsubsection}{\numberline {2.2.2}Miscellaneous}{7}{subsubsection.2.2.2}
-\contentsline {section}{\numberline {3}Conclusions}{7}{section.3}
+\select@language {english}
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}
+\contentsline {subsection}{\numberline {1.1}Overview of Komondor}{2}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}Files Organization}{2}{subsection.1.2}
+\contentsline {section}{\numberline {2}Installation}{3}{section.2}
+\contentsline {section}{\numberline {3}Compilation and Execution}{3}{section.3}
+\contentsline {subsection}{\numberline {3.1}Execution Modes}{4}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Input}{4}{subsection.3.2}
+\contentsline {subsubsection}{\numberline {3.2.1}System input}{4}{subsubsection.3.2.1}
+\contentsline {subsubsection}{\numberline {3.2.2}Nodes input}{4}{subsubsection.3.2.2}
+\contentsline {subsubsection}{\numberline {3.2.3}Agents input}{6}{subsubsection.3.2.3}
+\contentsline {subsubsection}{\numberline {3.2.4}Input scripts}{7}{subsubsection.3.2.4}
+\contentsline {subsection}{\numberline {3.3}Output}{7}{subsection.3.3}
+\contentsline {subsubsection}{\numberline {3.3.1}Output logs}{7}{subsubsection.3.3.1}
+\contentsline {subsubsection}{\numberline {3.3.2}Output files}{7}{subsubsection.3.3.2}
+\contentsline {subsection}{\numberline {3.4}Execution examples}{7}{subsection.3.4}
+\contentsline {subsubsection}{\numberline {3.4.1}Example 1: Basic execution}{7}{subsubsection.3.4.1}
+\contentsline {subsubsection}{\numberline {3.4.2}Example 2: Execution with agents}{9}{subsubsection.3.4.2}
+\contentsline {section}{\numberline {4}Development Notes}{10}{section.4}
+\contentsline {subsection}{\numberline {4.1}Main considerations}{10}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Miscellaneous}{10}{subsection.4.2}
