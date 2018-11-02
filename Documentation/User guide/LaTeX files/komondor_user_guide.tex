@@ -486,32 +486,6 @@ In this occasion, we activated all the types of logs, so the output folder will 
 	\label{fig:example_2_console_output}
 \end{figure}
 
-%%%%%%%%%%%%%%%
-% DEVELOPMENT NOTES
-%%%%%%%%%%%%%%%
-\section{Development Notes}
-Here we provide some clarifications regarding code implementation, wit the aim to facilitate the Komondor's usage and manipulation to developers that may be interested.
-
-%%% Considerations
-\subsection{Main considerations}
-\label{section:development_considerations}
-% TODO: Extend this part.
-Some technical information regarding code development is worth to be mentioned to properly understand how to use and modify the Komondor simulator. So far, the main considerations to be taken into account are:		
-\begin{itemize}
-	\item \textbf{Power and CCA}: power variables are stored in pW (pico watts) in order to be able to operate power magnitudes without loosing resolution\footnote{For instance., the sum of two signals of power values -85 dBm (3.162 pW) and -90 dBm (1 pW), respectively, is -83.803 dBm (4.162 pW).}. However, values are presented to the user in dBm.		
-	W (-30)  - mW (0)  - uW (+30) - nW (+60) - pW (+90)\\
-	$P_{\text{pw}} = 10^{\frac{P_{\text{dBm}} + 90}{10}}$
-\end{itemize}
-
-%%% Miscellany
-\subsection{Miscellaneous}
-\label{section:development_miscellany}
-% TODO: Extend this part.
-\begin{itemize}
-	\item \textbf{Transmitting capability}: we have added a flag to each node that determines if it is able to transmit (1) or not (0), so that we can decide if the node is only listening or both transmitting and listening.
-	\item \textbf{Progress bar}: the Komondor simulation progress bar is displayed through a \textit{printf()} command called by any node with \textit{node\_id} set to 0. If no node has \textit{node\_id} set to 0, the progress bar is not displayed.
-\end{itemize}
-
 %%% BIBLIOGRAPHY
 \bibliographystyle{unsrt}
 \bibliography{bib}

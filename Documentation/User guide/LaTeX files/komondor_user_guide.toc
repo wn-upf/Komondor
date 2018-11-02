@@ -16,6 +16,3 @@
 \contentsline {subsection}{\numberline {3.4}Execution examples}{7}{subsection.3.4}
 \contentsline {subsubsection}{\numberline {3.4.1}Example 1: Basic execution}{7}{subsubsection.3.4.1}
 \contentsline {subsubsection}{\numberline {3.4.2}Example 2: Execution with agents}{9}{subsubsection.3.4.2}
-\contentsline {section}{\numberline {4}Development Notes}{10}{section.4}
-\contentsline {subsection}{\numberline {4.1}Main considerations}{10}{subsection.4.1}
-\contentsline {subsection}{\numberline {4.2}Miscellaneous}{10}{subsection.4.2}
