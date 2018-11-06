@@ -148,6 +148,17 @@
 %%%%%%%%%%%%%%%
 \section{Installation}
 
+Komondor strictly depends on the CompC++ library provided by COST. Therefore, the simulator has been conceived to operate in a Linux environment. In particular, Ubuntu 16.04 is strongly recommended, since Komondor has been fully tested in such an OS version. 
+
+The steps to install Komondor are detailed below:
+\begin{enumerate}
+	\item First of all, it is required to have the GCC compiler installed. Further details can be obtained from the official \href{http://gcc.gnu.org/install/}{website}.
+	\item \textcolor{red}{TODO: add the necessary steps to install COST.}
+	\item Download the source code of Komondor available in the \href{https://github.com/wn-upf/Komondor/tree/master/Code}{Github repository}.
+	\item In case that the user does not have permissions to execute some of the files, grant them by introducing the following command in the target folder: \texttt{\$ chmod -R 777 *}
+	\item Test that Komondor can be compiled by executing the \texttt{build\_local} compilation script (more details in Section \ref{section:execution}).
+ \end{enumerate}
+
 %%%%%%%%%%%%%%%
 % EXECUTION
 %%%%%%%%%%%%%%%
@@ -166,8 +177,6 @@ To compile and execute Komondor, the following instructions must be followed\foo
 	\item Execute \textit{./KomondorSimulator arg\_1 arg\_2 ... arg\_n}, where \textit{arg\_i} is the $i_{\text{th}}$ input argument.
 	\item Collect the results either in the output files or in the console.
 \end{enumerate}
-
-\textbf{NOTE}: in case that the user does not have permissions to execute some of the files, grant them by introducing the following command in the target folder: \texttt{\$ chmod -R 777 *}.
 
 The execution mode of Komondor depends on the provided input files and the arguments introduced by console. The full list of parameters is described in Table \ref{table:arguments}, and the currently implemented execution modes are summarized below:
 \begin{itemize}
@@ -437,17 +446,17 @@ Here we provide few execution examples with the aim of clarifying the informatio
 For this simulation, we use the system and nodes input files that can be found at the \href{https://github.com/wn-upf/Komondor/tree/master/Code/input/input_example}{``input\_example''} folder.
 
 The first step is to compile the code through the \texttt{build\_local} file. For that, we access to the ``main'' folder and execute:
-\begin{lstlisting}[language=bash,caption={Compling the code}]
+\begin{lstlisting}[language=bash]
 	$ cd Komondor/Code/main
 	$ ./build_local
 \end{lstlisting}
 
 Once the code is compiled without errors, execute the simulation as follows:
-\begin{lstlisting}[language=bash,caption={Executing the code}]
-$ komondor_main ../input/input_example/system_input.csv ../input/input_example/nodes_input.csv 0 0 1 1 60 789
+\begin{lstlisting}[language=bash]
+$ ./komondor_main ../input/input_example/system_input.csv ../input/input_example/nodes_input.csv 0 0 1 1 60 789
 \end{lstlisting}
 
-In this case, the execution time has been set to 60 seconds and the random seed to 789. File logs have been disabled (the two zeros), but console logs were activated. The results of this simulation can be observed from the console (Figure \ref{fig:example_1_console_output}).
+In this case, the execution time has been set to 60 seconds and the random seed to 789. File logs have been disabled (the two zeros), but console logs were activated. The results of this simulation can be observed from the console (Figure \ref{fig:example_1_console_output}). Moreover, logs specific to individual WLAN's performance are shown (Figure \ref{fig:example_1_console_output_wlans}).
 
 \begin{figure}[h!]
 	\centering
@@ -456,21 +465,28 @@ In this case, the execution time has been set to 60 seconds and the random seed 
 	\label{fig:example_1_console_output}
 \end{figure}
 
+\begin{figure}[h!]
+	\centering
+	\epsfig{file=images/example_1_console_output_wlans, width=12cm}
+	\caption{Output logs for individual WLANs from example 1.}
+	\label{fig:example_1_console_output_wlans}
+\end{figure}
+
 \subsubsection{Example 2: Execution with agents}
 Now, we are showing an execution where intelligent agents are used. For that, we use the same system and input files, and add the agents input file that is located at the same \href{https://github.com/wn-upf/Komondor/tree/master/Code/input/input_example}{folder}. In this case, we use Multi-Armed Bandits (MABs) under an $\varepsilon$-greedy action-selection strategy to allow the WLANs to modify the transmit power and the CCA. For additional details on this implementation, please refer to \cite{wilhelmi2017collaborative}.
 
 Again, we compile the code as before:
-\begin{lstlisting}[language=bash,caption={Compling the code}]
+\begin{lstlisting}[language=bash]
 $ cd Komondor/Code/main
 $ ./build_local
 \end{lstlisting}
 
 To execute the simulation, we now introduce more arguments, as described in Section \ref{section:input}.
-\begin{lstlisting}[language=bash,caption={Executing the code}]
-$ komondor_main ../input/input_example/system_input.csv ../input/input_example/nodes_input.csv ../input/input_example/agents.csv 1 1 1 1 1 1 120 432
+\begin{lstlisting}[language=bash]
+$ ./komondor_main ../input/input_example/system_input.csv ../input/input_example/nodes_input.csv ../input/input_example/agents.csv 1 1 1 1 1 1 120 432
 \end{lstlisting}
 
-In this occasion, we activated all the types of logs, so the output folder will contain files generated by the system, the nodes and the agents (Figure \ref{fig:output_folder}). Moreover, logs are written at the console, as shown in Figure \ref{fig:example_2_console_output}.
+In this occasion, we activated all the types of logs, so the output folder will contain files generated by the system, the nodes and the agents (Figure \ref{fig:output_folder}). Moreover, logs regarding agents' initialization are written at the console, as shown in Figure \ref{fig:example_2_console_output}.
 
 \begin{figure}[h!]
 	\centering
@@ -487,6 +503,7 @@ In this occasion, we activated all the types of logs, so the output folder will 
 \end{figure}
 
 %%% BIBLIOGRAPHY
+\newpage
 \bibliographystyle{unsrt}
 \bibliography{bib}
 
