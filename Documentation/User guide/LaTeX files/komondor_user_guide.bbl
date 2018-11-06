@@ -15,4 +15,10 @@ G.~Chen and B.~K. Szymanski.
 \bibitem{tgax2017draft}
 {IEEE} p802.11ax/d2.0, November 2017.
 
+\bibitem{wilhelmi2017collaborative}
+Francesc Wilhelmi, Boris Bellalta, Jonsson Anders Neu~Gergely Cano, Cristina,
+  and Sergio Barrachina.
+\newblock Collaborative spatial reuse in wireless networks via selfish bandits.
+\newblock {\em arXiv preprint arXiv:1705.10508}, 2017.
+
 \end{thebibliography}

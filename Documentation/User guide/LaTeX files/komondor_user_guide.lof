@@ -1,8 +1,9 @@
-\select@language {english}
+\babel@toc {english}{}
 \contentsline {figure}{\numberline {1}{\ignorespaces Komondor flowchart\relax }}{2}{figure.caption.4}
 \contentsline {figure}{\numberline {2}{\ignorespaces Komondor files organization\relax }}{3}{figure.caption.5}
 \contentsline {figure}{\numberline {3}{\ignorespaces Example of nodes statistics in Komondor\relax }}{8}{figure.caption.10}
 \contentsline {figure}{\numberline {4}{\ignorespaces Example of system statistics in Komondor\relax }}{8}{figure.caption.11}
-\contentsline {figure}{\numberline {5}{\ignorespaces Output logs from example 1.\relax }}{9}{figure.caption.13}
-\contentsline {figure}{\numberline {6}{\ignorespaces Output files generated in Example 2.\relax }}{10}{figure.caption.14}
-\contentsline {figure}{\numberline {7}{\ignorespaces Output logs from Example 2.\relax }}{10}{figure.caption.15}
+\contentsline {figure}{\numberline {5}{\ignorespaces Output logs from example 1.\relax }}{10}{figure.caption.13}
+\contentsline {figure}{\numberline {6}{\ignorespaces Output logs for individual WLANs from example 1.\relax }}{10}{figure.caption.14}
+\contentsline {figure}{\numberline {7}{\ignorespaces Output files generated in Example 2.\relax }}{11}{figure.caption.15}
+\contentsline {figure}{\numberline {8}{\ignorespaces Output logs from Example 2.\relax }}{11}{figure.caption.16}
