@@ -1,4 +1,4 @@
-\select@language {english}
+\babel@toc {english}{}
 \contentsline {section}{\numberline {1}Introduction}{3}{section.1}
 \contentsline {subsection}{\numberline {1.1}Next-Generation WLANs}{3}{subsection.1.1}
 \contentsline {subsection}{\numberline {1.2}Komondor Main Features}{3}{subsection.1.2}
