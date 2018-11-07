@@ -46,25 +46,27 @@ Setareh Maghsudi and S{\l}awomir Sta{\'n}czak.
 \newblock {\em IEEE Transactions on Wireless Communications}, 14(3):1309--1322,
   2015.
 
-\bibitem{hata1980empirical}
-Masaharu Hata.
-\newblock Empirical formula for propagation loss in land mobile radio services.
-\newblock {\em IEEE transactions on Vehicular Technology}, 29(3):317--325,
-  1980.
+\bibitem{wilhelmi2018potential}
+Francesc Wilhelmi, Sergio Barrachina-Mu{\~n}oz, Cristina Cano, Boris Bellalta,
+  Anders Jonsson, and Gergely Neu.
+\newblock Potential and pitfalls of multi-armed bandits for decentralized
+  spatial reuse in wlans.
+\newblock {\em arXiv preprint arXiv:1805.11083}, 2018.
 
-\bibitem{bellalta2014throughput}
-Boris Bellalta, Alessandro Zocca, Cristina Cano, Alessandro Checco, Jaume
-  Barcelo, and Alexey Vinel.
-\newblock Throughput analysis in csma/ca networks using continuous time markov
-  networks: a tutorial.
-\newblock In {\em Wireless Networking for Moving Objects}, pages 115--133.
-  Springer, 2014.
+\bibitem{auer2002finite}
+Peter Auer, Nicol\'o Cesa-Bianchi, and Paul Fischer.
+\newblock Finite-time analysis of the multiarmed bandit problem.
+\newblock {\em Machine learning}, 47(2-3):235--256, 2002.
 
-\bibitem{bianchi2000performance}
-Giuseppe Bianchi.
-\newblock Performance analysis of the ieee 802.11 distributed coordination
-  function.
-\newblock {\em IEEE Journal on selected areas in communications},
-  18(3):535--547, 2000.
+\bibitem{sutton1998reinforcement}
+Richard~S Sutton and Andrew~G Barto.
+\newblock {\em Reinforcement learning: An introduction}, volume~1.
+\newblock MIT press Cambridge, 1998.
+
+\bibitem{thompson1933likelihood}
+William~R Thompson.
+\newblock On the likelihood that one unknown probability exceeds another in
+  view of the evidence of two samples.
+\newblock {\em Biometrika}, 25(3/4):285--294, 1933.
 
 \end{thebibliography}

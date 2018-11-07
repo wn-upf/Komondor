@@ -146,14 +146,13 @@
 %%%%%%%%%%%%%%%
 % INSTALLATION
 %%%%%%%%%%%%%%%
-\section{Installation}
+\section{Installation and Environment Setup}
 
-Komondor strictly depends on the CompC++ library provided by COST. Therefore, the simulator has been conceived to operate in a Linux environment. In particular, Ubuntu 16.04 is strongly recommended, since Komondor has been fully tested in such an OS version. 
+Komondor strictly depends on the CompC++ library provided by COST. Therefore, the simulator has been conceived to operate in a Linux environment. In particular, Ubuntu 16.04 is strongly recommended, since Komondor has been fully tested in such an OS version. In addition, 64-bit system are highly recommended.\footnote{An error may be displayed in compilation time for 32-bit architecture computers. To solve it, introduce the following commands: 1) \texttt{sudo dpkg --add-architecture i386}, 2) \texttt{sudo apt-get update}, and 3) \texttt{sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386}.}
 
 The steps to install Komondor are detailed below:
 \begin{enumerate}
 	\item First of all, it is required to have the GCC compiler installed. Further details can be obtained from the official \href{http://gcc.gnu.org/install/}{website}.
-	\item \textcolor{red}{TODO: add the necessary steps to install COST.}
 	\item Download the source code of Komondor available in the \href{https://github.com/wn-upf/Komondor/tree/master/Code}{Github repository}.
 	\item In case that the user does not have permissions to execute some of the files, grant them by introducing the following command in the target folder: \texttt{\$ chmod -R 777 *}
 	\item Test that Komondor can be compiled by executing the \texttt{build\_local} compilation script (more details in Section \ref{section:execution}).
@@ -447,8 +446,8 @@ For this simulation, we use the system and nodes input files that can be found a
 
 The first step is to compile the code through the \texttt{build\_local} file. For that, we access to the ``main'' folder and execute:
 \begin{lstlisting}[language=bash]
-	$ cd Komondor/Code/main
-	$ ./build_local
+$ cd Komondor/Code/main
+$ ./build_local
 \end{lstlisting}
 
 Once the code is compiled without errors, execute the simulation as follows:
@@ -473,7 +472,7 @@ In this case, the execution time has been set to 60 seconds and the random seed 
 \end{figure}
 
 \subsubsection{Example 2: Execution with agents}
-Now, we are showing an execution where intelligent agents are used. For that, we use the same system and input files, and add the agents input file that is located at the same \href{https://github.com/wn-upf/Komondor/tree/master/Code/input/input_example}{folder}. In this case, we use Multi-Armed Bandits (MABs) under an $\varepsilon$-greedy action-selection strategy to allow the WLANs to modify the transmit power and the CCA. For additional details on this implementation, please refer to \cite{wilhelmi2017collaborative}.
+Now, we are showing an execution where intelligent agents are used. For that, we use the same system and input files, and add the agents input file that is located at the same \href{https://github.com/wn-upf/Komondor/tree/master/Code/input/input_example}{folder}. In this case, we use Multi-Armed Bandits (MABs) under an $\varepsilon$-greedy action-selection strategy to allow the WLANs to modify the transmit power and the CCA. For additional details on the application of MABs to wireless networks, please refer to \cite{wilhelmi2017collaborative, wilhelmi2018potential}.
 
 Again, we compile the code as before:
 \begin{lstlisting}[language=bash]

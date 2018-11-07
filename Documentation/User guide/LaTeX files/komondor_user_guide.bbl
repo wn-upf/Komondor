@@ -21,4 +21,11 @@ Francesc Wilhelmi, Boris Bellalta, Jonsson Anders Neu~Gergely Cano, Cristina,
 \newblock Collaborative spatial reuse in wireless networks via selfish bandits.
 \newblock {\em arXiv preprint arXiv:1705.10508}, 2017.
 
+\bibitem{wilhelmi2018potential}
+Francesc Wilhelmi, Sergio Barrachina-Mu{\~n}oz, Cristina Cano, Boris Bellalta,
+  Anders Jonsson, and Gergely Neu.
+\newblock Potential and pitfalls of multi-armed bandits for decentralized
+  spatial reuse in wlans.
+\newblock {\em arXiv preprint arXiv:1805.11083}, 2018.
+
 \end{thebibliography}

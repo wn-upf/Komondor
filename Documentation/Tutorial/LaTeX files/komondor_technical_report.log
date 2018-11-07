@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  6 NOV 2018 12:35
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  7 NOV 2018 16:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1031,6 +1031,8 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 85.
 LaTeX Info: Redefining \pageref on input line 85.
 LaTeX Info: Redefining \nameref on input line 85.
+
+(./komondor_technical_report.out) (./komondor_technical_report.out)
 \@outlinefile=\write4
 \openout4 = `komondor_technical_report.out'.
 
@@ -1068,290 +1070,197 @@ File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 \tf@toc=\write5
 \openout5 = `komondor_technical_report.toc'.
 
- (./komondor_technical_report.lof
-Overfull \hbox (0.7121pt too wide) in paragraph at lines 9--9
- [][] [][][]\T1/cmr/m/n/10 CSMA/CA tem-po-ral evo-lu-tion of a node op-er-at-in
-g un-der AM and the IEEE 802.11ax 
- []
-
-)
+ (./komondor_technical_report.lof)
 \tf@lof=\write6
 \openout6 = `komondor_technical_report.lof'.
 
- (./komondor_technical_report.lot [2])
+
+(./komondor_technical_report.lot)
 \tf@lot=\write7
 \openout7 = `komondor_technical_report.lot'.
 
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 122.
+ [2]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 126.
 
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 122.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 126.
  [3]
-<images/cost.pdf, id=200, 472.1896pt x 163.94438pt>
+<images/cost.pdf, id=254, 472.1896pt x 163.94438pt>
 File: images/cost.pdf Graphic file (type pdf)
 <use images/cost.pdf>
-Package pdftex.def Info: images/cost.pdf  used on input line 144.
+Package pdftex.def Info: images/cost.pdf  used on input line 148.
 (pdftex.def)             Requested size: 199.16928pt x 69.15135pt.
- [4 <./images/cost.pdf>]
-<images/cochannel_interference.pdf, id=224, 416.52121pt x 180.72618pt>
-File: images/cochannel_interference.pdf Graphic file (type pdf)
-<use images/cochannel_interference.pdf>
-Package pdftex.def Info: images/cochannel_interference.pdf  used on input line 
-225.
-(pdftex.def)             Requested size: 256.0748pt x 111.11423pt.
- [5pdfTeX warning (ext4): destination with the same identifier (name{equation.2
-.1}) has been already used, duplicate ignored
 
-\@EveryShipout@Output ...@Org@Shipout \box \@cclv 
-                                                  
-l.229 		
-        pdfTeX warning (ext4): destination with the same identifier (name{equat
-ion.2.1}) has been already used, duplicate ignored
 
-\@EveryShipout@Output ...@Org@Shipout \box \@cclv 
-                                                  
-l.229 		
-        pdfTeX warning (ext4): destination with the same identifier (name{equat
-ion.2.1}) has been already used, duplicate ignored
+LaTeX Warning: Reference `section:mac_features' on page 4 undefined on input li
+ne 168.
 
-\@EveryShipout@Output ...@Org@Shipout \box \@cclv 
-                                                  
-l.229 		
-        ]
-<images/traffic_models.pdf, id=238, 654.24055pt x 270.4243pt>
-File: images/traffic_models.pdf Graphic file (type pdf)
-<use images/traffic_models.pdf>
-Package pdftex.def Info: images/traffic_models.pdf  used on input line 252.
-(pdftex.def)             Requested size: 256.0748pt x 105.8488pt.
 
+LaTeX Warning: Reference `section:validations' on page 4 undefined on input lin
+e 168.
+
+<images/komondor_flowchart.pdf, id=260, 939.33148pt x 346.18874pt>
+File: images/komondor_flowchart.pdf Graphic file (type pdf)
+<use images/komondor_flowchart.pdf>
+Package pdftex.def Info: images/komondor_flowchart.pdf  used on input line 181.
+
+(pdftex.def)             Requested size: 426.79134pt x 157.29425pt.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 261.
-
-[6 <./images/cochannel_interference.pdf>]
-Overfull \hbox (3.33316pt too wide) in paragraph at lines 286--287
-[]\T1/cmr/m/n/10 So far, link adap-ta-tion is not con-sid-ered[][][][][]. In-st
-ead, the MCS to be used be-tween each transmitter-
+[4 <./images/cost.pdf>]
+Overfull \hbox (18.75182pt too wide) in paragraph at lines 192--193
+[]\T1/cmr/bx/n/10 main\T1/cmr/m/n/10 : con-tains the core files (\T1/cmtt/m/n/1
+0 komondor_main.cc\T1/cmr/m/n/10 , \T1/cmtt/m/n/10 node.h\T1/cmr/m/n/10 , \T1/c
+mtt/m/n/10 agent.h \T1/cmr/m/n/10 and \T1/cmtt/m/n/10 central_controller.h\T1/c
+mr/m/n/10 )
  []
 
-[7 <./images/traffic_models.pdf>]
-<images/dcf_operation.png, id=285, 598.3956pt x 233.14302pt>
-File: images/dcf_operation.png Graphic file (type png)
-<use images/dcf_operation.png>
-Package pdftex.def Info: images/dcf_operation.png  used on input line 344.
-(pdftex.def)             Requested size: 341.43306pt x 133.02808pt.
- [8]
-<images/capture_effect.pdf, id=292, 293.84842pt x 165.02654pt>
-File: images/capture_effect.pdf Graphic file (type pdf)
-<use images/capture_effect.pdf>
-Package pdftex.def Info: images/capture_effect.pdf  used on input line 369.
-(pdftex.def)             Requested size: 256.0748pt x 143.81364pt.
-
+<images/komondor_files.png, id=281, 1025.8325pt x 543.02875pt>
+File: images/komondor_files.png Graphic file (type png)
+<use images/komondor_files.png>
+Package pdftex.def Info: images/komondor_files.png  used on input line 204.
+(pdftex.def)             Requested size: 341.43306pt x 180.74121pt.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<images/rts_cts_mechanism.pdf, id=295, 593.07693pt x 222.5412pt>
-File: images/rts_cts_mechanism.pdf Graphic file (type pdf)
-<use images/rts_cts_mechanism.pdf>
-Package pdftex.def Info: images/rts_cts_mechanism.pdf  used on input line 379.
-(pdftex.def)             Requested size: 341.43306pt x 128.1164pt.
-[9 <./images/dcf_operation.png>]
-<images/dcb_dcf.png, id=303, 458.9145pt x 101.178pt>
-File: images/dcb_dcf.png Graphic file (type png)
-<use images/dcb_dcf.png>
-Package pdftex.def Info: images/dcb_dcf.png  used on input line 395.
-(pdftex.def)             Requested size: 405.45047pt x 89.39198pt.
- [10 <./images/capture_effect.pdf> <./images/rts_cts_mechanism.pdf>]
-<images/cb_policy_flowchart.png, id=455, 219.82124pt x 72.27pt>
-File: images/cb_policy_flowchart.png Graphic file (type png)
-<use images/cb_policy_flowchart.png>
-Package pdftex.def Info: images/cb_policy_flowchart.png  used on input line 407
-.
-(pdftex.def)             Requested size: 273.1462pt x 89.80463pt.
-<images/ampdu.png, id=456, 1101.11375pt x 511.9125pt>
-File: images/ampdu.png Graphic file (type png)
-<use images/ampdu.png>
-Package pdftex.def Info: images/ampdu.png  used on input line 418.
-(pdftex.def)             Requested size: 284.52756pt x 132.27394pt.
- [11 <./images/dcb_dcf.png> <./images/cb_policy_flowchart.png> <./images/ampdu.
-png>]
-Underfull \hbox (badness 10000) in alignment at lines 484--484
-[][][] 
- []
+[5 <./images/komondor_flowchart.pdf>]
+Package epstopdf Info: Source file: <images/state_diagram.eps>
+(epstopdf)                    date: 2018-11-07 11:22:14
+(epstopdf)                    size: 42729 bytes
+(epstopdf)             Output file: <images/state_diagram-eps-converted-to.pdf>
 
-Package epstopdf Info: Source file: <images/Seminar3_2.eps>
-(epstopdf)                    date: 2018-09-24 09:14:26
-(epstopdf)                    size: 663212 bytes
-(epstopdf)             Output file: <images/Seminar3_2-eps-converted-to.pdf>
-(epstopdf)                    date: 2018-09-24 09:14:26
-(epstopdf)                    size: 63864 bytes
-(epstopdf)             Command: <repstopdf --outfile=images/Seminar3_2-eps-conv
-erted-to.pdf images/Seminar3_2.eps>
-(epstopdf)             \includegraphics on input line 546.
+(epstopdf)                    date: 2018-11-07 11:23:06
+(epstopdf)                    size: 14889 bytes
+(epstopdf)             Command: <repstopdf --outfile=images/state_diagram-eps-c
+onverted-to.pdf images/state_diagram.eps>
+(epstopdf)             \includegraphics on input line 236.
 Package epstopdf Info: Output file is already uptodate.
-<images/Seminar3_2-eps-converted-to.pdf, id=469, 483.8075pt x 481.8pt>
-File: images/Seminar3_2-eps-converted-to.pdf Graphic file (type pdf)
-<use images/Seminar3_2-eps-converted-to.pdf>
-Package pdftex.def Info: images/Seminar3_2-eps-converted-to.pdf  used on input 
-line 546.
-(pdftex.def)             Requested size: 199.16928pt x 198.3406pt.
-[12]
-<images/scenario_III.png, id=477, 232.4685pt x 181.8795pt>
-File: images/scenario_III.png Graphic file (type png)
-<use images/scenario_III.png>
-Package pdftex.def Info: images/scenario_III.png  used on input line 580.
-(pdftex.def)             Requested size: 160.04675pt x 125.225pt.
-<images/scenario3_results_sfctmn_komondor.png, id=478, 287.27325pt x 176.45924p
-t>
-File: images/scenario3_results_sfctmn_komondor.png Graphic file (type png)
-<use images/scenario3_results_sfctmn_komondor.png>
-Package pdftex.def Info: images/scenario3_results_sfctmn_komondor.png  used on 
-input line 586.
-(pdftex.def)             Requested size: 202.72523pt x 124.52763pt.
- [13 <./images/Seminar3_2-eps-converted-to.pdf>]
-<images/scenario_I.png, id=492, 100.57574pt x 25.2945pt>
-File: images/scenario_I.png Graphic file (type png)
-<use images/scenario_I.png>
-Package pdftex.def Info: images/scenario_I.png  used on input line 670.
-(pdftex.def)             Requested size: 202.72849pt x 50.99178pt.
-<images/scenario_II.png, id=493, 99.9735pt x 25.2945pt>
-File: images/scenario_II.png Graphic file (type png)
-<use images/scenario_II.png>
-Package pdftex.def Info: images/scenario_II.png  used on input line 675.
-(pdftex.def)             Requested size: 202.72849pt x 51.29475pt.
+<images/state_diagram-eps-converted-to.pdf, id=311, 1074.0125pt x 460.72125pt>
+File: images/state_diagram-eps-converted-to.pdf Graphic file (type pdf)
+<use images/state_diagram-eps-converted-to.pdf>
+Package pdftex.def Info: images/state_diagram-eps-converted-to.pdf  used on inp
+ut line 236.
+(pdftex.def)             Requested size: 426.79135pt x 183.0831pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[14 <./images/scenario_III.png> <./images/scenario3_results_sfctmn_komondor.png
-> <./images/scenario_I.png> <./images/scenario_II.png>]
-<images/komondor_flowchart.pdf, id=503, 939.33148pt x 346.18874pt>
-File: images/komondor_flowchart.pdf Graphic file (type pdf)
-<use images/komondor_flowchart.pdf>
-Package pdftex.def Info: images/komondor_flowchart.pdf  used on input line 734.
+[6 <./images/komondor_files.png>]
+<images/capture_effect.pdf, id=321, 293.84842pt x 165.02654pt>
+File: images/capture_effect.pdf Graphic file (type pdf)
+<use images/capture_effect.pdf>
+Package pdftex.def Info: images/capture_effect.pdf  used on input line 269.
+(pdftex.def)             Requested size: 256.07741pt x 143.81364pt.
 
-(pdftex.def)             Requested size: 426.79134pt x 157.29425pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-[15]
-Overfull \hbox (20.87907pt too wide) in paragraph at lines 750--751
-[]\T1/cmr/bx/n/10 List of macros\T1/cmr/m/n/10 : all the static pa-ram-e-ters (
-e.g., con-stants) are con-tained in the \T1/cmtt/m/n/10 list_of_macros.h
+Overfull \hbox (26.76456pt too wide) in paragraph at lines 266--273
+\T1/cmr/m/n/10 method is called each time there is a change in the en-vi-ron-me
+nt, i.e., when ei-ther \T1/cmtt/m/n/10 InportSomeNodeStartTX
  []
 
-[16 <./images/komondor_flowchart.pdf>]
+[7 <./images/state_diagram-eps-converted-to.pdf>]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 275.
+
+<images/dcf_operation.png, id=337, 598.3956pt x 233.14302pt>
+File: images/dcf_operation.png Graphic file (type png)
+<use images/dcf_operation.png>
+Package pdftex.def Info: images/dcf_operation.png  used on input line 338.
+(pdftex.def)             Requested size: 341.43306pt x 133.02808pt.
+[8 <./images/capture_effect.pdf>]
+<images/rts_cts_mechanism.pdf, id=360, 593.07693pt x 222.5412pt>
+File: images/rts_cts_mechanism.pdf Graphic file (type pdf)
+<use images/rts_cts_mechanism.pdf>
+Package pdftex.def Info: images/rts_cts_mechanism.pdf  used on input line 352.
+(pdftex.def)             Requested size: 341.43306pt x 128.1164pt.
+
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-
-Overfull \hbox (34.84004pt too wide) in paragraph at lines 833--865
- [][] 
+[9 <./images/dcf_operation.png>]
+Underfull \hbox (badness 10000) in alignment at lines 378--378
+[][][] 
  []
 
+<images/ampdu.png, id=371, 1101.11375pt x 511.9125pt>
+File: images/ampdu.png Graphic file (type png)
+<use images/ampdu.png>
+Package pdftex.def Info: images/ampdu.png  used on input line 386.
+(pdftex.def)             Requested size: 284.52756pt x 132.27394pt.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-
-Overfull \hbox (5.38176pt too wide) in paragraph at lines 874--875
-[]\T1/cmr/m/it/10 multiple_inputs_script.sh\T1/cmr/m/n/10 : pro-cesses all the 
-in-put files con-tained in ./in-put/script_input_files
- []
-
-[17]
-<images/nodes_statistics_example.png, id=558, 840.13875pt x 660.4675pt>
-File: images/nodes_statistics_example.png Graphic file (type png)
-<use images/nodes_statistics_example.png>
-Package pdftex.def Info: images/nodes_statistics_example.png  used on input lin
-e 890.
-(pdftex.def)             Requested size: 341.43306pt x 268.41504pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/general_statistics_example.png, id=559, 824.07875pt x 714.67pt>
-File: images/general_statistics_example.png Graphic file (type png)
-<use images/general_statistics_example.png>
-Package pdftex.def Info: images/general_statistics_example.png  used on input l
-ine 897.
-(pdftex.def)             Requested size: 341.43306pt x 296.10269pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+[10 <./images/rts_cts_mechanism.pdf>]
+<images/traffic_models.pdf, id=506, 654.24055pt x 270.4243pt>
+File: images/traffic_models.pdf Graphic file (type pdf)
+<use images/traffic_models.pdf>
+Package pdftex.def Info: images/traffic_models.pdf  used on input line 517.
+(pdftex.def)             Requested size: 256.0748pt x 105.8488pt.
+ [11 <./images/ampdu.png> <./images/traffic_models.pdf>]
+<images/agents_komondor.png, id=536, 962.1546pt x 460.6008pt>
+File: images/agents_komondor.png Graphic file (type png)
+<use images/agents_komondor.png>
+Package pdftex.def Info: images/agents_komondor.png  used on input line 569.
+(pdftex.def)             Requested size: 426.79135pt x 204.3166pt.
+ [12 <./images/agents_komondor.png>]
+(./komondor_technical_report.bbl [13]) [14]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 626.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 626.
+ (./komondor_technical_report.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 626.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 626.
+Package rerunfilecheck Info: File `komondor_technical_report.out' has not chang
+ed.
+(rerunfilecheck)             Checksum: C70A5D07E641E7C1145FDF1775104E71;2237.
 
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: There were undefined references.
 
-[18] [19] [20 <./images/nodes_statistics_example.png> <./images/general_statist
-ics_example.png>] (./komondor_technical_report.bbl [21]) [22]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1001.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1001.
-
-(./komondor_technical_report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1001.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1001.
-
-
-
-Package rerunfilecheck Warning: File `komondor_technical_report.out' has change
-d.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `komondor_technical_report.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  C7DAAA2A2646C0913DB0D3CB2A3E9C20;2613.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1001.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 626.
  ) 
 Here is how much of TeX's memory you used:
- 25105 strings out of 492649
- 496576 string characters out of 6129622
- 649506 words of memory out of 5000000
- 28327 multiletter control sequences out of 15000+600000
- 26745 words of font info for 74 fonts, out of 8000000 for 9000
+ 24948 strings out of 492649
+ 492980 string characters out of 6129622
+ 616515 words of memory out of 5000000
+ 28210 multiletter control sequences out of 15000+600000
+ 24672 words of font info for 71 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,20n,95p,1122b,768s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 62i,17n,95p,1556b,455s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2018/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}
-</usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
-/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></
-usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></us
-r/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/
-local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/lo
-cal/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local
-/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/te
-xlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/tex
-live/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texli
-ve/2018/texmf-dist/fonts/type1/public/cm-super/sfbi1000.pfb></usr/local/texlive
-/2018/texmf-dist/fonts/type1/public/cm-super/sfbx0700.pfb></usr/local/texlive/2
-018/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/201
-8/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2018/
-texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2018/te
-xmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2018/texm
-f-dist/fonts/type1/public/cm-super/sfrm0500.pfb></usr/local/texlive/2018/texmf-
-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2018/texmf-di
-st/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2018/texmf-dist
-/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2018/texmf-dist/f
-onts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2018/texmf-dist/fon
-ts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2018/texmf-dist/fonts
-/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2018/texmf-dist/fonts/t
-ype1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2018/texmf-dist/fonts/typ
-e1/public/cm-super/sfti0800.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1
-/public/cm-super/sfti0900.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/p
-ublic/cm-super/sfti1000.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/pub
-lic/cm-super/sftt0800.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/publi
-c/cm-super/sftt0900.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/public/
-cm-super/sftt1000.pfb>
-Output written on komondor_technical_report.pdf (22 pages, 1987206 bytes).
+</usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
+/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></u
+sr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr
+/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/l
+ocal/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/loca
+l/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/t
+exlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/te
+xlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texl
+ive/2018/texmf-dist/fonts/type1/public/cm-super/sfbx0700.pfb></usr/local/texliv
+e/2018/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/
+2018/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/20
+18/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2018
+/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2018/t
+exmf-dist/fonts/type1/public/cm-super/sfrm0500.pfb></usr/local/texlive/2018/tex
+mf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2018/texmf
+-dist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2018/texmf-d
+ist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2018/texmf-dis
+t/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2018/texmf-dist/
+fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2018/texmf-dist/fo
+nts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2018/texmf-dist/font
+s/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2018/texmf-dist/fonts/
+type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2018/texmf-dist/fonts/ty
+pe1/public/cm-super/sftt0800.pfb></usr/local/texlive/2018/texmf-dist/fonts/type
+1/public/cm-super/sftt0900.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/
+public/cm-super/sftt1000.pfb>
+Output written on komondor_technical_report.pdf (14 pages, 1109520 bytes).
 PDF statistics:
- 708 PDF objects out of 1000 (max. 8388607)
- 564 compressed objects within 6 object streams
- 113 named destinations out of 1000 (max. 500000)
- 98 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 666 PDF objects out of 1000 (max. 8388607)
+ 543 compressed objects within 6 object streams
+ 79 named destinations out of 1000 (max. 500000)
+ 319 words of extra memory for PDF output out of 10000 (max. 10000000)
 
