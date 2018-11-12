@@ -1,6 +1,6 @@
 This is BibTeX, Version 0.99d (TeX Live 2018)
 Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
-The top-level auxiliary file: komondor_technical_report.aux
+The top-level auxiliary file: komondor_tutorial.aux
 The style file: unsrt.bst
 Database file #1: bib.bib
 Warning--entry type for "tgax2017draft" isn't style-file defined
@@ -12,45 +12,45 @@ while executing---line 944 of file unsrt.bst
 Too many commas in name 3 of "Wilhelmi, Francesc and Bellalta, Boris and Cano, Cristina, Jonsson, Anders, Neu, Gergely and Barrachina, Sergio" for entry wilhelmi2017collaborative
 while executing---line 944 of file unsrt.bst
 Warning--can't use both volume and number fields in sutton1998reinforcement
-You've used 12 entries,
+You've used 13 entries,
             1791 wiz_defined-function locations,
-            518 strings with 5720 characters,
-and the built_in function-call counts, 2554 in all, are:
-= -- 229
-> -- 108
+            525 strings with 5858 characters,
+and the built_in function-call counts, 2776 in all, are:
+= -- 252
+> -- 112
 < -- 2
-+ -- 41
-- -- 29
-* -- 165
-:= -- 403
-add.period$ -- 35
-call.type$ -- 12
-change.case$ -- 11
++ -- 43
+- -- 30
+* -- 182
+:= -- 437
+add.period$ -- 38
+call.type$ -- 13
+change.case$ -- 12
 chr.to.int$ -- 0
-cite$ -- 13
-duplicate$ -- 110
-empty$ -- 258
-format.name$ -- 29
-if$ -- 567
+cite$ -- 14
+duplicate$ -- 119
+empty$ -- 282
+format.name$ -- 30
+if$ -- 615
 int.to.chr$ -- 0
-int.to.str$ -- 12
-missing$ -- 11
-newline$ -- 61
-num.names$ -- 11
-pop$ -- 39
+int.to.str$ -- 13
+missing$ -- 12
+newline$ -- 66
+num.names$ -- 12
+pop$ -- 40
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 53
+skip$ -- 56
 stack$ -- 0
-substring$ -- 163
-swap$ -- 24
+substring$ -- 188
+swap$ -- 25
 text.length$ -- 2
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 1
-while$ -- 24
-width$ -- 14
-write$ -- 126
+while$ -- 27
+width$ -- 15
+write$ -- 137
 (There were 3 error messages)
