@@ -1955,11 +1955,11 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							data_frames_acked++;
 							num_delay_measurements ++;
 							sum_delays += (SimTime() - buffer.GetFirstPacket().timestamp_generated);
-//							if(save_node_logs) fprintf(node_logger.file,
-//								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
-//								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
-//								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
-//								buffer.GetFirstPacket().timestamp_generated);
+							if(save_node_logs) fprintf(node_logger.file,
+								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
+								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
+								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
+								buffer.GetFirstPacket().timestamp_generated);
 
 							buffer.DelFirstPacket();
 
@@ -2789,20 +2789,24 @@ void Node :: EndBackoff(trigger_t &){
 		} else {
 			current_num_packets_aggregated = buffer.QueueSize();
 		}
-		// Update the number of packets aggregate (just in case that the max PPDU is exceeded with the current MCS)
-		limited_num_packets_aggregated = findMaximumPacketsAggregated(
-			current_num_packets_aggregated, frame_length, bits_ofdm_sym);
-		if(save_node_logs) fprintf(node_logger.file,
-			"%.15f;N%d;S%d;%s;%s Num. of packets to aggregate: %d/%d\n",
-			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
-			limited_num_packets_aggregated, max_num_packets_aggregated);
-		// ********************************************************
 
 		// data rate depending on CB and streams: Nsc * ym * yc * SUSS
 		bits_ofdm_sym =  getNumberSubcarriers(num_channels_tx) *
 			Mcs_array::modulation_bits[current_modulation-1] *
 			Mcs_array::coding_rates[current_modulation-1] *
 			IEEE_AX_SU_SPATIAL_STREAMS;
+
+		// Update the number of packets aggregate (just in case that the max PPDU is exceeded with the current MCS)
+		limited_num_packets_aggregated = findMaximumPacketsAggregated(
+			current_num_packets_aggregated, frame_length, bits_ofdm_sym);
+
+		//printf("data transmitted: %d\n", limited_num_packets_aggregated*frame_length);
+
+		if(save_node_logs) fprintf(node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Num. of packets to aggregate: %d/%d\n",
+			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
+			limited_num_packets_aggregated, max_num_packets_aggregated);
+		// ********************************************************
 
 		// Compute all packets durations (RTS, CTS, DATA and ACK) and NAV time
 		ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
@@ -2824,6 +2828,8 @@ void Node :: EndBackoff(trigger_t &){
 			"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
 			rts_duration, current_nav_time);
+
+		printf("current_nav_time = %f\n",current_nav_time);
 
 		/*
 		 * IMPORTANT: to avoid synchronization problems in Slotted BO, we put a
