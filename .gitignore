@@ -32,8 +32,6 @@
 *.cxx
 *.txt~
 *.csv~
-*.csv#
-**.csv
 
 Code/output/.keep
 !.gitignore
