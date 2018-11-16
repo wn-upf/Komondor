@@ -89,6 +89,13 @@ In case of including agents, a specific input file must be provided, which conta
 
 Regarding the output ("output" folder), some logs and statistics are created at the end of the execution.
 
+### Validation
+Komondor v.2.0 has been validated by means of ns-3 and SF-CTMN and Bianchi analytical models. The presentation of the validation can be found at "S. Barrachina-Muñoz, F. Wilhelmi, I. Selinis & B. Bellalta. Komondor: an Event-Based Wireless Network Simulator for Next-Generation Dense IEEE 802.11ax WLANs. 2018". Additional resources are available in this repository, in folder /Documentation/Validation. Files used for each simulation tool can be found:
+1) ns-3: execution script and instructions, together with the simulation environment used for validation.
+2) Komondor: input "nodes" and "system" files. Release pointing to v.2.0 must be used.
+3) SF-CTMN: simulation environment, to be executed through the SF-CTMN framework, available at https://github.com/sergiobarra/SFCTMN
+4) Bianchi: Matlab files emulating the Bianchi model ("Bianchi, G., Fratta, L., & Oliveri, M. (1996, October). Performance evaluation and enhancement of the CSMA/CA MAC protocol for 802.11 wireless LANs. In Personal, Indoor and Mobile Radio Communications, 1996. PIMRC'96., Seventh IEEE International Symposium on (Vol. 2, pp. 392-396). IEEE.") can be found, which simulate the throughput achieved by each WLAN in each of the proposed scenarios.
+
 ### Contribute
 
 If you want to contribute, please contact to sergio.barrachina@upf.edu and/or francisco.wilhelmi@upf.edu
