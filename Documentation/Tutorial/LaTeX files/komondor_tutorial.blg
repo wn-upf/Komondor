@@ -1,5 +1,5 @@
-This is BibTeX, Version 0.99d (TeX Live 2018)
-Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: komondor_tutorial.aux
 The style file: unsrt.bst
 Database file #1: bib.bib
@@ -12,45 +12,45 @@ while executing---line 944 of file unsrt.bst
 Too many commas in name 3 of "Wilhelmi, Francesc and Bellalta, Boris and Cano, Cristina, Jonsson, Anders, Neu, Gergely and Barrachina, Sergio" for entry wilhelmi2017collaborative
 while executing---line 944 of file unsrt.bst
 Warning--can't use both volume and number fields in sutton1998reinforcement
-You've used 13 entries,
+You've used 10 entries,
             1791 wiz_defined-function locations,
-            525 strings with 5858 characters,
-and the built_in function-call counts, 2776 in all, are:
-= -- 252
-> -- 112
+            505 strings with 5311 characters,
+and the built_in function-call counts, 2056 in all, are:
+= -- 179
+> -- 92
 < -- 2
-+ -- 43
-- -- 30
-* -- 182
-:= -- 437
-add.period$ -- 38
-call.type$ -- 13
-change.case$ -- 12
++ -- 35
+- -- 25
+* -- 125
+:= -- 327
+add.period$ -- 29
+call.type$ -- 10
+change.case$ -- 9
 chr.to.int$ -- 0
-cite$ -- 14
-duplicate$ -- 119
-empty$ -- 282
-format.name$ -- 30
-if$ -- 615
+cite$ -- 11
+duplicate$ -- 92
+empty$ -- 208
+format.name$ -- 25
+if$ -- 459
 int.to.chr$ -- 0
-int.to.str$ -- 13
-missing$ -- 12
-newline$ -- 66
-num.names$ -- 12
-pop$ -- 40
+int.to.str$ -- 10
+missing$ -- 9
+newline$ -- 51
+num.names$ -- 9
+pop$ -- 37
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 56
+skip$ -- 45
 stack$ -- 0
-substring$ -- 188
-swap$ -- 25
+substring$ -- 107
+swap$ -- 22
 text.length$ -- 2
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 1
-while$ -- 27
-width$ -- 15
-write$ -- 137
+while$ -- 18
+width$ -- 12
+write$ -- 104
 (There were 3 error messages)

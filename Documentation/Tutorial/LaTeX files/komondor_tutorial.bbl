@@ -15,10 +15,11 @@ G.~Chen and B.~K. Szymanski.
 \bibitem{tgax2017draft}
 {IEEE} p802.11ax/d2.0, November 2017.
 
-\bibitem{bellalta2016ieee}
-Boris Bellalta.
-\newblock Ieee 802.11 ax: High-efficiency wlans.
-\newblock {\em IEEE Wireless Communications}, 23(1):38--46, 2016.
+\bibitem{hata1980empirical}
+Masaharu Hata.
+\newblock Empirical formula for propagation loss in land mobile radio services.
+\newblock {\em IEEE transactions on Vehicular Technology}, 29(3):317--325,
+  1980.
 
 \bibitem{wilhelmi2017implications}
 Francesc Wilhelmi, Boris Bellalta, Cristina Cano, and Anders Jonsson.
@@ -31,26 +32,6 @@ Francesc Wilhelmi, Boris Bellalta, Jonsson Anders Neu~Gergely Cano, Cristina,
   and Sergio Barrachina.
 \newblock Collaborative spatial reuse in wireless networks via selfish bandits.
 \newblock {\em arXiv preprint arXiv:1705.10508}, 2017.
-
-\bibitem{maghsudi2015joint}
-Setareh Maghsudi and S{\l}awomir Sta{\'n}czak.
-\newblock Joint channel selection and power control in infrastructureless
-  wireless networks: A multiplayer multiarmed bandit framework.
-\newblock {\em IEEE Transactions on Vehicular Technology}, 64(10):4565--4578,
-  2015.
-
-\bibitem{maghsudi2015channel}
-Setareh Maghsudi and S{\l}awomir Sta{\'n}czak.
-\newblock Channel selection for network-assisted d2d communication via
-  no-regret bandit learning with calibrated forecastingtre.
-\newblock {\em IEEE Transactions on Wireless Communications}, 14(3):1309--1322,
-  2015.
-
-\bibitem{hata1980empirical}
-Masaharu Hata.
-\newblock Empirical formula for propagation loss in land mobile radio services.
-\newblock {\em IEEE transactions on Vehicular Technology}, 29(3):317--325,
-  1980.
 
 \bibitem{wilhelmi2018potential}
 Francesc Wilhelmi, Sergio Barrachina-Mu{\~n}oz, Cristina Cano, Boris Bellalta,

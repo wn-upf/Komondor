@@ -98,76 +98,25 @@ In this document we provide an overview of the Komondor simulator, making insigh
 
 \listoftables
 
+\newpage
+
 %%%%%%%%%%%%%%%
 % INTRODUCTION
 %%%%%%%%%%%%%%%
 \section{Introduction}
 \label{section:introduction}
 
-\textcolor{red}{TODO: modify the introduction according to the new approach (tutorial-like document where code insights are provided).}
-
 Komondor \cite{barrachina2017komondor} is an event-based simulator based on COST \cite{chen2002reusing}, a CompC++ library that allows generating discrete event simulations.\footnote{COST main website: \url{http://www.ita.cs.rpi.edu/cost.html}} Komondor is mostly intended to reproduce the novel techniques included in the IEEE 802.11ax-2019 amendment \cite{tgax2017draft}, which is called to become a benchmark in next-generation wireless networks. Furthermore, due to the increasing popularity of learning-based approaches in WLANs, our simulator is being built to allow the inclusion of intelligent agents that make decisions in simulation time. The decision of building a new wireless networks simulator is based on $i)$ the lack of 11ax-oriented simulators that include novel techniques, $ii)$ the need of generating a tool able to simulate intelligent agents behavior and, $iii)$ the difficulty in extending other existing solutions (e.g., ns-3) towards our abovementioned main goals. 
 	
 Komondor is a long-term and iterative project which goals are mostly focuses in providing a reliable and accurate IEEE 802.11ax simulator. In this document we present its version v1.0, which includes the core functionalities to provide a basic operation.
 	
-	
-	%%%  NG WLANs
-	\subsection{Next-Generation WLANs}
-	\label{section:ng_wlans}
-	The increasing popularity of IEEE 802.11 WLANs has led to new strict requirements in terms of data rate and users capacity. Such situation has brought the wireless communications community to introduce novel approaches. In particular, the 11ax amendment is being developed to improve spectrum efficiency in high density scenarios. To accomplish that, it introduces the concept of High-Efficiency (HE) WLANs, which incorporates novel techniques such as OFDMA, Dynamic Channel Bonding, Beamforming and Multi-User Multiple-Input Multiple-Output (MU-MIMO) \cite{bellalta2016ieee}. Such advanced mechanisms drastically change the current operation of WLANs and have not been previously implemented with detail in other network simulators. 
-	
-	In addition to the novel HE techniques, wireless networks are evolving towards autonomous management, which in many cases is achieved through Artificial Intelligence (AI). Its utilization is expected to be key in next-generation complex systems, since it allows solving (or at least approximating) computational-intensive problems. In particular, online learning has been previously applied in well-known problems such as Transmit Power Control (TPC), Carrier Sense Threshold (CST) adjustment and channel allocation \cite{wilhelmi2017implications, wilhelmi2017collaborative, maghsudi2015joint, maghsudi2015channel}. Since most of the literature that applies learning into wireless networks is theoretical in nature, there is a strong need of tools that allow implementing learning algorithms in a realistic simulation environment.	
-	
-	%%%  Komondor main features
-	\subsection{Komondor Main Features}
-	\label{section:features}
-	Komondor aims to realistically capture the operation of wireless networks. Henceforth, it reproduces actual transmissions on a per-packet basis. For that, nodes properties (e.g., location, transmit power, CCA threshold) are taken into account during data exchange procedures. The initial version of the Komondor simulator includes the following functionalities:
-	\begin{itemize}
-		\item \textbf{Flexible input files processing with error control}: network capabilities can be introduced into the simulator in a very flexible manner. Moreover, an input checker is provided in order to identify the most prominent errors in the input provided by the user.
-		\item \textbf{IEEE 802.11ax WLANs features implemented in version v1.0}:
-		\begin{itemize}
-			\item \textbf{Distributed Coordination Function (DCF)}: the Carrier Sense Multiple Access with Collision Avoidance (CSMA/CA) captures the basic Wi-Fi operation for accessing the channel. Moreover, Contention Window (CW) adaptation is considered.
-			\item \textbf{Channel Bonding (CB)}: several channel ranges can be selected during transmissions in order to maximize the spectrum efficiency.
-			\item \textbf{Packet aggregation}: several MPDUs can be aggregated into the same PPDU in order to reduce the generated communication overheads.
-			\item\textbf{ Dynamic Modulation Coding Scheme (MCS)}: the MCS is negotiated between any transmitter-receiver pair according to the Signal-to-Interference-and-Noise Ratio (SINR).
-			\item \textbf{Ready-to-Send/Clear-to-Send (RTS/CTS) and Network Allocation Vector (NAV)}: nodes exchange packets before transmitting in order to allocate the channel and prevent collisions.
-		\end{itemize}
-		\item \textbf{Statistics}: different metrics of interest are gathered and properly presented.
-	\end{itemize}
-
-	Future development stages are considered to include other features such as OFDMA, MU-MIMO transmissions, beamforming, or dynamic transmit power and CST adjustment.
-	
-	%%%  COST 
-	\subsection{COST}
-	\label{section:cost}
-	In order to provide a deeper understanding of Komondor, it is important to comprehend the COST library, which allows building interactions between components (e.g., wireless nodes). Such interaction is achieved through synchronous and asynchronous events. While the former are messages explicitly exchanged between components through input/output ports, the later are based on timers. 
-	
-	In practice, components perform a set of operations until a significant event occurs. For instance, a node that is decreasing its backoff (i.e., current operation) may freeze it when an overlapping node occupies the channel (i.e., an event). Moreover, the node may start a transmission when the backoff timer is over (i.e., a trigger). Figure \ref{fig:cost} shows the schematic of a COST component, which is characterized by its inports and outports, and a set of timers. 
-	\begin{figure}[h!]
-		\centering
-		\epsfig{file=images/cost.pdf, width=7cm}
-		\caption{COST component. While inports and outports allow to directly communicate with other components, timers trigger events specific to the component.}
-		\label{fig:cost}
-	\end{figure}	
-	
-	%%% Contributions
-	\subsection{Contributions}
-	In this document we describe the main features of the Komondor simulator and system model considerations, as well as some basic guidelines to run it. The main contributions done in this document are listed below:
-	\begin{itemize}
-		\item We provide an overview of the first version of the Komondor simulator.
-		\item We describe the implementation done for each of the included functionalities, as well as the main considerations done.
-		\item We provide a set of validations that ensure the proper operation of the presented simulator.
-		\item We provide a tutorial to allow an easy installation and execution of the simulator. Moreover, some implementation details are granted in case the reader is interested in extending the simulator.
-	\end{itemize}	
-	
-	Note, as well, that detailed technical information regarding code development is out of the scope of this document. Please, refer to the GitHub repository for more details on code implementation.
-	
-	%%%  Structure
-	\subsection{Document Structure}
-	\label{section:structure}
-	This documents is structured as follows: Section \ref{section:system_model} describes the main design principles of Komondor. Then, Section \ref{section:mac_features} defines the implementation of IEEE 802.11 functionalities considered so far, which are validated in Section \ref{section:validations}. A tutorial and some development notes are provided in Section \ref{section:tutorial_and_development_notes}. Finally, some remarks are given in Section \ref{section:conclusions}.
-	
-	\textcolor{red}{TODO: modify this part}
+In this document we describe the main features of the Komondor simulator and system model considerations, both from theoretical and development perspectives. The main contributions done in this document are listed below:
+\begin{itemize}
+	\item We provide an overview of the first version of the Komondor simulator.
+	\item We describe the implementation done for each of the included functionalities, as well as the main considerations done.
+	\item We provide a set of validations that ensure the proper operation of the presented simulator.
+	\item We provide implementation details in case the reader is interested in extending and/or deeply understanding the simulator.
+\end{itemize}	
 	
 %%%%%%%%%%%%%%%
 % PROJECT OVERVIEW
@@ -182,6 +131,20 @@ Komondor is composed by several modules that allow performing simulations with a
 	\caption{Komondor flowchart}
 	\label{fig:komondor_flowchart}
 \end{figure}		
+
+% COST 
+\subsection{COST}
+\label{section:cost}
+
+In order to provide a deep understanding of Komondor from a developer standpoint, it is important to first comprehend the COST library, which allows building interactions between components (e.g., wireless nodes). Such interaction is achieved through synchronous and asynchronous events. While the former are messages explicitly exchanged between components through input/output ports, the later are based on timers. 
+
+In practice, components perform a set of operations until a significant event occurs. For instance, a node that is decreasing its backoff (i.e., current operation) may freeze it when an overlapping node occupies the channel (i.e., an event). Moreover, the node may start a transmission when the backoff timer is over (i.e., a trigger). Figure \ref{fig:cost} shows the schematic of a COST component, which is characterized by its inports and outports, and a set of timers. 
+\begin{figure}[h!]
+	\centering
+	\epsfig{file=images/cost.pdf, width=7cm}
+	\caption{COST component. While inports and outports allow to directly communicate with other components, timers trigger events specific to the component.}
+	\label{fig:cost}
+\end{figure}	
 
 % Project organization
 \subsection{Files Organization}
@@ -205,6 +168,25 @@ To properly understand the Komondor's operation, it is important to know how the
 	\caption{Komondor files organization}
 	\label{fig:komondor_files}
 \end{figure}	
+
+%%%  Komondor main features
+\subsection{Komondor Main Features}
+\label{section:features}
+Komondor aims to realistically capture the operation of wireless networks. Henceforth, it reproduces actual transmissions on a per-packet basis. For that, nodes properties (e.g., location, transmit power, CCA threshold) are taken into account during data exchange procedures. The initial version of the Komondor simulator includes the following functionalities:
+\begin{itemize}
+	\item \textbf{Flexible input files processing with error control}: network capabilities can be introduced into the simulator in a very flexible manner. Moreover, an input checker is provided in order to identify the most prominent errors in the input provided by the user.
+	\item \textbf{IEEE 802.11ax WLANs features implemented in version v1.0}:
+	\begin{itemize}
+		\item \textbf{Distributed Coordination Function (DCF)}: the Carrier Sense Multiple Access with Collision Avoidance (CSMA/CA) captures the basic Wi-Fi operation for accessing the channel. Moreover, Contention Window (CW) adaptation is considered.
+		\item \textbf{Channel Bonding (CB)}: several channel ranges can be selected during transmissions in order to maximize the spectrum efficiency.
+		\item \textbf{Packet aggregation}: several MPDUs can be aggregated into the same PPDU in order to reduce the generated communication overheads.
+		\item\textbf{ Dynamic Modulation Coding Scheme (MCS)}: the MCS is negotiated between any transmitter-receiver pair according to the Signal-to-Interference-and-Noise Ratio (SINR).
+		\item \textbf{Ready-to-Send/Clear-to-Send (RTS/CTS) and Network Allocation Vector (NAV)}: nodes exchange packets before transmitting in order to allocate the channel and prevent collisions.
+	\end{itemize}
+	\item \textbf{Statistics}: different metrics of interest are gathered and properly presented.
+\end{itemize}
+
+Future development stages are considered to include other features such as OFDMA, MU-MIMO transmissions, beamforming, or dynamic transmit power and CST adjustment.
 	
 %%%%%%%%%%%%%%%
 % DESIGN PRINCIPLES
@@ -420,7 +402,9 @@ Once the PHY layer has been presented, now we introduce the operation carried ou
 	% Traffic generator
 	\subsubsection{Traffic generator}
 	\label{section:traffic_generator}
-	The traffic generator is intended to simulate the behavior of applications providing data to be transmitted by nodes. \textcolor{red}{TODO: complete this part when the traffic generator is clear in the code.}
+	The traffic generator is intended to simulate the behavior of applications providing data to be transmitted by nodes. To that purpose, we use the \texttt{traffic\_generator.h} class, which is initiated by the main file, according to the data introduced in the ``nodes'' input file. Each transmitter node (only APs are considered transmitters up to this version) is associated with a traffic generator, so that different capabilities can be provided to different WLANs with regards to the generation of application data. Data generation models are further described in Section \ref{section:traffic_modelling}.
+	
+	\textcolor{red}{[TODO: extend explanation once the traffic generation module has been isolated from node's operation.]}
 
 %%%%%%%%%%%%%%%
 %  MODULES
@@ -487,7 +471,7 @@ Recall from Section \ref{section:phy} that the power sensed at a given receiver 
 
 \subsection{Traffic generation module}
 \label{section:traffic_modelling}
-The traffic generator has been previously defined in Section \ref{section:traffic_generator}. Here we describe the traffic models already provided, which are included in the \texttt{traffic\_generation\_methods.h} \textcolor{red}{[TODO: refactor this once the traffic generation module has been completed]}. In particular, we have considered three different models:
+The traffic generator has been previously defined in Section \ref{section:traffic_generator}. Here we describe the traffic models already provided, which are included in the \texttt{traffic\_generation\_methods.h}. In particular, we have considered three different models:
 \begin{itemize}
 	\item \textbf{Full buffer}: transmitters are in a permanent saturation regime, so that they always have packets to be sent.
 	\item \textbf{Poisson}: packets are generated according to a Poisson distribution process, so that the average time between packets is determined by the packet generation rate $\lambda$, and which is given by $\Delta_{\rm p} = \frac{1}{\lambda}$.
@@ -501,8 +485,6 @@ Figure \ref{fig:traffic_models} illustrates the aforementioned traffic models.
 	\caption{Traffic models used in Komondor}
 	\label{fig:traffic_models}
 \end{figure}	
-
-\textcolor{red}{[TODO: complete this section with the newest traffic models]}
 
 \subsection{Backoff generation module}
 As shown in Section \ref{section:mac}, two different backoff modules are considered, namely slotted and continuous backoff. However, we also defined two different ways of computing the value backoff, independently of whether it is embedded into slots or not.
@@ -597,10 +579,8 @@ Here we provide some clarifications regarding code implementation, wit the aim t
 %%%%%%%%%%%%%%%
 \section{Conclusions Future Development Notes}
 \label{section:conclusions}
-\textcolor{red}{[TODO: refactor this part]}
-In this document we provided an overview of the first version of the Komondor simulator, which aims to reproduce the basic operation of IEEE 802.11ax WLANs in addition to allow the utilization of intelligent systems. We introduced the system model considered when building the simulator, as well as the main MAC features implemented. Additionally, due to the open source nature of this project, we provided basic information of interest for developers that are expected to use or even modify this HD WLANs simulator.
 
-Regarding the validation of the simulator, we provided a set of meaningful test scenarios to prove the proper behavior of the simulator. As shown, tests were satisfactory as the throughput computed with Komondor and the CTMN model are pretty similar, and the differences were properly justified.
+In this document we provided an overview of the first version of the Komondor simulator, which aims to reproduce the basic operation of IEEE 802.11ax WLANs in addition to allow the utilization of intelligent systems. We introduced the system model considered when building the simulator, as well as the main MAC features implemented. Additionally, due to the open source nature of this project, we provided basic information of interest for developers that are expected to use or even modify this HD WLANs simulator.
 
 This project is expected to move forward for including of novel mechanisms such as OFDMA, MU-MIMO, TPC or  CST adjustment. In addition, intelligent agents are expected to be included for making operations such as Dynamic CB (DCB).
 
