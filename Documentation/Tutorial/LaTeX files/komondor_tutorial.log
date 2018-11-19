@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  17 NOV 2018 08:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.12.1)  19 NOV 2018 12:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1050,22 +1050,13 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 87.
 (/usr/local/texlive/2016/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Overfull \hbox (6.21964pt too wide) in paragraph at lines 89--90
-[]\T1/cmr/m/n/9 Komondor is a wire-less net-work sim-u-la-tor that in-cludes no
-vel mech-a-nisms for next-generation
- []
-
-LaTeX Font Info:    Try loading font information for T1+cmtt on input line 91.
-(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1cmtt.fd
-File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
-)
-(./komondor_tutorial.toc [1
-
-{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}])
+(./komondor_tutorial.toc)
 \tf@toc=\write5
 \openout5 = `komondor_tutorial.toc'.
 
- (./komondor_tutorial.lof
+ (./komondor_tutorial.lof [1
+
+{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 Overfull \hbox (0.7121pt too wide) in paragraph at lines 12--12
  [][] [][][]\T1/cmr/m/n/10 CSMA/CA tem-po-ral evo-lu-tion of a node op-er-at-in
 g un-der AM and the IEEE 802.11ax 
@@ -1080,6 +1071,12 @@ g un-der AM and the IEEE 802.11ax
 \openout7 = `komondor_tutorial.lot'.
 
  [2]
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 109.
+
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1cmtt.fd
+File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+)
 LaTeX Font Info:    Try loading font information for OMS+cmr on input line 115.
 
 
@@ -1089,14 +1086,14 @@ File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 115.
 
-<images/komondor_flowchart.pdf, id=225, 939.33148pt x 346.18874pt>
+<images/komondor_flowchart.pdf, id=221, 939.33148pt x 346.18874pt>
 File: images/komondor_flowchart.pdf Graphic file (type pdf)
 
 <use images/komondor_flowchart.pdf>
 Package pdftex.def Info: images/komondor_flowchart.pdf used on input line 130.
 (pdftex.def)             Requested size: 426.79134pt x 157.29425pt.
  [3 <./images/komondor_flowchart.pdf>]
-<images/cost.pdf, id=263, 472.1896pt x 163.94438pt>
+<images/cost.pdf, id=259, 472.1896pt x 163.94438pt>
 File: images/cost.pdf Graphic file (type pdf)
  <use images/cost.pdf>
 Package pdftex.def Info: images/cost.pdf used on input line 144.
@@ -1109,7 +1106,7 @@ mtt/m/n/10 agent.h \T1/cmr/m/n/10 and \T1/cmtt/m/n/10 central_controller.h\T1/c
 mr/m/n/10 )
  []
 
-<images/komondor_files.png, id=267, 1025.8325pt x 543.02875pt>
+<images/komondor_files.png, id=263, 1025.8325pt x 543.02875pt>
 File: images/komondor_files.png Graphic file (type png)
 
 <use images/komondor_files.png>
@@ -1132,7 +1129,7 @@ onverted-to.pdf images/state_diagram.eps>
 (epstopdf)             \includegraphics on input line 215.
 Package epstopdf Info: Output file is already uptodate.
 
-<images/state_diagram-eps-converted-to.pdf, id=296, 1074.0125pt x 460.72125pt>
+<images/state_diagram-eps-converted-to.pdf, id=292, 1074.0125pt x 460.72125pt>
 File: images/state_diagram-eps-converted-to.pdf Graphic file (type pdf)
 
 <use images/state_diagram-eps-converted-to.pdf>
@@ -1140,7 +1137,7 @@ Package pdftex.def Info: images/state_diagram-eps-converted-to.pdf used on inpu
 t line 215.
 (pdftex.def)             Requested size: 426.79135pt x 183.0831pt.
  [6 <./images/state_diagram-eps-converted-to.pdf>]
-<images/capture_effect.pdf, id=314, 293.84842pt x 165.02654pt>
+<images/capture_effect.pdf, id=309, 293.84842pt x 165.02654pt>
 File: images/capture_effect.pdf Graphic file (type pdf)
 
 <use images/capture_effect.pdf>
@@ -1159,7 +1156,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 LaTeX Warning: No positions in optional float specifier.
                Default added (so using `tbp') on input line 256.
 
-[7] <images/dcf_operation.png, id=322, 598.3956pt x 233.14302pt>
+[7] <images/dcf_operation.png, id=318, 598.3956pt x 233.14302pt>
 File: images/dcf_operation.png Graphic file (type png)
 
 <use images/dcf_operation.png>
@@ -1170,7 +1167,7 @@ Package pdftex.def Info: images/dcf_operation.png used on input line 289.
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [8 <./images/capture_effect.pdf>]
-<images/rts_cts_mechanism.pdf, id=345, 593.07693pt x 222.5412pt>
+<images/rts_cts_mechanism.pdf, id=341, 593.07693pt x 222.5412pt>
 File: images/rts_cts_mechanism.pdf Graphic file (type pdf)
 
 <use images/rts_cts_mechanism.pdf>
@@ -1185,7 +1182,7 @@ Underfull \hbox (badness 10000) in alignment at lines 329--329
 [][][] 
  []
 
-<images/ampdu.png, id=356, 1101.11375pt x 511.9125pt>
+<images/ampdu.png, id=352, 1101.11375pt x 511.9125pt>
 File: images/ampdu.png Graphic file (type png)
  <use images/ampdu.png>
 Package pdftex.def Info: images/ampdu.png used on input line 337.
@@ -1233,7 +1230,7 @@ r (name{equation.5.1}) has been already used, duplicate ignored
                                                   
 l.450 	\end{equation}
                      ]
-<images/cochannel_interference.pdf, id=510, 416.52121pt x 180.72618pt>
+<images/cochannel_interference.pdf, id=506, 416.52121pt x 180.72618pt>
 File: images/cochannel_interference.pdf Graphic file (type pdf)
 
 <use images/cochannel_interference.pdf>
@@ -1241,7 +1238,7 @@ Package pdftex.def Info: images/cochannel_interference.pdf used on input line 4
 58.
 (pdftex.def)             Requested size: 256.0748pt x 111.11423pt.
 
-<images/traffic_models.pdf, id=514, 654.24055pt x 270.4243pt>
+<images/traffic_models.pdf, id=510, 654.24055pt x 270.4243pt>
 File: images/traffic_models.pdf Graphic file (type pdf)
 
 <use images/traffic_models.pdf>
@@ -1254,13 +1251,13 @@ Package pdftex.def Info: images/traffic_models.pdf used on input line 484.
                                                   
 l.488 
        <./images/cochannel_interference.pdf>]
-<images/dcb_dcf.png, id=536, 458.9145pt x 101.178pt>
+<images/dcb_dcf.png, id=532, 458.9145pt x 101.178pt>
 File: images/dcb_dcf.png Graphic file (type png)
  <use images/dcb_dcf.png>
 Package pdftex.def Info: images/dcb_dcf.png used on input line 504.
 (pdftex.def)             Requested size: 405.45047pt x 89.39198pt.
 
-<images/cb_policy_flowchart.png, id=539, 219.82124pt x 72.27pt>
+<images/cb_policy_flowchart.png, id=535, 219.82124pt x 72.27pt>
 File: images/cb_policy_flowchart.png Graphic file (type png)
 
 <use images/cb_policy_flowchart.png>
@@ -1272,7 +1269,7 @@ Package pdftex.def Info: images/cb_policy_flowchart.png used on input line 516.
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 [14 <./images/traffic_models.pdf>]
-<images/agents_komondor.png, id=568, 962.1546pt x 460.6008pt>
+<images/agents_komondor.png, id=564, 962.1546pt x 460.6008pt>
 File: images/agents_komondor.png Graphic file (type png)
 
 <use images/agents_komondor.png>
@@ -1294,13 +1291,13 @@ Package rerunfilecheck Info: File `komondor_tutorial.out' has not changed.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 591.
  ) 
 Here is how much of TeX's memory you used:
- 24907 strings out of 493014
- 492095 string characters out of 6133351
+ 24889 strings out of 493014
+ 491920 string characters out of 6133351
  619882 words of memory out of 5000000
- 27819 multiletter control sequences out of 15000+600000
- 24672 words of font info for 71 fonts, out of 8000000 for 9000
+ 27809 multiletter control sequences out of 15000+600000
+ 21167 words of font info for 61 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,19n,95p,1548b,449s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 62i,19n,95p,1548b,454s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}
 </usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
 /usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></
@@ -1312,26 +1309,23 @@ cal/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local
 xlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/tex
 live/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texli
 ve/2016/texmf-dist/fonts/type1/public/cm-super/sfbx0700.pfb></usr/local/texlive
-/2016/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/2
-016/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/201
-6/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2016/
-texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2016/te
-xmf-dist/fonts/type1/public/cm-super/sfrm0500.pfb></usr/local/texlive/2016/texm
-f-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2016/texmf-
-dist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2016/texmf-di
-st/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2016/texmf-dist
-/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2016/texmf-dist/f
-onts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2016/texmf-dist/fon
-ts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2016/texmf-dist/fonts
-/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2016/texmf-dist/fonts/t
-ype1/public/cm-super/sfti1000.pfb></usr/local/texlive/2016/texmf-dist/fonts/typ
-e1/public/cm-super/sftt0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1
-/public/cm-super/sftt0900.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/p
-ublic/cm-super/sftt1000.pfb>
-Output written on komondor_tutorial.pdf (17 pages, 1349749 bytes).
+/2016/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2
+016/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/201
+6/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2016/
+texmf-dist/fonts/type1/public/cm-super/sfrm0500.pfb></usr/local/texlive/2016/te
+xmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2016/texm
+f-dist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2016/texmf-
+dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2016/texmf-di
+st/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2016/texmf-dist
+/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2016/texmf-dist/f
+onts/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2016/texmf-dist/fon
+ts/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2016/texmf-dist/fonts
+/type1/public/cm-super/sftt0800.pfb></usr/local/texlive/2016/texmf-dist/fonts/t
+ype1/public/cm-super/sftt1000.pfb>
+Output written on komondor_tutorial.pdf (17 pages, 1287179 bytes).
 PDF statistics:
- 702 PDF objects out of 1000 (max. 8388607)
- 570 compressed objects within 6 object streams
+ 689 PDF objects out of 1000 (max. 8388607)
+ 560 compressed objects within 6 object streams
  85 named destinations out of 1000 (max. 500000)
  310 words of extra memory for PDF output out of 10000 (max. 10000000)
 
