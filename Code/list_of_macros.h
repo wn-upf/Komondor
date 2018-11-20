@@ -277,7 +277,8 @@
 #define IEEE_AX_RTS_LENGTH				160					// RTS length [bits]
 #define IEEE_AX_CTS_LENGTH				112					// CTS length [bits]
 #define IEEE_AX_ACK_LENGTH				112					// ACK length [bits]
-#define IEEE_AX_DATA_LENGTH				11680				// DATA length [bits]
+#define IEEE_AX_DATA_LENGTH				12000				// DATA length [bits]
+#define IEEE_AX_APP_DATA_LENGTH			11728				// DATA length [bits]
 #define IEEE_AX_BACK_LENGTH				432					// Block-ACK length [bits]
 #define IEEE_AX_SU_SPATIAL_STREAMS		1					// Number of spatial streams
 #define IEEE_AX_MAX_PPDU_DURATION		(5484 * MICRO_VALUE)// Maximum PPDU duration (limits the A-MPDU operation)

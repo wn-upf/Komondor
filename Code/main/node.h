@@ -2829,7 +2829,7 @@ void Node :: EndBackoff(trigger_t &){
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
 			rts_duration, current_nav_time);
 
-		printf("current_nav_time = %f\n",current_nav_time);
+//		printf("current_nav_time = %f\n",current_nav_time);
 
 		/*
 		 * IMPORTANT: to avoid synchronization problems in Slotted BO, we put a
@@ -4142,9 +4142,6 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 	if (num_packets_generated > 1){
 		generation_drop_ratio = num_packets_dropped * 100/ num_packets_generated;
 	}
-
-//	throughput = (((double)(data_packets_sent-data_packets_lost) * frame_length * max_num_packets_aggregated))
-//			/ SimTime();
 
 	throughput = ((double) data_frames_acked * frame_length) / SimTime();
 
