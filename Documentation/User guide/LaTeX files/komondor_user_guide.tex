@@ -230,19 +230,15 @@ The system input is introduced through a .csv file, and defines global input par
 		pdf\_backoff & int & PDF to compute the backoff () \\ \hline
 		pdf\_tx\_time & int & PDF to compute the tx time () \\ \hline
 		packet\_length & int & Length of data packets {[}bits{]} \\ \hline
-		ack\_length & int & Length of ACK packets {[}bits{]} \\ \hline
 		num\_packets\_aggregated & int & Number of packets aggregated per transmission \\ \hline
 		path\_loss\_model & int & \begin{tabular}[c]{@{}l@{}}Path-loss model (0: FSPL, 1: Hata, \\ 2: Indoor 1, 3: Indoor 2, 4: TGax scenario 1)\end{tabular} \\ \hline
 		capture\_effect & int & Capture Effect Threshold {[}dB{]} \\ \hline
 		noise\_level & int & Floor noise level {[}dBm{]} \\ \hline
 		adjacent\_channel\_model & int & \begin{tabular}[c]{@{}l@{}}Co-channel interference model \\ (0: without adjacent interference,\\ 1: contiguous adjacent interference, \\ 2: complete adjacent interference)\end{tabular} \\ \hline
 		collisions\_model & int & Collisions model (reserved) \\ \hline
-		SIFS & int & SIFS period {[}$\mu$s{]} \\ \hline
 		constant\_PER & int & Defines a constant Packet Error Rate \\ \hline
 		traffic\_model & int & \begin{tabular}[c]{@{}l@{}}Traffic model (0: full buffer, 1: Poisson distr., \\ 2: deterministic distr.)\end{tabular} \\ \hline
 		backoff\_type & int & Type of backoff (discrete: 0, continuous: 1) \\ \hline
-		rts\_length & int & Length of RTS packets {[}bits{]} \\ \hline
-		cts\_length & int & Length of CTS packets {[}bits{]} \\ \hline
 		cw\_adaptation & bool & For activating CW adaptation \\ \hline
 		pifs\_activated & bool & For activating PIFS \\ \hline
 		capture\_effect\_model & int & Capture effect model \\ \hline
