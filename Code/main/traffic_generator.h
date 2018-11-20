@@ -232,7 +232,7 @@ void TrafficGenerator :: InitializeTrafficGenerator() {
 
 	/*
 	 * HARDCODED VARIABLES FOR TESTING PURPOSES
-	 * - This variables are initalized in the code itself
+	 * - This variables are initialized in the code itself
 	 * - While this is not the most efficient approach, it allows us testing new feature
 	 */
 

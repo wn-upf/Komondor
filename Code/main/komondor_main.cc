@@ -84,7 +84,6 @@ component Komondor : public CostSimEng {
 		void SetupEnvironmentByReadingInputFile(const char *system_filename);
 		void GenerateNodes(const char *nodes_filename);
 		void GenerateNodesByReadingNodesInputFile(const char *nodes_filename);
-		void GenerateNodesByReadingAPsInputFile(const char *nodes_filename);
 
 		void GenerateAgents(const char *agents_filename);
 
@@ -135,9 +134,6 @@ component Komondor : public CostSimEng {
 		double noise_level;				// Environment noise [pW]
 		int adjacent_channel_model;		// Co-channel interference model
 		int collisions_model;			// Collisions model
-		double SIFS;					// Short Interframe Space (SIFS) [s]
-		double DIFS;					// DCF Interframe Space (DIFS) [s]
-		double PIFS;					// Point coordination function (PCF) Interframe Space (PIFS) [s]
 		double constant_per;			// Constant PER for successful transmissions
 		int traffic_model;				// Traffic model (0: full buffer, 1: poisson, 2: deterministic)
 		int backoff_type;				// Type of Backoff (0: Slotted 1: Continuous)
@@ -877,11 +873,6 @@ void Komondor :: SetupEnvironmentByReadingInputFile(const char *system_filename)
 			const char* packet_length_char = GetField(tmp, IX_PACKET_LENGTH);
 			frame_length = atoi(packet_length_char);
 
-			// ACK packet length
-			tmp = strdup(line_system);
-			const char* ack_length_char = GetField(tmp, IX_ACK_LENGTH);
-			ack_length = atoi(ack_length_char);
-
 			// Number of packets aggregated in one transmission
 			tmp = strdup(line_system);
 			const char* num_packets_aggregated_char = GetField(tmp, IX_NUM_PACKETS_AGGREGATED);
@@ -914,27 +905,10 @@ void Komondor :: SetupEnvironmentByReadingInputFile(const char *system_filename)
 			const char* collisions_model_char = GetField(tmp, IX_COLLISIONS_MODEL);
 			collisions_model = atof(collisions_model_char);
 
-			// SIFS
-			tmp = strdup(line_system);
-			const char* sifs_char = GetField(tmp, IX_SIFS);
-			SIFS = atof(sifs_char) * pow(10,-6);
-			DIFS = SIFS + (2 * SLOT_TIME);
-			PIFS = SIFS + SLOT_TIME;
-
 			// Constant PER for successful transmissions
 			tmp = strdup(line_system);
 			const char* constant_PER_char = GetField(tmp, IX_CONSTANT_PER);
 			constant_per = atof(constant_PER_char);
-
-			// RTS packet length
-			tmp = strdup(line_system);
-			const char* rts_length_char = GetField(tmp, IX_RTS_LENGTH);
-			rts_length = atoi(rts_length_char);
-
-			// CTS packet length
-			tmp = strdup(line_system);
-			const char* cts_length_char = GetField(tmp, IX_CTS_LENGTH);
-			cts_length = atoi(cts_length_char);
 
 			// Traffic model
 			tmp = strdup(line_system);
@@ -971,10 +945,6 @@ void Komondor :: SetupEnvironmentByReadingInputFile(const char *system_filename)
 /* *******************
  * * NODE GENERATION *
  * *******************
- * Nodes can be generated in 2 ways:
- * - Deterministically: defining every single parameter of all the nodes in the input file.
- * - Pseudo-randomely: defining completely just the APs.
- * The filename of the nodes input will determine the way to process them.
  */
 
 /*
@@ -987,19 +957,11 @@ void Komondor :: GenerateNodes(const char *nodes_filename) {
 	if (print_system_logs) printf("%s Generating nodes...\n", LOG_LVL1);
 	fprintf(simulation_output_file, "%s Generating nodes...\n", LOG_LVL1);
 
-	if(strstr(nodes_filename, FILE_NAME_CODE_APS) != NULL) {	// Generate random nodes according to APs input settings
+	//if(strstr(nodes_filename, FILE_NAME_CODE_NODES) != NULL)
+	if (print_system_logs) printf("%s Generating nodes DETERMINISTICALLY through NODES input file...\n", LOG_LVL2);
+	if (save_system_logs) fprintf(simulation_output_file, "%s Generating nodes DETERMINISTICALLY...\n", LOG_LVL2);
+	GenerateNodesByReadingNodesInputFile(nodes_filename);
 
-		if (print_system_logs) printf("%s Generating nodes RANDOMLY through AP input file...\n", LOG_LVL2);
-		if (save_system_logs) fprintf(simulation_output_file, "%s Generating nodes RANDOMLY through AP input file...\n", LOG_LVL2);
-		GenerateNodesByReadingAPsInputFile(nodes_filename);
-
-	} else if(strstr(nodes_filename, FILE_NAME_CODE_NODES) != NULL) {	// Generate nodes according to node input file
-
-		if (print_system_logs) printf("%s Generating nodes DETERMINISTICALLY through NODES input file...\n", LOG_LVL2);
-		if (save_system_logs) fprintf(simulation_output_file, "%s Generating nodes DETERMINISTICALLY...\n", LOG_LVL2);
-		GenerateNodesByReadingNodesInputFile(nodes_filename);
-
-	}
 }
 
 /*
@@ -1293,303 +1255,6 @@ void Komondor :: GenerateCentralController() {
 }
 
 /*
- * GenerateNodesByReadingAPsInputFile(): generates the nodes RANDOMLY according to APs input file
- * Input arguments:
- * - nodes_filename: APs input file
- */
-void Komondor :: GenerateNodesByReadingAPsInputFile(const char *nodes_filename){
-
-	total_wlans_number = GetNumOfLines(nodes_filename);
-
-	wlan_container = new Wlan[total_wlans_number];
-
-	// Compute the number of STAs of each WLAN
-	if (print_system_logs) printf("%s Computing the number of STAs in each WLAN...\n", LOG_LVL2);
-
-	FILE* stream_nodes = fopen(nodes_filename, "r");
-	char line_nodes[CHAR_BUFFER_SIZE];
-	first_line_skiped_flag = 0;	// Flag for skipping first informative line of input file
-	int wlan_ix = 0;	// Auxiliar wlan index
-
-	while (fgets(line_nodes, CHAR_BUFFER_SIZE, stream_nodes)){
-
-		if(!first_line_skiped_flag){
-
-			first_line_skiped_flag = 1;
-
-		} else{
-
-			// WLAN ID
-			wlan_container[wlan_ix].wlan_id = wlan_ix;
-
-			// WLAN code
-			tmp_nodes = strdup(line_nodes);
-			const char *wlan_code_aux = GetField(tmp_nodes, IX_AP_WLAN_CODE);
-			free(tmp_nodes);
-			std::string wlan_code;
-			wlan_code.append(ToString(wlan_code_aux));
-
-			wlan_container[wlan_ix].wlan_code = wlan_code;
-
-			// Number of STAs in the WLAN
-			tmp_nodes = strdup(line_nodes);
-			int min_sta_number = atoi(GetField(tmp_nodes, IX_AP_MIN_NUM_OF_STAS));
-			free(tmp_nodes);
-			tmp_nodes = strdup(line_nodes);
-			int max_sta_number = atoi(GetField(tmp_nodes, IX_AP_MAX_NUM_OF_STAS));
-			free(tmp_nodes);
-			wlan_container[wlan_ix].num_stas = rand()%(max_sta_number-min_sta_number + 1) + min_sta_number;
-
-			total_nodes_number += (wlan_container[wlan_ix].num_stas + 1);
-			wlan_ix++;
-		}
-	}
-
-	// Generate Nodes
-	node_container.SetSize(total_nodes_number);
-	// Generate Traffic Generators
-	traffic_generator_container.SetSize(total_nodes_number);
-
-	stream_nodes = fopen(nodes_filename, "r");
-	int node_ix = 0;				// Auxiliar index for nodes
-	wlan_ix = 0;					// Auxiliar index for WLANs
-	first_line_skiped_flag = 0;		// Flag for skipping first informative line of input file
-	int ap_generated;				// Flag indicating if AP is already generated
-	int node_id_counter_in_wlan;	// Auxiliar counter for STAs in WLAN
-	int node_ix_aux;				// Auxiliar index for nodes II
-
-	while (fgets(line_nodes, CHAR_BUFFER_SIZE, stream_nodes)){	// For each WLAN
-
-		if(!first_line_skiped_flag){
-
-			first_line_skiped_flag = 1;
-
-		} else {
-
-			ap_generated = 0;
-			wlan_container[wlan_ix].SetSizeOfSTAsArray(wlan_container[wlan_ix].num_stas);
-
-			// Max distance AP - STA
-			tmp_nodes = strdup(line_nodes);
-			int max_distance_sta = atoi(GetField(tmp_nodes, IX_AP_MAX_DISTANCE_AP_STA));
-			free(tmp_nodes);
-
-			// AP position
-			tmp_nodes = strdup(line_nodes);
-			double x = atof(GetField(tmp_nodes, IX_AP_POSITION_X));
-			free(tmp_nodes);
-			tmp_nodes = strdup(line_nodes);
-			double y = atof(GetField(tmp_nodes, IX_AP_POSITION_Y));
-			free(tmp_nodes);
-			tmp_nodes = strdup(line_nodes);
-			double z = atof(GetField(tmp_nodes, IX_AP_POSITION_Z));
-			free(tmp_nodes);
-
-			// Min CW
-			tmp_nodes = strdup(line_nodes);
-			int cw_min = atoi(GetField(tmp_nodes, IX_AP_CW_MIN));
-
-			// Max CW
-			tmp_nodes = strdup(line_nodes);
-			int cw_stage_max = atoi(GetField(tmp_nodes, IX_AP_CW_STAGE_MAX));
-
-			// Primary channel
-			tmp_nodes = strdup(line_nodes);
-			int current_primary_channel = atoi(GetField(tmp_nodes, IX_AP_PRIMARY_CHANNEL));
-
-			// Min channel allowed
-			tmp_nodes = strdup(line_nodes);
-			int min_channel_allowed = atoi(GetField(tmp_nodes, IX_AP_MIN_CH_ALLOWED));
-
-			// Max channel allowed
-			tmp_nodes = strdup(line_nodes);
-			int max_channel_allowed = atoi(GetField(tmp_nodes, IX_AP_MAX_CH_ALLOWED));
-
-			// Min TPC
-			tmp_nodes = strdup(line_nodes);
-			double tpc_min_dbm = atof(GetField(tmp_nodes, IX_AP_TPC_MIN));
-			double tpc_min = ConvertPower(DBM_TO_PW, tpc_min_dbm);
-
-			// Default TPC
-			tmp_nodes = strdup(line_nodes);
-			double tpc_default_dbm = atof(GetField(tmp_nodes, IX_AP_TPC_DEFAULT));
-			double tpc_default = ConvertPower(DBM_TO_PW, tpc_default_dbm);
-
-			// Max TPC
-			tmp_nodes = strdup(line_nodes);
-			double tpc_max_dbm = atof(GetField(tmp_nodes, IX_AP_TPC_MAX));
-			double tpc_max = ConvertPower(DBM_TO_PW, tpc_max_dbm);
-
-			// Min CCA
-			tmp_nodes = strdup(line_nodes);
-			double cca_min_dbm = atoi(GetField(tmp_nodes, IX_AP_CCA_MIN));
-			double cca_min = ConvertPower(DBM_TO_PW, cca_min_dbm);
-
-			// Default CCA
-			tmp_nodes = strdup(line_nodes);
-			double cca_default_dbm = atoi(GetField(tmp_nodes, IX_AP_CCA_DEFAULT));
-			double cca_default = ConvertPower(DBM_TO_PW, cca_default_dbm);
-
-			// Max CCA
-			tmp_nodes = strdup(line_nodes);
-			double cca_max_dbm = atoi(GetField(tmp_nodes, IX_AP_CCA_MAX));
-			double cca_max = ConvertPower(DBM_TO_PW, cca_max_dbm);
-
-			// TX gain
-			tmp_nodes = strdup(line_nodes);
-			double tx_gain_db = atoi(GetField(tmp_nodes, IX_AP_TX_GAIN));
-			double tx_gain = ConvertPower(DB_TO_LINEAR, tx_gain_db);
-
-			// RX gain
-			tmp_nodes = strdup(line_nodes);
-			double rx_gain_db = atoi(GetField(tmp_nodes, IX_AP_RX_GAIN));
-			double rx_gain = ConvertPower(DB_TO_LINEAR, rx_gain_db);
-
-			// Channel bonding model
-			tmp_nodes = strdup(line_nodes);
-			int channel_bonding_model = atoi(GetField(tmp_nodes, IX_AP_CHANNEL_BONDING_MODEL));
-
-			// Default modulation
-			tmp_nodes = strdup(line_nodes);
-			double modulation_default = atoi(GetField(tmp_nodes, IX_AP_MODULATION_DEFAULT));
-
-			// Central frequency in GHz (e.g. 2.4)
-			tmp_nodes = strdup(line_nodes);
-			const char* central_frequency_char = GetField(tmp_nodes, IX_AP_CENTRAL_FREQ);
-			double central_frequency = atof(central_frequency_char) * pow(10,9);
-
-			// Lambda (BO generation rate)
-			tmp_nodes = strdup(line_nodes);
-			const char* lambda_char = GetField(tmp_nodes, IX_AP_LAMBDA);
-			double lambda = atof(lambda_char);
-
-			// IEEE protocol type
-			tmp_nodes = strdup(line_nodes);
-			const char* ieee_protocol_char = GetField(tmp_nodes, IX_AP_IEEE_PROTOCOL_TYPE);
-			double ieee_protocol = atof(ieee_protocol_char);
-
-			// Traffic load (packet generation rate)
-			tmp_nodes = strdup(line_nodes);
-			const char* traffic_load_char = GetField(tmp_nodes, IX_AP_TRAFFIC_LOAD);
-			double traffic_load = atof(traffic_load_char);
-
-			node_id_counter_in_wlan = 0;
-
-			node_ix_aux = node_ix;
-
-			while(node_ix < node_ix_aux + (wlan_container[wlan_ix].num_stas + 1)){
-
-				// Node ID
-				node_container[node_ix].node_id = node_ix;
-
-				// Node type, node code, and position
-				if(!ap_generated){
-
-					node_container[node_ix].node_type = NODE_TYPE_AP;
-					wlan_container[wlan_ix].ap_id = node_ix;
-
-					std::string node_code;
-					node_code.append(wlan_container[wlan_ix].wlan_code).append(ToString("_AP_")).append(ToString(node_ix));
-
-					node_container[node_ix].node_code = node_code;
-					node_container[node_ix].x = x;
-					node_container[node_ix].y = y;
-					node_container[node_ix].z = z;
-					ap_generated = 1;
-
-				} else {
-
-					wlan_container[wlan_ix].list_sta_id[node_id_counter_in_wlan] = node_ix;	// Add node ID to WLAN
-					node_id_counter_in_wlan ++;
-					node_container[node_ix].node_type = NODE_TYPE_STA;
-
-					std::string node_code;
-					node_code.append(wlan_container[wlan_ix].wlan_code).append(ToString("_STA_")).append(ToString(node_ix));
-
-					node_container[node_ix].node_code = node_code;
-
-					node_container[node_ix].x = RandomDouble(x-max_distance_sta, x + max_distance_sta);
-					node_container[node_ix].y = RandomDouble(y-max_distance_sta, y + max_distance_sta);
-					node_container[node_ix].z = RandomDouble(z-max_distance_sta, z + max_distance_sta);
-
-				}
-
-				node_container[node_ix].wlan_code = wlan_container[wlan_ix].wlan_code;
-				node_container[node_ix].destination_id = NODE_ID_NONE;
-				node_container[node_ix].cw_min = cw_min;
-				node_container[node_ix].cw_stage_max = cw_stage_max;
-				node_container[node_ix].current_primary_channel = current_primary_channel;
-				node_container[node_ix].min_channel_allowed = min_channel_allowed;
-				node_container[node_ix].max_channel_allowed = max_channel_allowed;
-				node_container[node_ix].tpc_min = tpc_min;
-				node_container[node_ix].tpc_default = tpc_default;
-				node_container[node_ix].tpc_max = tpc_max;
-				node_container[node_ix].cca_min = cca_min;
-				node_container[node_ix].cca_default = cca_default;
-				node_container[node_ix].cca_max = cca_max;
-				node_container[node_ix].tx_gain = tx_gain;
-				node_container[node_ix].rx_gain = rx_gain;
-				node_container[node_ix].current_dcb_policy = channel_bonding_model;
-				node_container[node_ix].modulation_default = modulation_default;
-
-				// System
-				node_container[node_ix].simulation_time_komondor = simulation_time_komondor;
-				node_container[node_ix].total_nodes_number = total_nodes_number;
-				node_container[node_ix].collisions_model = collisions_model;
-				node_container[node_ix].capture_effect = capture_effect;
-				node_container[node_ix].save_node_logs = save_node_logs;
-				node_container[node_ix].print_node_logs = print_node_logs;
-				node_container[node_ix].basic_channel_bandwidth = basic_channel_bandwidth;
-				node_container[node_ix].num_channels_komondor = num_channels_komondor;
-				node_container[node_ix].adjacent_channel_model = adjacent_channel_model;
-				node_container[node_ix].default_destination_id = NODE_ID_NONE;
-				node_container[node_ix].noise_level = noise_level;
-				node_container[node_ix].SIFS = SIFS;
-				node_container[node_ix].DIFS = DIFS;
-				node_container[node_ix].PIFS = PIFS;
-				node_container[node_ix].constant_per = constant_per;
-				node_container[node_ix].central_frequency = central_frequency;
-				node_container[node_ix].pdf_backoff = pdf_backoff;
-				node_container[node_ix].path_loss_model = path_loss_model;
-				node_container[node_ix].pdf_tx_time = pdf_tx_time;
-				node_container[node_ix].frame_length = frame_length;
-				node_container[node_ix].max_num_packets_aggregated = max_num_packets_aggregated;
-//				traffic_generator_container[node_ix].max_num_packets_aggregated = max_num_packets_aggregated;
-				node_container[node_ix].ack_length = ack_length;
-				node_container[node_ix].rts_length = rts_length;
-				node_container[node_ix].cts_length = cts_length;
-				node_container[node_ix].traffic_model = traffic_model;
-				node_container[node_ix].backoff_type = backoff_type;
-				node_container[node_ix].cw_adaptation = cw_adaptation;
-				node_container[node_ix].pifs_activated = pifs_activated;
-				node_container[node_ix].capture_effect_model = capture_effect_model;
-				node_container[node_ix].ieee_protocol = ieee_protocol;
-				node_container[node_ix].simulation_code = simulation_code;
-
-				// Traffic generator
-				traffic_generator_container[node_ix].node_id = node_ix;
-				traffic_generator_container[node_ix].traffic_model = traffic_model;
-				traffic_generator_container[node_ix].traffic_load = traffic_load;
-				traffic_generator_container[node_ix].lambda = lambda;
-
-				node_ix++;
-			}
-
-			node_id_counter_in_wlan = wlan_container[wlan_ix].ap_id;
-
-			while(node_id_counter_in_wlan <= wlan_container[wlan_ix].ap_id + wlan_container[wlan_ix].num_stas){
-				node_container[node_id_counter_in_wlan].wlan = wlan_container[wlan_ix];
-				node_id_counter_in_wlan++;
-			}
-
-			wlan_ix ++;
-			free(tmp_nodes);
-		}
-	}
-}
-
-
-/*
  * GenerateNodesByReadingNodesInputFile(): generates the nodes according to a nodes input file (deterministic)
  * Input arguments:
  * - nodes_filename: nodes input filename
@@ -1814,9 +1479,6 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			node_container[node_ix].adjacent_channel_model = adjacent_channel_model;
 			node_container[node_ix].default_destination_id = NODE_ID_NONE;
 			node_container[node_ix].noise_level = noise_level;
-			node_container[node_ix].SIFS = SIFS;
-			node_container[node_ix].DIFS = DIFS;
-			node_container[node_ix].PIFS = PIFS;
 			node_container[node_ix].constant_per = constant_per;
 			node_container[node_ix].pdf_backoff = pdf_backoff;
 			node_container[node_ix].path_loss_model = path_loss_model;
@@ -1890,9 +1552,6 @@ void Komondor :: printSystemInfo(){
 				LOG_LVL3, noise_level, ConvertPower(PW_TO_DBM, noise_level));
 		printf("%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
 		printf("%s collisions_model = %d\n", LOG_LVL3, collisions_model);
-		printf("%s SIFS = %f s\n", LOG_LVL3, SIFS);
-		printf("%s DIFS = %f s\n", LOG_LVL3, DIFS);
-		printf("%s PIFS = %f s\n", LOG_LVL3, PIFS);
 		printf("%s Constant PER = %f\n", LOG_LVL3, constant_per);
 		printf("\n");
 	}
@@ -1919,9 +1578,6 @@ void Komondor :: WriteSystemInfo(Logger logger){
 	fprintf(logger.file, "%s noise_level = %f dBm\n", LOG_LVL3, noise_level);
 	fprintf(logger.file, "%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
 	fprintf(logger.file, "%s collisions_model = %d\n", LOG_LVL3, collisions_model);
-	fprintf(logger.file, "%s SIFS = %f s\n", LOG_LVL3, SIFS);
-	fprintf(logger.file, "%s DIFS = %f s\n", LOG_LVL3, DIFS);
-	fprintf(logger.file, "%s PIFS = %f s\n", LOG_LVL3, PIFS);
 }
 
 /*

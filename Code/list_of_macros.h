@@ -260,6 +260,11 @@
 
 // IEEE 802.11ax
 // --- PHY parameters ---
+
+#define SIFS 		(16 * MICRO_VALUE)			// SIFS value
+#define DIFS		(SIFS + (2 * SLOT_TIME))		// DIFS value
+#define PIFS		(SIFS + SLOT_TIME)			// PIFS value
+
 #define IEEE_AX_OFDM_SYMBOL_LEGACY			(4 * MICRO_VALUE)	// Duration of an OFDM symbol in legacy mode
 #define IEEE_AX_OFDM_SYMBOL_GI32_DURATION	(16 * MICRO_VALUE)	// Duration of OFDM symbol (for guard interval 3.2) [s]
 #define IEEE_AX_PHY_LEGACY_DURATION 		(20 * MICRO_VALUE)	// Duration of legacy PHY header [s]
@@ -340,22 +345,22 @@
 #define IX_PDF_BACKOFF				3
 #define IX_PDF_TX_TIME				4
 #define IX_PACKET_LENGTH			5
-#define IX_ACK_LENGTH				6
-#define IX_NUM_PACKETS_AGGREGATED	7
-#define IX_PATH_LOSS				8
-#define IX_CAPTURE_EFFECT			9
-#define IX_NOISE_LEVEL				10
-#define IX_COCHANNEL_MODEL			11
-#define IX_COLLISIONS_MODEL			12
-#define IX_SIFS						13
-#define IX_CONSTANT_PER				14
-#define IX_TRAFFIC_MODEL			15
-#define IX_BO_TYPE					16
-#define IX_RTS_LENGTH				17
-#define IX_CTS_LENGTH				18
-#define IX_CW_ADAPTATION			19
-#define IX_PIFS_ACTIVATION			20
-#define IX_CAPTURE_EFFECT_MODEL		21
+//#define IX_ACK_LENGTH				6
+#define IX_NUM_PACKETS_AGGREGATED	6
+#define IX_PATH_LOSS				7
+#define IX_CAPTURE_EFFECT			8
+#define IX_NOISE_LEVEL				9
+#define IX_COCHANNEL_MODEL			10
+#define IX_COLLISIONS_MODEL			11
+//#define IX_SIFS						12
+#define IX_CONSTANT_PER				12
+#define IX_TRAFFIC_MODEL			13
+#define IX_BO_TYPE					14
+//#define IX_RTS_LENGTH				17
+//#define IX_CTS_LENGTH				18
+#define IX_CW_ADAPTATION			15
+#define IX_PIFS_ACTIVATION			16
+#define IX_CAPTURE_EFFECT_MODEL		17
 
 // Nodes file
 #define IX_NODE_CODE				1

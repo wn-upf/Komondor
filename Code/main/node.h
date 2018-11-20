@@ -177,9 +177,6 @@ component Node : public TypeII{
 		double noise_level;					// Environment noise [pW]
 		int current_modulation;				// Current_modulation used by nodes
 		int channel_max_intereference;		// Channel of interest suffering maximum interference
-		double SIFS;						// SIFS [s]
-		double DIFS;						// DIFS [s]
-		double PIFS;						// PIFS [s]
 		double central_frequency;			// Central frequency (Hz)
 		int cw_min;							// Backoff minimum Contention Window
 		int cw_stage_max;							// Backoff maximum Contention Window
