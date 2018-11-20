@@ -105,8 +105,6 @@ component Node : public TypeII{
 		void DataTimeout();
 		void NavTimeout();
 		void RequestMCS();
-		void NewPacketGenerated();
-		void TrafficGenerator();
 		void StartTransmission();
 		void AbortRtsTransmission();
 
@@ -134,8 +132,6 @@ component Node : public TypeII{
 		std::string node_code;			// Name of the Node (only for information displaying purposes)
 		int node_type;					// Node type (e.g., AP, STA, ...)
 		int destination_id;				// Destination node id (for nodes not belonging to any WLAN)
-		double lambda;					// Average notification generation rate (related to exponential BO) [notification/s]
-		double traffic_load;			// Average traffic load of the AP [packets/s]
 		int ieee_protocol;				// IEEE protocol type
 		int current_primary_channel;	// Primary channel
 		int min_channel_allowed;		// Min. allowed channel
@@ -400,7 +396,6 @@ component Node : public TypeII{
 		Timer <trigger_t> trigger_CTS_timeout;			// Trigger when CTS hasn't arrived in time
 		Timer <trigger_t> trigger_DATA_timeout; 		// Trigger when DATA TX could not start due to RTS/CTS failure
 		Timer <trigger_t> trigger_NAV_timeout;  		// Trigger for the NAV
-		Timer <trigger_t> trigger_new_packet_generated; // Trigger for new packets generation
 		Timer <trigger_t> trigger_preoccupancy; 		// Trigger for delaying 1 ps the occupancy of channels after channel range selection
 		Timer <trigger_t> trigger_restart_sta; 			// Trigger for retarding the STA restart enough time to handle same time RTS finish events
 		Timer <trigger_t> trigger_wait_collisions; 		// Trigger for waiting just in case more RTS collisions are detected at the same time
@@ -418,7 +413,6 @@ component Node : public TypeII{
 		inport inline void CtsTimeout(trigger_t& t1);
 		inport inline void DataTimeout(trigger_t& t1);
 		inport inline void NavTimeout(trigger_t& t1);
-		inport inline void NewPacketGenerated(trigger_t& t1);
 		inport inline void StartTransmission(trigger_t& t1);
 		inport inline void CallRestartSta(trigger_t& t1);
 		inport inline void CallSensing(trigger_t& t1);
@@ -437,7 +431,6 @@ component Node : public TypeII{
 			connect trigger_CTS_timeout.to_component,CtsTimeout;
 			connect trigger_DATA_timeout.to_component,DataTimeout;
 			connect trigger_NAV_timeout.to_component,NavTimeout;
-			connect trigger_new_packet_generated.to_component,NewPacketGenerated;
 			connect trigger_preoccupancy.to_component,StartTransmission;
 			connect trigger_restart_sta.to_component,CallRestartSta;
 			connect trigger_wait_collisions.to_component,CallSensing;
@@ -486,8 +479,6 @@ void Node :: Start(){
 
 	// Start backoff procedure only if node is able to transmit
 	if(node_is_transmitter) {
-
-//		TrafficGenerator();
 
 		if (TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION) {
 
@@ -2456,102 +2447,6 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 	}
 }
 
-/*
- * TrafficGenerator(): called each time a packet is generated to start a new packet generation
- */
-// void Node :: InportNewPacketGenerated()
-void Node :: TrafficGenerator() {
-
-//	time_for_next_packet = 0;
-//
-//	switch(traffic_model) {
-//
-//		// 99
-//		case TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION:{
-//
-//			for(int i = 0; i < max_num_packets_aggregated; i++){
-//				new_packet = null_notification;
-//				new_packet.timestamp_generated = SimTime();
-//				new_packet.packet_id = last_packet_generated_id;
-//				buffer.PutPacket(new_packet);
-//				last_packet_generated_id++;
-//			}
-//
-//			time_to_trigger = SimTime() + DIFS;
-//			trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
-//
-//			break;
-//
-//		}
-//		// 0
-//		// Sergio on 16 Jan:
-//		// - Full buffer is still to be implemented.
-//		// - To simulate it, just use Poisson traffic with large traffic loads.
-//		case TRAFFIC_FULL_BUFFER:{
-//
-//			if(node_id == 0) printf("WARNING: FULL BUFFER NOT IMPLEMENTED! SIMULATE IT: just use Poisson traffic with large traffic loads\n");
-//
-//			// Change to Poisson with huge traffic load to simulate saturation
-//			traffic_model = TRAFFIC_POISSON;
-//			traffic_load = 1000;
-//
-//			// --- Poisson ---
-//			time_for_next_packet = Exponential(1/traffic_load);
-//			time_to_trigger = SimTime() + time_for_next_packet;
-//			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
-//			break;
-//		}
-//
-//		// 1
-//		case TRAFFIC_POISSON:{
-//
-//			// Sergio on 11th January 2018
-//			// - Traffic generation depends on the traffic load (not on the lambda parameter, which is related
-//			//   with BO generation exponentially distributed.
-//			// time_for_next_packet = Exponential(1/lambda);
-//
-//			// Generates new packet when the trigger expires
-//			time_for_next_packet = Exponential(1/traffic_load);
-//			time_to_trigger = SimTime() + time_for_next_packet;
-//			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
-//			break;
-//		}
-//
-//		// 2
-//		case TRAFFIC_DETERMINISTIC:{
-//			time_for_next_packet = 1/lambda;
-//			time_to_trigger = SimTime() + time_for_next_packet;
-//			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
-//			break;
-//		}
-//
-//		// 3
-//		case TRAFFIC_POISSON_BURST:{
-//
-//			// Sergio on 2nd February 2018
-//			// - Input: traffic load and average time between bursts
-//
-//			time_for_next_packet = Exponential(burst_rate/traffic_load);
-//			time_to_trigger = SimTime() + time_for_next_packet;
-//
-//			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New generation burst will be triggered in %f ms\n",
-//				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-//				time_for_next_packet * 1000);
-//
-//			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
-//			break;
-//		}
-//
-//		default:{
-//			printf("Wrong traffic model!\n");
-//			exit(EXIT_FAILURE);
-//			break;
-//		}
-//
-//	}
-
-}
-
 void Node :: InportNewPacketGenerated(){
 
 //	printf("N%d New packet received from the traffic generator!\n", node_id);
@@ -2620,10 +2515,10 @@ void Node :: InportNewPacketGenerated(){
 			int num_packets_generated_in_burst = burst_rate;
 
 			if(save_node_logs) fprintf(node_logger.file,
-						"%.15f;N%d;S%d;%s;%s New traffic burst (#%d) generated %d packets\n",
-						SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
-						num_bursts,
-						num_packets_generated_in_burst);
+				"%.15f;N%d;S%d;%s;%s New traffic burst (#%d) generated %d packets\n",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
+				num_bursts,
+				num_packets_generated_in_burst);
 
 			num_packets_generated += num_packets_generated_in_burst;
 
@@ -2673,134 +2568,6 @@ void Node :: InportNewPacketGenerated(){
 		} // End of BURST TRAFFIC
 
 	}
-}
-
-/*
- * NewPacketGenerated(): triggered by trigger_new_packet_generated
- * - New packet generated by the source. Put it at the end of the buffer if fits.
- */
-void Node :: NewPacketGenerated(trigger_t &){
-
-//	if(node_is_transmitter){
-//
-//		if(buffer.QueueSize() == 0){
-//			// - compute average waiting time to access the channel
-//			timestamp_new_trial_started = SimTime();
-//		}
-//
-//		if(traffic_model != TRAFFIC_POISSON_BURST) { // NON-BURST TRAFFIC (i.e., packet by packet)
-//
-//			num_packets_generated++;
-//			// Update performance measurements
-//			current_performance.num_packets_generated++;
-//
-//			if (buffer.QueueSize() < PACKET_BUFFER_SIZE) {
-//
-//				// Include new packet
-//				new_packet = null_notification;
-//				new_packet.timestamp_generated = SimTime();
-//				new_packet.packet_id = last_packet_generated_id;
-//				buffer.PutPacket(new_packet);
-//
-//				if(save_node_logs) fprintf(node_logger.file,
-//						"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been generated (queue: %d/%d)\n",
-//						SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
-//						new_packet.packet_id, buffer.QueueSize(), PACKET_BUFFER_SIZE);
-//
-//				// Attempt to restart BO only if node didn't have any packet before a new packet was generated
-//				if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
-//
-//					if(trigger_end_backoff.Active()) remaining_backoff =
-//							ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
-//
-//					int resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_cca,
-//							buffer.QueueSize());
-//
-//					if (resume) {
-//						time_to_trigger = SimTime() + DIFS;
-//						trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
-//					}
-//
-//				}
-//
-//			} else {
-//				// Buffer overflow - new packet is lost
-//				if(save_node_logs) fprintf(node_logger.file,
-//						"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been dropped! (queue: %d/%d)\n",
-//						SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
-//						last_packet_generated_id, buffer.QueueSize(), PACKET_BUFFER_SIZE);
-//				num_packets_dropped++;
-//				// Update performance measurements
-//				current_performance.num_packets_dropped++;
-//			}
-//
-//			last_packet_generated_id++;
-//
-//			// End of NON-BURST TRAFFIC
-//
-//		} else {	// BURST TRAFFIC (i.e., burst of consecutive packets)
-//
-//			num_bursts ++;
-//
-//			int num_packets_generated_in_burst = burst_rate;
-//
-//			if(save_node_logs) fprintf(node_logger.file,
-//						"%.15f;N%d;S%d;%s;%s New traffic burst (#%d) generated %d packets\n",
-//						SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
-//						num_bursts,
-//						num_packets_generated_in_burst);
-//
-//			num_packets_generated += num_packets_generated_in_burst;
-//
-//			for(int i = 0; i < num_packets_generated_in_burst; i++){
-//
-//				if (buffer.QueueSize() < PACKET_BUFFER_SIZE) {
-//
-//					// Include new packet
-//					Notification new_packet;
-//					new_packet.timestamp_generated = SimTime();
-//					new_packet.packet_id = last_packet_generated_id;
-//					buffer.PutPacket(new_packet);
-//
-//					if(save_node_logs) fprintf(node_logger.file,
-//							"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been generated from burst %d (buffer queue: %d/%d)\n",
-//							SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
-//							new_packet.packet_id,
-//							num_bursts,
-//							buffer.QueueSize(),
-//							PACKET_BUFFER_SIZE);
-//
-//					// Attempt to restart BO only if node didn't have any packet before a new packet was generated
-//					if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
-//
-//						if(trigger_end_backoff.Active()) remaining_backoff =
-//								ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
-//
-//						int resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_cca,
-//								buffer.QueueSize());
-//
-//						if (resume) {
-//							time_to_trigger = SimTime() + DIFS;
-//							trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
-//						}
-//
-//					}
-//
-//				} else {
-//					// Buffer overflow - new packet is lost
-//					num_packets_dropped++;
-//				}
-//
-//				last_packet_generated_id++;
-//
-//			}
-//
-//		} // End of BURST TRAFFIC
-//
-//	}
-//
-//	TrafficGenerator();
-
 }
 
 /*
@@ -3669,8 +3436,6 @@ void Node :: GenerateConfiguration(){
 	capabilities.z = z;
 	capabilities.node_type = node_type;
 	capabilities.destination_id = destination_id;
-	capabilities.lambda = lambda;
-	capabilities.traffic_load = traffic_load;
 	capabilities.ieee_protocol = ieee_protocol;
 	capabilities.primary_channel = current_primary_channel;
 	capabilities.min_channel_allowed = min_channel_allowed;
@@ -4113,8 +3878,6 @@ void Node :: PrintNodeInfo(int info_detail_level){
 	}
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
-		printf("%s lambda = %f packets/s\n", LOG_LVL4, lambda);
-		printf("%s traffic_load = %.2f packets/s\n", LOG_LVL4, traffic_load);
 		printf("%s cw_min = %d\n", LOG_LVL4, cw_min);
 		printf("%s cw_stage_max = %d\n", LOG_LVL4, cw_stage_max);
 		printf("%s destination_id = %d\n", LOG_LVL4, destination_id);
@@ -4185,13 +3948,11 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, std::strin
 	}
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
-		fprintf(node_logger.file, "%s - lambda = %f packets/s\n", header_str.c_str(), lambda);
 		fprintf(node_logger.file, "%s - cw_min = %d\n", header_str.c_str(), cw_min);
 		fprintf(node_logger.file, "%s - cw_stage_max = %d\n", header_str.c_str(), cw_stage_max);
 		fprintf(node_logger.file, "%s - destination_id = %d\n", header_str.c_str(), destination_id);
 		fprintf(node_logger.file, "%s - tpc_default = %f pW\n", header_str.c_str(), tpc_default);
 		fprintf(node_logger.file, "%s - cca_default = %f pW\n", header_str.c_str(), cca_default);
-		fprintf(node_logger.file, "%s - traffic_load = %.2f\n", header_str.c_str(), traffic_load);
 	}
 
 }

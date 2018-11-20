@@ -634,11 +634,9 @@ void Komondor :: Stop(){
 
 			// Sergio logs for Paper #5 Toy Scenario I and II: 2 WLANs overlap scenario, and 3 line scenario
 			fprintf(logger_script.file, ";%d;%d;%.0f;%.0f;%.0f;%.0f;%.2f;%.2f;"
-					"%.4f;%.4f;%.2f;%.2f;%.4f;%.4f;%.4f;%.4f;%.4f;%.4f;%.4f;%.4f;%.2f;%.2f\n",
+					"%.4f;%.4f;%.2f;%.2f;%.4f;%.4f;%.4f;%.4f;%.4f;%.4f;%.2f;%.2f\n",
 					node_container[0].current_dcb_policy,
 					node_container[2].current_dcb_policy,
-					node_container[0].traffic_load,
-					node_container[2].traffic_load,
 					node_container[0].num_packets_generated,
 					node_container[2].num_packets_generated,
 					node_container[0].throughput / (frame_length * max_num_packets_aggregated),
@@ -665,8 +663,7 @@ void Komondor :: Stop(){
 		case 7:{
 
 			// Sergio logs for Paper #5: central WLAN scenario
-			fprintf(logger_script.file, ";%.0f;%.2f;%d;%d;%d;%d;%d;%d;%d;%f;%f;%f;%f;%f\n",
-				node_container[0].traffic_load,
+			fprintf(logger_script.file, ";%.0f;%d;%d;%d;%d;%d;%d;%d;%f;%f;%f;%f;%f\n",
 				node_container[0].throughput / (frame_length * max_num_packets_aggregated),
 				node_container[0].rts_cts_sent,
 				node_container[0].rts_cts_lost,
@@ -688,9 +685,8 @@ void Komondor :: Stop(){
 
 			// Sergio logs for Paper #5: Central WLAN scenario
 			fprintf(logger_script.file, ";%d;%.0f;%.0f;%.2f;"
-					"%.4f;%.2f;%.4f;%.4f;%.4f;%.4f;%.2f\n",
+					"%.4f;%.2f;%.4f;%.4f;%.4f;%.4f\n",
 					node_container[0].current_dcb_policy,
-					node_container[0].traffic_load,
 					node_container[0].num_packets_generated,
 					node_container[0].throughput / (frame_length * max_num_packets_aggregated),
 					node_container[0].average_rho,
@@ -708,8 +704,7 @@ void Komondor :: Stop(){
 		case 9:{
 
 			// Sergio logs for Paper #5: 6 WLAN random
-			fprintf(logger_script.file, ";%.0f;%.2f;%.2f;%.2f;%d;%.4f;%.4f;%.4f;%.2f;%.2f;%.2f;%f;%f;%f\n",
-				node_container[0].traffic_load,
+			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%d;%.4f;%.4f;%.4f;%.2f;%.2f;%.2f;%f;%f;%f\n",
 				total_throughput/(frame_length * max_num_packets_aggregated * total_wlans_number),
 				(total_throughput * pow(10,-6)/total_wlans_number),
 				min_throughput/(frame_length * max_num_packets_aggregated),
@@ -1568,15 +1563,14 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(const char *nodes_filename){
 				node_container[node_ix].cw_adaptation = cw_adaptation;
 				node_container[node_ix].pifs_activated = pifs_activated;
 				node_container[node_ix].capture_effect_model = capture_effect_model;
-				node_container[node_ix].lambda = lambda;
 				node_container[node_ix].ieee_protocol = ieee_protocol;
-				node_container[node_ix].traffic_load = traffic_load;
 				node_container[node_ix].simulation_code = simulation_code;
 
 				// Traffic generator
 				traffic_generator_container[node_ix].node_id = node_ix;
 				traffic_generator_container[node_ix].traffic_model = traffic_model;
 				traffic_generator_container[node_ix].traffic_load = traffic_load;
+				traffic_generator_container[node_ix].lambda = lambda;
 
 				node_ix++;
 			}
@@ -1798,7 +1792,6 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			// Lambda (BO generation rate)
 			tmp_nodes = strdup(line_nodes);
 			const char* lambda_char = GetField(tmp_nodes, IX_LAMBDA);
-			node_container[node_ix].lambda = atof(lambda_char);
 
 			// IEEE protocol type
 			tmp_nodes = strdup(line_nodes);
@@ -1808,7 +1801,6 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			// Traffic load (packet generation rate)
 			tmp_nodes = strdup(line_nodes);
 			const char* traffic_load_char = GetField(tmp_nodes, IX_TRAFFIC_LOAD);
-			node_container[node_ix].traffic_load = atof(traffic_load_char);
 
 			// System
 			node_container[node_ix].simulation_time_komondor = simulation_time_komondor;
