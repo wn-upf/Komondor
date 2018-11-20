@@ -23,4 +23,5 @@ typedef void  (compcxx_component::*Node_outportAskForTxModulation_f_t)(Notificat
 typedef void  (compcxx_component::*Node_outportAnswerTxModulation_f_t)(Notification &notification);
 typedef void  (compcxx_component::*Node_outportAnswerToAgent_f_t)(Configuration &configuration, Performance &performance);
 typedef void  (compcxx_component::*Node_outportSetNewWlanConfiguration_f_t)(Configuration &new_configuration);
+typedef void  (compcxx_component::*TrafficGenerator_outportNewPacketGenerated_f_t)();
 };

@@ -60,6 +60,7 @@
 #include "../structures/notification.h"
 #include "../structures/wlan.h"
 #include "node.h"
+#include "traffic_generator.h"
 #include "agent.h"
 #include "central_controller.h"
 
@@ -106,6 +107,7 @@ component Komondor : public CostSimEng {
 
 		Node[] node_container;			// Container of nodes (i.e., APs, STAs, ...)
 		Wlan *wlan_container;			// Container of WLANs
+		TrafficGenerator[] traffic_generator_container; // Container of traffic generators (associated to nodes)
 
 		int total_wlans_number;				// Total number of WLANs
 		int total_agents_number;			// Total number of agents
@@ -321,6 +323,8 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 
 	// Set connections among nodes
 	for(int n = 0; n < total_nodes_number; n++){
+
+		connect traffic_generator_container[n].outportNewPacketGenerated,node_container[n].InportNewPacketGenerated;
 
 		for(int m=0; m < total_nodes_number; m++) {
 
@@ -1348,6 +1352,8 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(const char *nodes_filename){
 
 	// Generate Nodes
 	node_container.SetSize(total_nodes_number);
+	// Generate Traffic Generators
+	traffic_generator_container.SetSize(total_nodes_number);
 
 	stream_nodes = fopen(nodes_filename, "r");
 	int node_ix = 0;				// Auxiliar index for nodes
@@ -1553,6 +1559,7 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(const char *nodes_filename){
 				node_container[node_ix].pdf_tx_time = pdf_tx_time;
 				node_container[node_ix].frame_length = frame_length;
 				node_container[node_ix].max_num_packets_aggregated = max_num_packets_aggregated;
+//				traffic_generator_container[node_ix].max_num_packets_aggregated = max_num_packets_aggregated;
 				node_container[node_ix].ack_length = ack_length;
 				node_container[node_ix].rts_length = rts_length;
 				node_container[node_ix].cts_length = cts_length;
@@ -1565,6 +1572,11 @@ void Komondor :: GenerateNodesByReadingAPsInputFile(const char *nodes_filename){
 				node_container[node_ix].ieee_protocol = ieee_protocol;
 				node_container[node_ix].traffic_load = traffic_load;
 				node_container[node_ix].simulation_code = simulation_code;
+
+				// Traffic generator
+				traffic_generator_container[node_ix].node_id = node_ix;
+				traffic_generator_container[node_ix].traffic_model = traffic_model;
+				traffic_generator_container[node_ix].traffic_load = traffic_load;
 
 				node_ix++;
 			}
@@ -1649,6 +1661,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 	if (print_system_logs) printf("%s Generating nodes...\n", LOG_LVL3);
 	total_nodes_number = GetNumOfNodes(nodes_filename, NODE_TYPE_UNKWNOW, ToString(""));
 	node_container.SetSize(total_nodes_number);
+	traffic_generator_container.SetSize(total_nodes_number);
 
 	stream_nodes = fopen(nodes_filename, "r");
 	int node_ix = 0;	// Auxiliar index for nodes
@@ -1827,6 +1840,14 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			node_container[node_ix].pifs_activated = pifs_activated;
 			node_container[node_ix].capture_effect_model = capture_effect_model;
 			node_container[node_ix].simulation_code = simulation_code;
+
+			// Traffic generator
+			traffic_generator_container[node_ix].node_type = node_type;
+			traffic_generator_container[node_ix].node_id = node_ix;
+			traffic_generator_container[node_ix].traffic_model = traffic_model;
+			traffic_generator_container[node_ix].traffic_load = atof(traffic_load_char);
+			traffic_generator_container[node_ix].lambda = atof(lambda_char);
+			traffic_generator_container[node_ix].burst_rate = atof(lambda_char);
 
 			node_ix ++;
 			free(tmp_nodes);
@@ -2232,8 +2253,8 @@ total_nodes_number = 0;
 	srand(seed); // Needed for ensuring randomness dependency on seed
 	test.StopTime(sim_time);
 	test.Setup(sim_time, save_system_logs, save_node_logs, save_agent_logs, print_system_logs, print_node_logs, print_agent_logs,
-			system_input_filename, nodes_input_filename, script_output_filename.c_str(), simulation_code.c_str(), seed,
-			agents_enabled, agents_input_filename);
+		system_input_filename, nodes_input_filename, script_output_filename.c_str(), simulation_code.c_str(), seed,
+		agents_enabled, agents_input_filename);
 
 	printf("------------------------------------------\n");
 	printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());
