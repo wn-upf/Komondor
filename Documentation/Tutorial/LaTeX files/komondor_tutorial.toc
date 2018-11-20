@@ -1,4 +1,4 @@
-\select@language {english}
+\babel@toc {english}{}
 \contentsline {section}{\numberline {1}Introduction}{3}{section.1}
 \contentsline {section}{\numberline {2}Project Overview}{3}{section.2}
 \contentsline {subsection}{\numberline {2.1}COST}{4}{subsection.2.1}
@@ -14,8 +14,8 @@
 \contentsline {subsection}{\numberline {4.2}MAC}{8}{subsection.4.2}
 \contentsline {subsubsection}{\numberline {4.2.1}Channel access}{8}{subsubsection.4.2.1}
 \contentsline {subsubsection}{\numberline {4.2.2}Virtual carrier sensing}{9}{subsubsection.4.2.2}
-\contentsline {subsubsection}{\numberline {4.2.3}Frames formats}{9}{subsubsection.4.2.3}
-\contentsline {subsubsection}{\numberline {4.2.4}Transmission times}{11}{subsubsection.4.2.4}
+\contentsline {subsubsection}{\numberline {4.2.3}Frames formats}{10}{subsubsection.4.2.3}
+\contentsline {subsubsection}{\numberline {4.2.4}Transmission times}{10}{subsubsection.4.2.4}
 \contentsline {subsection}{\numberline {4.3}Upper communication layers}{12}{subsection.4.3}
 \contentsline {subsubsection}{\numberline {4.3.1}Traffic generator}{12}{subsubsection.4.3.1}
 \contentsline {section}{\numberline {5}Modules and Models Available in Komondor}{12}{section.5}
