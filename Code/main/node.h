@@ -1238,6 +1238,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						int capture_effect_condition = power_received_per_node[notification.source_id] >
 							power_received_per_node[receiving_from_node_id] + capture_effect;
+
 						if (loss_reason == PACKET_NOT_LOST && capture_effect_condition) {
 							if (notification.packet_type == PACKET_TYPE_RTS) {
 								// Start decoding the new packet
@@ -2811,7 +2812,7 @@ void Node :: EndBackoff(trigger_t &){
 		// Compute all packets durations (RTS, CTS, DATA and ACK) and NAV time
 		ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
 				ieee_protocol, num_channels_tx, current_modulation, limited_num_packets_aggregated,
-				bits_ofdm_sym);
+				frame_length, bits_ofdm_sym);
 
 		if(save_node_logs) fprintf(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmitting (N_agg = %d) in %d channels using modulation %d (%.0f bits per OFDM symbol ---> %.2f Mbps) \n",
@@ -3570,7 +3571,7 @@ void Node :: UpdatePerformanceMeasurements(){
 	current_performance.throughput =
 		(((double)(current_performance.data_packets_sent -
 		current_performance.data_packets_lost) * frame_length
-		* max_num_packets_aggregated)) / (SimTime()-current_performance.last_time_measured);
+		* limited_num_packets_aggregated)) / (SimTime()-current_performance.last_time_measured);
 
 }
 
@@ -4168,7 +4169,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Throughput
 				printf("%s Throughput = %f Mbps (%.2f pkt/s)\n", LOG_LVL2,
 						throughput * pow(10,-6),
-						throughput / (frame_length * max_num_packets_aggregated));
+						throughput / (frame_length * limited_num_packets_aggregated));
 
 				// Delay
 				printf("%s Average delay from %d measurements = %f s (%.2f ms)\n", LOG_LVL2,

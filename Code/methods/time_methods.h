@@ -179,8 +179,6 @@ double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_leng
 //			( IEEE_AX_MD_LENGTH + IEEE_AX_MH_LENGTH + data_packet_length));
 //	printf("DATA DURATION = %f\n", data_duration * pow(10,6));
 
-	//data_duration = 5396/pow(10,6);
-
 	return data_duration;
 
 }
@@ -195,14 +193,18 @@ double computeAckTxTime80211ax(int num_packets_aggregated, double bits_ofdm_sym_
 	if(num_packets_aggregated == 1){
 		ack_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 			(double) IEEE_AX_ACK_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
+
+		ack_duration = 28 / pow(10,6);
+
 	} else {
 		ack_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 			(double) IEEE_AX_BACK_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
+
+		ack_duration = 32 / pow(10,6);
+
 	}
 
 //	printf("ACK = %f\n", ack_duration * pow(10,6));
-
-	ack_duration = 32 / pow(10,6);
 
 	return ack_duration;
 
@@ -248,7 +250,7 @@ double ComputeNavTime(int node_state, double rts_duration, double cts_duration, 
 void ComputeFramesDuration(double *rts_duration, double *cts_duration,
 		double *data_duration, double *ack_duration, int ieee_protocol,
 		int num_channels_tx, int current_modulation, int num_packets_aggregated,
-		int bits_ofdm_sym){
+		int data_packet_length, int bits_ofdm_sym){
 
 	switch(ieee_protocol){
 
@@ -272,7 +274,7 @@ void ComputeFramesDuration(double *rts_duration, double *cts_duration,
 			*rts_duration = computeRtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
 			*cts_duration = computeCtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
 			*data_duration = computeDataTxTime80211ax(num_packets_aggregated,
-					IEEE_AX_APP_DATA_LENGTH, bits_ofdm_sym);
+					data_packet_length, bits_ofdm_sym);
 			*ack_duration = computeAckTxTime80211ax(num_packets_aggregated, IEEE_BITS_OFDM_SYM_LEGACY);
 
 			break;
