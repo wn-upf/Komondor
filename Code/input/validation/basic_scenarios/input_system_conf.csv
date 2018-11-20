@@ -1,2 +1,2 @@
-num+AF8-channels	basic+AF8-channel+AF8-bandwidth+AFs-Mbps+AF0-	pdf+AF8-backoff	pdf+AF8-tx+AF8-time	packet+AF8-length	ack+AF8-length	num+AF8-packets+AF8-aggregated	path+AF8-loss+AF8-model	capture+AF8-effect	noise+AF8-level+AFs-dBm+AF0-	adjacent+AF8-channel+AF8-model	collisions+AF8-model	SIFS +AFs-us+AF0-	constant PER	traffic+AF8-model	backoff+AF8-type	rts+AF8-length	cts+AF8-length	cw+AF8-adaptation	pifs+AF8-activated	capture+AF8-effect+AF8-model
-2	20	0	0	11728	120	64	4	100	+AC0-95	0	0	16	0	99	0	160	112	0	0	1
+num_channels;basic_channel_bandwidth[Mbps];pdf_backoff;pdf_tx_time;packet_length;num_packets_aggregated;path_loss_model;capture_effect;noise_level[dBm];adjacent_channel_model;collisions_model;constant PER;traffic_model;backoff_type;cw_adaptation;pifs_activated;capture_effect_model
+2;20;0;0;11728;64;4;100;-95;0;0;0;99;0;0;0;1
