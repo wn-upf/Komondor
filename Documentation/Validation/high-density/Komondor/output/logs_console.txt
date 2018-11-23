@@ -60,7 +60,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 175028 events processed in 0.628 seconds, event processing rate: 278550
+# 175028 events processed in 0.469 seconds, event processing rate: 373456
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_02.csv' STARTED
@@ -155,7 +155,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 241465 events processed in 1.018 seconds, event processing rate: 237297
+# 241465 events processed in 0.749 seconds, event processing rate: 322352
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_04.csv' STARTED
@@ -314,7 +314,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 399869 events processed in 2.078 seconds, event processing rate: 192410
+# 399869 events processed in 1.425 seconds, event processing rate: 280575
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_06.csv' STARTED
@@ -537,7 +537,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 602981 events processed in 3.262 seconds, event processing rate: 184829
+# 602981 events processed in 2.378 seconds, event processing rate: 253515
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_08.csv' STARTED
@@ -824,7 +824,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 859136 events processed in 4.724 seconds, event processing rate: 181881
+# 859136 events processed in 3.326 seconds, event processing rate: 258319
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_10.csv' STARTED
@@ -1175,7 +1175,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 1183464 events processed in 6.425 seconds, event processing rate: 184208
+# 1183464 events processed in 4.578 seconds, event processing rate: 258495
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_12.csv' STARTED
@@ -1590,7 +1590,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 1598779 events processed in 9.233 seconds, event processing rate: 173161
+# 1598779 events processed in 6.469 seconds, event processing rate: 247130
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_14.csv' STARTED
@@ -2069,7 +2069,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 2130216 events processed in 11.364 seconds, event processing rate: 187448
+# 2130216 events processed in 8.720 seconds, event processing rate: 244295
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_16.csv' STARTED
@@ -2612,7 +2612,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 2759561 events processed in 15.374 seconds, event processing rate: 179494
+# 2759561 events processed in 11.868 seconds, event processing rate: 232515
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_18.csv' STARTED
@@ -3219,7 +3219,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 3639065 events processed in 22.438 seconds, event processing rate: 162184
+# 3639065 events processed in 16.005 seconds, event processing rate: 227369
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_20.csv' STARTED
@@ -3890,7 +3890,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 4649451 events processed in 29.199 seconds, event processing rate: 159231
+# 4649451 events processed in 20.733 seconds, event processing rate: 224248
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_22.csv' STARTED
@@ -4625,7 +4625,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 5907832 events processed in 40.789 seconds, event processing rate: 144840
+# 5907832 events processed in 27.549 seconds, event processing rate: 214452
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_24.csv' STARTED
@@ -5424,7 +5424,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 7503081 events processed in 58.818 seconds, event processing rate: 127565
+# 7503081 events processed in 38.047 seconds, event processing rate: 197203
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_26.csv' STARTED
@@ -6287,7 +6287,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 9541049 events processed in 86.600 seconds, event processing rate: 110174
+# 9541049 events processed in 49.273 seconds, event processing rate: 193635
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_28.csv' STARTED
@@ -7214,7 +7214,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 11886988 events processed in 100.009 seconds, event processing rate: 118859
+# 11886988 events processed in 63.650 seconds, event processing rate: 186755
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_30.csv' STARTED
@@ -8205,7 +8205,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 14731330 events processed in 137.835 seconds, event processing rate: 106877
+# 14731330 events processed in 84.645 seconds, event processing rate: 174037
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_32.csv' STARTED
@@ -9260,7 +9260,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 18135190 events processed in 157.806 seconds, event processing rate: 114920
+# 18135190 events processed in 109.402 seconds, event processing rate: 165767
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_34.csv' STARTED
@@ -10379,7 +10379,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 22042459 events processed in 226.493 seconds, event processing rate: 97321
+# 22042459 events processed in 137.501 seconds, event processing rate: 160307
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_36.csv' STARTED
@@ -11562,7 +11562,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 26638592 events processed in 301.678 seconds, event processing rate: 88301
+# 26638592 events processed in 175.708 seconds, event processing rate: 151607
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_38.csv' STARTED
@@ -12809,7 +12809,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 31847474 events processed in 337.758 seconds, event processing rate: 94291
+# 31847474 events processed in 219.388 seconds, event processing rate: 145165
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_40.csv' STARTED
@@ -14120,7 +14120,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 37877166 events processed in 391.448 seconds, event processing rate: 96762
+# 37877166 events processed in 273.525 seconds, event processing rate: 138478
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_42.csv' STARTED
@@ -15495,7 +15495,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 44384379 events processed in 703.456 seconds, event processing rate: 63095
+# 44384379 events processed in 335.089 seconds, event processing rate: 132456
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_44.csv' STARTED
@@ -16934,7 +16934,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 51332011 events processed in 874.325 seconds, event processing rate: 58710
+# 51332011 events processed in 408.325 seconds, event processing rate: 125714
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_46.csv' STARTED
@@ -18437,7 +18437,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 58826400 events processed in 961.461 seconds, event processing rate: 61184
+# 58826400 events processed in 492.571 seconds, event processing rate: 119427
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_48.csv' STARTED
@@ -20004,7 +20004,7 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 66096467 events processed in 1340.155 seconds, event processing rate: 49320
+# 66096467 events processed in 587.495 seconds, event processing rate: 112505
 ../output/script_output_csv.csv
 ------------------------------------------
  SIMULATION 'sim_input_nodes_50.csv' STARTED
@@ -21635,4 +21635,4 @@
 ------------------------------------------
 # -------------------------------------------------------------------------
 # CostSimEng with SimpleQueue, stopped at 100.000000
-# 74268915 events processed in 1062.325 seconds, event processing rate: 69912
+# 74268915 events processed in 692.179 seconds, event processing rate: 107297
