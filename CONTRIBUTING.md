@@ -8,31 +8,20 @@
 4) Attach log and input files whenever it is possible.
 5) Use the following template:
 
-#### Title
+**Title:** A crash occurs when enabling spatial reuse in large-scale scenarios. 
 
-A crash occurs when enabling spatial reuse in large-scale scenarios. 
+**System:** Ubuntu 16.04 (64-bits)
 
-#### System
+**Issue description:** When using the attached input, I noticed a crash (see attached logs) in the simulator. The fact is that the simulation runs properly for the same scenario when disabling spatial reuse.
 
-Ubuntu 16.04 (64-bits)
-
-#### Issue description
-
-When using the attached input, I noticed a crash (see attached logs) in the simulator. The fact is that the simulation runs properly for the same scenario when disabling spatial reuse.
-
-#### Steps to reproduce the issue
-
+**Steps to reproduce the issue:** 
 1. Use the input_system and input_nodes file attached to this issue
 2. Execute Komondor by typing: ./komondor_main /input/input_system.csv /input/input_nodes.csv /output/logs_output.txt 1 1 1 1 50 222
 3. Run the simulation until second 43.12, moment at which the application crashes
 
-#### What's the expected result?
+**What's the expected result?** The simulator should not crash.
 
-The simulator should not crash.
-
-#### What's the actual result?
-
-The simulator crashes.
+**What's the actual result?** The simulator crashes.
 
 ### Contribute with new modules
 
