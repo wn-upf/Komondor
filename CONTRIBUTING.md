@@ -7,7 +7,7 @@
 3) In addition to information related to the reported issue, include information about the capabilities (e.g., OS, version, etc.) of the device from which the bug was reproduced.
 4) Attach log and input files whenever it is possible.
 5) Use the following template:
-
+-----
 **Title:** A crash occurs when enabling spatial reuse in large-scale scenarios. 
 
 **System:** Ubuntu 16.04 (64-bits)
@@ -22,6 +22,8 @@
 **What's the expected result?** The simulator should not crash.
 
 **What's the actual result?** The simulator crashes.
+
+-----
 
 ### Contribute with new modules
 
