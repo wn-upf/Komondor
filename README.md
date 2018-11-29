@@ -107,6 +107,8 @@ Komondor v.2.0 has been validated by means of ns-3 and SF-CTMN and Bianchi analy
 
 If you want to contribute, please contact to sergio.barrachina@upf.edu and/or francisco.wilhelmi@upf.edu
 
+More details in [CONTRIBUTING.md](https://github.com/wn-upf/Komondor/blob/master/CONTRIBUTING.md)
+
 ### Acknowledgements
 
 This work has been partially supported by a Gift from the Cisco University Research Program (CG\#890107, Towards Deterministic Channel Access in High-Density WLANs) Fund, a corporate advised fund of Silicon Valley Community Foundation.
