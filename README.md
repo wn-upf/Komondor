@@ -97,7 +97,7 @@ Additionally, the agents operation is ruled by the agents input file. The most i
 Regarding the output ("output" folder), some logs and statistics are created at the end of the execution.
 
 ### Validation
-Komondor v.2.0 has been validated by means of ns-3 and SF-CTMN and Bianchi analytical models. The presentation of the validation can be found at "S. Barrachina-Muñoz, F. Wilhelmi, I. Selinis & B. Bellalta. Komondor: an Event-Based Wireless Network Simulator for Next-Generation Dense IEEE 802.11ax WLANs. 2018". Additional resources are available in this repository, in folder /Documentation/Validation. Files used for each simulation tool can be found:
+Komondor v.2.0 has been validated by means of ns-3 and SF-CTMN and Bianchi analytical models. The presentation of the validation can be found at "S. Barrachina-Muñoz, F. Wilhelmi, I. Selinis & B. Bellalta. Komondor: a Wireless Network Simulator for Next-Generation High-Density WLANs. 2018". Additional resources are available in this repository, in folder /Documentation/Validation. Files used for each simulation tool can be found:
 1) ns-3: execution script and instructions, together with the simulation environment used for validation.
 2) Komondor: input "nodes" and "system" files. Release pointing to v.2.0 must be used.
 3) SF-CTMN: simulation environment, to be executed through the SF-CTMN framework, available at https://github.com/sergiobarra/SFCTMN
