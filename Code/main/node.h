@@ -3039,6 +3039,9 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 	notification.timestamp = SimTime();
 	notification.timestamp_generated = timestamp_generated;
 
+	// P_tx issue #113
+	num_channels_tx = current_right_channel - current_left_channel + 1;
+
 	notification.tx_info = GenerateTxInfo(num_packets_aggregated, data_duration,
 		ack_duration, rts_duration, cts_duration, current_tpc, num_channels_tx,
 		tx_gain, bits_ofdm_sym, x, y, z);

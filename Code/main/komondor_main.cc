@@ -1537,9 +1537,6 @@ void Komondor :: printSystemInfo(){
 		printf("%s pdf_backoff = %d\n", LOG_LVL3, pdf_backoff);
 		printf("%s pdf_tx_time = %d\n", LOG_LVL3, pdf_tx_time);
 		printf("%s frame_length = %d bits\n", LOG_LVL3, frame_length);
-		printf("%s ack_length = %d bits\n", LOG_LVL3, ack_length);
-		printf("%s cts_length = %d bits\n", LOG_LVL3, cts_length);
-		printf("%s rts_length = %d bits\n", LOG_LVL3, rts_length);
 		printf("%s traffic_model = %d\n", LOG_LVL3, traffic_model);
 		printf("%s backoff_type = %d\n", LOG_LVL3, backoff_type);
 		printf("%s cw_adaptation = %d\n", LOG_LVL3, cw_adaptation);

@@ -394,7 +394,8 @@ double ComputeTxPowerPerChannel(double current_tpc, int num_channels_tx){
 
 	for (int num_ch_ix = 0; num_ch_ix < num_channels_tx_ix; num_ch_ix ++){
 
-		tx_power_per_channel -= 3;	// Half the power
+		// P_tx issue #113
+		tx_power_per_channel =  tx_power_per_channel/2;	// Half the power
 
 	}
 
