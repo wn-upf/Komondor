@@ -161,23 +161,26 @@ component Komondor : public CostSimEng {
 	// Private items
 	private:
 
-		int seed;						// Simulation seed number
-		int save_system_logs;			// Flag for activating the log writting of the Komondor system
-		int print_system_logs;			// Flag for activating the printing of system logs
-		std::string simulation_code;			// Komondor simulation code
-		const char *nodes_input_filename;		// Filename of the nodes (AP or Deterministic Nodes) input CSV
+		int seed;							// Simulation seed number
+		int save_system_logs;				// Flag for activating the log writting of the Komondor system
+		int print_system_logs;				// Flag for activating the printing of system logs
+		std::string simulation_code;		// Komondor simulation code
+		const char *nodes_input_filename;	// Filename of the nodes (AP or Deterministic Nodes) input CSV
 		const char *agents_input_filename;
-		FILE *simulation_output_file;	// File for the output logs (including statistics)
-		FILE *script_output_file;		// File for the whole input files included in the script TODO
-		FILE *script_output_file_csv;	// File for the CSV script output
-		Logger logger_simulation;		// Logger for the simulation output file
-		Logger logger_script;			// Logger for the script file (containing 1+ simulations) Readable version
-		Logger logger_script_csv;		// Logger for the script file in CSV format
+		FILE *simulation_output_file;		// File for the output logs (including statistics)
+		FILE *script_output_file;			// File for the whole input files included in the script TODO
+		FILE *script_output_file_csv;		// File for the CSV script output
+		Logger logger_simulation;			// Logger for the simulation output file
+		Logger logger_script;				// Logger for the script file (containing 1+ simulations) Readable version
+		Logger logger_script_csv;			// Logger for the script file in CSV format
 
 		// Auxiliar variables
 		int first_line_skiped_flag;		// Flag for skipping first informative line of input file
 
-		int central_controller_flag; 	// In order to allow the generation of the central controller
+		// Variables related to additional modes
+		int spatial_reuse_enabled;		// Variable that indicates whether the Spatial Reuse operation is enabled or not
+		int central_controller_flag; 	// Variable that indicates whether the central controller must be generated or not
+
 };
 
 /*
@@ -1467,6 +1470,25 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			tmp_nodes = strdup(line_nodes);
 			const char* traffic_load_char = GetField(tmp_nodes, IX_TRAFFIC_LOAD);
 
+			// BSS color
+			tmp_nodes = strdup(line_nodes);
+			const char* bss_color_char = GetField(tmp_nodes, IX_BSS_COLOR);
+			// Spatial Reuse Group (SRG)
+			tmp_nodes = strdup(line_nodes);
+			const char* srg_char = GetField(tmp_nodes, IX_SRG);
+
+			// OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* obss_pd_char = GetField(tmp_nodes, IX_OBSS_PD);
+
+			// SRG OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* srg_obss_pd_char = GetField(tmp_nodes, IX_SRG_OBSS_PD);
+
+			// non-SRG OBSS_PD
+			tmp_nodes = strdup(line_nodes);
+			const char* non_srg_obss_pd_char = GetField(tmp_nodes, IX_NON_SRG_OBSS_PD);
+
 			// System
 			node_container[node_ix].simulation_time_komondor = simulation_time_komondor;
 			node_container[node_ix].total_nodes_number = total_nodes_number;
@@ -1494,6 +1516,14 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			node_container[node_ix].pifs_activated = pifs_activated;
 			node_container[node_ix].capture_effect_model = capture_effect_model;
 			node_container[node_ix].simulation_code = simulation_code;
+			// Spatial Reuse
+			if (bss_color_char != NULL) { // Check if the input file is compliant with SR
+				node_container[node_ix].bss_color = atoi(bss_color_char);
+				node_container[node_ix].srg = atoi(srg_char);
+				node_container[node_ix].obss_pd = atof(obss_pd_char);
+				node_container[node_ix].srg_obss_pd = atof(srg_obss_pd_char);
+				node_container[node_ix].non_srg_obss_pd = atof(non_srg_obss_pd_char);
+			}
 
 			// Traffic generator
 			traffic_generator_container[node_ix].node_type = node_type;
@@ -1758,13 +1788,13 @@ int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::st
 /**********/
 int main(int argc, char *argv[]){
 
-//	printf("\n");
-//	printf("*************************************************************************************\n");
-//	printf("%s KOMONDOR wireless network simulator\n", LOG_LVL1);
-//	printf("%s Copyright (C) 2017-2022, and GNU GPL'd, by Sergio Barrachina & Francisco Wilhelmi.\n", LOG_LVL1);
-//	printf("%s GitHub repository: https://github.com/wn-upf/Komondor\n", LOG_LVL2);
-//	printf("*************************************************************************************\n");
-//	printf("\n\n");
+	printf("\n");
+	printf("*************************************************************************************\n");
+	printf("%s KOMONDOR wireless network simulator\n", LOG_LVL1);
+	printf("%s Copyright (C) 2017-2022, and GNU GPL'd, by Sergio Barrachina & Francisco Wilhelmi.\n", LOG_LVL1);
+	printf("%s GitHub repository: https://github.com/wn-upf/Komondor\n", LOG_LVL2);
+	printf("*************************************************************************************\n");
+	printf("\n\n");
 
 	// Input variables
 	char *system_input_filename;
@@ -1846,7 +1876,7 @@ total_nodes_number = 0;
 
 		system_input_filename = argv[1];
 		nodes_input_filename = argv[2];
-		simulation_code = ToString(argv[3]);	// For scripts --> usefult to identify simulations
+		simulation_code = ToString(argv[3]);	// For scripts --> useful to identify simulations
 		sim_time = atof(argv[4]);
 		seed = atoi(argv[5]);
 
@@ -1869,9 +1899,14 @@ total_nodes_number = 0;
 				" + For FULL configuration setting execute\n"
 				"    ./Komondor -system_input_filename -nodes_input_filename -script_output_filename "
 				"-simulation_code -save_system_logs -save_node_logs -print_node_logs -print_system_logs "
-				"- sim_time -seed\n"
+				"-sim_time -seed\n"
 				" + For PARTIAL configuration setting execute\n"
-				"    ./KomondorSimulation -system_input_filename -nodes_input_filename - sim_time - seed\n", LOG_LVL1);
+				"    ./KomondorSimulation -system_input_filename -nodes_input_filename - sim_time - seed\n"
+				" + For FULL configuration setting WITH AGENTS execute\n"
+				"    ./Komondor -system_input_filename -nodes_input_filename -agents_input_filename -script_output_filename "
+				"-simulation_code -save_system_logs -save_node_logs -save_agent_logs -print_node_logs -print_system_logs "
+				"-print_agents_logs -sim_time -seed\n"
+				, LOG_LVL1);
 		return(-1);
 	}
 
@@ -1889,7 +1924,6 @@ total_nodes_number = 0;
 		printf("%s print_node_logs: %d\n", LOG_LVL2, print_node_logs);
 		printf("%s sim_time: %f s\n", LOG_LVL2, sim_time);
 		printf("%s seed: %d\n", LOG_LVL2, seed);
-
 	}
 
 	// Generate Komondor component
@@ -1897,9 +1931,9 @@ total_nodes_number = 0;
 	test.Seed = seed;
 	srand(seed); // Needed for ensuring randomness dependency on seed
 	test.StopTime(sim_time);
-	test.Setup(sim_time, save_system_logs, save_node_logs, save_agent_logs, print_system_logs, print_node_logs, print_agent_logs,
-		system_input_filename, nodes_input_filename, script_output_filename.c_str(), simulation_code.c_str(), seed,
-		agents_enabled, agents_input_filename);
+	test.Setup(sim_time, save_system_logs, save_node_logs, save_agent_logs, print_system_logs,
+			print_node_logs, print_agent_logs, system_input_filename, nodes_input_filename,
+			script_output_filename.c_str(), simulation_code.c_str(), seed, agents_enabled, agents_input_filename);
 
 	printf("------------------------------------------\n");
 	printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());

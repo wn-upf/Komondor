@@ -389,6 +389,11 @@
 #define IX_LAMBDA					24
 #define IX_IEEE_PROTOCOL_TYPE		25
 #define IX_TRAFFIC_LOAD				26
+#define IX_BSS_COLOR				27
+#define IX_SRG						28
+#define IX_OBSS_PD					29
+#define IX_SRG_OBSS_PD				30
+#define IX_NON_SRG_OBSS_PD			31
 
 // APs file
 #define IX_AP_WLAN_CODE					1
