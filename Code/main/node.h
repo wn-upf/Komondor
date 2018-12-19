@@ -363,7 +363,7 @@ component Node : public TypeII{
 
 		// Spatial Reuse
 		int spatial_reuse_enabled;
-		int source_last_sensed_packet;
+		int type_last_sensed_packet;
 
 	// Connections and timers
 	public:
@@ -612,10 +612,15 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
 				current_cca, num_channels_komondor, SimTime());
 
+		// SPATIAL REUSE OPERATION
 		if (spatial_reuse_enabled) {
-			source_last_sensed_packet = CheckPacketOrigin(notification, bss_color, srg);
-//			printf("N%d source_last_sensed_packet = %d (source = %d)\n",
-//					node_id, source_last_sensed_packet, notification.source_id);
+			type_last_sensed_packet = CheckPacketOrigin(notification, bss_color, srg);
+			current_cca = GetSensitivitySpatialReuse(type_last_sensed_packet,
+				cca_default, obss_pd, srg_obss_pd, non_srg_obss_pd);
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Applying SR for frame of type %d: CST = %f dBm\n",
+				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3, type_last_sensed_packet, ConvertPower(PW_TO_DBM, current_cca));
+			//			printf("%.15f;N%d;S%d;%s;%s Applying SR for frame of type %d: CST = %f dBm\n",
+			//				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3, type_last_sensed_packet, ConvertPower(PW_TO_DBM, current_cca));
 		}
 
 		if(save_node_logs) {
@@ -3692,6 +3697,9 @@ void Node :: RestartNode(int called_by_time_out){
 	current_tx_duration = 0;
 	power_rx_interest = 0;
 	max_pw_interference = 0;
+
+	// SPATIAL REUSE OPERATION
+	if (spatial_reuse_enabled) current_cca = cca_default;
 
 	receiving_from_node_id = NODE_ID_NONE;
 	receiving_packet_id = NO_PACKET_ID;

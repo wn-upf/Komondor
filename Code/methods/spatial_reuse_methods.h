@@ -90,6 +90,43 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 }
 
 /*
+ * CheckPacketOrigin(): checks whether the received notification is an intra-BSS,
+ * an inter-BSS, an SRG or a non-SRG frame
+ **/
+double GetSensitivitySpatialReuse(int packet_type, double cca_default,
+		double obss_pd, double srg_obss_pd, double non_srg_obss_pd) {
+
+	double cst;
+
+	switch(packet_type){
+		case INTRA_BSS_FRAME: {
+			cst = cca_default;
+			break;
+		}
+		case INTER_BSS_FRAME: {
+			cst = obss_pd;
+			break;
+		}
+		case SRG_FRAME: {
+			cst = srg_obss_pd;
+			break;
+		}
+		case NON_SRG_FRAME: {
+			cst = non_srg_obss_pd;
+			break;
+		}
+		default: {
+			printf("Error: Unknown frame type!\n");
+			cst = cca_default;
+			break;
+		}
+	}
+
+	return cst;
+
+}
+
+/*
  * CheckOBSSPDConstraints(): checks if the proposed obss_pd_level is valid, according to
  * the constraints indicated in the IEEE 802.11ax amendment
  **/

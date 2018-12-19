@@ -1519,9 +1519,12 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			if (bss_color_char != NULL) { // Check if the input file is compliant with SR
 				node_container[node_ix].bss_color = atoi(bss_color_char);
 				node_container[node_ix].srg = atoi(srg_char);
-				node_container[node_ix].obss_pd = atof(obss_pd_char);
-				node_container[node_ix].srg_obss_pd = atof(srg_obss_pd_char);
-				node_container[node_ix].non_srg_obss_pd = atof(non_srg_obss_pd_char);
+				double obss_pd_dbm = atof(obss_pd_char);
+				node_container[node_ix].obss_pd = ConvertPower(DBM_TO_PW, obss_pd_dbm);
+				double srg_obss_pd_dbm = atof(srg_obss_pd_char);
+				node_container[node_ix].srg_obss_pd = ConvertPower(DBM_TO_PW, srg_obss_pd_dbm);
+				double non_srg_obss_pd_dbm = atof(non_srg_obss_pd_char);
+				node_container[node_ix].non_srg_obss_pd = ConvertPower(DBM_TO_PW, non_srg_obss_pd_dbm);
 			} else {
 				node_container[node_ix].bss_color = -1;
 				node_container[node_ix].srg = -1;
