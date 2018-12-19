@@ -399,14 +399,16 @@ void Komondor :: Stop(){
 	double av_expected_backoff = 0;
 	double av_expected_waiting_time = 0;
 
-	// Paper #3 starvation analysis
-	int num_starving_wlans_1percent = 0;	// Number of WLANs with av. throughput less than 1% of their traffic load
-	int num_starving_wlans_5percent = 0;
-	int num_starving_wlans_10percent = 0;
-	int num_starving_wlans_20percent = 0;
-	int num_starving_wlans_30percent = 0;
-	int num_starving_wlans_50percent = 0;
+	// Starvation
+	int starvation_count_1 = 0;
+	int starvation_count_5 = 0;
+	int starvation_count_10 = 0;
+	int starvation_count_20 = 0;
+	int starvation_count_30 = 0;
+	int starvation_count_50 = 0;
 
+	double expected_throughput = 0;
+double throughput_log = 0;
 
 	for(int m=0; m < total_nodes_number; m++){
 
@@ -414,6 +416,7 @@ void Komondor :: Stop(){
 			total_data_packets_sent += node_container[m].data_packets_sent;
 			total_throughput += node_container[m].throughput;
 			total_num_packets_generated += node_container[m].num_packets_generated;
+
 			total_rts_lost_slotted_bo += node_container[m].rts_lost_slotted_bo;
 			total_rts_cts_sent += node_container[m].rts_cts_sent;
 			total_prob_slotted_bo_collision += node_container[m].prob_slotted_bo_collision;
@@ -435,29 +438,17 @@ void Komondor :: Stop(){
 
 			if(node_container[m].throughput > max_throughput) max_throughput = node_container[m].throughput;
 
-			printf("/*/*/*/*/*/*/***/*/*/*\n");
-			printf("- throughput [Mbps] = %f vs. load [Mbps] = %f\n",
-					node_container[m].throughput * pow(10,-6), node_container[m].traffic_load * frame_length * pow(10,-6));
-			printf("/*/*/*/*/*/*/***/*/*/*\n");
+			throughput_log = node_container[m].throughput/ ((double)frame_length * max_num_packets_aggregated);
+			expected_throughput = (double) node_container[m].num_packets_generated / ((double) max_num_packets_aggregated * SimTime());
 
-			if(node_container[m].throughput <= 0.01 * node_container[m].traffic_load * frame_length){
-				num_starving_wlans_1percent++;
-			}
-			if(node_container[m].throughput <= 0.05 * node_container[m].traffic_load * frame_length){
-				num_starving_wlans_5percent++;
-			}
-			if(node_container[m].throughput <= 0.10 * node_container[m].traffic_load * frame_length){
-				num_starving_wlans_10percent++;
-			}
-			if(node_container[m].throughput <= 0.20 * node_container[m].traffic_load * frame_length){
-				num_starving_wlans_20percent++;
-			}
-			if(node_container[m].throughput <= 0.30 * node_container[m].traffic_load * frame_length){
-				num_starving_wlans_30percent++;
-			}
-			if(node_container[m].throughput <= 0.50 * node_container[m].traffic_load * frame_length){
-				num_starving_wlans_50percent++;
-			}
+			printf("\n- node_container[m].throughput vs. expected_throughput = %.2f vs %.2f\n", throughput_log, expected_throughput);
+
+			if(throughput_log < ( 0.01 * expected_throughput)) starvation_count_1++;
+			if(throughput_log < ( 0.05 * expected_throughput)) starvation_count_5++;
+			if(throughput_log < ( 0.10 * expected_throughput)) starvation_count_10++;
+			if(throughput_log < ( 0.20 * expected_throughput)) starvation_count_20++;
+			if(throughput_log < ( 0.30 * expected_throughput)) starvation_count_30++;
+			if(throughput_log < ( 0.50 * expected_throughput)) starvation_count_50++;
 
 		}
 	}
@@ -675,8 +666,8 @@ void Komondor :: Stop(){
 					node_container[2].average_utilization,
 					node_container[0].prob_slotted_bo_collision,
 					node_container[2].prob_slotted_bo_collision,
-					node_container[0].average_waiting_time * pow(10,3),
-					node_container[2].average_waiting_time * pow(10,3),
+					node_container[0].average_waiting_time / SLOT_TIME,
+					node_container[2].average_waiting_time / SLOT_TIME,
 					node_container[0].num_packets_dropped * 100/ node_container[0].num_packets_generated,
 					node_container[2].num_packets_dropped * 100/ node_container[2].num_packets_generated,
 					 (double) node_container[0].data_frames_acked / node_container[0].data_packets_acked,
@@ -732,7 +723,7 @@ void Komondor :: Stop(){
 		case 9:{
 
 			// Sergio logs for Paper #5: 6 WLAN random
-			fprintf(logger_script.file, ";%.0f;%.2f;%.2f;%.2f;%d;%.4f;%.4f;%.4f;%.2f;%.2f;%.2f;%f;%f;%f;%d;%d;%d;%d;%d;%d\n",
+			fprintf(logger_script.file, ";%.0f;%.2f;%.2f;%.2f;%d;%.4f;%.4f;%.4f;%.2f;%.2f;%.2f;%f;%f;%f;%d;%d;%d;%d;%d;%d;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
 				node_container[0].traffic_load,
 				total_throughput/(frame_length * max_num_packets_aggregated * total_wlans_number),
 				(total_throughput * pow(10,-6)/total_wlans_number),
@@ -747,39 +738,18 @@ void Komondor :: Stop(){
 				av_expected_waiting_time * pow(10,3),
 				min_delay * pow(10,3),
 				max_throughput/(frame_length * max_num_packets_aggregated),
-				num_starving_wlans_1percent,
-				num_starving_wlans_5percent,
-				num_starving_wlans_10percent,
-				num_starving_wlans_20percent,
-				num_starving_wlans_30percent,
-				num_starving_wlans_50percent
-				);
-
-			break;
-
-		}
-
-		case 10:{
-
-			// Sergio logs for Paper #5: 25 WLANs random
-			fprintf(logger_script.file, ";%.0f;%.2f;%.2f;%.2f;%d;%.4f;%.4f;%.4f;%.2f;%.2f;%.2f;%f;%f;%f;%f;%f\n",
-				node_container[0].traffic_load,
-				total_throughput/(frame_length * max_num_packets_aggregated * total_wlans_number),
-				(total_throughput * pow(10,-6)/total_wlans_number),
-				min_throughput/(frame_length * max_num_packets_aggregated),
-				ix_wlan_min_throughput,
-				proportional_fairness,
-				jains_fairness,
-				total_prob_slotted_bo_collision / total_wlans_number,
-				total_delay * pow(10,3) / total_wlans_number,
-				max_delay * pow(10,3),
-				total_bandiwdth_tx / (double) total_wlans_number,
-				av_expected_waiting_time * pow(10,3),
-				min_delay * pow(10,3),
-				max_throughput/(frame_length * max_num_packets_aggregated),
-				proportional_fairness,
-				jains_fairness
-				);
+				starvation_count_1,
+				starvation_count_5,
+				starvation_count_10,
+				starvation_count_20,
+				starvation_count_30,
+				starvation_count_50,
+				node_container[0].average_delay * pow(10,3),
+				node_container[2].average_delay* pow(10,3),
+				node_container[4].average_delay* pow(10,3),
+				node_container[6].average_delay* pow(10,3),
+				node_container[8].average_delay* pow(10,3),
+				node_container[10].average_delay* pow(10,3));
 
 			break;
 

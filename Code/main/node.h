@@ -219,8 +219,8 @@ component Node : public TypeII{
 		double *total_time_lost_in_num_channels;			// Time transmitting in (ix 0: 1 channel, ix 1: 2 channels...) unsuccessfully
 		double *total_time_spectrum_per_channel;			// Time that the spectrum is occupied per channel
 															// - Any time a transmissions is done (regardless the packet) the duration of such transmissions is added
-		double throughput;									// Throughput [bps]
-		double throughput_loss;								// Throughput of lost packets [bps]
+		double throughput;									// Throughput [Mbps]
+		double throughput_loss;								// Throughput of lost packets [Mbps]
 		int data_packets_acked;								// Own data packets (aggregated or not) that have been Acked
 		int data_frames_acked;								// Own data frames that have been Acked
 		int data_packets_lost;								// Own packets that have been collided or lost
@@ -2947,6 +2947,8 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id,
 	tx_info.ack_duration = ack_duration;
 	tx_info.rts_duration = rts_duration;
 	tx_info.cts_duration = cts_duration;
+	// Sergio Ptx issue
+	num_channels_tx = current_right_channel - current_left_channel + 1;
 	tx_info.tx_power = ComputeTxPowerPerChannel(current_tpc, num_channels_tx);
 	tx_info.tx_gain = tx_gain;
 	tx_info.bits_ofdm_sym = bits_ofdm_sym;
