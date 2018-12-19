@@ -301,7 +301,11 @@
 
 #define CST_DBM		-68
 
-
+// Spatial Reuse
+#define INTRA_BSS_FRAME		0
+#define INTER_BSS_FRAME		1
+#define SRG_FRAME			2
+#define NON_SRG_FRAME		3
 
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *

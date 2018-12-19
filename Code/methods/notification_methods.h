@@ -388,7 +388,7 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
  **/
 TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double ack_duration,
 		double rts_duration, double cts_duration, double current_tpc, int num_channels_tx,
-		double tx_gain,	int bits_ofdm_sym, double x, double y, double z) {
+		double tx_gain,	int bits_ofdm_sym, double x, double y, double z, int bss_color, int srg) {
 
 	TxInfo tx_info;
 	tx_info.SetSizeOfMCS(4);	// TODO: make size dynamic
@@ -406,6 +406,9 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	tx_info.y = y;
 	tx_info.z = z;
 	tx_info.nav_time = 0;
+
+	tx_info.bss_color = bss_color;
+	tx_info.srg = srg;
 
 	return tx_info;
 

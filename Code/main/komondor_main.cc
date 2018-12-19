@@ -178,7 +178,6 @@ component Komondor : public CostSimEng {
 		int first_line_skiped_flag;		// Flag for skipping first informative line of input file
 
 		// Variables related to additional modes
-		int spatial_reuse_enabled;		// Variable that indicates whether the Spatial Reuse operation is enabled or not
 		int central_controller_flag; 	// Variable that indicates whether the central controller must be generated or not
 
 };
@@ -1523,6 +1522,12 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 				node_container[node_ix].obss_pd = atof(obss_pd_char);
 				node_container[node_ix].srg_obss_pd = atof(srg_obss_pd_char);
 				node_container[node_ix].non_srg_obss_pd = atof(non_srg_obss_pd_char);
+			} else {
+				node_container[node_ix].bss_color = -1;
+				node_container[node_ix].srg = -1;
+				node_container[node_ix].obss_pd = -1;
+				node_container[node_ix].srg_obss_pd = -1;
+				node_container[node_ix].non_srg_obss_pd = -1;
 			}
 
 			// Traffic generator

@@ -60,6 +60,7 @@
 #include "../methods/modulations_methods.h"
 #include "../methods/notification_methods.h"
 #include "../methods/time_methods.h"
+#include "../methods/spatial_reuse_methods.h"
 #include "../structures/notification.h"
 #include "../structures/logical_nack.h"
 #include "../structures/wlan.h"
@@ -360,6 +361,10 @@ component Node : public TypeII{
 		double timestamp_new_trial_started;
 		int num_average_waiting_time_measurements;
 
+		// Spatial Reuse
+		int spatial_reuse_enabled;
+		int source_last_sensed_packet;
+
 	// Connections and timers
 	public:
 
@@ -606,6 +611,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
 				current_cca, num_channels_komondor, SimTime());
+
+		if (spatial_reuse_enabled) {
+			source_last_sensed_packet = CheckPacketOrigin(notification, bss_color, srg);
+//			printf("N%d source_last_sensed_packet = %d (source = %d)\n",
+//					node_id, source_last_sensed_packet, notification.source_id);
+		}
 
 		if(save_node_logs) {
 			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
@@ -3050,7 +3061,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 
 	notification.tx_info = GenerateTxInfo(num_packets_aggregated, data_duration,
 		ack_duration, rts_duration, cts_duration, current_tpc, num_channels_tx,
-		tx_gain, bits_ofdm_sym, x, y, z);
+		tx_gain, bits_ofdm_sym, x, y, z, bss_color, srg);
 
 	switch(packet_type){
 
@@ -4576,5 +4587,11 @@ void Node :: InitializeVariables() {
 	// Channel idle measurement
 	sum_time_channel_idle = 0;
 	last_time_channel_is_idle = 0;
+
+	if (bss_color > 0) {
+		spatial_reuse_enabled = true;
+	} else {
+		spatial_reuse_enabled = false;
+	}
 
 }
