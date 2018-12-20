@@ -612,15 +612,19 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
 				current_cca, num_channels_komondor, SimTime());
 
-		// SPATIAL REUSE OPERATION
-		if (spatial_reuse_enabled) {
+		// SPATIAL REUSE OPERATION (ONLY FOR TRANSMITTERS)
+		if (spatial_reuse_enabled && node_type == NODE_TYPE_AP) {
+			// Identify the source of detected packet
 			type_last_sensed_packet = CheckPacketOrigin(notification, bss_color, srg);
+			// Obtain the CST to be used
 			current_cca = GetSensitivitySpatialReuse(type_last_sensed_packet,
 				cca_default, obss_pd, srg_obss_pd, non_srg_obss_pd);
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Applying SR for frame of type %d: CST = %f dBm\n",
-				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3, type_last_sensed_packet, ConvertPower(PW_TO_DBM, current_cca));
-			//			printf("%.15f;N%d;S%d;%s;%s Applying SR for frame of type %d: CST = %f dBm\n",
-			//				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3, type_last_sensed_packet, ConvertPower(PW_TO_DBM, current_cca));
+			// Apply the transmission power limitation
+			current_tpc = ApplyTxPowerRestriction(current_cca, current_tpc);
+			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Applying SR for frame of type %d: CST = %f dBm / Tx Pwr = %f dBm\n",
+				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3, type_last_sensed_packet, ConvertPower(PW_TO_DBM, current_cca), ConvertPower(PW_TO_DBM, current_tpc));
+			printf("%.15f;N%d;S%d;%s;%s Applying SR for frame of type %d: CST = %f dBm / Tx Pwr = %f dBm\n",
+				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3, type_last_sensed_packet, ConvertPower(PW_TO_DBM, current_cca), ConvertPower(PW_TO_DBM, current_tpc));
 		}
 
 		if(save_node_logs) {
@@ -3699,7 +3703,10 @@ void Node :: RestartNode(int called_by_time_out){
 	max_pw_interference = 0;
 
 	// SPATIAL REUSE OPERATION
-	if (spatial_reuse_enabled) current_cca = cca_default;
+	if (spatial_reuse_enabled && node_type == NODE_TYPE_AP) {
+		current_cca = cca_default;
+		current_tpc = tpc_default;
+	}
 
 	receiving_from_node_id = NODE_ID_NONE;
 	receiving_packet_id = NO_PACKET_ID;

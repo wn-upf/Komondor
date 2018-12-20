@@ -56,6 +56,12 @@
 /*
  * CheckPacketOrigin(): checks whether the received notification is an intra-BSS,
  * an inter-BSS, an SRG or a non-SRG frame
+ * Arguments:
+ * - notification: notification to be inspected
+ * - bss_color: BSS color of the node inspecting the notification
+ * - srg: SRG of the node inspecting the notification
+ * Output:
+ * - type_of_packet: type of packet
  **/
 int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 
@@ -90,41 +96,96 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 }
 
 /*
- * CheckPacketOrigin(): checks whether the received notification is an intra-BSS,
+ * GetSensitivitySpatialReuse(): checks whether the received notification is an intra-BSS,
  * an inter-BSS, an SRG or a non-SRG frame
+ * Arguments:
+ * - packet_type: type of detected frame (according to source)
+ * - cca_default: default CST (for intra-BSS communications)
+ * - obss_pd: CST to be used for inter-BSS communications (different BSS color)
+ * - srg_obss_pd: CST to be used for communications within the same SRG
+ * - non_srg_obss_pd: CST to be used for communications within different SRG
+ * Output:
+ * - cst: CST in pW to be used according to the source of the detected frame
  **/
 double GetSensitivitySpatialReuse(int packet_type, double cca_default,
 		double obss_pd, double srg_obss_pd, double non_srg_obss_pd) {
 
-	double cst;
+	double cst_pw;
 
 	switch(packet_type){
 		case INTRA_BSS_FRAME: {
-			cst = cca_default;
+			cst_pw = cca_default;
 			break;
 		}
 		case INTER_BSS_FRAME: {
-			cst = obss_pd;
+			cst_pw = obss_pd;
 			break;
 		}
 		case SRG_FRAME: {
-			cst = srg_obss_pd;
+			cst_pw = srg_obss_pd;
 			break;
 		}
 		case NON_SRG_FRAME: {
-			cst = non_srg_obss_pd;
+			cst_pw = non_srg_obss_pd;
 			break;
 		}
 		default: {
-			printf("Error: Unknown frame type!\n");
-			cst = cca_default;
+			printf("Error: Unknown frame type! Using the default CCA (%f dBm)\n",
+				ConvertPower(PW_TO_DBM, cca_default));
+			cst_pw = cca_default;
 			break;
 		}
 	}
 
-	return cst;
+	return cst_pw;
 
 }
+
+/*
+ * ApplyTxPowerRestriction(): applies a transmit power restriction, according to the CST used
+ * Arguments:
+ * - current_cca: default CCA used by the node
+ * - current_tpc: default transmit power used by the node
+ * Output:
+ * - tx_power_pw: transmit power in pW to be used during the next TXOP
+ **/
+double ApplyTxPowerRestriction(double current_cca, double current_tpc) {
+
+	double tx_power_pw;
+
+	double current_cca_dbm = ConvertPower(PW_TO_DBM, current_cca);
+
+	if (current_cca_dbm <= OBSS_PD_MIN) {
+		tx_power_pw = current_tpc; // No restriction
+	} else {
+		tx_power_pw = ConvertPower(DBM_TO_PW, TX_PWR_REF - (current_cca_dbm - OBSS_PD_MIN));
+	}
+
+	return tx_power_pw;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
  * CheckOBSSPDConstraints(): checks if the proposed obss_pd_level is valid, according to

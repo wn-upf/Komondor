@@ -307,6 +307,10 @@
 #define SRG_FRAME			2
 #define NON_SRG_FRAME		3
 
+#define OBSS_PD_MIN			-82 	// Minimum OBSS_PD (dBm)
+#define OBSS_PD_MAX			-62 	// Maximum OBSS_PD (dBm)
+#define TX_PWR_REF			25		// TX PWR REF (dBm)
+
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
  * ************************************************
