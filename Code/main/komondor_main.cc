@@ -509,10 +509,7 @@ void Komondor :: Stop(){
 			fprintf(logger_script.file, "%s Node #%d (%s) Throughput = %f\n", LOG_LVL2, m,
 					node_container[m].node_code.c_str(), node_container[m].throughput);
 
-
 			if(node_container[m].node_type == NODE_TYPE_AP){
-
-
 
 				// Fill CSV script output
 				fprintf(logger_script_csv.file, "%s;", nodes_input_filename);				// Smiluation code
@@ -527,13 +524,14 @@ void Komondor :: Stop(){
 				fprintf(logger_script_csv.file, "%d;", node_container[m].rts_cts_sent);		// RTS packets sent
 				fprintf(logger_script_csv.file, "%d", node_container[m].rts_cts_lost);		// RTS packets lost
 				fprintf(logger_script_csv.file, "\n");										// End of line
+
 			}
 		}
 
 	}
 
 
-	int simulation_index = 9;
+	int simulation_index = 10;
 
 	switch(simulation_index){
 
@@ -717,6 +715,29 @@ void Komondor :: Stop(){
 				min_delay * pow(10,3),
 				max_throughput/(frame_length * max_num_packets_aggregated)
 				);
+
+			break;
+
+		}
+
+		// Validation scenarios
+		case 10:{
+
+			if (total_nodes_number == 2 || total_nodes_number == 3) {
+				// Basic scenarios
+				fprintf(logger_script.file, ";%.2f\n",
+					node_container[0].throughput * pow(10,-6));
+			} else if (total_nodes_number == 6) {
+				// Complex scenarios
+				fprintf(logger_script.file, ";%.2f;%.2f;%.2f\n",
+					node_container[0].throughput * pow(10,-6),
+					node_container[2].throughput * pow(10,-6),
+					node_container[4].throughput * pow(10,-6));
+			} else {
+
+				printf("Error in Komondor :: Stop(): be care of the desired generated logs (script)\n");
+
+			}
 
 			break;
 
