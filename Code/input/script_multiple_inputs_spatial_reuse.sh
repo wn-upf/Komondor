@@ -47,6 +47,6 @@ do
 	echo ""
 done
 echo ""
-echo 'SCRIPT FINISHED: OUTUP FILE SAVED IN /output/script_output.txt'
+echo 'SCRIPT FINISHED: OUTPUT FILE SAVED IN /output/script_output.txt'
 echo ""
 echo ""
