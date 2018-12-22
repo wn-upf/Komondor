@@ -512,26 +512,25 @@ void Komondor :: Stop(){
 			if(node_container[m].node_type == NODE_TYPE_AP){
 
 				// Fill CSV script output
-				fprintf(logger_script_csv.file, "%s;", nodes_input_filename);				// Smiluation code
-				fprintf(logger_script_csv.file, "%s;", simulation_code.c_str());			// Smiluation code
-				fprintf(logger_script_csv.file, "%d;", node_container[m].wlan.wlan_id);		// WLAN ID
+				fprintf(logger_script_csv.file, "%s;", nodes_input_filename);						// Smiluation code
+				fprintf(logger_script_csv.file, "%s;", simulation_code.c_str());					// Smiluation code
+				fprintf(logger_script_csv.file, "%d;", node_container[m].wlan.wlan_id);				// WLAN ID
 				fprintf(logger_script_csv.file, "%s;", node_container[m].wlan.wlan_code.c_str());	// WLAN code
-				fprintf(logger_script_csv.file, "%d;", node_container[m].node_id);			// Node ID
+				fprintf(logger_script_csv.file, "%d;", node_container[m].node_id);					// Node ID
 				fprintf(logger_script_csv.file, "%s;", node_container[m].node_code.c_str());		// Node code
 				fprintf(logger_script_csv.file, "%f;", node_container[m].throughput * pow(10,-6));	// Throughput [Mbps]
 				fprintf(logger_script_csv.file, "%d;", node_container[m].data_packets_sent);		// Packets sent
 				fprintf(logger_script_csv.file, "%d;", node_container[m].data_packets_lost);		// Packets lost
-				fprintf(logger_script_csv.file, "%d;", node_container[m].rts_cts_sent);		// RTS packets sent
-				fprintf(logger_script_csv.file, "%d", node_container[m].rts_cts_lost);		// RTS packets lost
-				fprintf(logger_script_csv.file, "\n");										// End of line
+				fprintf(logger_script_csv.file, "%d;", node_container[m].rts_cts_sent);				// RTS packets sent
+				fprintf(logger_script_csv.file, "%d", node_container[m].rts_cts_lost);				// RTS packets lost
+				fprintf(logger_script_csv.file, "\n");												// End of line
 
 			}
 		}
 
 	}
 
-
-	int simulation_index = 9;
+	int simulation_index = 11	;
 
 	switch(simulation_index){
 
@@ -745,6 +744,16 @@ void Komondor :: Stop(){
 
 		}
 
+		// SPATIAL REUSE
+		case 11:{
+
+			fprintf(logger_script.file, ";%.2f;%.2f\n",
+				node_container[0].throughput * pow(10,-6),
+				(total_throughput * pow(10,-6)/total_wlans_number));
+
+			break;
+
+		}
 
 		default:{
 		  printf("No simulation type found\n");

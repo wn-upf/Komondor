@@ -1,5 +1,5 @@
 # define execution parameters
-SIM_TIME=100
+SIM_TIME=10
 SEED=1
 
 # define validation parameters

@@ -106,7 +106,7 @@ component Node : public TypeII{
 		void CtsTimeout();
 		void DataTimeout();
 		void NavTimeout();
-		void RequestMCS();
+		void RequestMCS(double tx_power);
 		void StartTransmission();
 		void AbortRtsTransmission();
 
@@ -815,22 +815,23 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						/* ****************************************
 						/* SPATIAL REUSE OPERATION
 						 * *****************************************/
+						int loss_reason_sr = 1;	// lost by default
 						// Check if the packet can be decoded with the CST indicated by the SR operation
 						if (loss_reason == PACKET_NOT_LOST && spatial_reuse_enabled) {
-							int loss_reason_sr = IsPacketLost(current_primary_channel, notification, notification,
+							loss_reason_sr = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, cca_sr, power_rx_interest, constant_per,
 								hidden_nodes_list, node_id, capture_effect_model);
 							if (loss_reason_sr != PACKET_NOT_LOST && node_is_transmitter) {
 								txop_sr_identified = true;	// TXOP identified!
+								first_time_requesting_mcs = true; // In order to request a new MCS
 								if(save_node_logs) fprintf(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s TXOP detected while being in SENSING state (received RTS/CTS)\n",
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-
 							}
 						}
 						/* **************************************** */
-						else if(loss_reason == PACKET_NOT_LOST ||
-							(spatial_reuse_enabled && !txop_sr_identified)) { // RTS/CTS can be decoded
+						if((loss_reason == PACKET_NOT_LOST && !spatial_reuse_enabled) ||
+							(spatial_reuse_enabled && loss_reason_sr == PACKET_NOT_LOST)) { // RTS/CTS can be decoded
 
 							if (notification.packet_type == PACKET_TYPE_CTS) {
 								if(save_node_logs) fprintf(node_logger.file,
@@ -897,8 +898,15 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								if(save_node_logs) fprintf(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Checking if BO must be paused...\n",
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
-								int pause = HandleBackoff(PAUSE_TIMER, &channel_power, current_primary_channel,
-									current_cca, buffer.QueueSize());
+
+								int pause;
+								if(spatial_reuse_enabled && txop_sr_identified) {
+									pause = HandleBackoff(PAUSE_TIMER, &channel_power, current_primary_channel,
+										cca_sr, buffer.QueueSize());
+								} else {
+									pause = HandleBackoff(PAUSE_TIMER, &channel_power, current_primary_channel,
+										current_cca, buffer.QueueSize());
+								}
 
 								// Check if node has to freeze the BO (if it is not already frozen)
 								if (pause) {
@@ -940,6 +948,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							} else if (pause && spatial_reuse_enabled && !pause_sr ) {
 
 								txop_sr_identified = true;	// TXOP identified!
+								first_time_requesting_mcs = true; // In order to request a new MCS
 
 								if(save_node_logs) fprintf(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s TXOP detected while being in SENSING state (received DATA/ACK)\n",
@@ -1269,6 +1278,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 										trigger_inter_bss_NAV_timeout.GetTime() < notification.tx_info.nav_time) {
 
 										txop_sr_identified = true;	// TXOP identified!
+										first_time_requesting_mcs = true; // In order to request a new MCS
 
 										if(save_node_logs) fprintf(node_logger.file,
 											"%.15f;N%d;S%d;%s;%s TXOP detected while being in NAV state\n",
@@ -2829,12 +2839,9 @@ void Node :: EndBackoff(trigger_t &){
 		intended_cca = current_cca;
 		intended_tx_power = current_tpc;
 	}
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EndBackoff(): Intended parameters: "
-		"cca_sr = %f dBm, tpc_sr = %f dBm\n", SimTime(), node_id, node_state, LOG_F02, LOG_LVL3,
+	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Intended parameters: "
+		"cca = %f dBm, tpc = %f dBm\n", SimTime(), node_id, node_state, LOG_F02, LOG_LVL3,
 		ConvertPower(PW_TO_DBM, intended_cca), ConvertPower(PW_TO_DBM, intended_tx_power));
-//	printf("%.15f;N%d;S%d;%s;%s EndBackoff(): Intended parameters: "
-//		"cca_sr = %f dBm, tpc_sr = %f dBm\n", SimTime(), node_id, node_state, LOG_F02, LOG_LVL3,
-//		ConvertPower(PW_TO_DBM, intended_cca), ConvertPower(PW_TO_DBM, intended_tx_power));
 	/* **************************************** */
 
 	// Sergio on 26th June 2018:
@@ -2854,7 +2861,7 @@ void Node :: EndBackoff(trigger_t &){
 		if (change_modulation_flag[n]) {
 			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Requesting MCS to N%d\n",
 				SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, current_destination_id);
-			RequestMCS();
+			RequestMCS(intended_tx_power);
 		}
 	}
 
@@ -3201,7 +3208,7 @@ void Node :: MyTxFinished(trigger_t &){
 /*
  * RequestMCS(): performs a negotiation of the MCS to be used according to the tx power sensed by the receiver
  */
-void Node :: RequestMCS(){
+void Node :: RequestMCS(double tx_power){
 
 //	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMCS() to N%d\n",
 //				SimTime(), node_id, node_state, LOG_G00, LOG_LVL1, current_destination_id);
@@ -3214,7 +3221,7 @@ void Node :: RequestMCS(){
 	if(node_type == NODE_TYPE_OTHER) {
 		// Send request MCS notification
 		Notification request_modulation = GenerateNotification(PACKET_TYPE_MCS_REQUEST,
-			-1, -1, -1, default_destination_id, TX_DURATION_NONE, current_tpc);
+			-1, -1, -1, default_destination_id, TX_DURATION_NONE, tx_power);
 
 		outportAskForTxModulation(request_modulation);
 
@@ -3222,7 +3229,7 @@ void Node :: RequestMCS(){
 
 		// Send request MCS notification
 		Notification request_modulation = GenerateNotification(PACKET_TYPE_MCS_REQUEST, current_destination_id,
-			-1, -1, -1, TX_DURATION_NONE, current_tpc);
+			-1, -1, -1, TX_DURATION_NONE, tx_power);
 
 		outportAskForTxModulation(request_modulation);
 
@@ -3951,7 +3958,10 @@ void Node :: RestartNode(int called_by_time_out){
 	if (spatial_reuse_enabled) {
 		current_cca = cca_default;
 		if (txop_sr_identified && node_is_transmitter) current_tpc = tpc_default;
-		txop_sr_identified = false;
+		if(txop_sr_identified) {
+			first_time_requesting_mcs = true; // In order to request a new MCS
+			txop_sr_identified = false;
+		}
 	}
 
 	receiving_from_node_id = NODE_ID_NONE;
@@ -4856,6 +4866,8 @@ void Node :: InitializeVariables() {
 	}
 	txop_sr_identified = false;
 
-	if (node_id >= 2) spatial_reuse_enabled = false;
+//	if (node_id >= 2) spatial_reuse_enabled = false;
+
+//	if (spatial_reuse_enabled) printf("N%d SPATIAL REUSE ENABLED!\n", node_id);
 
 }
