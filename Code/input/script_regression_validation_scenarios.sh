@@ -3,7 +3,7 @@ SIM_TIME=100
 SEED=1
 
 # define validation parameters
-ALLOWED_ERROR=0.1
+ALLOWED_ERROR=1	# Allowed error in Mbps
 values_basic_scenarios=(88.25 22.80 88.25 22.80)	# Indexes - 1: Sce1a (agg), 2: Sce1a (no agg), 3: Sce1b (agg), 4: Sce1b (no agg)	
 declare -A values_complex_scenarios
 # Sce2a (agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
@@ -55,7 +55,6 @@ echo "      PART 1: BASIC SCENARIOS       "
 echo "++++++++++++++++++++++++++++++++++++"
 # get input files path
 cd input/validation/basic_scenarios/nodes
-
 # Detect "nodes" input files
 echo 'DETECTED KOMONDOR NODE INPUT FILES: '
 nodes_file_ix=0
@@ -66,7 +65,6 @@ do
 	(( nodes_file_ix++ ))
 done < <(ls)
 (( nodes_file_ix --));
-
 # Detect "system" input files
 cd ..
 cd system
@@ -79,8 +77,6 @@ do
 	(( system_file_ix++ ))
 done < <(ls)
 (( system_file_ix --));
-
-
 # Execute files
 cd ..
 cd ..
@@ -105,7 +101,6 @@ echo "++++++++++++++++++++++++++++++++++++"
 # get input files path
 cd ..
 cd input/validation/complex_scenarios/nodes
-
 # Detect "nodes" input files
 echo 'DETECTED KOMONDOR NODE INPUT FILES: '
 nodes_file_ix=0
@@ -116,7 +111,6 @@ do
 	(( nodes_file_ix++ ))
 done < <(ls)
 (( nodes_file_ix --));
-
 # Detect "system" input files
 cd ..
 cd system
@@ -129,7 +123,6 @@ do
 	(( system_file_ix++ ))
 done < <(ls)
 (( system_file_ix --));
-
 # Execute files
 cd ..
 cd ..
@@ -152,7 +145,7 @@ echo "++++++++++++++++++++++++++++++++++++"
 echo "        VALIDATION RESULTS	  "
 echo "++++++++++++++++++++++++++++++++++++"
 cd ..
-name_basic_scenarios[ 4 ]=""
+# Declare labels for each scenario (to be used when plotting the results)
 declare -a name_basic_scenarios=("1a_aggregation" "1a_no_aggreg. " "1b_aggregation" "1b_no_aggreg. ")
 declare -a name_complex_scenarios=("2a_aggregation" "2a_no_aggreg. " "2b_aggregation" "2b_no_aggreg. " "2c_aggregation" "2c_no_aggreg. " "2d_aggregation" "2d_no_aggreg. ")
 ## PART 1: Basic scenarios
@@ -160,7 +153,7 @@ echo ""
 echo "-----------------"
 echo "Basic scenarios:"
 echo "-----------------"
-# Read average throughput from output file
+# Read the throughput from output file
 file_basic_validation="./output/script_output_basic_scenarios.txt"
 ix=0
 while IFS= read line
@@ -175,13 +168,15 @@ echo "----------------------------"
 echo "|    TEST CASE    | RESULT |"
 for (( ix=0; ix < 4; ix++))
 do
+	# Obtain the throughput of WLAN A in each scenario
 	a=${results_basic_scenarios[ix]}
+	# Compute lower and upper bounds, according to the actual results and the allowed error
 	lower_bound=$(echo "${values_basic_scenarios[ix]} - $ALLOWED_ERROR" | bc)
 	upper_bound=$(echo "${values_basic_scenarios[ix]} + $ALLOWED_ERROR" | bc)
-
+	# Assess whether the lower and upper bounds are accomplished
 	_output_1=`echo "$a >= $lower_bound" | bc`
 	_output_2=`echo "$a <= $upper_bound" | bc`
-
+	# Display the results of each test case
 	echo "----------------------------"
 	if [ $_output_1 == "1" ] && [ $_output_2 == "1" ] ; then    
 		echo "| ${name_basic_scenarios[$ix]}  |   OK   |"
@@ -191,15 +186,15 @@ do
 done
 echo "----------------------------"
 
-
 ## PART 2: Complex scenarios
 echo ""
 echo "-----------------"
 echo "Complex scenarios:"
 echo "-----------------"
-# Read average throughput from output file
+# Read the throughput from output file
 file_complex_validation="./output/script_output_complex_scenarios.txt"
-declare -A results_complex_scenarios matrix
+echo "----------------------------"
+echo "|    TEST CASE    | RESULT |"
 ix=0
 while IFS= read line
 do
@@ -207,43 +202,30 @@ do
 	tpt_wlan_a="$(cut -d';' -f2 <<<"$line")"
 	tpt_wlan_b="$(cut -d';' -f3 <<<"$line")"
 	tpt_wlan_c="$(cut -d';' -f4 <<<"$line")"
-	results_complex_scenarios[$ix,$0]=$tpt_wlan_a
-	results_complex_scenarios[$ix,$1]=$tpt_wlan_b
-	results_complex_scenarios[$ix,$2]=$tpt_wlan_c
-	ix=$((ix + 1))
-done <"$file_complex_validation"
-echo ""
-echo "----------------------------"
-echo "|    TEST CASE    | RESULT |"
-for (( ix=0; ix < 8; ix++))
-do
-	a1=${results_complex_scenarios[$ix,$0]}
-	a2=${results_complex_scenarios[$ix,$1]}
-	a3=${results_complex_scenarios[$ix,$2]}
-
+	# Compute lower and upper bounds, according to the actual results and the allowed error
 	lower_bound_1=$(echo "${values_complex_scenarios[$ix,0]} - $ALLOWED_ERROR" | bc)
 	upper_bound_1=$(echo "${values_complex_scenarios[$ix,0]} + $ALLOWED_ERROR" | bc)
 	lower_bound_2=$(echo "${values_complex_scenarios[$ix,1]} - $ALLOWED_ERROR" | bc)
 	upper_bound_2=$(echo "${values_complex_scenarios[$ix,1]} + $ALLOWED_ERROR" | bc)
 	lower_bound_3=$(echo "${values_complex_scenarios[$ix,2]} - $ALLOWED_ERROR" | bc)
 	upper_bound_3=$(echo "${values_complex_scenarios[$ix,2]} + $ALLOWED_ERROR" | bc)
-
-	_output_1_1=`echo "$a1 >= $lower_bound_1" | bc`
-	_output_1_2=`echo "$a1 <= $upper_bound_1" | bc`
-	_output_2_1=`echo "$a2 >= $lower_bound_2" | bc`
-	_output_2_2=`echo "$a2 <= $upper_bound_2" | bc`
-	_output_3_1=`echo "$a3 >= $lower_bound_3" | bc`
-	_output_3_2=`echo "$a3 <= $upper_bound_3" | bc`
-
+	# Assess whether the lower and upper bounds are accomplished
+	_output_1_1=`echo "$tpt_wlan_a >= $lower_bound_1" | bc`
+	_output_1_2=`echo "$tpt_wlan_a <= $upper_bound_1" | bc`
+	_output_2_1=`echo "$tpt_wlan_b >= $lower_bound_2" | bc`
+	_output_2_2=`echo "$tpt_wlan_b <= $upper_bound_2" | bc`
+	_output_3_1=`echo "$tpt_wlan_c >= $lower_bound_3" | bc`
+	_output_3_2=`echo "$tpt_wlan_c <= $upper_bound_3" | bc`
+	# Display the results of each test case
 	echo "----------------------------"
 	if [ $_output_1_1 == "1" ] && [ $_output_1_2 == "1" ] && [ $_output_2_1 == "1" ] && [ $_output_2_2 == "1" ] && [ $_output_3_1 == "1" ] && [ $_output_3_2 == "1" ]; then    
 		echo "| ${name_complex_scenarios[$ix]}  |   OK   |"
 	else
 		echo "| ${name_complex_scenarios[$ix]}  |   NOK  |"
 	fi
-done
+	ix=$((ix + 1))
+done <"$file_complex_validation"
 echo "----------------------------"
-
 
 echo ""
 echo 'SCRIPT FINISHED: OUTPUT FILE SAVED IN /output/script_output_basic_scenarios.txt and /output/script_output_complex_scenarios.txt'
