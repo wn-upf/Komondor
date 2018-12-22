@@ -107,10 +107,11 @@
 #define PACKET_LOST_SINR_PROB			5	// Packet lost due to SINR probability
 #define PACKET_ACK_LOST					6	// ACK lost
 #define PACKET_LOST_RX_IN_NAV			7	// Received a packet when being in NAV state
-#define PACKET_LOST_BO_COLLISION		8
+#define PACKET_LOST_BO_COLLISION		8	// Collision by simultaneous backoff
 #define PACKET_LOST_OUTSIDE_CH_RANGE	9	// Packet was transmitted outside the primary channel of the receiver
-#define NUM_PACKET_LOST_REASONS			10
-#define PACKET_LOST_CAPTURE_EFFECT		11	//
+#define PACKET_LOST_CAPTURE_EFFECT		10	// A new transmission made that the CE was not longer accomplished
+
+#define NUM_PACKET_LOST_REASONS			11	// Number of reasons whereby a packet can be lost
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1

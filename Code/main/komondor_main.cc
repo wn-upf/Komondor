@@ -531,7 +531,7 @@ void Komondor :: Stop(){
 	}
 
 
-	int simulation_index = 10;
+	int simulation_index = 9;
 
 	switch(simulation_index){
 
@@ -735,7 +735,9 @@ void Komondor :: Stop(){
 					node_container[4].throughput * pow(10,-6));
 			} else {
 
-				printf("Error in Komondor :: Stop(): be care of the desired generated logs (script)\n");
+				printf("\nError in Komondor :: Stop(): be careful with the hardcoded "
+					"id for the desired generated logs (script)\n");
+				exit(-1);
 
 			}
 
@@ -1920,22 +1922,22 @@ total_nodes_number = 0;
 		agents_enabled = FALSE;
 
 		if (print_system_logs) printf("%s PARTIAL configuration entered per script. "
-				"Some parameters are set by DEFAULT.\n", LOG_LVL1);
+			"Some parameters are set by DEFAULT.\n", LOG_LVL1);
 
 	} else {
 
 		printf("%sERROR: Console arguments were not set properly!\n "
-				" + For FULL configuration setting execute\n"
-				"    ./Komondor -system_input_filename -nodes_input_filename -script_output_filename "
-				"-simulation_code -save_system_logs -save_node_logs -print_node_logs -print_system_logs "
-				"-sim_time -seed\n"
-				" + For PARTIAL configuration setting execute\n"
-				"    ./KomondorSimulation -system_input_filename -nodes_input_filename - sim_time - seed\n"
-				" + For FULL configuration setting WITH AGENTS execute\n"
-				"    ./Komondor -system_input_filename -nodes_input_filename -agents_input_filename -script_output_filename "
-				"-simulation_code -save_system_logs -save_node_logs -save_agent_logs -print_node_logs -print_system_logs "
-				"-print_agents_logs -sim_time -seed\n"
-				, LOG_LVL1);
+			" + For FULL configuration setting execute\n"
+			"    ./Komondor -system_input_filename -nodes_input_filename -script_output_filename "
+			"-simulation_code -save_system_logs -save_node_logs -print_node_logs -print_system_logs "
+			"-sim_time -seed\n"
+			" + For PARTIAL configuration setting execute\n"
+			"    ./KomondorSimulation -system_input_filename -nodes_input_filename - sim_time - seed\n"
+			" + For FULL configuration setting WITH AGENTS execute\n"
+			"    ./Komondor -system_input_filename -nodes_input_filename -agents_input_filename -script_output_filename "
+			"-simulation_code -save_system_logs -save_node_logs -save_agent_logs -print_node_logs -print_system_logs "
+			"-print_agents_logs -sim_time -seed\n"
+			, LOG_LVL1);
 		return(-1);
 	}
 
