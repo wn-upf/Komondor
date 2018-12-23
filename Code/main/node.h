@@ -704,7 +704,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							ConvertPower(LINEAR_TO_DB, current_sinr));
 
-						// Check if notification has been lost due to interferences or weak signal strength
+						// Check if notification has been lost due to interference or weak signal strength
 						loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 							current_sinr, capture_effect, current_cca, power_rx_interest, constant_per,
 							hidden_nodes_list, node_id, capture_effect_model);
@@ -825,8 +825,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								txop_sr_identified = true;	// TXOP identified!
 								first_time_requesting_mcs = true; // In order to request a new MCS
 								if(save_node_logs) fprintf(node_logger.file,
-									"%.15f;N%d;S%d;%s;%s TXOP detected while being in SENSING state (received RTS/CTS)\n",
-									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+									"%.15f;N%d;S%d;%s;%s The packet could not be decoded with the default CCA (%f dBm)...\n",
+									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, current_cca));
+								if(save_node_logs) fprintf(node_logger.file,
+									"%.15f;N%d;S%d;%s;%s ...but a TXOP detected for OBSS_PD = %f dBm (received RTS/CTS while being in SENSING state )\n",
+									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, cca_sr));
 							}
 						}
 						/* **************************************** */
@@ -1023,7 +1026,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								ConvertPower(PW_TO_DBM, power_rx_interest),
 								ConvertPower(PW_TO_DBM, max_pw_interference));
 
-							// Check if notification has been lost due to interferences or weak signal strength
+							// Check if notification has been lost due to interference or weak signal strength
 							int loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, cca_nav, power_rx_interest, constant_per,
 								hidden_nodes_list, node_id, capture_effect_model);
@@ -1369,7 +1372,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
 //							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.destination_id);
 
-					// Check if ongoing notification has been lost due to interferences caused by new transmission
+					// Check if ongoing notification has been lost due to interference caused by new transmission
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
 					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
@@ -1530,7 +1533,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 //						// Collision by hidden node
 //						if(save_node_logs) fprintf(node_logger.file,
-//								"%.15f;N%d;S%d;%s;%s Collision by interferences!\n",
+//								"%.15f;N%d;S%d;%s;%s Collision by interference!\n",
 //								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
 //
 //						 // If two or more packets sent at the same time
@@ -1555,7 +1558,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							// Collision by hidden node
 							if(save_node_logs) fprintf(node_logger.file,
-								"%.15f;N%d;S%d;%s;%s Collision by interferences!\n",
+								"%.15f;N%d;S%d;%s;%s Collision by interference!\n",
 								SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
 
 							 // If two or more packets sent at the same time
@@ -1645,7 +1648,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
 							incoming_notification, node_state, power_received_per_node, &channel_power);
 
-						// Check if notification has been lost due to interferences or weak signal strength
+						// Check if notification has been lost due to interference or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
@@ -1743,7 +1746,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
 							incoming_notification, node_state, power_received_per_node, &channel_power);
 
-						// Check if notification has been lost due to interferences or weak signal strength
+						// Check if notification has been lost due to interference or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
 //						if(save_node_logs) fprintf(node_logger.file,
@@ -1852,7 +1855,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
 							incoming_notification, node_state, power_received_per_node, &channel_power);
 
-						// Check if notification has been lost due to interferences or weak signal strength
+						// Check if notification has been lost due to interference or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
 						if(save_node_logs) fprintf(node_logger.file,
@@ -4859,14 +4862,14 @@ void Node :: InitializeVariables() {
 	sum_time_channel_idle = 0;
 	last_time_channel_is_idle = 0;
 
-	if (bss_color > 0) {
+	if (bss_color >= 0) {
 		spatial_reuse_enabled = true;
 	} else {
 		spatial_reuse_enabled = false;
 	}
 	txop_sr_identified = false;
 
-//	if (node_id >= 2) spatial_reuse_enabled = false;
+	if (node_id >= 2) spatial_reuse_enabled = false;
 
 //	if (spatial_reuse_enabled) printf("N%d SPATIAL REUSE ENABLED!\n", node_id);
 

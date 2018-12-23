@@ -122,11 +122,11 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 			case PACKET_LOST_INTERFERENCE:{ 	// There are interference signals making node not comply with the capture effect
 
 				if(save_node_logs) fprintf(node_logger.file,
-						"%.12f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
+						"%.12f;N%d;S%d;%s;%s High interference sensed in destination N%d (capture effect not accomplished)!\n",
 						sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
 //				printf(
-//					"%.12f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
+//					"%.12f;N%d;S%d;%s;%s High interference sensed in destination N%d (capture effect not accomplished)!\n",
 //					sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
 				// Increase the number of times of POTENTIAL hidden nodes with the current transmitting nodes

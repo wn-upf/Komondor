@@ -161,24 +161,15 @@ double ApplyTxPowerRestriction(double current_cca, double current_tpc) {
 		tx_power_pw = ConvertPower(DBM_TO_PW, TX_PWR_REF - (current_cca_dbm - OBSS_PD_MIN));
 	}
 
+	// Apply general restriction
+	if (tx_power_pw > ConvertPower(DBM_TO_PW, MAX_TX_PWR_SR)) {
+		tx_power_pw = ConvertPower(DBM_TO_PW, MAX_TX_PWR_SR);
+	}
+
+	tx_power_pw = ConvertPower(DBM_TO_PW, 18);
 	return tx_power_pw;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
