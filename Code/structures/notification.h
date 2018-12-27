@@ -67,6 +67,7 @@ struct TxInfo
 	double preoccupancy_duration;
 	double tx_power;				// Transmission power in [pW]
 	double tx_gain;					// Transmission gain [linear ratio]
+	double cca;						// CCA in [pW]
 	double bits_ofdm_sym; 			// Bits per OFDM symbol
 	double data_rate; 				// Rate at which data is transmitted
 	int modulation_schemes[4];		// Modulation scheme used

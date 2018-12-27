@@ -221,7 +221,7 @@ public class SR_Scenario_1 {
                 break;
             }
             
-            y = 0;
+            y = 4;
             z = 0;
             
             channel_bonding_aux = 0;
@@ -254,9 +254,9 @@ public class SR_Scenario_1 {
             //  - STAs are at the same x and z axis than their AP
             Point2D.Double point = new Point2D.Double();
             if (w == 0) {
-                point.setLocation(0, 4);
+                point.setLocation(0, 0);
             } else if (w == 1) {
-                point.setLocation(6, 4);
+                point.setLocation(6, 8);
             }                
 
             stas_position_list[0] = point;

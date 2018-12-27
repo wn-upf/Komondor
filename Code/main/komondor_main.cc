@@ -530,7 +530,7 @@ void Komondor :: Stop(){
 
 	}
 
-	int simulation_index = 11	;
+	int simulation_index = 11;
 
 	switch(simulation_index){
 
@@ -744,12 +744,12 @@ void Komondor :: Stop(){
 
 		}
 
-		// SPATIAL REUSE
+		// SPATIAL REUSE (toy scenarios)
 		case 11:{
 
 			fprintf(logger_script.file, ";%.2f;%.2f\n",
-				node_container[0].throughput * pow(10,-6),
-				(total_throughput * pow(10,-6)/total_wlans_number));
+				node_container[0].throughput * pow(10,-6),				// Throughput WLAN A
+				(total_throughput * pow(10,-6)/total_wlans_number));	// Average throughput
 
 			break;
 

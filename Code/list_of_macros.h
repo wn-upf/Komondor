@@ -311,7 +311,7 @@
 #define OBSS_PD_MIN			-82 	// Minimum OBSS_PD (dBm)
 #define OBSS_PD_MAX			-62 	// Maximum OBSS_PD (dBm)
 #define MAX_TX_PWR_SR		20		// Maximum transmit power to be used during the SR operation (dBm)
-#define TX_PWR_REF			25		// TX PWR REF (dBm)
+#define TX_PWR_REF			21		// TX PWR REF (dBm)
 
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *

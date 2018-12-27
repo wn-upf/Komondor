@@ -96,48 +96,62 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 }
 
 /*
- * GetSensitivitySpatialReuse(): checks whether the received notification is an intra-BSS,
- * an inter-BSS, an SRG or a non-SRG frame
+ * GetSensitivitySpatialReuse(): returns the CCA threshold to be used, according to the type
+ * 	of ongoing transmissions (intra-BSS, inter-BSS, SRG or non-SRG frames)
  * Arguments:
- * - packet_type: type of detected frame (according to source)
+ * - type_ongoing_transmissions_sr: type of the ongoing detected frames (according to source)
  * - cca_default: default CST (for intra-BSS communications)
  * - obss_pd: CST to be used for inter-BSS communications (different BSS color)
  * - srg_obss_pd: CST to be used for communications within the same SRG
  * - non_srg_obss_pd: CST to be used for communications within different SRG
  * Output:
- * - cst: CST in pW to be used according to the source of the detected frame
+ * - cst_pw: CST in pW to be used according to the source of the detected frame
  **/
-double GetSensitivitySpatialReuse(int packet_type, double cca_default,
+double GetSensitivitySpatialReuse(int *type_ongoing_transmissions_sr, double cca_default,
 		double obss_pd, double srg_obss_pd, double non_srg_obss_pd) {
 
-	double cst_pw;
+	// Set the CCA for each type of transmission
+	double cca_per_type[4] = {0, 0, 0, 0};
+	if (type_ongoing_transmissions_sr[0] == 1) cca_per_type[0] = cca_default;
+	if (type_ongoing_transmissions_sr[1] == 1) cca_per_type[1] = obss_pd;
+	if (type_ongoing_transmissions_sr[2] == 1) cca_per_type[2] = srg_obss_pd;
+	if (type_ongoing_transmissions_sr[3] == 1) cca_per_type[3] = non_srg_obss_pd;
 
-	switch(packet_type){
-		case INTRA_BSS_FRAME: {
-			cst_pw = cca_default;
-			break;
-		}
-		case INTER_BSS_FRAME: {
-			cst_pw = obss_pd;
-			break;
-		}
-		case SRG_FRAME: {
-			cst_pw = srg_obss_pd;
-			break;
-		}
-		case NON_SRG_FRAME: {
-			cst_pw = non_srg_obss_pd;
-			break;
-		}
-		default: {
-			printf("Error: Unknown frame type! Using the default CCA (%f dBm)\n",
-				ConvertPower(PW_TO_DBM, cca_default));
-			cst_pw = cca_default;
-			break;
-		}
+	// Initialize to a high value
+	double cst_pw = 1000;
+	// Find the minimum CCA to be used according to the ongoing transmissions
+	for (int i = 0 ; i < 4 ; i ++) {
+		if (cca_per_type[i] < cst_pw && type_ongoing_transmissions_sr[i] == 1) cst_pw = cca_per_type[i];
 	}
 
 	return cst_pw;
+
+//	switch(packet_type_source){
+//		case INTRA_BSS_FRAME: {
+//			cst_pw = cca_default;
+//			break;
+//		}
+//		case INTER_BSS_FRAME: {
+//			cst_pw = obss_pd;
+//			break;
+//		}
+//		case SRG_FRAME: {
+//			cst_pw = srg_obss_pd;
+//			break;
+//		}
+//		case NON_SRG_FRAME: {
+//			cst_pw = non_srg_obss_pd;
+//			break;
+//		}
+//		default: {
+//			printf("Error: Unknown frame type! Using the default CCA (%f dBm)\n",
+//				ConvertPower(PW_TO_DBM, cca_default));
+//			cst_pw = cca_default;
+//			break;
+//		}
+//	}
+//
+//	return cst_pw;
 
 }
 
@@ -166,17 +180,39 @@ double ApplyTxPowerRestriction(double current_cca, double current_tpc) {
 		tx_power_pw = ConvertPower(DBM_TO_PW, MAX_TX_PWR_SR);
 	}
 
-	tx_power_pw = ConvertPower(DBM_TO_PW, 18);
 	return tx_power_pw;
 
 }
 
+/*
+ * UpdateTypeOngoingTransmissions(): updates array "type_ongoing_transmissions",
+ * 	which stands for the type of sensed ongoing transmissions.
+ * Arguments:
+ * - type_ongoing_transmissions: array to be updated
+ * - notification: last notification obtained
+ * - bss_color: BSS color of the node updating the array
+ * - srg: SRG of the node updating the array
+ * - enter_or_leave: indicates whether the transmission starts (1) or ends (0)
 
+ **/
+void UpdateTypeOngoingTransmissions(int *type_ongoing_transmissions,
+	Notification notification, int bss_color, int srg, int enter_or_leave) {
 
+	// Identify the type of packet according to the BSS color and the SRG
+	int packet_type_source = CheckPacketOrigin(notification, bss_color, srg);
 
+	// Update the type of ongoing transmission for the detected frame
+	if (enter_or_leave) {	// if transmission starts
+		type_ongoing_transmissions[packet_type_source] = 1;
+	} else {				// if transmission ends
+		type_ongoing_transmissions[packet_type_source] = 0;
+	}
 
+}
 
-
+/****************************************************************
+ * OLD (TO BE REFACTORED/ADAPTED)
+ ****************************************************************/
 
 /*
  * CheckOBSSPDConstraints(): checks if the proposed obss_pd_level is valid, according to

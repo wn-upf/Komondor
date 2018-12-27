@@ -483,11 +483,11 @@ void UpdatePowerSensedPerNode(int primary_channel, double *power_received_per_no
 
 	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
 
-		double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
-					notification.tx_info.z);
+		double distance = ComputeDistance(x, y, z, notification.tx_info.x,
+			notification.tx_info.y,	notification.tx_info.z);
 
 		double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
-				notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
+			notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
 
 		if (start_or_finish == TX_INITIATED) {
 
@@ -619,7 +619,7 @@ void UpdateChannelsPower(double x, double y, double z, double **channel_power, N
 	}
 
 	ApplyAdjacentChannelInterferenceModel(x, y , z, adjacent_channel_model, total_power,
-			notification, num_channels_komondor, rx_gain, central_frequency, path_loss_model);
+		notification, num_channels_komondor, rx_gain, central_frequency, path_loss_model);
 
 	// Increase/decrease power sensed if TX started/finished
 	for(int c = 0; c < num_channels_komondor; c++){
@@ -640,7 +640,7 @@ void UpdateChannelsPower(double x, double y, double z, double **channel_power, N
 }
 
 /*
- * UpdateSINR(): Updates the SINR
+ * UpdateSINR(): Computes the SINR according to the power of interest and the interference
  **/
 double UpdateSINR(double pw_received_interest, double noise_level, double max_pw_interference){
 
