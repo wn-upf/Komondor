@@ -432,6 +432,7 @@ component Node : public TypeII{
 		inport inline void CtsTimeout(trigger_t& t1);
 		inport inline void DataTimeout(trigger_t& t1);
 		inport inline void NavTimeout(trigger_t& t1);
+//		inport inline void InterBssNavTimeout(trigger_t& t1);
 		inport inline void StartTransmission(trigger_t& t1);
 		inport inline void CallRestartSta(trigger_t& t1);
 		inport inline void CallSensing(trigger_t& t1);
@@ -886,13 +887,15 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// Differentiate between Intra-BSS and Inter-BSS NAV triggers
 							if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
 								trigger_inter_bss_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
+								if(save_node_logs) fprintf(node_logger.file,
+									"%.15f;N%d;S%d;%s;%s Entering in inter-BSS NAV during %.12f and setting inter-BSS NAV timeout to %.12f\n",
+									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, current_nav_time, time_to_trigger);
 							} else {
 								trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
+								if(save_node_logs) fprintf(node_logger.file,
+									"%.15f;N%d;S%d;%s;%s Entering in NAV during %.12f and setting NAV timeout to %.12f\n",
+									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, current_nav_time, time_to_trigger);
 							}
-
-							if(save_node_logs) fprintf(node_logger.file,
-								"%.15f;N%d;S%d;%s;%s Entering in NAV during %.12f and setting NAV timeout to %.12f\n",
-								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, current_nav_time, time_to_trigger);
 
 							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s current_nav_time = %.12f\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4, current_nav_time);
@@ -1055,6 +1058,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 										// Cancel the previous NAV
 										if (spatial_reuse_enabled && inter_bss_nav_collision) {
 											trigger_inter_bss_NAV_timeout.Cancel();		// Cancel inter-BSS NAV
+											if(save_node_logs) fprintf(node_logger.file,
+												"%.15f;N%d;S%d;%s;%s Canceling inter-BSS NAV (line 1062)\n",
+												SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
 										} else {
 											trigger_NAV_timeout.Cancel();				// Cancel intra-BSS NAV (legacy)
 										}
@@ -1096,6 +1102,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								// Cancel the previous NAV
 								if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
 									trigger_inter_bss_NAV_timeout.Cancel(); // Cancel inter-BSS NAV
+									if(save_node_logs) fprintf(node_logger.file,
+										"%.15f;N%d;S%d;%s;%s Canceling inter-BSS NAV (line 1106)\n",
+										SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
 								} else {
 									trigger_NAV_timeout.Cancel();			// Cancel intra-BSS NAV (legacy)
 								}
@@ -1154,6 +1163,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
 								if (spatial_reuse_enabled && inter_bss_nav_collision) {
 									trigger_inter_bss_NAV_timeout.Cancel(); // Cancel inter-BSS NAV
+									if(save_node_logs) fprintf(node_logger.file,
+										"%.15f;N%d;S%d;%s;%s Canceling inter-BSS NAV (line 1167)\n",
+										SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
 									trigger_inter_bss_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
 									if(save_node_logs) fprintf(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s (workaround) setting inter-BSS NAV trigger to %.12f\n",
@@ -1178,6 +1190,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									// Cancel the previous NAV
 									if (spatial_reuse_enabled && inter_bss_nav_collision) {
 										trigger_inter_bss_NAV_timeout.Cancel();		// Cancel inter-BSS NAV
+										if(save_node_logs) fprintf(node_logger.file,
+											"%.15f;N%d;S%d;%s;%s Canceling inter-BSS NAV (line 1194)\n",
+											SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
 									} else {
 										trigger_NAV_timeout.Cancel();				// Cancel intra-BSS NAV (legacy)
 									}
@@ -1471,11 +1486,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									loss_reason = PACKET_LOST_BO_COLLISION;
 
 									if(!node_is_transmitter) {
-
 										time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
 										// Only the intra-BSS NAV is expected to occur at this point (cannot receive packets from other WLANs)
 										trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
-
 									} else {
 										printf("ALERT: Should not happen in downlink traffic in Node::InportSomeNodeStartTx() - STATE_RX\n");
 									}
@@ -2749,7 +2762,12 @@ void Node :: EndBackoff(trigger_t &){
 	// Cancel NAV TO trigger
 	trigger_NAV_timeout.Cancel();
 	// Cancel inter-BSS NAV (only when Spatial Reuse is enabled)
-	if (spatial_reuse_enabled) trigger_inter_bss_NAV_timeout.Cancel();
+	if (spatial_reuse_enabled) {
+		trigger_inter_bss_NAV_timeout.Cancel();
+		if(save_node_logs) fprintf(node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Canceling inter-BSS NAV (line 2768)\n",
+			SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+	}
 
 	// Cancel trigger for safety
 	trigger_recover_cts_timeout.Cancel();
@@ -3460,8 +3478,11 @@ void Node :: NavTimeout(trigger_t &){
 	 * of applying SR.
 	 *
 	 * *****************************************/
+	// TODO: there is an issue regarding the trigger_inter_bss_NAV_timeout, which
+	// is not Active when reaching the timeout. A workaround has been done.
 	if ( spatial_reuse_enabled && (trigger_inter_bss_NAV_timeout.GetTime() > 0
-			|| trigger_NAV_timeout.GetTime() > 0) ) {
+			|| trigger_NAV_timeout.GetTime() > 0) && ( trigger_inter_bss_NAV_timeout.Active()
+					|| trigger_NAV_timeout.Active() ) ) {
 		// Remain in NAV
 		if(save_node_logs) fprintf(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Remain in NAV (NAV duration = %.12f / inter-BSS NAV duration = %.12f)\n",
@@ -3469,6 +3490,10 @@ void Node :: NavTimeout(trigger_t &){
 			trigger_NAV_timeout.GetTime(), trigger_inter_bss_NAV_timeout.GetTime());
 	/* *****************************************/
 	} else {
+
+		if(save_node_logs) fprintf(node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Go to STATE_SENSING\n",
+			SimTime(), node_id, node_state, LOG_D17, LOG_LVL3);
 
 		if(node_is_transmitter){
 
@@ -3481,7 +3506,7 @@ void Node :: NavTimeout(trigger_t &){
 				time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
 				trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 				if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s Starting new DIFS to finsih in %.12f\n",
+					"%.15f;N%d;S%d;%s;%s Starting new DIFS to finish in %.12f\n",
 					SimTime(), node_id, node_state, LOG_D17, LOG_LVL3,
 					trigger_start_backoff.GetTime());
 			} else {
@@ -3500,6 +3525,66 @@ void Node :: NavTimeout(trigger_t &){
 
 }
 
+//void Node :: InterBssNavTimeout (trigger_t &){
+//
+//	if(save_node_logs) fprintf(node_logger.file, "\n **********************************************************************\n");
+//
+//	if(save_node_logs) fprintf(node_logger.file,
+//		"%.15f;N%d;S%d;%s;%s inter-BSS NAV TIMEOUT!\n",
+//		SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
+//
+//	/* ****************************************
+//	/* SPATIAL REUSE OPERATION
+//	 *
+//	 * Only Receivers (non-transmitters) check at this point whether to adapt the CST or not,
+//	 * according to the SR operation. This is done in order to avoid entering in NAV in case
+//	 * of applying SR.
+//	 *
+//	 * *****************************************/
+//	if ( spatial_reuse_enabled && (trigger_inter_bss_NAV_timeout.GetTime() > 0
+//			|| trigger_NAV_timeout.GetTime() > 0) ) {
+//		// Remain in NAV
+//		if(save_node_logs) fprintf(node_logger.file,
+//			"%.15f;N%d;S%d;%s;%s Remain in NAV (NAV duration = %.12f / inter-BSS NAV duration = %.12f)\n",
+//			SimTime(), node_id, node_state, LOG_D17, LOG_LVL3,
+//			trigger_NAV_timeout.GetTime(), trigger_inter_bss_NAV_timeout.GetTime());
+//	/* *****************************************/
+//	} else {
+//
+//		if(save_node_logs) fprintf(node_logger.file,
+//			"%.15f;N%d;S%d;%s;%s Go to STATE_SENSING\n",
+//			SimTime(), node_id, node_state, LOG_D17, LOG_LVL3);
+//
+//		if(node_is_transmitter){
+//
+//			node_state = STATE_SENSING;
+//
+//			int resume = HandleBackoff(RESUME_TIMER, &channel_power,
+//				current_primary_channel, current_cca, buffer.QueueSize());
+//
+//			if (resume) {	// Update BO value according to TO extra time
+//				time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
+//				trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
+//				if(save_node_logs) fprintf(node_logger.file,
+//					"%.15f;N%d;S%d;%s;%s Starting new DIFS to finish in %.12f\n",
+//					SimTime(), node_id, node_state, LOG_D17, LOG_LVL3,
+//					trigger_start_backoff.GetTime());
+//			} else {
+//				if(save_node_logs) fprintf(node_logger.file,
+//					"%.15f;N%d;S%d;%s;%s New DIFS cannot be started\n",
+//					SimTime(), node_id, node_state, LOG_D17, LOG_LVL3);
+//			}
+//
+//		} else {
+//
+//			RestartNode(TRUE);
+//
+//		}
+//
+//	}
+//
+//}
+
 /************************/
 /************************/
 /*  BACKOFF MANAGEMENT  */
@@ -3512,14 +3597,16 @@ void Node :: NavTimeout(trigger_t &){
 void Node :: PauseBackoff(){
 
 	if(trigger_start_backoff.Active()){
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Cancelling DIFS. BO still frozen at %.9f (%.2f slots)\n",
-				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-				remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
+
+		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Canceling DIFS. BO still frozen at %.9f (%.2f slots)\n",
+			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+			remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
 
 		trigger_start_backoff.Cancel();
+
 	} else {
 
-		if(trigger_end_backoff.Active()){	// If backoff trigger is active, freeze it
+		if(trigger_end_backoff.Active()) {	// If backoff trigger is active, freeze it
 
 			if(save_node_logs) fprintf(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO is active. Freezing it from %.9f (%.2f slots)...\n",
@@ -3548,9 +3635,9 @@ void Node :: PauseBackoff(){
 		} else {	// If backoff trigger is frozen
 
 			if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s Backoff is NOT active - it is already frozen at %.9f us (%.2f slots)\n",
-					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-					remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
+				"%.15f;N%d;S%d;%s;%s Backoff is NOT active - it is already frozen at %.9f us (%.2f slots)\n",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+				remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
 
 			trigger_end_backoff.Cancel(); // Redundant (for safety)
 
@@ -3572,8 +3659,8 @@ void Node :: ResumeBackoff(trigger_t &){
 	trigger_end_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Resuming backoff in %.9f us (%.2f slots)\n",
-							SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-							(remaining_backoff * pow(10,6)), (remaining_backoff / (double) SLOT_TIME));
+		SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+		(remaining_backoff * pow(10,6)), (remaining_backoff / (double) SLOT_TIME));
 
 //	if(save_node_logs) fprintf(node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s DIFS: active = %d, t_DIFS = %f - backoff: active = %d - t_back = %f\n",
@@ -3928,6 +4015,10 @@ void Node :: RestartNode(int called_by_time_out){
 	trigger_CTS_timeout.Cancel();			// Trigger when CTS hasn't arrived in time
 	trigger_DATA_timeout.Cancel();			// Trigger when DATA TX could not start due to RTS/CTS failure
 	trigger_NAV_timeout.Cancel();  			// Trigger for the NAV
+	trigger_inter_bss_NAV_timeout.Cancel(); // Trigger for the inter-BSS NAV
+	if(save_node_logs) fprintf(node_logger.file,
+		"%.15f;N%d;S%d;%s;%s Canceling inter-BSS NAV (line 4018)\n",
+		SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
 
 }
 
