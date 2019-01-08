@@ -121,37 +121,12 @@ double GetSensitivitySpatialReuse(int *type_ongoing_transmissions_sr, double cca
 	double cst_pw = 1000;
 	// Find the minimum CCA to be used according to the ongoing transmissions
 	for (int i = 0 ; i < 4 ; i ++) {
-		if (cca_per_type[i] < cst_pw && type_ongoing_transmissions_sr[i] == 1) cst_pw = cca_per_type[i];
+		if (cca_per_type[i] < cst_pw && type_ongoing_transmissions_sr[i] == 1) {
+			cst_pw = cca_per_type[i];
+		}
 	}
 
 	return cst_pw;
-
-//	switch(packet_type_source){
-//		case INTRA_BSS_FRAME: {
-//			cst_pw = cca_default;
-//			break;
-//		}
-//		case INTER_BSS_FRAME: {
-//			cst_pw = obss_pd;
-//			break;
-//		}
-//		case SRG_FRAME: {
-//			cst_pw = srg_obss_pd;
-//			break;
-//		}
-//		case NON_SRG_FRAME: {
-//			cst_pw = non_srg_obss_pd;
-//			break;
-//		}
-//		default: {
-//			printf("Error: Unknown frame type! Using the default CCA (%f dBm)\n",
-//				ConvertPower(PW_TO_DBM, cca_default));
-//			cst_pw = cca_default;
-//			break;
-//		}
-//	}
-//
-//	return cst_pw;
 
 }
 
