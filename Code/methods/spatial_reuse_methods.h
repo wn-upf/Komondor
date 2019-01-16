@@ -108,8 +108,11 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
  * - cst_pw: CST in pW to be used according to the source of the detected frame
  **/
 double GetSensitivitySpatialReuse(int *type_ongoing_transmissions_sr, double cca_default,
-		double obss_pd, double srg_obss_pd, double non_srg_obss_pd) {
+		double obss_pd, double srg_obss_pd, double non_srg_obss_pd, double power_received) {
 
+	double cst_pw;
+
+//	printf(".......................\n");
 	// Set the CCA for each type of transmission
 	double cca_per_type[4] = {0, 0, 0, 0};
 	if (type_ongoing_transmissions_sr[0] == 1) cca_per_type[0] = cca_default;
@@ -117,14 +120,24 @@ double GetSensitivitySpatialReuse(int *type_ongoing_transmissions_sr, double cca
 	if (type_ongoing_transmissions_sr[2] == 1) cca_per_type[2] = srg_obss_pd;
 	if (type_ongoing_transmissions_sr[3] == 1) cca_per_type[3] = non_srg_obss_pd;
 
-	// Initialize to a high value
-	double cst_pw = 1000;
-	// Find the minimum CCA to be used according to the ongoing transmissions
-	for (int i = 0 ; i < 4 ; i ++) {
-		if (cca_per_type[i] < cst_pw && type_ongoing_transmissions_sr[i] == 1) {
-			cst_pw = cca_per_type[i];
+	// Check if the power received is lower than the minimum OBSS_PD (-82 dBm)
+	if (ConvertPower(PW_TO_DBM, power_received) < OBSS_PD_MIN) {
+		cst_pw = ConvertPower(DBM_TO_PW, OBSS_PD_MIN);
+	// If not, check the minimum CCA to be used according to the ongoing transmissions
+	} else {
+		// Initialize to a high value
+		cst_pw = 1000;
+		for (int i = 0 ; i < 4 ; i ++) {
+//			printf(" - cca_per_type[%d] = %f / type_ongoing_transmissions_sr = %d\n",
+//				i, ConvertPower(PW_TO_DBM,cca_per_type[i]), type_ongoing_transmissions_sr[i]);
+			if (cca_per_type[i] < cst_pw && type_ongoing_transmissions_sr[i] == 1) {
+				cst_pw = cca_per_type[i];
+			}
 		}
 	}
+
+//	printf(" + cst_pw = %f\n",
+//		ConvertPower(PW_TO_DBM,cst_pw));
 
 	return cst_pw;
 

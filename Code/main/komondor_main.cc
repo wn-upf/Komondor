@@ -438,7 +438,7 @@ void Komondor :: Stop(){
 
 	// Supposing that number_aps = number_nodes/2
 	jains_fairness = pow(total_throughput, 2) /
-			(total_nodes_number/2 * jains_fairness_aux);
+		(total_nodes_number/2 * jains_fairness_aux);
 
 	if (print_system_logs) {
 
@@ -747,9 +747,21 @@ void Komondor :: Stop(){
 		// SPATIAL REUSE (toy scenarios)
 		case 11:{
 
-			fprintf(logger_script.file, ";%.2f;%.2f\n",
+//			double max_min_throughput = pow(10,9);
+//
+//			printf("----------------\n");
+//			for(int i = 0; i < total_nodes_number; i++){
+//				if (node_container[2*i].throughput < max_min_throughput) {
+//					printf("   * node_container[i].throughput = %f\n", node_container[i].throughput);
+//					max_min_throughput = node_container[i].throughput;
+//				}
+//			}
+//			printf("+ max_min_throughput = %f\n", max_min_throughput);
+
+			fprintf(logger_script.file, ";%.2f;%.2f;%.2f\n",
 				node_container[0].throughput * pow(10,-6),				// Throughput WLAN A
-				(total_throughput * pow(10,-6)/total_wlans_number));	// Average throughput
+				(total_throughput * pow(10,-6)/total_wlans_number),		// Average throughput
+				min_throughput * pow(10,-6));						// Max-min throughput
 
 			break;
 
