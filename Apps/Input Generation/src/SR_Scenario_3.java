@@ -215,17 +215,17 @@ public class SR_Scenario_3 {
                 // If WLAN A
                 switch (w) {
                     case 0:
-                        x = 5;
+                        x = 4;
                         y = 0;
                         z = 0;
                         break;
                     case 1:
-                        x = 0;
-                        y = 0;
+                        x = 4;
+                        y = 5.5;
                         z = 0;
                         break;
                     case 2:
-                        x = 15;
+                        x = 10;
                         y = 0;
                         z = 0;
                         break;
@@ -264,13 +264,13 @@ public class SR_Scenario_3 {
             //  - STAs are at the same x and z axis than their AP
             Point2D.Double point = new Point2D.Double();
             if (w == 0) {
-                point.setLocation(5, 4);
-                wlan_aux.spatial_reuse_group = 2;
+                point.setLocation(0, 0);
+                wlan_aux.spatial_reuse_group = 1;
             } else if (w == 1) {
-                point.setLocation(0, 4);
+                point.setLocation(4, 0.5);
                 wlan_aux.spatial_reuse_group = 1;
             } else if (w == 2) {
-                point.setLocation(15, 4);
+                point.setLocation(14, 0);
                 wlan_aux.spatial_reuse_group = 2;
             }                
 
@@ -464,7 +464,7 @@ public class SR_Scenario_3 {
 
     public static void main(String args[]) throws IOException {
 
-        String input_path = "./input_constructor/case_1/input_template_toy_scenario_2b.csv";
+        String input_path = "./input_constructor/toy_scenarios/input_template_toy_scenario_3.csv";
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";
 
@@ -484,31 +484,22 @@ public class SR_Scenario_3 {
             
             input_attributes(input_path);
            
-//            for (int e = 0; e < srg_obss_pd_list.length; e++) {     
-//                
-//                for (int f = 0; f < non_srg_obss_pd_list.length; f++) {  
-//
-//                    generate_wlans(srg_obss_pd_list[e], non_srg_obss_pd_list[f]);
-//                    output_path = "./output/input_nodes_n" + num_wlans + "_s" + String.format("%03d", out_ix) + 
-//                        "_srg" + String.format("%03d", (int) srg_obss_pd_list[e]) + 
-//                        "_non_srg" + String.format("%03d", (int) non_srg_obss_pd_list[f]) + ".csv";
-//                    System.out.println("output_path: " + output_path);
-//                    generate_file(output_path);  
-//                
-//                }
-//                    
-//            }
-               
-            for (int f = 0; f < non_srg_obss_pd_list.length; f++) {  
+            for (int e = 0; e < srg_obss_pd_list.length; e++) {     
+                
+                for (int f = 0; f < non_srg_obss_pd_list.length; f++) {  
 
-                generate_wlans(-78, non_srg_obss_pd_list[f]);
-                output_path = "./output/input_nodes_n" + num_wlans + "_s" + String.format("%03d", out_ix) + 
-                   "_non_srg" + String.format("%03d", (int) non_srg_obss_pd_list[f]) + ".csv";
-                System.out.println("output_path: " + output_path);
-                generate_file(output_path);  
-
-            }
-                    
+                    generate_wlans(srg_obss_pd_list[e], non_srg_obss_pd_list[f]);
+                    output_path = "./output/input_nodes_n" + num_wlans + "_s" + String.format("%03d", out_ix) + 
+                        "_srg" + String.format("%03d", (int) srg_obss_pd_list[e]) + 
+                        "_non_srg" + String.format("%03d", (int) non_srg_obss_pd_list[f]) + ".csv";
+                    System.out.println("output_path: " + output_path);
+                    generate_file(output_path);  
+                
+                }
+                
+            }                    
         }
+        
     }
+    
 }

@@ -747,21 +747,28 @@ void Komondor :: Stop(){
 		// SPATIAL REUSE (toy scenarios)
 		case 11:{
 
-//			double max_min_throughput = pow(10,9);
-//
-//			printf("----------------\n");
-//			for(int i = 0; i < total_nodes_number; i++){
-//				if (node_container[2*i].throughput < max_min_throughput) {
-//					printf("   * node_container[i].throughput = %f\n", node_container[i].throughput);
-//					max_min_throughput = node_container[i].throughput;
-//				}
-//			}
-//			printf("+ max_min_throughput = %f\n", max_min_throughput);
+			double time_in_channel_wlan_a = node_container[0].total_time_transmitting_in_num_channels[0];
+			double time_in_channel_average = 0;
+			double time_in_channel_max_min = 10000000000000;
+			for(int i = 0; i < total_wlans_number; i++){
+				time_in_channel_average += node_container[2*i].total_time_transmitting_in_num_channels[0];
+				if (node_container[2*i].total_time_transmitting_in_num_channels[0] < time_in_channel_max_min) {
+					time_in_channel_max_min = node_container[2*i].total_time_transmitting_in_num_channels[0];
+				}
+			}
 
-			fprintf(logger_script.file, ";%.2f;%.2f;%.2f\n",
-				node_container[0].throughput * pow(10,-6),				// Throughput WLAN A
+			time_in_channel_average = time_in_channel_average / total_wlans_number;
+
+			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
+				node_container[0].throughput * pow(10,-6),			// Throughput WLAN A
 				(total_throughput * pow(10,-6)/total_wlans_number),		// Average throughput
-				min_throughput * pow(10,-6));						// Max-min throughput
+				min_throughput * pow(10,-6),					// Max-min throughput
+				time_in_channel_wlan_a/simulation_time_komondor,		// Time WLAN A spends transmitting
+				time_in_channel_average/simulation_time_komondor,		// Average time WLANs spend transmitting
+				time_in_channel_max_min/simulation_time_komondor,		// Max-min time WLANs spend transmitting
+				node_container[0].average_delay * pow(10,3),			// Delay WLAN A
+				total_delay * pow(10,3) / total_wlans_number,			// Average delay
+				max_delay * pow(10,3) );					// Maximum delay
 
 			break;
 

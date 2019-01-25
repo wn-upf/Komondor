@@ -420,7 +420,8 @@ public class SR_RANDOM_1 {
 
     public static void main(String args[]) throws IOException {
 
-        String input_path = "./input_constructor/case_1/input_template_random_scenario_1c.csv";
+        String type_of_scenario = "ultra_dense";
+        String input_path = "./input_constructor/random_scenarios/" + type_of_scenario + ".csv";
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";
 
@@ -491,7 +492,7 @@ public class SR_RANDOM_1 {
                  */
                 if (i == 0) {
                     x = map_width / 2 + 0;
-                    y = map_heigth / 2 + 3;                    
+                    y = map_heigth / 2 + 2;                    
                 } else {
 
                     angle = 360 * new Random().nextDouble();
@@ -520,8 +521,8 @@ public class SR_RANDOM_1 {
             for (int out_ix = 1; out_ix <= num_outputs; out_ix++) {
                 for (int f = 0; f < obss_pd_list.length; f++) {  
                     generate_wlans(obss_pd_list[f], aps_position_list, stas_position_list);
-                    output_path = "./output/input_nodes_sce" + n + 
-                       "_non_srg" + String.format("%03d", (int) obss_pd_list[f]) + ".csv";
+                    output_path = "./output/input_nodes_" + type_of_scenario + "_sce" + n + 
+                       "_obsspd" + String.format("%03d", (int) obss_pd_list[f]) + ".csv";
                     System.out.println("output_path: " + output_path);
                     generate_file(output_path);  
                 }
