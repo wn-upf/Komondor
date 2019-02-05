@@ -48,6 +48,7 @@
 
 #include "../../list_of_macros.h"
 #include "action_selection_strategies/epsilon_greedy.h"
+#include "action_selection_strategies/thompson_sampling.h"
 //#include "action_selection_strategies/thompson_sampling.h"
 
 #ifndef _AUX_MABS_
@@ -63,6 +64,8 @@ class MultiArmedBandit {
 		int print_agent_logs;
 		int num_actions;
 		int type_of_reward;
+
+		int selected_strategy;
 
 		int num_actions_channel;
 		int num_actions_cca;
@@ -85,6 +88,7 @@ class MultiArmedBandit {
 		double *reward_per_arm;
 		double *cumulative_reward_per_arm;
 		double *average_reward_per_arm;
+		double *estimated_reward_per_arm;
 		int *times_arm_has_been_selected;
 		int *indexes_selected_arm;
 
@@ -119,15 +123,28 @@ class MultiArmedBandit {
 
 			// Generate the reward for the last selected action
 			double reward = GenerateReward(type_of_reward, performance);
-			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s reward (action %d) = %f\n",
+			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Throughput (action %d) = %f\n",
+				sim_time, agent_id, LOG_C00, LOG_LVL2, current_action_ix, performance.throughput);
+			if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Reward (action %d) = %f\n",
 				sim_time, agent_id, LOG_C00, LOG_LVL2, current_action_ix, reward);
 			if(save_agent_logs) PrintOrWriteRewardPerArm(WRITE_LOG, agent_logger, sim_time);
 
-			// Update the statistics maintained for each arm
+			// Update the reward of the last played configuration
 			UpdateArmStatistics(current_action_ix, reward);
 
-			// Select a new action according to the past experience
+//			printf("current_action_ix = %d\n", current_action_ix);
+//			printf("reward = %f\n", reward);
+//
+//			for (int i = 0 ; i < num_actions ; i ++) {
+//				printf("Action %d:", i);
+//				printf("  - estimated_reward_per_arm[i] = %f\n", estimated_reward_per_arm[i]);
+//				printf("  - times_arm_has_been_selected[i] = %d\n", times_arm_has_been_selected[i]);
+//			}
+
+			// Select a new action according to the updated information
 			int new_action_ix = SelectNewAction();
+
+//			printf("new_action_ix = %d\n", new_action_ix);
 
 			// Generate the suggested configuration and return it
 			Configuration suggested_configuration = GenerateNewConfiguration(configuration, new_action_ix);
@@ -136,7 +153,7 @@ class MultiArmedBandit {
 		};
 
 		/*
-		 * UpdateArmStatistics(): updates the statistics maintained for each arm
+		 * UpdateRewardStatistics(): updates the statistics maintained for each arm
 		 * INPUT:
 		 * 	- action_ix: index of the action to be updated
 		 * 	- reward: last reward observed from the action of interest
@@ -146,13 +163,17 @@ class MultiArmedBandit {
 			if(action_ix >= 0) { // Avoid indexing errors
 				// Update the reward for the chosen arm
 				reward_per_arm[action_ix] = reward;
-				// Update the cumulative reward for the chosen arm
-				cumulative_reward_per_arm[action_ix] += reward;
 				// Update the times the chosen arm has been selected
 				times_arm_has_been_selected[action_ix] += 1;
+				// Update the cumulative reward for the chosen arm
+				cumulative_reward_per_arm[action_ix] += reward;
 				// Update the average reward for the chosen arm
 				average_reward_per_arm[action_ix] = cumulative_reward_per_arm[action_ix] /
 					times_arm_has_been_selected[action_ix];
+				// Update the estimated reward per arm
+				estimated_reward_per_arm[action_ix] = ((estimated_reward_per_arm[action_ix]
+					* times_arm_has_been_selected[action_ix])
+					+ reward) / (times_arm_has_been_selected[action_ix] + 2);
 			} else {
 				printf("ERROR: The action ix (%d) is not correct!\n", action_ix);
 				exit(EXIT_FAILURE);
@@ -169,7 +190,7 @@ class MultiArmedBandit {
 
 			int action_ix;
 			// Select an action according to the chosen strategy: TODO improve this part (now it is hardcoded)
-			int selected_strategy = STRATEGY_EGREEDY;
+			//int selected_strategy = STRATEGY_EGREEDY;
 			switch(selected_strategy) {
 
 				/*
@@ -191,7 +212,15 @@ class MultiArmedBandit {
 				 * Thompson sampling strategy:
 				 */
 				case STRATEGY_THOMPSON_SAMPLING:{
-					// ...
+
+					// Pick an action according to Thompson sampling
+					action_ix = PickArmThompsonSampling(num_actions,
+						estimated_reward_per_arm, times_arm_has_been_selected);
+					// Increase the number of iterations
+					num_iterations ++;
+
+					break;
+
 				}
 
 			}
@@ -222,6 +251,7 @@ class MultiArmedBandit {
 			reward_per_arm = new double[num_actions];
 			cumulative_reward_per_arm = new double[num_actions];
 			average_reward_per_arm = new double[num_actions];
+			estimated_reward_per_arm = new double[num_actions];
 
 			// Initialize the array containing the times each arm has been played
 			times_arm_has_been_selected = new int[num_actions];
@@ -230,6 +260,7 @@ class MultiArmedBandit {
 				reward_per_arm[i] = initial_reward;	// Set the initial reward
 				cumulative_reward_per_arm[i] = initial_reward;
 				average_reward_per_arm[i] = initial_reward;
+				estimated_reward_per_arm[i] = initial_reward;
 				times_arm_has_been_selected[i] = 0;
 			}
 

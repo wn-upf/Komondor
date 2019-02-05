@@ -1216,9 +1216,17 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			int learning_mechanism = atoi(GetField(tmp_agents, IX_AGENT_LEARNING_MECHANISM));
 			agent_container[agent_ix].learning_mechanism = learning_mechanism;
 
+			// Selected strategy
+			tmp_agents = strdup(line_agents);
+			int selected_strategy = atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY));
+			agent_container[agent_ix].selected_strategy = selected_strategy;
+
 			// System
 			agent_container[agent_ix].save_agent_logs = save_agent_logs;
 			agent_container[agent_ix].print_agent_logs = print_agent_logs;
+
+			// Initialize learning algorithm in agent
+			agent_container[agent_ix].InitializeLearningAlgorithm();
 
 			agent_ix++;
 			free(tmp_agents);

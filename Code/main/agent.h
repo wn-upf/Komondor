@@ -98,6 +98,7 @@ component Agent : public TypeII{
 
 		// Learning mechanism
 		int learning_mechanism;
+		int selected_strategy;
 
 		// Actions management (tunable parameters)
 		int *list_of_channels; 				// List of channels
@@ -145,7 +146,7 @@ component Agent : public TypeII{
 		char *header_string;				// Header string for the logger
 
 		MultiArmedBandit mab_agent;
-		bool not_initialized;				// Boolean to determine whether the learning alg. has been initialized or not
+//		bool not_initialized;				// Boolean to determine whether the learning alg. has been initialized or not
 
 	// Connections and timers
 	public:
@@ -201,7 +202,7 @@ void Agent :: Start(){
 	}
 	
 	if(save_agent_logs) fprintf(agent_logger.file,"%.18f;A%d;%s;%s Start()\n",
-			SimTime(), agent_id, LOG_B00, LOG_LVL1);
+		SimTime(), agent_id, LOG_B00, LOG_LVL1);
 
 	if(centralized_flag) {
 		// --- Do nothing ---
@@ -278,10 +279,10 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	configuration = received_configuration;
 
-	if(not_initialized) {
-		InitializeLearningAlgorithm();
-		not_initialized = false;
-	}
+//	if(not_initialized) {
+//		InitializeLearningAlgorithm();
+//		not_initialized = false;
+//	}
 
 	if(save_agent_logs) WriteConfiguration(configuration);
 
@@ -455,8 +456,8 @@ void Agent :: InitializeAgent() {
 	// Generate actions
 	actions = new Action[num_actions];
 
-	// Specify that the learning mechanism has not been initialized (to be done for the first AP-agent interaction)
-	not_initialized = true;
+//	// Specify that the learning mechanism has not been initialized (to be done for the first AP-agent interaction)
+//	not_initialized = true;
 
 }
 
@@ -475,6 +476,8 @@ void Agent :: InitializeLearningAlgorithm() {
 			mab_agent.agent_id = agent_id;
 			mab_agent.save_agent_logs = save_agent_logs;
 			mab_agent.print_agent_logs = print_agent_logs;
+
+			mab_agent.selected_strategy = selected_strategy;
 
 			mab_agent.type_of_reward = type_of_reward;
 
@@ -549,6 +552,7 @@ void Agent :: PrintAgentInfo(){
 	printf("\n");
 
 	printf("%s learning_mechanism: %d\n", LOG_LVL4, learning_mechanism);
+	printf("%s selected_strategy: %d\n", LOG_LVL4, selected_strategy);
 
 	printf("%s save_agent_logs: %d\n", LOG_LVL4, save_agent_logs);
 	printf("%s print_agent_logs: %d\n", LOG_LVL4, print_agent_logs);
