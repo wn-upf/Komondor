@@ -54,6 +54,8 @@
 #include <string.h>
 #include <time.h>
 #include <vector>
+#include <map>
+
 #include ".././COST/cost.h"
 #include "../list_of_macros.h"
 #include "../structures/logical_nack.h"
@@ -178,6 +180,7 @@ component Komondor : public CostSimEng {
 		int first_line_skiped_flag;		// Flag for skipping first informative line of input file
 
 		int central_controller_flag; 	// In order to allow the generation of the central controller
+
 };
 
 /*
