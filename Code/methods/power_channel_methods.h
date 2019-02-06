@@ -477,32 +477,6 @@ void GetChannelOccupancyByCCA(int primary_channel, int pifs_activated, int *chan
  * UpdatePowerSensedPerNode: updates the power sensed comming from each node in the primary channel
  * Sergio on 22/09/2017: power of interest counted only if transmission implies the primary channel
  **/
-//void UpdatePowerSensedPerNode(int primary_channel, double *power_received_per_node, Notification notification,
-//    double x, double y, double z, double rx_gain, double central_frequency, int path_loss_model,
-//	int start_or_finish) {
-//
-//	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
-//
-//		double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
-//					notification.tx_info.z);
-//
-//		double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
-//				notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
-//
-//		if (start_or_finish == TX_INITIATED) {
-//
-//			power_received_per_node[notification.source_id] = pw_received;
-//
-//		} else if(start_or_finish == TX_FINISHED){
-//
-//			power_received_per_node[notification.source_id] = 0;
-//
-//		}
-//
-//	} else {
-//		power_received_per_node[notification.source_id] = 0;
-//	}
-//}
 void UpdatePowerSensedPerNode(int primary_channel, std::map<int,double> &power_received_per_node, Notification notification,
     double x, double y, double z, double rx_gain, double central_frequency, int path_loss_model,
 	int start_or_finish) {
@@ -681,28 +655,6 @@ double UpdateSINR(double pw_received_interest, double noise_level, double max_pw
 /*
  * ComputeMaxInterference(): computes the maximum interference perceived in the channels of interest
  **/
-//void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intereference,
-//	Notification notification_interest, int node_state, double *power_received_per_node,
-//	double **channel_power) {
-//
-//	*max_pw_interference = 0;
-//
-//	for(int c = notification_interest.left_channel; c <= notification_interest.right_channel; c++){
-//
-//		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK || node_state == STATE_NAV
-//				|| node_state == STATE_RX_RTS || node_state == STATE_RX_CTS || node_state == STATE_SENSING){
-//
-//			if(*max_pw_interference <
-//					((*channel_power)[c] - power_received_per_node[notification_interest.source_id])){
-//
-//				*max_pw_interference = (*channel_power)[c] - power_received_per_node[notification_interest.source_id];
-//
-//				*channel_max_intereference = c;
-//
-//			}
-//		}
-//	}
-//}
 void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intereference,
 	Notification notification_interest, int node_state, std::map<int,double> &power_received_per_node,
 	double **channel_power) {
@@ -809,13 +761,6 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 		}
 		if(all_channels_free_in_range) possible_channel_ranges_ixs[3] = TRUE;
 	}
-
-//	for(int n = 0; n < 4; n++){
-//		printf("%d ", possible_channel_ranges_ixs[n]);
-//	}
-//	printf("\n");
-
-
 
 	if(left_free_ch_is_set){
 
@@ -1230,6 +1175,32 @@ void PrintOrWriteChannelsFree(int write_or_print,
 /*
  * printOrWriteNodesTransmitting: prints (or writes) the array representing the transmitting nodes.
  */
+//void PrintOrWriteNodesTransmitting(int write_or_print,
+//		int save_node_logs, int print_node_logs, Logger node_logger, int total_nodes_number,
+//		int *nodes_transmitting){
+//
+//	switch(write_or_print){
+//		case PRINT_LOG:{
+//			if(print_node_logs){
+//				printf("Nodes transmitting: ");
+//				for(int n = 0; n < total_nodes_number; n++){
+//					printf("%d  ", nodes_transmitting[n]);
+//				}
+//				printf("\n");
+//			}
+//			break;
+//		}
+//		case WRITE_LOG:{
+//			for(int n = 0; n < total_nodes_number; n++){
+//				 if(save_node_logs){
+//					 if(nodes_transmitting[n])  fprintf(node_logger.file, "N%d ", n);
+//				 }
+//			}
+//			if(save_node_logs)  fprintf(node_logger.file, "\n");
+//			break;
+//		}
+//	}
+//}
 void PrintOrWriteNodesTransmitting(int write_or_print,
 		int save_node_logs, int print_node_logs, Logger node_logger, int total_nodes_number,
 		int *nodes_transmitting){
@@ -1239,7 +1210,7 @@ void PrintOrWriteNodesTransmitting(int write_or_print,
 			if(print_node_logs){
 				printf("Nodes transmitting: ");
 				for(int n = 0; n < total_nodes_number; n++){
-					printf("%d  ", nodes_transmitting[n]);
+					if(nodes_transmitting[n] == TRUE) printf("%d  ", nodes_transmitting[n]);
 				}
 				printf("\n");
 			}
@@ -1256,6 +1227,7 @@ void PrintOrWriteNodesTransmitting(int write_or_print,
 		}
 	}
 }
+
 
 /*
  * printOrWriteChannelForTx: prints (or writes) the channels_for_tx array representing the channels used for TX

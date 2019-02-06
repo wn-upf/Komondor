@@ -513,8 +513,6 @@ void Komondor :: Stop(){
 
 			if(node_container[m].node_type == NODE_TYPE_AP){
 
-
-
 				// Fill CSV script output
 				fprintf(logger_script_csv.file, "%s;", nodes_input_filename);				// Smiluation code
 				fprintf(logger_script_csv.file, "%s;", simulation_code.c_str());			// Smiluation code

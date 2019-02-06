@@ -312,16 +312,14 @@ component Node : public TypeII{
 		LogicalNack logical_nack;					// NACK to be filled in case node is the destination of tx loss
 		double max_pw_interference;			// Maximum interference detected in range of interest [pW]
 		int channel_max_interference;		// Channel of maximum interference detected in range of interest [pW]
-//		map<int, int> nodes_transmitting_aux;
 		int *nodes_transmitting;			// IDs of the nodes which are transmitting to any destination
-		std::map<int, double> polas;
-		double *power_received_per_node;	// Power received from each node in the network [pW]
+		std::map<int, double> power_received_per_node;
 		double power_rx_interest;			// Power received from a TX destined to the node [pW]
 		int receiving_from_node_id;			// ID of the node that is transmitting to the node (-1 if node is not receiing)
 		int receiving_packet_id;			// ID of the notification that is being transmitted to me
-		int *hidden_nodes_list;				// Store nodes that for sure are hidden (1 indicates that node "i" is hidden)
-		int *potential_hidden_nodes;		// Maintain a list of the times a node participated in a collision by hidden node
-		int collisions_by_hidden_node; 		// Number of noticed collisions by hidden node (maintained by the transmitter)
+//		int *hidden_nodes_list;				// Store nodes that for sure are hidden (1 indicates that node "i" is hidden)
+//		int *potential_hidden_nodes;		// Maintain a list of the times a node participated in a collision by hidden node
+//		int collisions_by_hidden_node; 		// Number of noticed collisions by hidden node (maintained by the transmitter)
 		double BER;							// Bit error rate (deprecated)
 		double PER;							// Packet error rate (deprecated)
 		double *timestampt_channel_becomes_free;	// Timestamp when channel becomes free (when P(channel) < CCA)
@@ -557,9 +555,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 	// Identify node that has started the transmission as transmitting node in the array
 	nodes_transmitting[notification.source_id] = TRUE;
-
 	if(save_node_logs) PrintOrWriteNodesTransmitting(WRITE_LOG, save_node_logs,
-			print_node_logs, node_logger, total_nodes_number, nodes_transmitting);
+		print_node_logs, node_logger, total_nodes_number, nodes_transmitting);
 
 	if(notification.source_id == node_id){ // If OWN NODE IS THE TRANSMITTER, do nothing
 
@@ -597,10 +594,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						&channel_power, num_channels_komondor);
 
 		// Call UpdatePowerSensedPerNode() ONLY for adding power (some node started)
-		UpdatePowerSensedPerNode(current_primary_channel, polas, notification, x, y, z,
+		UpdatePowerSensedPerNode(current_primary_channel, power_received_per_node, notification, x, y, z,
 			rx_gain, central_frequency, path_loss_model, TX_INITIATED);
-//		UpdatePowerSensedPerNode(current_primary_channel, power_received_per_node, notification, x, y, z,
-//			rx_gain, central_frequency, path_loss_model, TX_INITIATED);
 
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
 				current_cca, num_channels_komondor, SimTime());
@@ -636,8 +631,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				if(notification.destination_id == node_id){	// Node IS THE DESTINATION
 
 					// Update power received of interest
-//					power_rx_interest = power_received_per_node[notification.source_id];
-					power_rx_interest = polas[notification.source_id];
+					power_rx_interest = power_received_per_node[notification.source_id];
 
 					current_left_channel = notification.left_channel;
 					current_right_channel = notification.right_channel;
@@ -648,10 +642,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							notification.destination_id);
 
 					// Compute max interference (the highest one perceived in the reception channel range)
-//					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-//						notification, node_state, power_received_per_node, &channel_power);
 					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-						notification, node_state, polas, &channel_power);
+						notification, node_state, power_received_per_node, &channel_power);
 
 					if(save_node_logs) fprintf(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm\n",
@@ -672,7 +664,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// Check if notification has been lost due to interferences or weak signal strength
 						loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
+								power_rx_interest, constant_per, node_id, capture_effect_model);
 
 						if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
@@ -755,14 +747,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								notification.source_id, notification.destination_id);
 
 						// Can RTS or CTS packet be decoded?
-//						power_rx_interest = power_received_per_node[notification.source_id];
-						power_rx_interest = polas[notification.source_id];
+						power_rx_interest = power_received_per_node[notification.source_id];
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-//						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-//							notification, node_state, power_received_per_node, &channel_power);
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							notification, node_state, polas, &channel_power);
+							notification, node_state, power_received_per_node, &channel_power);
 
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
@@ -775,7 +764,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(LINEAR_TO_DB,current_sinr));
 
 						loss_reason = IsPacketLost(current_primary_channel, notification, notification, current_sinr,
-								capture_effect, current_cca, power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
+								capture_effect, current_cca, power_rx_interest, constant_per, node_id, capture_effect_model);
 
 						if(loss_reason == PACKET_NOT_LOST) { // RTS/CTS can be decoded
 
@@ -910,14 +899,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								notification.source_id);
 
 							// Update power received of interest
-//							power_rx_interest = power_received_per_node[notification.source_id];
-							power_rx_interest = polas[notification.source_id];
+							power_rx_interest = power_received_per_node[notification.source_id];
 
 							// Compute max interference (the highest one perceived in the reception channel range)
-//							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-//								notification, node_state, power_received_per_node, &channel_power);
 							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-								notification, node_state, polas, &channel_power);
+								notification, node_state, power_received_per_node, &channel_power);
 
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
@@ -931,7 +917,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// Check if notification has been lost due to interferences or weak signal strength
 							loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 									current_sinr, capture_effect, current_cca,
-									power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
+									power_rx_interest, constant_per, node_id, capture_effect_model);
 
 							if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
@@ -1084,14 +1070,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							// Check if it can be decoded to update NAV time if required
 							// Can RTS or CTS packet be decoded?
-//							power_rx_interest = power_received_per_node[notification.source_id];
-							power_rx_interest = polas[notification.source_id];
+							power_rx_interest = power_received_per_node[notification.source_id];
 
 							// Compute max interference (the highest one perceived in the reception channel range)
-//							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-//								notification, node_state, power_received_per_node, &channel_power);
 							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-								notification, node_state, polas, &channel_power);
+								notification, node_state, power_received_per_node, &channel_power);
 
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
@@ -1105,7 +1088,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
+								power_rx_interest, constant_per, node_id, capture_effect_model);
 
 							if (loss_reason == PACKET_NOT_LOST &&
 								ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > current_cca) {
@@ -1204,7 +1187,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 							current_sinr, capture_effect, current_cca,
-							power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
+							power_rx_interest, constant_per, node_id, capture_effect_model);
 
 					if (capture_effect_model == CE_DEFAULT) {
 
@@ -1258,11 +1241,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						}
 					} else if (capture_effect_model == CE_IEEE_802_11) {
 
-//						int capture_effect_condition = power_received_per_node[notification.source_id] >
-//							power_received_per_node[receiving_from_node_id] + capture_effect;
-
-						int capture_effect_condition = polas[notification.source_id] >
-							polas[receiving_from_node_id] + capture_effect;
+						int capture_effect_condition = power_received_per_node[notification.source_id] >
+						power_received_per_node[receiving_from_node_id] + capture_effect;
 
 						if (loss_reason == PACKET_NOT_LOST && capture_effect_condition) {
 							if (notification.packet_type == PACKET_TYPE_RTS) {
@@ -1324,10 +1304,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
 
 					// Compute max interference (the highest one perceived in the reception channel range)
-//					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-//							incoming_notification, node_state, power_received_per_node, &channel_power);
 					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							incoming_notification, node_state, polas, &channel_power);
+							incoming_notification, node_state, power_received_per_node, &channel_power);
 
 					// Check if the ongoing reception is affected
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
@@ -1343,7 +1321,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					// Check if the notification that was already being received is lost due to new notification
 					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 							current_sinr, capture_effect, current_cca,
-							power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
+							power_rx_interest, constant_per, node_id, capture_effect_model);
 
 					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
 						SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, loss_reason);
@@ -1400,20 +1378,16 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						} else if (capture_effect_model == CE_IEEE_802_11){
 
-//							int capture_effect_condition = power_received_per_node[notification.source_id] >
-//								power_received_per_node[receiving_from_node_id] + capture_effect;
-							int capture_effect_condition = polas[notification.source_id] >
-								polas[receiving_from_node_id] + capture_effect;
+							int capture_effect_condition = power_received_per_node[notification.source_id] >
+								power_received_per_node[receiving_from_node_id] + capture_effect;
 
 							if (capture_effect_condition) {
 
 								loss_reason = PACKET_LOST_CAPTURE_EFFECT;
 
 								printf("Node %d was in state RX (from %d), and a new notification arrived from %d:\n", node_id, receiving_from_node_id, notification.source_id);
-//								printf("	* New RSSI: %f\n", power_received_per_node[notification.source_id]);
-//								printf("	* Old RSSI: %f:\n", power_received_per_node[receiving_from_node_id]);
-								printf("	* New RSSI: %f\n", polas[notification.source_id]);
-								printf("	* Old RSSI: %f:\n", polas[receiving_from_node_id]);
+								printf("	* New RSSI: %f\n", power_received_per_node[notification.source_id]);
+								printf("	* Old RSSI: %f:\n", power_received_per_node[receiving_from_node_id]);
 								printf("	* CE: %f:\n", capture_effect);
 								printf("	* loss_reason: %d:\n", loss_reason);
 
@@ -1445,8 +1419,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 				if(notification.destination_id == node_id){	// Node is the destination
 
-//					power_rx_interest = power_received_per_node[notification.source_id];
-					power_rx_interest = polas[notification.source_id];
+					power_rx_interest = power_received_per_node[notification.source_id];
 
 					incoming_notification = notification;
 
@@ -1457,17 +1430,15 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					if(notification.packet_type == PACKET_TYPE_ACK){	// ACK packet transmission started
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-//						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-//							incoming_notification, node_state, power_received_per_node, &channel_power);
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							incoming_notification, node_state, polas, &channel_power);
+							incoming_notification, node_state, power_received_per_node, &channel_power);
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
+								power_rx_interest, constant_per, node_id, capture_effect_model);
 
 						if(loss_reason != PACKET_NOT_LOST
 								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE) {	// If ACK packet IS LOST, send logical Nack
@@ -1541,14 +1512,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					if(notification.packet_type == PACKET_TYPE_CTS){	// CTS packet transmission started
 
-//						power_rx_interest = power_received_per_node[notification.source_id];
-						power_rx_interest = polas[notification.source_id];
+						power_rx_interest = power_received_per_node[notification.source_id];
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-//						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-//								incoming_notification, node_state, power_received_per_node, &channel_power);
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-								incoming_notification, node_state, polas, &channel_power);
+								incoming_notification, node_state, power_received_per_node, &channel_power);
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
@@ -1563,7 +1531,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
+								power_rx_interest, constant_per, node_id, capture_effect_model);
 
 						if(loss_reason != PACKET_NOT_LOST
 								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If CTS packet IS LOST, send logical Nack
@@ -1634,8 +1602,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 				if(notification.destination_id == node_id){	// Node is the destination
 
-//					power_rx_interest = power_received_per_node[notification.source_id];
-					power_rx_interest = polas[notification.source_id];
+					power_rx_interest = power_received_per_node[notification.source_id];
 					incoming_notification = notification;
 
 //					if(save_node_logs) fprintf(node_logger.file,
@@ -1645,10 +1612,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					if(notification.packet_type == PACKET_TYPE_DATA){	// DATA packet transmission started
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-//						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-//							incoming_notification, node_state, power_received_per_node, &channel_power);
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							incoming_notification, node_state, polas, &channel_power);
+							incoming_notification, node_state, power_received_per_node, &channel_power);
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
@@ -1663,7 +1628,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 								current_sinr, capture_effect, current_cca,
-								power_rx_interest, constant_per, hidden_nodes_list, node_id, capture_effect_model);
+								power_rx_interest, constant_per, node_id, capture_effect_model);
 
 						if(loss_reason != PACKET_NOT_LOST
 							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If DATA packet IS LOST, send logical Nack
@@ -1787,7 +1752,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		// Safety condtion. Empty the channel when no node is transmitting
 		int num_nodes_transmitting = 0;
 		for(int i = 0; i < total_nodes_number; i++){
-			if(nodes_transmitting[i] == 1){
+			if(nodes_transmitting[i] == TRUE){
 				num_nodes_transmitting ++;
 			}
 		}
@@ -1807,9 +1772,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 				&channel_power, num_channels_komondor);
 
 		// Call UpdatePowerSensedPerNode() ONLY for adding power (some node started)
-//		UpdatePowerSensedPerNode(current_primary_channel, power_received_per_node, notification, x, y, z,
-//				rx_gain, central_frequency, path_loss_model, TX_FINISHED);
-		UpdatePowerSensedPerNode(current_primary_channel, polas, notification, x, y, z,
+		UpdatePowerSensedPerNode(current_primary_channel, power_received_per_node, notification, x, y, z,
 			rx_gain, central_frequency, path_loss_model, TX_FINISHED);
 
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
@@ -2271,7 +2234,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 	if (node_id == 0) {
 		int num_nodes_transmitting = 0;
 		for(int i = 0; i < total_nodes_number; i++){
-			if(nodes_transmitting[i] == 1){
+			if(nodes_transmitting[i] == TRUE){
 				num_nodes_transmitting ++;
 			}
 		}
@@ -2311,8 +2274,7 @@ void Node :: InportNackReceived(LogicalNack &logical_nack){
 
 		// Process logical NACK for statistics purposes
 		nack_reason = ProcessNack(logical_nack, node_id, node_logger, node_state, save_node_logs,
-				SimTime(), nacks_received, hidden_nodes_list, potential_hidden_nodes,
-				total_nodes_number, nodes_transmitting);
+				SimTime(), nacks_received, total_nodes_number, nodes_transmitting);
 
 		if(nack_reason == PACKET_LOST_BO_COLLISION){
 			rts_lost_slotted_bo ++;
@@ -4089,10 +4051,10 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 		bandwidth_used_txing += (total_time_spectrum_per_channel[c]/SimTime()) * 20;
 	}
 
-	int hidden_nodes_number = 0;
-	for(int i = 0; i < total_nodes_number; i++){
-		if(hidden_nodes_list[i] == 1) hidden_nodes_number++;
-	}
+//	int hidden_nodes_number = 0;
+//	for(int i = 0; i < total_nodes_number; i++){
+//		if(hidden_nodes_list[i] == 1) hidden_nodes_number++;
+//	}
 
 	average_waiting_time = sum_waiting_time / (double) num_average_waiting_time_measurements;
 
@@ -4346,19 +4308,19 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 
 				}
 
-				// Hidden nodes
-				int hidden_nodes_number = 0;
-				for(int n = 0; n < total_nodes_number; n++){
-					if(hidden_nodes_list[n]) hidden_nodes_number++;
-				}
-				fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Total hidden nodes: %d\n",
-						SimTime(), node_id, node_state, LOG_C10, LOG_LVL2, hidden_nodes_number);
-
-				fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Hidden nodes list: ",
-						SimTime(), node_id, node_state, LOG_C11, LOG_LVL2);
-				for(int i = 0; i < total_nodes_number; i++){
-					fprintf(node_logger.file, "%d  ", hidden_nodes_list[i]);
-				}
+//				// Hidden nodes
+//				int hidden_nodes_number = 0;
+//				for(int n = 0; n < total_nodes_number; n++){
+//					if(hidden_nodes_list[n]) hidden_nodes_number++;
+//				}
+//				fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Total hidden nodes: %d\n",
+//						SimTime(), node_id, node_state, LOG_C10, LOG_LVL2, hidden_nodes_number);
+//
+//				fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Hidden nodes list: ",
+//						SimTime(), node_id, node_state, LOG_C11, LOG_LVL2);
+//				for(int i = 0; i < total_nodes_number; i++){
+//					fprintf(node_logger.file, "%d  ", hidden_nodes_list[i]);
+//				}
 			}
 			break;
 		}
@@ -4449,22 +4411,20 @@ void Node :: InitializeVariables() {
 		total_time_lost_in_num_channels[i] = 0;
 	}
 
-	power_received_per_node = new double[total_nodes_number];
 	nodes_transmitting = new int[total_nodes_number];
-	// List of hidden nodes (1 indicates hidden nodes, 0 indicates the opposite)
-	hidden_nodes_list = new int[total_nodes_number];
-	// Counter for the times a node was implied in a collision by hidden node
-	potential_hidden_nodes = new int[total_nodes_number];
+//	// List of hidden nodes (1 indicates hidden nodes, 0 indicates the opposite)
+//	hidden_nodes_list = new int[total_nodes_number];
+//	// Counter for the times a node was implied in a collision by hidden node
+//	potential_hidden_nodes = new int[total_nodes_number];
 	for(int n = 0; n < total_nodes_number; n++){
-		power_received_per_node[n] = 0;
 		nodes_transmitting[n] = FALSE;
-		hidden_nodes_list[n] = FALSE;
-		potential_hidden_nodes[n] = 0;
+//		hidden_nodes_list[n] = FALSE;
+//		potential_hidden_nodes[n] = 0;
 	}
 
-	polas.clear();
+	power_received_per_node.clear();
 
-	potential_hidden_nodes[node_id] = -1; // To indicate that the node cannot be hidden from itself
+//	potential_hidden_nodes[node_id] = -1; // To indicate that the node cannot be hidden from itself
 	nacks_received = new int[NUM_PACKET_LOST_REASONS];
 	for(int i = 0; i < NUM_PACKET_LOST_REASONS; i++){
 		nacks_received[i] = 0;

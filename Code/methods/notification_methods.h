@@ -75,8 +75,8 @@ LogicalNack GenerateLogicalNack(int packet_type, int packet_id, int node_id,
  * ProcessNack(): processes a NACK notification.
  **/
 int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int node_state,
-		int save_node_logs,	double sim_time, int *nacks_received, int *hidden_nodes_list,
-		int *potential_hidden_nodes, int total_nodes_number, int *nodes_transmitting) {
+		int save_node_logs,	double sim_time, int *nacks_received,
+		int total_nodes_number, int *nodes_transmitting) {
 
 	int reason = PACKET_NOT_LOST;
 
@@ -100,8 +100,8 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Destination N%d was transmitting!s\n",
 						sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
-				// Add receiver to hidden nodes list ("I was not listening to him!")
-				hidden_nodes_list[logical_nack.source_id] = TRUE;
+//				// Add receiver to hidden nodes list ("I was not listening to him!")
+//				hidden_nodes_list[logical_nack.source_id] = TRUE;
 
 				reason = PACKET_LOST_DESTINATION_TX;
 
@@ -130,11 +130,11 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 //					sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
 				// Increase the number of times of POTENTIAL hidden nodes with the current transmitting nodes
-				for(int i = 0; i < total_nodes_number; i++) {
-					if (nodes_transmitting[i] && i != node_id && i != logical_nack.source_id){
-						potential_hidden_nodes[i] ++;
-					}
-				}
+//				for(int i = 0; i < total_nodes_number; i++) {
+//					if (nodes_transmitting[i] && i != node_id && i != logical_nack.source_id){
+//						potential_hidden_nodes[i] ++;
+//					}
+//				}
 
 				reason = PACKET_LOST_INTERFERENCE;
 
@@ -148,12 +148,12 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 					sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id,
 					node_a, node_b);
 
-				// Add to hidden nodes list
-				if(node_a != node_id) {
-					hidden_nodes_list[node_a] = TRUE;
-				} else if (node_b != node_id) {
-					hidden_nodes_list[node_b] = TRUE;
-				}
+//				// Add to hidden nodes list
+//				if(node_a != node_id) {
+//					hidden_nodes_list[node_a] = TRUE;
+//				} else if (node_b != node_id) {
+//					hidden_nodes_list[node_b] = TRUE;
+//				}
 
 				reason = PACKET_LOST_PURE_COLLISION;
 
@@ -170,7 +170,7 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 							" power to be decoded\n",
 							sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id, node_a, node_b);
 
-					hidden_nodes_list[node_b] = TRUE;
+//					hidden_nodes_list[node_b] = TRUE;
 
 					reason = PACKET_LOST_LOW_SIGNAL_AND_RX;
 
@@ -323,7 +323,7 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
  **/
 int IsPacketLost(int primary_channel, Notification incoming_notification, Notification new_notification,
 		double sinr, double capture_effect, double cca, double power_rx_interest, double constant_per,
-		int *hidden_nodes_list, int node_id, int capture_effect_model){
+		int node_id, int capture_effect_model){
 
 	int loss_reason = PACKET_NOT_LOST;
 	int is_packet_lost;	// Determines if the current notification has been lost (1) or not (0)
@@ -347,7 +347,7 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 				if (is_packet_lost) {	// Incoming packet is lost
 					if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
 						loss_reason = PACKET_LOST_LOW_SIGNAL;
-						hidden_nodes_list[new_notification.source_id] = TRUE;
+//						hidden_nodes_list[new_notification.source_id] = TRUE;
 					} else if (sinr < capture_effect){	// Capture effect not accomplished
 						loss_reason = PACKET_LOST_INTERFERENCE;
 					} else {	// Incoming packet lost due to PER
