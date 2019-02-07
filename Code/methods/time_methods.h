@@ -221,16 +221,26 @@ double ComputeNavTime(int node_state, double rts_duration, double cts_duration, 
 	switch(node_state){
 
 		case STATE_TX_RTS:{
-
-			// RTS duration taking into account due to trigger is set at the very begining of the RTS reception
+			// RTS duration taking into account due to trigger is set at the very beginning of the RTS reception
 			nav_time = 3 * sifs + rts_duration + cts_duration + data_duration + ack_duration;
 			break;
 		}
 
 		case STATE_TX_CTS:{
-
-			// CTS duration taking into account due to trigger is set at the very begining of the CTS reception
+			// CTS duration taking into account due to trigger is set at the very beginning of the CTS reception
 			nav_time = 2 * sifs + cts_duration + data_duration + ack_duration;
+			break;
+		}
+
+		case STATE_TX_DATA:{
+			// DATA duration taking into account due to trigger is set at the very beginning of the DATA reception
+			nav_time = sifs + data_duration + ack_duration;
+			break;
+		}
+
+		case STATE_TX_ACK:{
+			// ACK duration taking into account due to trigger is set at the very beginning of the ACK reception
+			nav_time = ack_duration;
 			break;
 		}
 
@@ -242,6 +252,7 @@ double ComputeNavTime(int node_state, double rts_duration, double cts_duration, 
 	}
 
 	return nav_time;
+
 }
 
 /*

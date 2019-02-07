@@ -566,6 +566,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //				notification.packet_type, notification.destination_id,
 //				notification.left_channel, notification.right_channel, notification.tx_duration * pow(10,6));
 
+
 	} else {	// If OTHER NODE IS THE TRANSMITTER
 
 //		if(save_node_logs) fprintf(node_logger.file,
@@ -739,7 +740,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					// See if node has to change to NAV
 					if(notification.packet_type == PACKET_TYPE_RTS
-						|| notification.packet_type == PACKET_TYPE_CTS){
+						|| notification.packet_type == PACKET_TYPE_CTS
+						|| notification.packet_type == PACKET_TYPE_DATA
+						|| notification.packet_type == PACKET_TYPE_ACK){
 
 						if(save_node_logs) fprintf(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s I am not the TX destination (N%d to N%d). Checking if RTS/CTS can be decoded.\n",
@@ -791,6 +794,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							}
 
+							// Update the NAV time according to the frame's info
 							current_nav_time = notification.tx_info.nav_time;
 
 							// SERGIO on 28/09/2017:
@@ -1003,10 +1007,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					}
 
+
 				} else { // Node IS NOT THE DESTINATION
 
-					if(notification.packet_type == PACKET_TYPE_RTS ||
-							notification.packet_type == PACKET_TYPE_CTS) {	// PACKET TYPE RTS OR CTS
+					if(notification.packet_type == PACKET_TYPE_RTS
+						||  notification.packet_type == PACKET_TYPE_CTS
+						|| notification.packet_type == PACKET_TYPE_DATA
+						|| notification.packet_type == PACKET_TYPE_ACK) {	// PACKET TYPE RTS OR CTS
 
 						// TODO: determine if can be decoded!
 						if(fabs(nav_notification.timestamp - notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
@@ -1044,9 +1051,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 									// Sergio on 2018/07/06: EIFS to match Bianchi model
 									time_to_trigger =
-											SimTime() + notification.tx_info.rts_duration
-											+ SIFS + notification.tx_info.cts_duration
-											- notification.tx_info.preoccupancy_duration;
+										SimTime() + notification.tx_info.rts_duration
+										+ SIFS + notification.tx_info.cts_duration
+										- notification.tx_info.preoccupancy_duration;
 
 									trigger_wait_collisions.Set(fix_time_offset(time_to_trigger,13,12));
 
@@ -1058,6 +1065,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 								}
 							}
+
 
 							// Do not send NACK because node is not the destination
 
@@ -1124,9 +1132,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							
 						}
 					}
+
 				}
 
 				break;
+
 			}
 
 			/* STATE_TX_DATA || STATE_TX_ACK:
@@ -1881,11 +1891,20 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						// Generate and send ACK to transmitter after SIFS
 						node_state = STATE_TX_ACK;
+
+						// Compute the NAV time
+						current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
+						current_nav_time = fix_time_offset(current_nav_time,13,12); // Update the NAV time according to the time offsets
+
 						current_tx_duration = ack_duration;
 						current_destination_id = notification.source_id;
 						ack_notification = GenerateNotification(PACKET_TYPE_ACK, current_destination_id,
 								notification.packet_id, notification.tx_info.num_packets_aggregated,
 								notification.timestamp_generated, current_tx_duration);
+
+						if(backoff_type == BACKOFF_SLOTTED){
+							ack_notification.tx_info.preoccupancy_duration = data_notification.tx_info.preoccupancy_duration;
+						}
 
 //						current_tx_info = GenerateTxInfo(notification.tx_info.num_packets_aggregated, data_duration,
 //								ack_duration,
@@ -2072,7 +2091,9 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 							current_tx_duration = cts_duration;
 
+							// Compute the NAV time
 							current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
+							current_nav_time = fix_time_offset(current_nav_time,13,12); // Update the NAV time according to the time offsets
 
 							// ------------------------------------------------------------------------
 							// Sergio on 07 Dec 2017: add CTS transmission time to spectrum utilization
@@ -2166,6 +2187,10 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						node_state = STATE_TX_DATA;
 
+						// Compute the NAV time
+						current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
+						current_nav_time = fix_time_offset(current_nav_time,13,12); // Update the NAV time according to the time offsets
+
 						// Generate and send DATA to transmitter after SIFS
 						current_destination_id = notification.source_id;
 
@@ -2189,6 +2214,10 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						data_notification = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
 								notification.packet_id, notification.tx_info.num_packets_aggregated,
 								notification.timestamp_generated, current_tx_duration);
+
+						if(backoff_type == BACKOFF_SLOTTED){
+							data_notification.tx_info.preoccupancy_duration = cts_notification.tx_info.preoccupancy_duration;
+						}
 
 //						current_tx_info = GenerateTxInfo(notification.tx_info.num_packets_aggregated, data_duration,
 //								ack_duration,
@@ -2654,14 +2683,14 @@ void Node :: EndBackoff(trigger_t &){
 	int ix_mcs_per_node = current_destination_id - wlan.list_sta_id[0];
 
 	GetTxChannelsByChannelBonding(channels_for_tx, current_dcb_policy, channels_free,
-				min_channel_allowed, max_channel_allowed, current_primary_channel,
-				mcs_per_node, ix_mcs_per_node, num_channels_komondor);
+		min_channel_allowed, max_channel_allowed, current_primary_channel,
+		mcs_per_node, ix_mcs_per_node, num_channels_komondor);
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting: ",
-			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	PrintOrWriteChannelForTx(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
-			num_channels_komondor, channels_for_tx);
+		num_channels_komondor, channels_for_tx);
 
 	// Act according to possible (not possible) transmission
 	if(channels_for_tx[0] != TX_NOT_POSSIBLE
@@ -2672,9 +2701,9 @@ void Node :: EndBackoff(trigger_t &){
 
 		// Get the transmission channels
 		current_left_channel = GetFirstOrLastTrueElemOfArray(FIRST_TRUE_IN_ARRAY,
-				channels_for_tx, num_channels_komondor);
+			channels_for_tx, num_channels_komondor);
 		current_right_channel = GetFirstOrLastTrueElemOfArray(LAST_TRUE_IN_ARRAY,
-				channels_for_tx, num_channels_komondor);
+			channels_for_tx, num_channels_komondor);
 		if(save_node_logs) fprintf(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
@@ -2715,8 +2744,8 @@ void Node :: EndBackoff(trigger_t &){
 
 		// Compute all packets durations (RTS, CTS, DATA and ACK) and NAV time
 		ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
-				ieee_protocol, num_channels_tx, current_modulation, limited_num_packets_aggregated,
-				frame_length, bits_ofdm_sym);
+			ieee_protocol, num_channels_tx, current_modulation, limited_num_packets_aggregated,
+			frame_length, bits_ofdm_sym);
 
 		if(save_node_logs) fprintf(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmitting (N_agg = %d) in %d channels using modulation %d (%.0f bits per OFDM symbol ---> %.2f Mbps) \n",
@@ -2729,6 +2758,7 @@ void Node :: EndBackoff(trigger_t &){
 		// Compute the NAV time
 		current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
 		current_nav_time = fix_time_offset(current_nav_time,13,12); // Update the NAV time according to the time offsets
+
 		if(save_node_logs) fprintf(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
@@ -2769,8 +2799,8 @@ void Node :: EndBackoff(trigger_t &){
 			first_packet_buffer.timestamp_generated, current_tx_duration);
 
 		if(save_node_logs) fprintf(node_logger.file,
-				"%.15f;N%d;S%d;%s;%s Transmission of RTS #%d started\n",
-				SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, rts_notification.packet_id);
+			"%.15f;N%d;S%d;%s;%s Transmission of RTS #%d started\n",
+			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, rts_notification.packet_id);
 
 		// ------------------------------------------------------------------------
 		// Sergio on 07 Dec 2017: add RTS transmission time to spectrum utilization
@@ -2849,8 +2879,8 @@ void Node :: MyTxFinished(trigger_t &){
 			node_state = STATE_WAIT_CTS;
 
 			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RTS #%d tx finished. Waiting for CTS until %.12f\n",
-						SimTime(), node_id, node_state, LOG_G00, LOG_LVL2,
-						notification.packet_id, trigger_CTS_timeout.GetTime());
+				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2,
+				notification.packet_id, trigger_CTS_timeout.GetTime());
 
 			break;
 		}
@@ -2858,8 +2888,8 @@ void Node :: MyTxFinished(trigger_t &){
 		case STATE_TX_CTS:{		// Wait for Data
 
 			Notification notification = GenerateNotification(PACKET_TYPE_CTS, current_destination_id,
-					cts_notification.packet_id, cts_notification.tx_info.num_packets_aggregated,
-					cts_notification.timestamp_generated, TX_DURATION_NONE);
+				cts_notification.packet_id, cts_notification.tx_info.num_packets_aggregated,
+				cts_notification.timestamp_generated, TX_DURATION_NONE);
 
 //			current_tx_info = GenerateTxInfo(cts_notification.tx_info.num_packets_aggregated, data_duration, ack_duration,
 //					rts_duration, cts_duration, current_tpc, num_channels_tx,
@@ -2878,7 +2908,7 @@ void Node :: MyTxFinished(trigger_t &){
 			node_state = STATE_WAIT_DATA;
 
 			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s CTS %d tx finished. Waiting for DATA...\n",
-						SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
+				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
 
 			break;
 		}
@@ -2886,8 +2916,8 @@ void Node :: MyTxFinished(trigger_t &){
 		case STATE_TX_DATA:{ 	// Change state to STATE_WAIT_ACK
 
 			Notification notification = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
-					data_notification.packet_id, data_notification.tx_info.num_packets_aggregated,
-					data_notification.timestamp_generated, TX_DURATION_NONE);
+				data_notification.packet_id, data_notification.tx_info.num_packets_aggregated,
+				data_notification.timestamp_generated, TX_DURATION_NONE);
 
 //			current_tx_info = GenerateTxInfo(data_notification.tx_info.num_packets_aggregated,
 //					data_duration, ack_duration,
@@ -2907,7 +2937,7 @@ void Node :: MyTxFinished(trigger_t &){
 			node_state = STATE_WAIT_ACK;
 
 			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s DATA %d tx finished. Waiting for ACK...\n",
-						SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
+				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
 
 			break;
 		}
@@ -2915,8 +2945,8 @@ void Node :: MyTxFinished(trigger_t &){
 		case STATE_TX_ACK:{		// Restart node
 
 			Notification notification = GenerateNotification(PACKET_TYPE_ACK, current_destination_id,
-					ack_notification.packet_id, ack_notification.tx_info.num_packets_aggregated,
-					ack_notification.timestamp_generated, TX_DURATION_NONE);
+				ack_notification.packet_id, ack_notification.tx_info.num_packets_aggregated,
+				ack_notification.timestamp_generated, TX_DURATION_NONE);
 
 //			current_tx_info = GenerateTxInfo(ack_notification.tx_info.num_packets_aggregated,
 //					data_duration, ack_duration,
@@ -2931,7 +2961,7 @@ void Node :: MyTxFinished(trigger_t &){
 			outportSelfFinishTX(notification);
 
 			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s ACK %d tx finished. Restarting node...\n",
-						SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
+				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
 
 			RestartNode(FALSE);
 
@@ -3048,11 +3078,13 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 
 		case PACKET_TYPE_DATA:{
 			notification.frame_length = frame_length;
+			notification.tx_info.nav_time = current_nav_time;
 			break;
 		}
 
 		case PACKET_TYPE_ACK:{
 			notification.frame_length = ack_length;
+			notification.tx_info.nav_time = current_nav_time;
 			break;
 		}
 
@@ -3098,9 +3130,9 @@ void Node :: SendLogicalNack(LogicalNack logical_nack){
 	outportSendLogicalNack(logical_nack);
 
 	if(save_node_logs) fprintf(node_logger.file,
-			"%.15f;N%d;S%d;%s;%s NACK of packet type %d sent to a:N%d (and b:N%d) with reason %d\n",
-			SimTime(), node_id, node_state, LOG_I00, LOG_LVL4, logical_nack.packet_type,
-			logical_nack.node_id_a, logical_nack.node_id_b, logical_nack.loss_reason);
+		"%.15f;N%d;S%d;%s;%s NACK of packet type %d sent to a:N%d (and b:N%d) with reason %d\n",
+		SimTime(), node_id, node_state, LOG_I00, LOG_LVL4, logical_nack.packet_type,
+		logical_nack.node_id_a, logical_nack.node_id_b, logical_nack.loss_reason);
 
 }
 
@@ -3114,8 +3146,8 @@ void Node :: SendResponsePacket(trigger_t &){
 		case STATE_TX_ACK:{
 
 			if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s SIFS completed after receiving DATA, sending ACK...\n",
-					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3);
+				"%.15f;N%d;S%d;%s;%s SIFS completed after receiving DATA, sending ACK...\n",
+				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3);
 
 			outportSelfStartTX(ack_notification);
 
@@ -3134,8 +3166,8 @@ void Node :: SendResponsePacket(trigger_t &){
 
 		case STATE_TX_CTS:{
 			if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s SIFS completed after receiving RTS, sending CTS (duration = %f)\n",
-					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3, current_tx_duration);
+				"%.15f;N%d;S%d;%s;%s SIFS completed after receiving RTS, sending CTS (duration = %f)\n",
+				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3, current_tx_duration);
 			outportSelfStartTX(cts_notification);
 
 			time_to_trigger = SimTime() + current_tx_duration;
@@ -3145,8 +3177,8 @@ void Node :: SendResponsePacket(trigger_t &){
 
 		case STATE_TX_DATA:{
 			if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s SIFS completed after receiving CTS, sending DATA...\n",
-					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3);
+				"%.15f;N%d;S%d;%s;%s SIFS completed after receiving CTS, sending DATA...\n",
+				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3);
 			outportSelfStartTX(data_notification);
 			time_to_trigger = SimTime() + current_tx_duration;
 			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,13,12));
@@ -3154,9 +3186,9 @@ void Node :: SendResponsePacket(trigger_t &){
 			// Update performance measurements
 			current_performance.data_packets_sent ++;
 			if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s Data TX will be finished at %.15f\n",
-					SimTime(), node_id, node_state, LOG_I00, LOG_LVL3,
-					trigger_toFinishTX.GetTime());
+				"%.15f;N%d;S%d;%s;%s Data TX will be finished at %.15f\n",
+				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3,
+				trigger_toFinishTX.GetTime());
 
 			break;
 		}
@@ -3176,7 +3208,7 @@ void Node :: AbortRtsTransmission(){
 	node_state = STATE_SENSING;
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
-			SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
+		SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
 
 }
 
@@ -3198,31 +3230,31 @@ void Node :: AckTimeout(trigger_t &){
 	}
 
 	handlePacketLoss(PACKET_TYPE_DATA, total_time_lost_in_num_channels, total_time_lost_per_channel,
-			data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
+		data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
 	
 	// Sergio on 16 July 2018: [AGENTS] add data packet lost for partial throughput computations
 	// Update performance measurements
 	current_performance.data_packets_lost++;
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d lost\n",
-					SimTime(), node_id, node_state, LOG_D17, LOG_LVL4,
-					packet_id);
+		SimTime(), node_id, node_state, LOG_D17, LOG_LVL4,
+		packet_id);
 
 	if(save_node_logs) fprintf(node_logger.file,
-			"%.15f;N%d;S%d;%s;%s Handling contention window\n",
-			SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
+		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
+		SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 	if(save_node_logs) fprintf(node_logger.file,
-				"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
-				SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-				cw_current, cw_stage_current, cw_stage_max);
+		"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
+		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+		cw_current, cw_stage_current, cw_stage_max);
 	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
-			cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
+		cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
 
 	if(save_node_logs) fprintf(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = %d, b = %d, m = %d\n",
-			SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-			cw_current, cw_stage_current, cw_stage_max);
+		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+		cw_current, cw_stage_current, cw_stage_max);
 
 	RestartNode(TRUE);
 }
@@ -3233,29 +3265,28 @@ void Node :: AckTimeout(trigger_t &){
 void Node :: CtsTimeout(trigger_t &){
 
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
-			data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
+		data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
-						SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
+		SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s CTS TIMEOUT! RTS-CTS packet lost\n",
-					SimTime(), node_id, node_state, LOG_D17, LOG_LVL2);
+		SimTime(), node_id, node_state, LOG_D17, LOG_LVL2);
 
 	if(save_node_logs) fprintf(node_logger.file,
-				"%.15f;N%d;S%d;%s;%s Handling contention window\n",
-			SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
+		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
+		SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 	if(save_node_logs) fprintf(node_logger.file,
-				"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
-				SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-				cw_current, cw_stage_current, cw_stage_max);
+		"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
+		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+		cw_current, cw_stage_current, cw_stage_max);
 	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
-		HandleContentionWindow(
-				cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
+	HandleContentionWindow(
+		cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
 
 	if(save_node_logs) fprintf(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = %d, b = %d, m = %d\n",
-			SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-			cw_current, cw_stage_current, cw_stage_max);
-
+		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
+		cw_current, cw_stage_current, cw_stage_max);
 
 	// Update TX time statistics
 
@@ -3273,10 +3304,10 @@ void Node :: CtsTimeout(trigger_t &){
 void Node :: DataTimeout(trigger_t &){
 
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
-			data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel, current_tx_duration);
+		data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel, current_tx_duration);
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
-					SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
+		SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
 
 	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
 
@@ -3291,8 +3322,8 @@ void Node :: NavTimeout(trigger_t &){
 	if(save_node_logs) fprintf(node_logger.file, "\n **********************************************************************\n");
 
 	if(save_node_logs) fprintf(node_logger.file,
-			"%.15f;N%d;S%d;%s;%s NAV TIMEOUT!\n",
-			SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
+		"%.15f;N%d;S%d;%s;%s NAV TIMEOUT!\n",
+		SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
 
 	if(node_is_transmitter){
 
@@ -3344,8 +3375,8 @@ void Node :: PauseBackoff(){
 
 	if(trigger_start_backoff.Active()){
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Cancelling DIFS. BO still frozen at %.9f (%.2f slots)\n",
-				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-				remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
+			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+			remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
 
 		trigger_start_backoff.Cancel();
 	} else {
@@ -3379,9 +3410,9 @@ void Node :: PauseBackoff(){
 		} else {	// If backoff trigger is frozen
 
 			if(save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s Backoff is NOT active - it is already frozen at %.9f us (%.2f slots)\n",
-					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-					remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
+				"%.15f;N%d;S%d;%s;%s Backoff is NOT active - it is already frozen at %.9f us (%.2f slots)\n",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+				remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
 
 			trigger_end_backoff.Cancel(); // Redundant (for safety)
 
@@ -3403,8 +3434,8 @@ void Node :: ResumeBackoff(trigger_t &){
 	trigger_end_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Resuming backoff at %.9f us (%.2f slots)\n",
-				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-				(remaining_backoff * pow(10,6)), (remaining_backoff / (double) SLOT_TIME));
+		SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+		(remaining_backoff * pow(10,6)), (remaining_backoff / (double) SLOT_TIME));
 
 //	if(save_node_logs) fprintf(node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s DIFS: active = %d, t_DIFS = %f - backoff: active = %d - t_back = %f\n",
@@ -3459,12 +3490,6 @@ void Node :: GenerateConfiguration(){
 	configuration.selected_tx_power = current_tpc;
 	configuration.selected_dcb_policy = current_dcb_policy;
 
-//	if (node_id == 0) {
-//		printf("NODE AFTER MAKING CONF:\n");
-//		configuration.PrintConfiguration(ORIGIN_AGENT);
-//		PrintNodeConfiguration();
-//	}
-
 }
 
 /*
@@ -3502,7 +3527,7 @@ void Node :: InportReceivingRequestFromAgent() {
 
 	// Answer to the agent
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Sending information to the Agent\n",
-			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	outportAnswerToAgent(configuration, current_performance);
 
@@ -3651,8 +3676,8 @@ void Node :: RestartNode(int called_by_time_out){
 
 	if(save_node_logs) fprintf(node_logger.file, "\n **********************************************************************\n");
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Node Restarted (%d)\n",
-			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL1,
-			called_by_time_out);
+		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL1,
+		called_by_time_out);
 
 	// Update TX time statistics
 	total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
@@ -3698,20 +3723,20 @@ void Node :: RestartNode(int called_by_time_out){
 		num_new_backoff_computations++;
 
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f (%.0f slots).\n",
-						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
-						remaining_backoff, remaining_backoff/SLOT_TIME);
+			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
+			remaining_backoff, remaining_backoff/SLOT_TIME);
 
 		// Add extra slot since node has txed
 		remaining_backoff += SLOT_TIME;
 
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Extra slot added --> remaining BO %f slots\n",
-						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
-						remaining_backoff / SLOT_TIME);
+			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
+			remaining_backoff / SLOT_TIME);
 
 		if(save_node_logs) fprintf(node_logger.file,
-				"%.15f;N%d;S%d;%s;%s Checking if BO can be resumed. Pow(primary #%d) =  %.2f dBm\n",
-				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
-				current_primary_channel, ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]));
+			"%.15f;N%d;S%d;%s;%s Checking if BO can be resumed. Pow(primary #%d) =  %.2f dBm\n",
+			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
+			current_primary_channel, ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]));
 
 		// Freeze backoff immediately if primary channel is occupied
 		int resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_cca,
@@ -3727,6 +3752,7 @@ void Node :: RestartNode(int called_by_time_out){
 			// time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
 			time_to_trigger = SimTime() + DIFS;
 			trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
+
 		} else {
 
 			if(save_node_logs) fprintf(node_logger.file,
@@ -3794,7 +3820,7 @@ void Node:: RecoverFromCtsTimeout(trigger_t &) {
 	// - Just restart the node to start the DIFS
 
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RecoverFromCtsTimeout\n",
-							SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
+		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 
 	// Cancel trigger for safety
 	trigger_recover_cts_timeout.Cancel();
@@ -3813,7 +3839,7 @@ void Node:: MeasureRho(trigger_t &){
 	if (node_state == STATE_SENSING && channel_power[current_primary_channel] < current_cca){
 
 		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Sensing + free\n",
-				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
+			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 
 		num_measures_rho ++;
 
