@@ -18,7 +18,6 @@ typedef void  (compcxx_component::*CentralController_outportRequestInformationTo
 typedef void  (compcxx_component::*CentralController_outportSendConfigurationToAgent_f_t)(int destination_agent_id, Configuration &new_configuration);
 typedef void  (compcxx_component::*Node_outportSelfStartTX_f_t)(Notification &notification);
 typedef void  (compcxx_component::*Node_outportSelfFinishTX_f_t)(Notification &notification);
-typedef void  (compcxx_component::*Node_outportSendLogicalNack_f_t)(LogicalNack &logical_nack_info);
 typedef void  (compcxx_component::*Node_outportAskForTxModulation_f_t)(Notification &notification);
 typedef void  (compcxx_component::*Node_outportAnswerTxModulation_f_t)(Notification &notification);
 typedef void  (compcxx_component::*Node_outportAnswerToAgent_f_t)(Configuration &configuration, Performance &performance);

@@ -321,15 +321,15 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	}
 
 	// Set connections among nodes
-	for(int n = 0; n < total_nodes_number; n++){
+	for(int n = 0; n < total_nodes_number; ++n){
 
 		connect traffic_generator_container[n].outportNewPacketGenerated,node_container[n].InportNewPacketGenerated;
 
-		for(int m=0; m < total_nodes_number; m++) {
+		for(int m=0; m < total_nodes_number; ++m) {
 
 			connect node_container[n].outportSelfStartTX,node_container[m].InportSomeNodeStartTX;
 			connect node_container[n].outportSelfFinishTX,node_container[m].InportSomeNodeFinishTX;
-			connect node_container[n].outportSendLogicalNack,node_container[m].InportNackReceived;
+//			connect node_container[n].outportSendLogicalNack,node_container[m].InportNackReceived;
 
 			if(strcmp(node_container[n].wlan_code.c_str(),node_container[m].wlan_code.c_str()) == 0) {
 				// Connections regarding MCS
@@ -343,7 +343,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 		if (agents_enabled) {
 			// Set connections among APs and Agents
 			if ( node_container[n].node_type == NODE_TYPE_AP ) {
-				for(int w = 0; w < total_agents_number; w++){
+				for(int w = 0; w < total_agents_number; ++w){
 					// Connect the agent to the corresponding AP, according to "wlan_code"
 					if (strcmp(node_container[n].wlan_code.c_str(), agent_container[w].wlan_code.c_str()) == 0) {
 						connect agent_container[w].outportRequestInformationToAp,node_container[n].InportReceivingRequestFromAgent;
@@ -357,7 +357,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 
 	// Connect the agents to the central controller, if applicable
 	if (agents_enabled) {
-		for(int w = 0; w < total_agents_number; w++){
+		for(int w = 0; w < total_agents_number; ++w){
 			if (agent_container[w].centralized_flag) {
 				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
 				connect agent_container[w].outportAnswerToController,central_controller[0].InportReceivingInformationFromAgent;
@@ -403,7 +403,7 @@ void Komondor :: Stop(){
 	double av_expected_backoff = 0;
 	double av_expected_waiting_time = 0;
 
-	for(int m=0; m < total_nodes_number; m++){
+	for(int m=0; m < total_nodes_number; ++m){
 
 		if( node_container[m].node_type == NODE_TYPE_AP ){
 			total_data_packets_sent += node_container[m].data_packets_sent;
@@ -506,7 +506,7 @@ void Komondor :: Stop(){
 											"data_packets_sent;data_packets_lost;rts_cts_sent;rts_cts_lost\n");
 		}
 
-		for(int m=0; m < total_nodes_number; m++){
+		for(int m=0; m < total_nodes_number; ++m){
 			fprintf(logger_script.file, "%s Node #%d (%s) Throughput = %f\n", LOG_LVL2, m,
 					node_container[m].node_code.c_str(), node_container[m].throughput);
 
@@ -596,7 +596,7 @@ void Komondor :: Stop(){
 			fprintf(logger_script.file, ";%.5f",
 				total_prob_slotted_bo_collision / total_wlans_number);
 
-			for(int w = 0; w < total_wlans_number; w++) {
+			for(int w = 0; w < total_wlans_number; ++w) {
 				fprintf(logger_script.file, ";%.3f", node_container[w*2].throughput * pow(10,-6));
 			}
 
@@ -611,12 +611,12 @@ void Komondor :: Stop(){
 
 			// Variability of optimal policies
 
-			for(int w = 0; w < total_wlans_number; w++) {
+			for(int w = 0; w < total_wlans_number; ++w) {
 
 				fprintf(logger_script.file, ";%.5f", node_container[w*2].prob_slotted_bo_collision);
 			}
 
-			for(int w = 0; w < total_wlans_number; w++) {
+			for(int w = 0; w < total_wlans_number; ++w) {
 
 				fprintf(logger_script.file, ";%.3f", node_container[w*2].throughput * pow(10,-6));
 			}
@@ -772,7 +772,7 @@ void Komondor :: InputChecker(){
 	double nodes_x[total_nodes_number];
 	double nodes_y[total_nodes_number];
 	double nodes_z[total_nodes_number];
-	for(int i = 0; i<total_nodes_number;i++){
+	for(int i = 0; i<total_nodes_number;++i){
 		nodes_ids[i] = 0;
 		nodes_x[i] = 0;
 		nodes_y[i] = 0;
@@ -781,7 +781,7 @@ void Komondor :: InputChecker(){
 
 	if (print_system_logs) printf("%s Validating input files...\n", LOG_LVL2);
 
-	for (int i = 0; i < total_nodes_number; i++) {
+	for (int i = 0; i < total_nodes_number; ++i) {
 
 		nodes_ids[i] = node_container[i].node_id;
 		nodes_x[i] = node_container[i].x;
@@ -820,8 +820,8 @@ void Komondor :: InputChecker(){
 		}
 	}
 
-	for (int i = 0; i < total_nodes_number; i++) {
-		for (int j = 0; j < total_nodes_number; j++) {
+	for (int i = 0; i < total_nodes_number; ++i) {
+		for (int j = 0; j < total_nodes_number; ++j) {
 
 			// Node IDs must be different
 			if(i!=j && nodes_ids[i] == nodes_ids[j] && i < j) {
@@ -1032,7 +1032,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			num_actions_channel = 0;
 			while (channel_aux != NULL) {
 				channel_aux = strtok (NULL, ",");
-				num_actions_channel ++;
+				++ num_actions_channel;
 			}
 			// Set the length of channel actions to agent's field
 			agent_container[agent_ix].num_actions_channel = num_actions_channel;
@@ -1047,7 +1047,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			num_actions_cca = 0;
 			while (cca_aux != NULL) {
 				cca_aux = strtok (NULL, ",");
-				num_actions_cca ++;
+				++ num_actions_cca;
 			}
 
 			// Set the length of CCA actions to agent's field
@@ -1063,7 +1063,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			num_actions_tx_power = 0;
 			while (tx_power_aux != NULL) {
 				tx_power_aux = strtok (NULL, ",");
-				num_actions_tx_power ++;
+				++ num_actions_tx_power;
 			}
 
 			// Set the length of Tx power actions to agent's field
@@ -1079,13 +1079,13 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			num_actions_dcb_policy = 0;
 			while (policy_aux != NULL) {
 				policy_aux = strtok (NULL, ",");
-				num_actions_dcb_policy ++;
+				++num_actions_dcb_policy;
 			}
 
 			// Set the length of DCB actions to agent's field
 			agent_container[agent_ix].num_actions_dcb_policy = num_actions_dcb_policy;
 
-			agent_ix++;
+			++agent_ix;
 			free(tmp_agents);
 
 		}
@@ -1126,7 +1126,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			int centralized_flag = atoi(GetField(tmp_agents, IX_CENTRALIZED_FLAG));
 			agent_container[agent_ix].centralized_flag = centralized_flag;
 			if(centralized_flag) {
-				total_controlled_agents_number++;
+				++total_controlled_agents_number;
 				central_controller_flag = 1;
 			}
 
@@ -1149,7 +1149,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 				int a = atoi(channel_aux_2);
 				agent_container[agent_ix].list_of_channels[ix] = a;
 				channel_aux_2 = strtok (NULL, ",");
-				ix ++;
+				++ix;
 			}
 
 			// CCA values
@@ -1167,7 +1167,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 				int a = atoi(cca_aux_2);
 				agent_container[agent_ix].list_of_cca_values[ix] = ConvertPower(DBM_TO_PW, a);
 				cca_aux_2 = strtok (NULL, ",");
-				ix ++;
+				++ix;
 			}
 
 			// Tx Power values
@@ -1186,7 +1186,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 				int a = atoi(tx_power_aux_2);
 				agent_container[agent_ix].list_of_tx_power_values[ix] = ConvertPower(DBM_TO_PW, a);
 				tx_power_aux_2 = strtok (NULL, ",");
-				ix ++;
+				++ix;
 			}
 
 			// DCB policy values
@@ -1204,7 +1204,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 				int a = atoi(policy_aux_2);
 				agent_container[agent_ix].list_of_dcb_policy[ix] = a;
 				policy_aux_2 = strtok (NULL, ",");
-				ix ++;
+				++ix;
 			}
 
 			// Type of reward
@@ -1229,7 +1229,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			// Initialize learning algorithm in agent
 			agent_container[agent_ix].InitializeLearningAlgorithm();
 
-			agent_ix++;
+			++agent_ix;
 			free(tmp_agents);
 
 		}
@@ -1264,7 +1264,7 @@ void Komondor :: GenerateCentralController() {
 		int agent_list_ix = 0;					// Index considering the agents attached to the central entity
 		double max_time_between_requests = 0;	// To determine the maximum time between requests for agents
 
-		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; agent_ix ++) {
+		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
 			if(agent_container[agent_ix].centralized_flag) {
 				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
 				double agent_time_between_requests = agent_container[agent_list_ix].time_between_requests;
@@ -1272,7 +1272,7 @@ void Komondor :: GenerateCentralController() {
 					central_controller[0].time_between_requests = agent_time_between_requests;
 				}
 
-				agent_list_ix ++;
+				++agent_list_ix;
 			}
 		}
 
@@ -1328,7 +1328,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 				std::string wlan_code_aux = ToString(GetField(tmp_nodes, IX_WLAN_CODE));
 				wlan_container[wlan_ix].wlan_code = wlan_code_aux;
 
-				wlan_ix++;
+				++wlan_ix;
 				free(tmp_nodes);
 
 			}
@@ -1338,7 +1338,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 	if (print_system_logs) printf("%s WLANs identified\n", LOG_LVL3);
 
 	// Get number of STAs in each WLAN
-	for(int w = 0; w < total_wlans_number; w++){
+	for(int w = 0; w < total_wlans_number; ++w){
 
 		int num_stas_in_wlan = GetNumOfNodes(nodes_filename, NODE_TYPE_STA, wlan_container[w].wlan_code);
 		wlan_container[w].num_stas = num_stas_in_wlan;
@@ -1385,12 +1385,12 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			std::string wlan_code;
 			wlan_code.append(ToString(wlan_code_aux));
 			node_container[node_ix].wlan_code = wlan_code;
-			for(int w = 0; w < total_wlans_number; w++){
+			for(int w = 0; w < total_wlans_number; ++w){
 				if(strcmp(wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0){	// If nodes belong to WLAN
 					if(node_container[node_ix].node_type == NODE_TYPE_AP){	// If node is AP
 						wlan_container[w].ap_id = node_container[node_ix].node_id;
 					} else if (node_container[node_ix].node_type == NODE_TYPE_STA){	// If node is STA
-						for(int s = 0; s < wlan_container[w].num_stas; s++){
+						for(int s = 0; s < wlan_container[w].num_stas; ++s){
 							if(wlan_container[w].list_sta_id[s] == NODE_ID_NONE){
 								wlan_container[w].list_sta_id[s] = node_container[node_ix].node_id;
 								break;
@@ -1534,14 +1534,14 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			traffic_generator_container[node_ix].lambda = atof(lambda_char);
 			traffic_generator_container[node_ix].burst_rate = atof(lambda_char);
 
-			node_ix ++;
+			++node_ix;
 			free(tmp_nodes);
 		}
 	}
 
 	// Set corresponding WLAN to each node
-	for(int n = 0; n < total_nodes_number; n++){
-		for(int w = 0; w < total_wlans_number; w++){
+	for(int n = 0; n < total_nodes_number; ++n){
+		for(int w = 0; w < total_wlans_number; ++w){
 			if (strcmp(node_container[n].wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0) {
 				node_container[n].wlan = wlan_container[w];
 			}
@@ -1615,7 +1615,7 @@ void Komondor :: WriteSystemInfo(Logger logger){
  */
 void Komondor :: PrintAllNodesInfo(int info_detail_level){
 
-	for(int n = 0; n < total_nodes_number; n ++){
+	for(int n = 0; n < total_nodes_number; ++n ){
 		node_container[n].PrintNodeInfo(info_detail_level);
 	}
 }
@@ -1624,7 +1624,7 @@ void Komondor :: PrintAllNodesInfo(int info_detail_level){
  * PrintAllWlansInfo(): prints the WLANs info
  */
 void Komondor :: PrintAllWlansInfo(){
-	for(int w = 0; w < total_wlans_number; w ++){
+	for(int w = 0; w < total_wlans_number; ++w){
 		wlan_container[w].PrintWlanInfo();
 	}
 }
@@ -1634,7 +1634,7 @@ void Komondor :: PrintAllWlansInfo(){
  */
 void Komondor :: PrintAllAgentsInfo(){
 
-	for(int a = 0; a < total_agents_number; a ++){
+	for(int a = 0; a < total_agents_number; ++a ){
 		agent_container[a].PrintAgentInfo();
 	}
 
@@ -1647,7 +1647,7 @@ void Komondor :: PrintAllAgentsInfo(){
  */
 void Komondor :: WriteAllWlansInfo(Logger logger, std::string header_str){
 
-	for(int w = 0; w < total_wlans_number; w++){
+	for(int w = 0; w < total_wlans_number; ++w){
 		wlan_container[w].WriteWlanInfo(logger, header_str.c_str());
 	}
 }
@@ -1660,7 +1660,7 @@ void Komondor :: WriteAllWlansInfo(Logger logger, std::string header_str){
  */
 void Komondor :: WriteAllNodesInfo(Logger logger, int info_detail_level, std::string header_str){
 
-	for(int n = 0; n < total_nodes_number; n++){
+	for(int n = 0; n < total_nodes_number; ++n){
 		node_container[n].WriteNodeInfo(logger, info_detail_level, header_str.c_str());
 	}
 }
@@ -1717,7 +1717,7 @@ int Komondor :: GetNumOfLines(const char *filename){
 	char line[CHAR_BUFFER_SIZE];
 	while (fgets(line, CHAR_BUFFER_SIZE, stream))
 	{
-		num_lines++;
+		++num_lines;
 	}
 	num_lines--;
 	fclose(stream);
@@ -1771,9 +1771,9 @@ int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::st
 				free(tmp_nodes);
 
 				if(wlan_code.compare(ToString("")) > 0){
-					if(type_found == node_type && strcmp(wlan_code_found.c_str(), wlan_code.c_str()) == 0) num_nodes++;
+					if(type_found == node_type && strcmp(wlan_code_found.c_str(), wlan_code.c_str()) == 0) ++num_nodes;
 				} else {
-					if(type_found == node_type) num_nodes++;
+					if(type_found == node_type) ++num_nodes;
 				}
 			}
 		}

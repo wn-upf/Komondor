@@ -65,7 +65,7 @@
  **/
 double ConvertPower(int conversion_type, double power_magnitude_in){
 
-  double converted_power = 0;
+  double converted_power (0);
 
   switch(conversion_type){
     // pW to dBm
@@ -108,7 +108,7 @@ double ConvertPower(int conversion_type, double power_magnitude_in){
  * ComputeDistance(): returns the distance between 2 points
  **/
 double ComputeDistance(double x1, double y1, double z1, double x2, double y2, double z2){
-  double distance = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
+  double distance (sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2)));
   return distance;
 }
 
@@ -118,11 +118,11 @@ double ComputeDistance(double x1, double y1, double z1, double x2, double y2, do
 double ComputePowerReceived(double distance, double tx_power, double tx_gain, double rx_gain,
 		double central_frequency, int path_loss_model) {
 
-	double tx_power_dbm = ConvertPower(PW_TO_DBM, tx_power);
-	double tx_gain_db = ConvertPower(LINEAR_TO_DB, tx_gain);
-	double rx_gain_db = ConvertPower(LINEAR_TO_DB, rx_gain);
+	double tx_power_dbm (ConvertPower(PW_TO_DBM, tx_power));
+	double tx_gain_db (ConvertPower(LINEAR_TO_DB, tx_gain));
+	double rx_gain_db (ConvertPower(LINEAR_TO_DB, rx_gain));
 	double pw_received_dbm;
-	double wavelength = (double) SPEED_LIGHT/central_frequency;
+	double wavelength ((double) SPEED_LIGHT/central_frequency);
 	double loss;
 
 	double pw_received;	// Power received [pW]
@@ -187,18 +187,18 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	// with extra indoor wall and floor penetration loss.
 	case PATH_LOSS_SCENARIO_1_TGax: {
 
-	  int n_walls = 10;   // Wall frequency (n_walls walls each m)
-	  int n_floors = 3;   // Floor frequency (n_floors floors each m)
-	  int L_iw = 5;     // Penetration for a single wall (dB)
+	  int n_walls(10);   // Wall frequency (n_walls walls each m)
+	  int n_floors(3);   // Floor frequency (n_floors floors each m)
+	  int L_iw(5);     // Penetration for a single wall (dB)
 
 	  //double LFS = 32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000);
-	  double min_d = distance;
+	  double min_d(distance);
 	  if (distance > 5) { min_d = 5; }
-	  double central_frequency_ghz = central_frequency / pow(10,9);
+	  double central_frequency_ghz(central_frequency / pow(10,9));
 
-	  double LFS = 40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
+	  double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
 			  18.3*pow((distance/n_floors),(((distance/n_floors)+2)/((distance/n_floors)+1))
-					  - 0.46) + L_iw*(distance/n_walls);
+					  - 0.46) + L_iw*(distance/n_walls));
 
 	  double d_BP = 5;    // Break-point distance (m)
 	  if (distance >= d_BP) {
@@ -388,9 +388,9 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
  **/
 double ComputeTxPowerPerChannel(double current_tpc, int num_channels_tx){
 
-	double tx_power_per_channel = current_tpc;
+	double tx_power_per_channel (current_tpc);
 
-	int num_channels_tx_ix = log2(num_channels_tx);
+	int num_channels_tx_ix (log2(num_channels_tx));
 
 	for (int num_ch_ix = 0; num_ch_ix < num_channels_tx_ix; num_ch_ix ++){
 
@@ -483,11 +483,11 @@ void UpdatePowerSensedPerNode(int primary_channel, std::map<int,double> &power_r
 
 	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
 
-		double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
-			notification.tx_info.z);
+		double distance (ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
+			notification.tx_info.z));
 
-		double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
-			notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
+		double pw_received (ComputePowerReceived(distance, notification.tx_info.tx_power,
+			notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model));
 
 		if (start_or_finish == TX_INITIATED) {
 
@@ -516,11 +516,11 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 
 	for (int i = 0 ; i < num_channels_komondor ; i++) (total_power)[i] = 0;
 
-	double distance = ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
-		notification.tx_info.z);
+	double distance (ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
+		notification.tx_info.z));
 
-	double pw_received = ComputePowerReceived(distance, notification.tx_info.tx_power,
-		notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model);
+	double pw_received (ComputePowerReceived(distance, notification.tx_info.tx_power,
+		notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model));
 
 	// Direct power (power of the channels used for transmitting)
 	for(int i = notification.left_channel; i <= notification.right_channel; i++){
@@ -550,13 +550,13 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 
 						pw_loss_db = 20 * abs(c-notification.left_channel);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
-						(total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
+						(total_power)[c] = (total_power)[c] + ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					} else if(c > notification.right_channel) {
 
 						pw_loss_db = 20 * abs(c-notification.right_channel);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
-						(total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
+						(total_power)[c] = (total_power)[c] + ConvertPower(DBM_TO_PW, total_power_dbm);
 
 					}
 
@@ -583,7 +583,7 @@ void ApplyAdjacentChannelInterferenceModel(double x, double y, double z,
 
 						pw_loss_db = 20 * abs(c-j);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;
-						(total_power)[c] += ConvertPower(DBM_TO_PW, total_power_dbm);
+						(total_power)[c] = (total_power)[c] + ConvertPower(DBM_TO_PW, total_power_dbm);
 
 						if((total_power)[c] < MIN_DOUBLE_VALUE_KOMONDOR) (total_power)[c] = 0;
 
@@ -622,21 +622,21 @@ void UpdateChannelsPower(double x, double y, double z, double **channel_power, N
 	}
 
 	ApplyAdjacentChannelInterferenceModel(x, y , z, adjacent_channel_model, total_power,
-			notification, num_channels_komondor, rx_gain, central_frequency, path_loss_model);
+		notification, num_channels_komondor, rx_gain, central_frequency, path_loss_model);
 
 	// Increase/decrease power sensed if TX started/finished
 	for(int c = 0; c < num_channels_komondor; c++){
 
 		if(update_type == TX_FINISHED) {
 
-			(*channel_power)[c] -= total_power[c];
+			(*channel_power)[c] = (*channel_power)[c] - total_power[c];
 
 			// Avoid near-zero negative values
 			if ((*channel_power)[c] < 0.000001) (*channel_power)[c] = 0;
 
 		}
 
-		else if (update_type == TX_INITIATED) (*channel_power)[c] += total_power[c];
+		else if (update_type == TX_INITIATED) (*channel_power)[c] = (*channel_power)[c] + total_power[c];
 
 	}
 
@@ -647,7 +647,7 @@ void UpdateChannelsPower(double x, double y, double z, double **channel_power, N
  **/
 double UpdateSINR(double pw_received_interest, double noise_level, double max_pw_interference){
 
-	double sinr = pw_received_interest / (max_pw_interference + noise_level);
+	double sinr (pw_received_interest / (max_pw_interference + noise_level));
 
 	return sinr;
 }
@@ -689,13 +689,12 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 	// Reset channels for transmitting
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 		channels_for_tx[c] = FALSE;
-
 	}
 
 	// Get left and right channels available (or free)
-	int left_free_ch = 0;
-	int left_free_ch_is_set = 0;	// True if left channel could be set true
-	int right_free_ch = 0;
+	int left_free_ch (0);
+	int left_free_ch_is_set (0);	// True if left channel could be set true
+	int right_free_ch (0);
 
 	for(int c = min_channel_allowed; c <= max_channel_allowed; c++){
 
@@ -712,15 +711,15 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 		}
 	}
 
-	int num_free_ch = right_free_ch - left_free_ch + 1;
-	int num_available_ch = max_channel_allowed - min_channel_allowed + 1;
+	int num_free_ch (right_free_ch - left_free_ch + 1);
+	int num_available_ch (max_channel_allowed - min_channel_allowed + 1);
 	int log2_modulus;	// Auxiliary variable representing a modulus
 	int left_tx_ch;		// Left channel to TX
 	int right_tx_ch; 	// Right channel to TX
 
 	// SERGIO 18/09/2017:
 	// - Modify CB policies. Identify first of all the log2 channel ranges available
-	int all_channels_free_in_range = TRUE;	// auxiliar variable for identifying free channel ranges
+	int all_channels_free_in_range ( TRUE );	// auxiliar variable for identifying free channel ranges
 
 	// Boolean array indicating if possible or not to transmit in 1, 2, 4 or 8 channels.
 	int possible_channel_ranges_ixs[4] = {FALSE, FALSE, FALSE, FALSE};
