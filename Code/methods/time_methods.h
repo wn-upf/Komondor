@@ -63,7 +63,7 @@ double	Exponential(double mean){ return -mean*log(Random());}
 int findMaximumPacketsAggregated(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
 
 	double data_duration;
-	int limited_num_packets_aggregated = num_packets_aggregated;
+	int limited_num_packets_aggregated (num_packets_aggregated);
 
 	while (limited_num_packets_aggregated > 0) {
 
@@ -96,19 +96,16 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 	switch(pdf_tx_time){
 
 		case PDF_DETERMINISTIC:{
-
 			tx_time = total_bits/data_rate;
 			break;
 		}
 
 		case PDF_EXPONENTIAL:{
-
 			tx_time = Exponential(total_bits/data_rate);
 			break;
 		}
 
 		default:{
-
 			printf("TX time model not found!\n");
 			exit(EXIT_FAILURE);
 		}
@@ -126,12 +123,11 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
  **/
 double computeRtsTxTime80211ax(double bits_ofdm_sym_legacy){
 
-	double rts_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
-			(double) IEEE_AX_RTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
+//	double rts_duration (IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
+//		(double) IEEE_AX_RTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
 
-	//printf("RTS = %f\n", rts_duration * pow(10,6));
-
-	return rts_duration;
+	return (IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
+			(double) IEEE_AX_RTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
 
 }
 
@@ -140,12 +136,13 @@ double computeRtsTxTime80211ax(double bits_ofdm_sym_legacy){
  **/
 double computeCtsTxTime80211ax(double bits_ofdm_sym_legacy){
 
-	double cts_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
-			(double) IEEE_AX_CTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
+//	double cts_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
+//			(double) IEEE_AX_CTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
 
 	//printf("CTS = %f\n", cts_duration * pow(10,6));
 
-	return cts_duration;
+	return (IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
+		(double) IEEE_AX_CTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
 
 }
 

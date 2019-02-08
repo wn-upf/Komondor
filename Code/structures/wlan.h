@@ -60,25 +60,18 @@
 // WLAN info
 struct Wlan
 {
-	int wlan_id;		// WLAN ID
+	int wlan_id;			// WLAN ID
 	std::string wlan_code;	// Code of the WLAN (string)
-	int num_stas;		// Number of STAs in the WLAN (AP not included)
-	int ap_id;			// Id of the Access Point
-	int *list_sta_id;	// List of STAs IDs belonging to the WLAN
-
-//	Wlan();
-//
-//	Wlan(int wlan_id_x, std::string wlan_code_x, int num_stas_x, int ap_id_x, int* list_sta_id_x)
-//	: wlan_id(wlan_id_x), wlan_code(wlan_code_x), num_stas(num_stas_x), ap_id(ap_id_x), list_sta_id(list_sta_id_x) {}
+	int num_stas;			// Number of STAs in the WLAN (AP not included)
+	int ap_id;				// Id of the Access Point
+	int *list_sta_id;		// List of STAs IDs belonging to the WLAN
 
 	/*
 	 * SetSizeOfSTAsArray(): sets the size of the array list_sta_id
 	 */
 	void SetSizeOfSTAsArray(int num_stas){
-
 		list_sta_id = new int[num_stas];
-
-		for(int s = 0; s < num_stas; s++){
+		for(int s = 0; s < num_stas; ++s){
 			list_sta_id[s] = NODE_ID_NONE;
 		}
 	}
@@ -87,7 +80,6 @@ struct Wlan
 	 * PrintStaIds(): prints the list of STAs IDs belonging to the WLAN
 	 */
 	void PrintStaIds(){
-
 		for(int s = 0; s < num_stas; s++){
 			printf("%d  ", list_sta_id[s]);
 		}
@@ -100,7 +92,6 @@ struct Wlan
 	 * - logger: logger containing the file to write on
 	 */
 	void WriteStaIds(Logger logger){
-
 		if (logger.save_logs){
 			for(int s = 0; s < num_stas; s++){
 				fprintf(logger.file, "%d  ", list_sta_id[s]);
@@ -112,7 +103,6 @@ struct Wlan
 	 * PrintWlanInfo(): prints general WLAN info
 	 */
 	void PrintWlanInfo(){
-
 		printf("%s WLAN %s:\n", LOG_LVL3, wlan_code.c_str());
 		printf("%s wlan_id: %d\n", LOG_LVL4, wlan_id);
 		printf("%s num_stas: %d\n", LOG_LVL4, num_stas);
@@ -128,7 +118,6 @@ struct Wlan
 	 * - header_string: header string
 	 */
 	void WriteWlanInfo(Logger logger, std::string header_str){
-
 		if (logger.save_logs){
 			fprintf(logger.file, "%s WLAN %s:\n", header_str.c_str(), wlan_code.c_str());
 			fprintf(logger.file, "%s - wlan_id: %d\n", header_str.c_str(), wlan_id);

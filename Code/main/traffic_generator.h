@@ -61,16 +61,14 @@ component TrafficGenerator : public TypeII{
 
 	// Methods
 	public:
-
 		// COST
 		void Setup();
 		void Start();
 		void Stop();
-
 		// Generic
 		void InitializeTrafficGenerator();
 		void GenerateTraffic();
-		void NewPacketGenerated();
+//		void NewPacketGenerated();
 
 	// Public items (entered by agents constructor in komondor_main)
 	public:
@@ -80,7 +78,6 @@ component TrafficGenerator : public TypeII{
 		int traffic_model;		// Traffic model
 		double traffic_load;	// Average traffic load of the AP [packets/s]
 		double lambda;			// Average notification generation rate (related to exponential BO) [notification/s]
-
 		// Burst traffic
 		double burst_rate;				// Average time between two packet generation bursts [bursts/s]
 		int num_bursts;					// Total number of bursts occurred in the simulation
@@ -91,15 +88,15 @@ component TrafficGenerator : public TypeII{
 	// Connections and timers
 	public:
 
+		// INPORT connections to receive packets being generated
+		inport inline void NewPacketGenerated(trigger_t& t1);
 		// OUTPORT connections for sending notifications
 		outport void outportNewPacketGenerated();
-
-		Timer <trigger_t> trigger_new_packet_generated; // Trigger for new packets generation
-
-		inport inline void NewPacketGenerated(trigger_t& t1);
-
+		// Timer ruled by the packet generation ratio
+		Timer <trigger_t> trigger_new_packet_generated;
+		// Connect the timer with the inport method
 		TrafficGenerator () {
-		connect trigger_new_packet_generated.to_component,NewPacketGenerated;
+			connect trigger_new_packet_generated.to_component,NewPacketGenerated;
 		}
 
 };
@@ -131,34 +128,28 @@ void TrafficGenerator :: Stop(){
 
 void TrafficGenerator :: GenerateTraffic() {
 
-	double time_for_next_packet = 0;
-	double time_to_trigger = 0;
-
+	double time_for_next_packet (0);
+	double time_to_trigger (0);
 //	printf("traffic_model = %d\n", traffic_model);
 
 	switch(traffic_model) {
 
 		// TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION is not considered (handled by the node)
 		case TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION:{
-
 			// DO NOTHING: THE NODES HANDLE IT
 //			printf("TG%d TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION!\n", node_id);
-
 			break;
-
 		}
+
 		// 0
 		// Sergio on 16 Jan:
 		// - Full buffer is still to be implemented.
 		// - To simulate it, just use Poisson traffic with large traffic loads.
 		case TRAFFIC_FULL_BUFFER:{
-
 			if(node_id == 0) printf("WARNING: FULL BUFFER NOT IMPLEMENTED! SIMULATE IT: just use Poisson traffic with large traffic loads\n");
-
 			// Change to Poisson with huge traffic load to simulate saturation
 			traffic_model = TRAFFIC_POISSON;
 			traffic_load = 1000;
-
 			// --- Poisson ---
 			time_for_next_packet = Exponential(1/traffic_load);
 			time_to_trigger = SimTime() + time_for_next_packet;
@@ -168,12 +159,10 @@ void TrafficGenerator :: GenerateTraffic() {
 
 		// 1
 		case TRAFFIC_POISSON:{
-
 			// Sergio on 11th January 2018
 			// - Traffic generation depends on the traffic load (not on the lambda parameter, which is related
 			//   with BO generation exponentially distributed.
 			// time_for_next_packet = Exponential(1/lambda);
-
 			// Generates new packet when the trigger expires
 			time_for_next_packet = Exponential(1/traffic_load);
 			time_to_trigger = SimTime() + time_for_next_packet;
@@ -191,17 +180,13 @@ void TrafficGenerator :: GenerateTraffic() {
 
 		// 3
 		case TRAFFIC_POISSON_BURST:{
-
 			// Sergio on 2nd February 2018
 			// - Input: traffic load and average time between bursts
-
 			time_for_next_packet = Exponential(burst_rate/traffic_load);
 			time_to_trigger = SimTime() + time_for_next_packet;
-
 //			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New generation burst will be triggered in %f ms\n",
 //				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 //				time_for_next_packet * 1000);
-
 			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
 			break;
 		}
@@ -211,34 +196,25 @@ void TrafficGenerator :: GenerateTraffic() {
 			exit(EXIT_FAILURE);
 			break;
 		}
-
 	}
-
 }
 
 void TrafficGenerator :: NewPacketGenerated(trigger_t &){
-
 //	printf("TG%d NewPacketGenerated!\n", node_id);
 	outportNewPacketGenerated();
-
 	GenerateTraffic();
-
 }
 
 /*
  * InitializeLearningAlgorithm(): initializes all the necessary variables of the chosen learning alg.
  */
 void TrafficGenerator :: InitializeTrafficGenerator() {
-
 	/*
 	 * HARDCODED VARIABLES FOR TESTING PURPOSES
 	 * - This variables are initialized in the code itself
 	 * - While this is not the most efficient approach, it allows us testing new feature
 	 */
-
 	burst_rate = 10;
 	num_bursts = 0;
-
 	GenerateTraffic();
-
 }

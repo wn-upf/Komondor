@@ -110,8 +110,6 @@ struct Configuration
 	double timestamp;
 
 	int selected_primary_channel;		// Selected primary channel
-	// int selected_left_channel;	// Selected left channel
-	// int selected_right_channel;	// Selected right channel
 	double selected_cca;		// Selected CCA ("sensitivity" threshold) [pW]
 	double selected_tx_power;	// Selected Tx Power [pW]
 	int selected_dcb_policy;	// Selected DCB policy
@@ -130,8 +128,6 @@ struct Configuration
 		}
 
 		printf("%s selected_primary = %d\n", LOG_LVL4, selected_primary_channel);
-		// printf("%s selected_left_channel = %d\n", LOG_LVL4, selected_left_channel);
-		// printf("%s selected_right_channel = %d\n", LOG_LVL4, selected_right_channel);
 		printf("%s cca_default = %f pW (%f dBm)\n", LOG_LVL4, selected_cca, ConvertPower(PW_TO_DBM, selected_cca));
 		printf("%s tpc_default = %f pW (%f dBm)\n", LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
 		printf("%s selected_dcb_policy = %d\n", LOG_LVL4, selected_dcb_policy);

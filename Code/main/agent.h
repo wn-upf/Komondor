@@ -256,7 +256,7 @@ void Agent :: RequestInformationToAp(trigger_t &){
 
 	outportRequestInformationToAp();
 
-	num_requests ++;
+	++ num_requests;
 
 };
 
@@ -413,7 +413,6 @@ void Agent :: ComputeNewConfiguration(){
 
 			// Update the configuration according to the MABs operation
 			new_configuration = mab_agent.UpdateConfiguration(configuration, performance, agent_logger, SimTime());
-
 			break;
 
 		}
@@ -528,25 +527,25 @@ void Agent :: PrintAgentInfo(){
 	printf("%s type_of_reward = %d\n", LOG_LVL4, type_of_reward);
 	printf("%s initial_reward = %f\n", LOG_LVL4, initial_reward);
 	printf("%s list_of_channels: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_channel; i ++) {
+	for (int i = 0; i < num_actions_channel; ++i) {
 		printf("%d  ", list_of_channels[i]);
 	}
 	printf("\n");
 
 	printf("%s list_of_cca_values: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_cca; i ++) {
+	for (int i = 0; i < num_actions_cca; ++i) {
 		printf("%f pW (%f dBm)  ", list_of_cca_values[i], ConvertPower(PW_TO_DBM, list_of_cca_values[i]));
 	}
 	printf("\n");
 
 	printf("%s list_of_tx_power_values: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_tx_power; i ++) {
+	for (int i = 0; i < num_actions_tx_power; ++i) {
 		printf("%f pW (%f dBm)  ", list_of_tx_power_values[i], ConvertPower(PW_TO_DBM, list_of_tx_power_values[i]));
 	}
 	printf("\n");
 
 	printf("%s list_of_dcb_policy: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_dcb_policy; i ++) {
+	for (int i = 0; i < num_actions_dcb_policy; ++i) {
 		printf("%d  ", list_of_dcb_policy[i]);
 	}
 	printf("\n");

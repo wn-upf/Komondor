@@ -77,18 +77,16 @@ struct TxInfo
 
 	void PrintTxInfo(int packet_id, int destination_id, double tx_duration){
 		printf("packet_id = %d - destination_id = %d - tx_duration = %f - tx_power = %f pw"
-				" - position = (%.2f, %.2f, %.2f)\n",
-				packet_id, destination_id, tx_duration, tx_power, x, y, z);
+			" - position = (%.2f, %.2f, %.2f)\n",
+			packet_id, destination_id, tx_duration, tx_power, x, y, z);
 	}
 
 	/*
 	 * SetSizeOfIdsArray(): sets the size of the array list_id_aggregated
 	 */
 	void SetSizeOfIdsAggregatedArray(int num_packets_aggregated){
-
 		list_id_aggregated = new int[num_packets_aggregated];
-
-		for(int t = 0; t < num_packets_aggregated; t++){
+		for(int t = 0; t < num_packets_aggregated; ++t){
 			list_id_aggregated[t] = 0;
 		}
 	}
@@ -98,10 +96,8 @@ struct TxInfo
 	 * SetSizeOfTimestampAggregatedArray(): sets the size of the array timestamp_frames_aggregated
 	 */
 	void SetSizeOfTimestampAggregatedArray(int num_packets_aggregated){
-
 		timestamp_frames_aggregated = new double[num_packets_aggregated];
-
-		for(int t = 0; t < num_packets_aggregated; t++){
+		for(int t = 0; t < num_packets_aggregated; ++t){
 			timestamp_frames_aggregated[t] = 0;
 		}
 	}
@@ -110,10 +106,8 @@ struct TxInfo
 	 * SetSizeOfMCS(): sets the size of the array modulation_schemes
 	 */
 	void SetSizeOfMCS(int channels_groups){
-
 		//modulation_schemes = new int[channels_groups];
-
-		for(int s = 0; s < channels_groups; s++){
+		for(int s = 0; s < channels_groups; ++s){
 			modulation_schemes[s] = MODULATION_NONE;
 		}
 	}
@@ -141,7 +135,7 @@ struct Notification
 
 	void PrintNotification(void){
 		printf("source_id = %d - packet_type = %d - left_channel = %d - right_channel = %d - pkt_length = %d -",
-				source_id, packet_type, left_channel, right_channel, frame_length);
+			source_id, packet_type, left_channel, right_channel, frame_length);
 		printf("tx_info: ");
 		tx_info.PrintTxInfo(packet_id, destination_id, tx_duration);
 	}

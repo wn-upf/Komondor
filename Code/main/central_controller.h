@@ -194,7 +194,7 @@ void CentralController :: Stop(){
  */
 void CentralController :: RequestInformationToAgent(trigger_t &){
 
-	for (int agents_ix = 0 ; agents_ix < agents_number ; agents_ix ++) {
+	for (int agents_ix = 0 ; agents_ix < agents_number ; ++agents_ix ) {
 
 		//printf("%s Central Controller: Requesting information to Agent %d\n", LOG_LVL1, list_of_agents[agents_ix]);
 		if(save_controller_logs) fprintf(central_controller_logger.file, "----------------------------------------------------------------\n");
@@ -207,7 +207,7 @@ void CentralController :: RequestInformationToAgent(trigger_t &){
 
 		outportRequestInformationToAgent(list_of_agents[agents_ix]);
 
-		num_requests[agents_ix] ++;
+		++ num_requests[agents_ix] ;
 
 	}
 
@@ -235,7 +235,7 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
 
 	performance = received_performance;
 
-	counter_responses_received ++;
+	++ counter_responses_received ;
 
 	// Generate the reward for the last selected action
 	//GenerateRewardSelectedArm();
@@ -270,7 +270,7 @@ void CentralController :: ComputeNewConfiguration(){
 	new_configuration = configuration;
 
 	// Send the configuration to the AP
-	for (int agent_ix = 0 ; agent_ix < agents_number ; agent_ix ++) {
+	for (int agent_ix = 0 ; agent_ix < agents_number ; ++ agent_ix ) {
 		SendNewConfigurationToAgent(agent_ix);
 	}
 
@@ -320,7 +320,7 @@ void CentralController :: InitializeCentralController() {
 	counter_responses_received = 0;
 	num_requests = new int[agents_number];
 
-	for(int i = 0; i < agents_number; i++){
+	for(int i = 0; i < agents_number; ++i){
 		num_requests[i] = 0;
 	}
 

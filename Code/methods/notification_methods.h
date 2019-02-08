@@ -78,11 +78,11 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 		int save_node_logs,	double sim_time, int *nacks_received,
 		int total_nodes_number, int *nodes_transmitting) {
 
-	int reason = PACKET_NOT_LOST;
+	int reason (PACKET_NOT_LOST);
 
 	// Nodes implied in the NACK
-	int node_a = logical_nack.node_id_a;
-	int node_b = logical_nack.node_id_b;
+	int node_a (logical_nack.node_id_a);
+	int node_b (logical_nack.node_id_b);
 
 	if(node_a == node_id ||  node_b == node_id){		// If node IMPLIED in the NACK
 
@@ -91,7 +91,7 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 //				sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.packet_id);
 
 		// Sum new loss reason to corresponding type (for statistics purposes)
-		nacks_received[logical_nack.loss_reason] ++;
+		++ nacks_received[logical_nack.loss_reason] ;
 
 		switch(logical_nack.loss_reason){
 
@@ -122,8 +122,8 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 			case PACKET_LOST_INTERFERENCE:{ 	// There are interference signals making node not comply with the capture effect
 
 				if(save_node_logs) fprintf(node_logger.file,
-						"%.12f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
-						sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
+					"%.12f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
+					sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
 //				printf(
 //					"%.12f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
@@ -166,9 +166,9 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 				if(node_a == node_id) {
 
 					if(save_node_logs) fprintf(node_logger.file,
-							"%.12f;N%d;S%d;%s;%s Destination N%d already receiving from N%d and N%d transmitted with not enough"
-							" power to be decoded\n",
-							sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id, node_a, node_b);
+						"%.12f;N%d;S%d;%s;%s Destination N%d already receiving from N%d and N%d transmitted with not enough"
+						" power to be decoded\n",
+						sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id, node_a, node_b);
 
 //					hidden_nodes_list[node_b] = TRUE;
 
@@ -182,8 +182,8 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 			case PACKET_LOST_SINR_PROB:{	// Packet lost due to SINR probability (deprecated)
 
 				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Packet lost due constant PER or due to the BER (%f) "
-						"associated to the current SINR (%f dB)\n", sim_time, node_id, node_state, LOG_H02, LOG_LVL2,
-						logical_nack.ber, ConvertPower(LINEAR_TO_DB, logical_nack.sinr));
+					"associated to the current SINR (%f dB)\n", sim_time, node_id, node_state, LOG_H02, LOG_LVL2,
+					logical_nack.ber, ConvertPower(LINEAR_TO_DB, logical_nack.sinr));
 
 				reason = PACKET_LOST_SINR_PROB;
 
@@ -192,7 +192,7 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 
 			case PACKET_LOST_RX_IN_NAV:{			// Packet lost because node was in NAV
 				if(save_node_logs) fprintf(node_logger.file, "%.12f;N%d;S%d;%s;%s Packet lost due to STA was in NAV\n",
-						sim_time, node_id, node_state, LOG_H02, LOG_LVL2);
+					sim_time, node_id, node_state, LOG_H02, LOG_LVL2);
 
 				reason = PACKET_LOST_RX_IN_NAV;
 
@@ -273,16 +273,13 @@ void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
 		double current_tx_duration){
 
 	if(type == PACKET_TYPE_DATA) {
-
 		for(int c = current_left_channel; c <= current_right_channel; c++){
 			total_time_lost_per_channel[c] += current_tx_duration;
 		}
-
 		total_time_lost_in_num_channels[current_right_channel - current_left_channel] += current_tx_duration;
-
-		packets_lost ++;
+		++packets_lost;
 	} else if(type == PACKET_TYPE_CTS){
-		rts_cts_lost ++;
+		++rts_cts_lost;
 	}
 
 }
@@ -295,7 +292,7 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
 		int destination_id){
 
 	int packet_lost;
-	double per = 0;
+	double per (0);
 
 	// Try to decode when power received is greater than CCA
 	if(sinr < capture_effect || power_rx_interest < cca) {
@@ -325,7 +322,7 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 		double sinr, double capture_effect, double cca, double power_rx_interest, double constant_per,
 		int node_id, int capture_effect_model){
 
-	int loss_reason = PACKET_NOT_LOST;
+	int loss_reason (PACKET_NOT_LOST);
 	int is_packet_lost;	// Determines if the current notification has been lost (1) or not (0)
 
 	switch(capture_effect_model) {
@@ -342,7 +339,7 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 
 				// Attempt to decode (or continue decoding) the notification of interest
 				is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per, node_id,
-						new_notification.packet_type, new_notification.destination_id);
+					new_notification.packet_type, new_notification.destination_id);
 
 				if (is_packet_lost) {	// Incoming packet is lost
 					if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded

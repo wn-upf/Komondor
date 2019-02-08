@@ -111,20 +111,6 @@ int getNumberSubcarriers(int num_channels){
 
 	switch(num_channels){
 
-// 		Channels widths smaller than 20 MHz
-//
-//		case 2.5:{
-//			return 26;
-//		}
-//
-//		case 5:{
-//			return 52;
-//		}
-//
-//		case 10:{
-//			return 102;
-//		}
-
 		// 1 channel - 20 MHz
 		case 1:{
 			num_subcarriers = 234;
@@ -152,4 +138,5 @@ int getNumberSubcarriers(int num_channels){
 	}
 
 	return num_subcarriers;
+
 }
