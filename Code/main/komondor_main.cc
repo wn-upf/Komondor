@@ -271,10 +271,19 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	// Compute distance of each pair of nodes
 	for(int i = 0; i < total_nodes_number; ++i) {
 		node_container[i].distances_array = new double[total_nodes_number];
+		node_container[i].received_power_array = new double[total_nodes_number];
 		for(int j = 0; j < total_nodes_number; ++j) {
 			// Compute and assign distances for each other node
 			node_container[i].distances_array[j] = ComputeDistance(node_container[i].x,node_container[i].y,
 				node_container[i].z,node_container[j].x,node_container[j].y,node_container[j].z);
+			// Compute and assign the received power from each other node
+			if(i == j) {
+				node_container[i].received_power_array[j] = 0;
+			} else {
+				node_container[i].received_power_array[j] = ComputePowerReceived(node_container[i].distances_array[j],
+					node_container[i].tpc_default, node_container[i].tx_gain, node_container[i].rx_gain,
+					node_container[i].central_frequency, path_loss_model);
+			}
 		}
 	}
 
