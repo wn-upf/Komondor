@@ -411,15 +411,23 @@ void UpdatePowerSensedPerNode(int primary_channel, std::map<int,double> &power_r
 //		double pw_received (ComputePowerReceived(distance, notification.tx_info.tx_power,
 //			notification.tx_info.tx_gain, rx_gain, central_frequency, path_loss_model));
 
-		if (start_or_finish == TX_INITIATED) {
+		switch(start_or_finish){
 
-//			power_received_per_node[notification.source_id] = pw_received;
-			power_received_per_node[notification.source_id] = pw_received;
+			case TX_INITIATED:{
+				power_received_per_node[notification.source_id] = pw_received;
+				break;
+			}
 
-		} else if(start_or_finish == TX_FINISHED){
+			case TX_FINISHED:{
+				power_received_per_node.erase(notification.source_id);
+				break;
+			}
 
-			power_received_per_node.erase(notification.source_id);
-
+			default:{
+				printf("ERROR: Unkown start_or_finish instruction");
+				exit(EXIT_FAILURE);
+				break;
+			}
 		}
 
 	} else {
@@ -437,7 +445,7 @@ void ApplyAdjacentChannelInterferenceModel(int adjacent_channel_model, double to
 	Notification notification, int num_channels_komondor, double rx_gain,
 	double central_frequency, double pw_received, int path_loss_model){
 
-	for (int i = 0 ; i < num_channels_komondor ; ++i) (total_power)[i] = 0;
+//	for (int i = 0 ; i < num_channels_komondor ; ++i) (total_power)[i] = 0;
 
 //	double distance (ComputeDistance(x, y, z, notification.tx_info.x, notification.tx_info.y,
 //		notification.tx_info.z));
@@ -529,36 +537,47 @@ void UpdateChannelsPower(double **channel_power, Notification notification,
     int update_type, double central_frequency, int num_channels_komondor, int path_loss_model,
 	double rx_gain, int adjacent_channel_model, double pw_received, int node_id){
 
-	if(update_type != TX_FINISHED && update_type != TX_INITIATED) {
-		printf("ERROR: update_type %d does not exist!!!", update_type);
-		exit(EXIT_FAILURE);
-	}
+//	if(update_type != TX_FINISHED && update_type != TX_INITIATED) {
+//		printf("ERROR: update_type %d does not exist!!!", update_type);
+//		exit(EXIT_FAILURE);
+//	}
 
 	// Total power [pW] (of interest and interference) generated ONLY by the incoming or outgoing TX
-	double total_power[num_channels_komondor];
-	for(int i = 0; i < num_channels_komondor; ++i) {
-		total_power[i] = 0;
-	}
+//	double total_power[num_channels_komondor];
+//	for(int i = 0; i < num_channels_komondor; ++i) {
+//		total_power[i] = 0;
+//	}
 
+	double total_power[num_channels_komondor];
+	memset(total_power, 0, num_channels_komondor * sizeof(double));
+
+	// Updates total_power array
 	ApplyAdjacentChannelInterferenceModel(adjacent_channel_model, total_power,
 		notification, num_channels_komondor, rx_gain, central_frequency, pw_received, path_loss_model);
 
 	// Increase/decrease power sensed if TX started/finished
 	for(int c = 0; c < num_channels_komondor; ++c){
 
-		if(update_type == TX_FINISHED) {
+		switch(update_type){
 
-			(*channel_power)[c] = (*channel_power)[c] - total_power[c];
+			case TX_FINISHED:{
 
-			// Avoid near-zero negative values
-			if ((*channel_power)[c] < 0.000001) (*channel_power)[c] = 0;
+				(*channel_power)[c] = (*channel_power)[c] - total_power[c];
 
+				// Avoid near-zero negative values
+				if ((*channel_power)[c] < 0.000001) (*channel_power)[c] = 0;
+				break;
+			}
+
+			case TX_INITIATED:{
+				(*channel_power)[c] = (*channel_power)[c] + total_power[c];
+				break;
+			}
+
+			default:{}
 		}
 
-		else if (update_type == TX_INITIATED) (*channel_power)[c] = (*channel_power)[c] + total_power[c];
-
 	}
-
 }
 
 /*

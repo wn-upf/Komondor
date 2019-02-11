@@ -68,6 +68,14 @@
 #include "../structures/node_configuration.h"
 #include "../structures/performance_metrics.h"
 
+//#define __SAVELOGS__
+
+#ifdef __SAVELOGS__
+    #define    LOGS(f,...)    fprintf(f, ##__VA_ARGS__)
+#else
+    #define    LOGS(f,...)
+#endif
+
 // Node component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Node : public TypeII{
 
@@ -472,7 +480,7 @@ void Node :: Start(){
 		node_logger.SetVoidHeadString();
 	}
 
-	if(save_node_logs) fprintf(node_logger.file,"%.18f;N%d;S%d;%s;%s Start()\n",
+	LOGS(node_logger.file,"%.18f;N%d;S%d;%s;%s Start()\n",
 		SimTime(), node_id, STATE_UNKNOWN, LOG_B00, LOG_LVL1);
 
 	// Write node info and conf.
@@ -519,9 +527,9 @@ void Node :: Start(){
 	//    trigger_start_saving_logs.Set(SimTime() + 3628);
 	// ----------------------------------------
 
-	if(save_node_logs) fprintf(node_logger.file,"\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+	LOGS(node_logger.file,"\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 
-	// if(save_node_logs) fprintf(node_logger.file, "%f;N%d;S%d;%s;%s Start() END\n", SimTime(), node_id, node_state, LOG_B01, LOG_LVL1);
+	// LOGS(node_logger.file, "%f;N%d;S%d;%s;%s Start() END\n", SimTime(), node_id, node_state, LOG_B01, LOG_LVL1);
 };
 
 /*
@@ -529,7 +537,8 @@ void Node :: Start(){
  */
 void Node :: Stop(){
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Node Stop()\n",
+
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Node Stop()\n",
 			SimTime(), node_id, node_state, LOG_C00, LOG_LVL1);
 
 	// Print and write node statistics if required
@@ -539,7 +548,7 @@ void Node :: Stop(){
 	// Close node logs file
 	if(save_node_logs) fclose(node_logger.file);
 
-	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Node info:\n", SimTime(), node_id, node_state, LOG_C01, LOG_LVL1);
+	// LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Node info:\n", SimTime(), node_id, node_state, LOG_C01, LOG_LVL1);
 };
 
 /*
@@ -549,13 +558,13 @@ void Node :: Stop(){
  */
 void Node :: InportSomeNodeStartTX(Notification &notification){
 
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX(): N%d to N%d sends packet type %d in range %d-%d\n",
 			SimTime(), node_id, node_state, LOG_D00, LOG_LVL1,
 			notification.source_id, notification.destination_id, notification.packet_type,
 			notification.left_channel, notification.right_channel);
 
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Nodes transmitting: ",
 				SimTime(), node_id, node_state, LOG_D00, LOG_LVL3);
 
@@ -566,7 +575,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 	if(notification.source_id == node_id){ // If OWN NODE IS THE TRANSMITTER, do nothing
 
-//		if(save_node_logs) fprintf(node_logger.file,
+//		LOGS(node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s I have started a TX of packet #%d (type %d) to N%d in channels %d - %d of duration %.9f us\n",
 //				SimTime(), node_id, node_state, LOG_D02, LOG_LVL2, notification.packet_id,
 //				notification.packet_type, notification.destination_id,
@@ -575,13 +584,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 	} else {	// If OTHER NODE IS THE TRANSMITTER
 
-//		if(save_node_logs) fprintf(node_logger.file,
+//		LOGS(node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s N%d has started a TX of packet #%d (type %d) to N%d in channels %d - %d\n",
 //				SimTime(), node_id, node_state, LOG_D02, LOG_LVL2, notification.source_id,
 //				notification.packet_id,	notification.packet_type, notification.destination_id,
 //				notification.left_channel, notification.right_channel);
 
-//		if(save_node_logs) fprintf(node_logger.file,
+//		LOGS(node_logger.file,
 //					"%.15f;N%d;S%d;%s;%s START Channel before updating: ",
 //					SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 //
@@ -593,7 +602,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			central_frequency, num_channels_komondor, path_loss_model, rx_gain,
 			adjacent_channel_model, received_power_array[notification.source_id], node_id);
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
@@ -609,13 +618,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			current_cca, num_channels_komondor, SimTime());
 
 		if(save_node_logs) {
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
 				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 			for(int i = 0; i < num_channels_komondor; ++i){
 				fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
 			}
 			fprintf(node_logger.file, "\n");
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
 				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 			for(int i = 0; i < num_channels_komondor; ++i){
 				fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
@@ -644,7 +653,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					current_left_channel = notification.left_channel;
 					current_right_channel = notification.right_channel;
 
-					if(save_node_logs) fprintf(node_logger.file,
+					LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
 							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3,
 							notification.destination_id);
@@ -653,7 +662,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
 						notification, node_state, power_received_per_node, &channel_power);
 
-					if(save_node_logs) fprintf(node_logger.file,
+					LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							channel_max_intereference,
@@ -665,7 +674,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-						if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s SINR = %.2f dBm\n",
+						LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s SINR = %.2f dBm\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							ConvertPower(LINEAR_TO_DB, current_sinr));
 
@@ -686,7 +695,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							}
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
 								SimTime(), node_id, node_state, LOG_D15, LOG_LVL4, notification.packet_id,
 								notification.source_id, loss_reason);
@@ -709,7 +718,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						} else {	// Data packet IS NOT LOST (it can be properly received)
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Reception of RTS #%d from N%d CAN be started (SINR = %f dB)\n",
 								SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.packet_id,
 								notification.source_id, ConvertPower(LINEAR_TO_DB, current_sinr));
@@ -739,7 +748,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						}
 
 					} else {	//	Notification does NOT CONTAIN an RTS
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Unexpected packet type (%d) received!\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4, notification.packet_type);
 					}
@@ -752,7 +761,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						|| notification.packet_type == PACKET_TYPE_DATA
 						|| notification.packet_type == PACKET_TYPE_ACK){
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s I am not the TX destination (N%d to N%d). Checking if RTS/CTS can be decoded.\n",
 								SimTime(), node_id, node_state, LOG_D07, LOG_LVL2,
 								notification.source_id, notification.destination_id);
@@ -766,7 +775,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Pmax_intf[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm, sinr = %f dB\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							channel_max_intereference, ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
@@ -779,7 +788,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						if(loss_reason == PACKET_NOT_LOST) { // RTS/CTS can be decoded
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Packet type %d can be decoded\n",
 								SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.packet_type);
 
@@ -805,12 +814,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// trigger_NAV_timeout.Set(round_to_digits(time_to_trigger,12));
 							trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Entering in NAV during %.12f and setting NAV timeout to %.12f\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
 								current_nav_time, trigger_NAV_timeout.GetTime());
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s current_nav_time = %.12f\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4,
 								current_nav_time);
@@ -819,7 +828,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						} else { // RTS/CTS cannot be decoded.
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s RTS/CTS sent from N%d could not be decoded for reason %d\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
 								notification.source_id, loss_reason);
@@ -830,7 +839,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// Check if DIFS or BO must be stopped
 							if(node_is_transmitter){
 
-								if(save_node_logs) fprintf(node_logger.file,
+								LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Checking if BO must be paused...\n",
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 								int pause = HandleBackoff(PAUSE_TIMER, &channel_power, current_primary_channel, current_cca,
@@ -843,7 +852,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 								} else {
 
-									if(save_node_logs) fprintf(node_logger.file,
+									LOGS(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s BO must not be paused.\n",
 										SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
 								}
@@ -856,7 +865,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //					else if (notification.packet_type == PACKET_TYPE_DATA ||
 //							   notification.packet_type == PACKET_TYPE_ACK){
 //						if(node_is_transmitter){
-//							if(save_node_logs) fprintf(node_logger.file,
+//							LOGS(node_logger.file,
 //									"%.15f;N%d;S%d;%s;%s Checking if BO must be paused...\n",
 //									SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 //							int pause = HandleBackoff(PAUSE_TIMER, &channel_power, current_primary_channel, current_cca,
@@ -865,7 +874,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							if (pause) {
 //								PauseBackoff();
 //							} else {
-//								if(save_node_logs) fprintf(node_logger.file,
+//								LOGS(node_logger.file,
 //									"%.15f;N%d;S%d;%s;%s BO must not be paused.\n",
 //									SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
 //							}
@@ -888,7 +897,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						if(notification.packet_type == PACKET_TYPE_RTS) {	// Notification CONTAINS an RTS PACKET
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s RTS from my AP N%d sent simultaneously\n",
 								SimTime(), node_id, node_state, LOG_D16, LOG_LVL4,
 								notification.source_id);
@@ -902,7 +911,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
 								ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
@@ -926,7 +935,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									// Trigger the restart then.
 
 									// Sergio on 27/09/2017. Review this case
-									if(save_node_logs) fprintf(node_logger.file,
+									LOGS(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s RTS from my AP CANNOT be decoded\n",
 										SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
 
@@ -943,7 +952,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								// EOF HandleSlottedBackoffCollision();
 
 								if(nack_activated) {
-									if(save_node_logs) fprintf(node_logger.file,
+									LOGS(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s RTS cannot be decoded (SINR = %f dB) -> Sending NACK corresponding to BO collision to N%d\n",
 										SimTime(), node_id, node_state, LOG_D16, LOG_LVL5,
 										ConvertPower(LINEAR_TO_DB, current_sinr), notification.source_id);
@@ -955,7 +964,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							} else {	// Data packet IS NOT LOST (it can be properly received)
 
-								if(save_node_logs) fprintf(node_logger.file,
+								LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of RTS #%d from N%d CAN be started (SINR = %f dB)\n",
 									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.packet_id,
 									notification.source_id, ConvertPower(LINEAR_TO_DB, current_sinr));
@@ -983,7 +992,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							}
 
 						} else {	//	Notification does NOT CONTAIN an RTS
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Unexpected packet type (%d) received!\n",
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL4, notification.packet_type);
 						}
@@ -1010,7 +1019,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// TODO: determine if can be decoded!
 						if(fabs(nav_notification.timestamp - notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s NAV collision detected\n",
 								SimTime(), node_id, node_state, LOG_D07, LOG_LVL2);
 
@@ -1023,7 +1032,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
 								trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
 
-								if(save_node_logs) fprintf(node_logger.file,
+								LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s (workaround) setting NAV trigger to %.12f\n",
 									SimTime(), node_id, node_state, LOG_D07, LOG_LVL3,
 									trigger_NAV_timeout.GetTime());
@@ -1032,7 +1041,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 								if (nav_notification.packet_type == notification.packet_type) {
 
-									// if(save_node_logs) fprintf(node_logger.file,
+									// LOGS(node_logger.file,
 									//	"%.15f;N%d;S%d;%s;%s Waiting just in case of more collisions.\n",
 									//	SimTime(), node_id, node_state, LOG_D07, LOG_LVL4);
 
@@ -1049,7 +1058,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 									trigger_wait_collisions.Set(fix_time_offset(time_to_trigger,13,12));
 
-									if(save_node_logs) fprintf(node_logger.file,
+									LOGS(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s Recovering from EIFS at %.12f (preoc. = %.12f)\n",
 										SimTime(), node_id, node_state, LOG_D07, LOG_LVL4,
 										trigger_wait_collisions.GetTime(),
@@ -1063,7 +1072,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						} else { // No collision
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s I am not the TX destination (N%d to N%d). Checking if new RTS/CTS can be decoded.\n",
 									SimTime(), node_id, node_state, LOG_D07, LOG_LVL2,
 									notification.source_id, notification.destination_id);
@@ -1078,7 +1087,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Pmax_intf[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm, sinr = %f dB\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 								channel_max_intereference, ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
@@ -1102,20 +1111,20 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 									trigger_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
 
-									if(save_node_logs) fprintf(node_logger.file,
+									LOGS(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s Updating NAV timeout to the more restrictive one: From %.12f to %.12f\n",
 										SimTime(), node_id, node_state, LOG_D07, LOG_LVL4,
 										trigger_NAV_timeout.GetTime(), time_to_trigger);
 
 								}
 
-								if(save_node_logs) fprintf(node_logger.file,
+								LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s New RTS/CTS arrived from (N%d). Setting NAV to new value %.18f\n",
 									SimTime(), node_id, node_state, LOG_D07, LOG_LVL3,
 									notification.source_id, trigger_NAV_timeout.GetTime());
 							} else {
 
-								if(save_node_logs) fprintf(node_logger.file,
+								LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s RTS/CTS sent from N%d could not be decoded for reason %d\n",
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
 									notification.source_id, loss_reason);
@@ -1142,12 +1151,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 				if(notification.destination_id == node_id){ // Node IS THE DESTINATION
 
-					if(save_node_logs) fprintf(node_logger.file,
+					LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
 							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3,
 							notification.destination_id);
 
-					if(save_node_logs) fprintf(node_logger.file,
+					LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s I am transmitting, packet cannot be received\n",
 							SimTime(), node_id, node_state, LOG_D18, LOG_LVL3);
 
@@ -1161,7 +1170,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 				} else {	// Node IS NOT THE DESTINATION, do nothing
 
-//					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+//					LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
 //						SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
 
 				}
@@ -1182,7 +1191,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 				if(notification.destination_id == node_id){	// Node IS THE DESTINATION
 
-//					if(save_node_logs) fprintf(node_logger.file,
+//					LOGS(node_logger.file,
 //							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
 //							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.destination_id);
 
@@ -1199,7 +1208,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							if(loss_reason != PACKET_NOT_LOST
 								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If ongoing data packet IS LOST
 									// Pure collision (two nodes transmitting to me with enough power)
-									if(save_node_logs) fprintf(node_logger.file,
+									LOGS(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s Pure collision! Already receiving from N%d\n",
 										SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id);
 									loss_reason = PACKET_LOST_PURE_COLLISION;
@@ -1224,7 +1233,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							} else {	// If ongoing data packet IS NOT LOST (incoming transmission does not affect ongoing reception)
 
 								if (nack_activated) {
-									if(save_node_logs) fprintf(node_logger.file,
+									LOGS(node_logger.file,
 											"%.15f;N%d;S%d;%s;%s Low strength signal received while already receiving from N%d\n",
 										SimTime(), node_id, node_state, LOG_D20, LOG_LVL4, receiving_from_node_id);
 
@@ -1267,7 +1276,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									}
 								}  else {
 									// Pure collision (two nodes transmitting to me with enough power)
-									if(save_node_logs) fprintf(node_logger.file,
+									LOGS(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s Pure collision! Already receiving from N%d\n",
 										SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, receiving_from_node_id);
 									loss_reason = PACKET_LOST_PURE_COLLISION;
@@ -1290,7 +1299,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								}
 							} else { // If ongoing data packet IS NOT LOST (incoming transmission does not affect ongoing reception)
 								if(nack_activated){
-									if(save_node_logs) fprintf(node_logger.file,
+									LOGS(node_logger.file,
 											"%.15f;N%d;S%d;%s;%s Low strength signal received while already receiving from N%d\n",
 										SimTime(), node_id, node_state, LOG_D20, LOG_LVL4, receiving_from_node_id);
 									// Send logical NACK to incoming transmitter indicating that node is already receiving
@@ -1305,7 +1314,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 				} else {	// Node is NOT THE DESTINATION
 
-//					if(save_node_logs) fprintf(node_logger.file,
+//					LOGS(node_logger.file,
 //						"%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
 //						SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
 
@@ -1316,7 +1325,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					// Check if the ongoing reception is affected
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-					if(save_node_logs) fprintf(node_logger.file,
+					LOGS(node_logger.file,
 						"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm - current_sinr = %.2f dBm\n",
 						SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
 						ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
@@ -1329,7 +1338,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							current_sinr, capture_effect, current_cca,
 							power_rx_interest, constant_per, node_id, capture_effect_model);
 
-					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
+					LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
 						SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, loss_reason);
 
 
@@ -1339,7 +1348,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							case CE_DEFAULT:{
 								// Collision by hidden node
-								if(save_node_logs) fprintf(node_logger.file,
+								LOGS(node_logger.file,
 										"%.15f;N%d;S%d;%s;%s Collision by interferences!\n",
 										SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
 
@@ -1407,7 +1416,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					incoming_notification = notification;
 
-//					if(save_node_logs) fprintf(node_logger.file,
+//					LOGS(node_logger.file,
 //							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
 //							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.destination_id);
 
@@ -1427,7 +1436,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						if(loss_reason != PACKET_NOT_LOST
 								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE) {	// If ACK packet IS LOST, send logical Nack
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
 									SimTime(), node_id, node_state, LOG_D15, LOG_LVL4, notification.packet_id,
 									notification.source_id, loss_reason);
@@ -1443,7 +1452,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						} else {	// If ACK packet IS NOT LOST (it can be properly received)
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of ACK %d from N%d CAN be started\n",
 									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.packet_id, notification.source_id);
 
@@ -1453,11 +1462,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							receiving_from_node_id = notification.source_id;
 							receiving_packet_id = notification.packet_id;
 
-//							if(save_node_logs) fprintf(node_logger.file,
+//							LOGS(node_logger.file,
 //									"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
 //									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.destination_id);
 
-//							if(save_node_logs) fprintf(node_logger.file,
+//							LOGS(node_logger.file,
 //									"%.15f;N%d;S%d;%s;%s current_sinr = %f dB\n",
 //									SimTime(), node_id, node_state, LOG_D16, LOG_LVL5,
 //									ConvertPower(LINEAR_TO_DB,current_sinr));
@@ -1465,14 +1474,14 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						}
 
 					}  else {	//	Some packet type received that is not ACK
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Unexpected packet type received!\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 					}
 
 				} else {	// Node IS NOT THE DESTINATION, do nothing
 //
-//					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+//					LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
 //								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
 
 				}
@@ -1491,7 +1500,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					incoming_notification = notification;
 
-//					if(save_node_logs) fprintf(node_logger.file,
+//					LOGS(node_logger.file,
 //							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
 //							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.destination_id);
 
@@ -1506,7 +1515,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-//						if(save_node_logs) fprintf(node_logger.file,
+//						LOGS(node_logger.file,
 //							"%.15f;N%d;S%d;%s;%s P_sn = %f dBm (%f pW) - P_st= %f dBm (%f pW)"
 //							"- P_if = %f dBm (%f pW)\n",
 //							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
@@ -1521,7 +1530,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						if(loss_reason != PACKET_NOT_LOST
 								&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If CTS packet IS LOST, send logical Nack
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
 									SimTime(), node_id, node_state, LOG_D15, LOG_LVL4, notification.packet_id,
 									notification.source_id, loss_reason);
@@ -1538,7 +1547,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						} else {	// If CTS packet IS NOT LOST (it can be properly received)
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of CTS #%d from N%d CAN be started\n",
 									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4,
 									notification.packet_id, notification.source_id);
@@ -1554,25 +1563,25 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ack_duration = notification.tx_info.ack_duration;
 							cts_duration = notification.tx_info.cts_duration;
 
-//							if(save_node_logs) fprintf(node_logger.file,
+//							LOGS(node_logger.file,
 //									"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
 //									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.destination_id);
 
-//							if(save_node_logs) fprintf(node_logger.file,
+//							LOGS(node_logger.file,
 //									"%.15f;N%d;S%d;%s;%s current_sinr = %f dB\n",
 //									SimTime(), node_id, node_state, LOG_D16, LOG_LVL5, ConvertPower(LINEAR_TO_DB,current_sinr));
 
 						}
 
 					}  else {	//	Some packet type received that is not CTS
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Unexpected packet type received!\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 					}
 
 				} else {	// Node IS NOT THE DESTINATION, do nothing
 
-//					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+//					LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
 //								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
 
 				}
@@ -1591,7 +1600,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					power_rx_interest = power_received_per_node[notification.source_id];
 					incoming_notification = notification;
 
-//					if(save_node_logs) fprintf(node_logger.file,
+//					LOGS(node_logger.file,
 //							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
 //							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.destination_id);
 
@@ -1604,7 +1613,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm - current_sinr = %.2f dBm\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
 							ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
@@ -1619,7 +1628,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						if(loss_reason != PACKET_NOT_LOST
 							&& loss_reason != PACKET_LOST_OUTSIDE_CH_RANGE)  {	// If DATA packet IS LOST, send logical Nack
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of notification %d from N%d CANNOT be started because of reason %d\n",
 									SimTime(), node_id, node_state, LOG_D15, LOG_LVL4, notification.packet_id,
 									notification.source_id, loss_reason);
@@ -1634,7 +1643,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						} else {	// If DATA packet IS NOT LOST (it can be properly received)
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Reception of DATA %d from N%d CAN be started\n",
 									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4, notification.packet_id, notification.source_id);
 
@@ -1651,14 +1660,14 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						}
 
 					}  else {	//	Some packet type received that is not ACK
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Unexpected packet type received!\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 					}
 
 				} else {	// Node IS NOT THE DESTINATION, do nothing
 
-//					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+//					LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
 //								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
 
 				}
@@ -1684,7 +1693,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 		channel_idle = false;
 	}
 
-	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX() END\n", SimTime(), node_id, node_state, LOG_D01, LOG_LVL1);
+	// LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX() END\n", SimTime(), node_id, node_state, LOG_D01, LOG_LVL1);
 };
 
 /*
@@ -1694,7 +1703,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
  */
 void Node :: InportSomeNodeFinishTX(Notification &notification){
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeFinishTX(): N%d to N%d (type %d)"
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeFinishTX(): N%d to N%d (type %d)"
 			" at range %d-%d "
 			"- nodes transmitting: ",
 		SimTime(), node_id, node_state, LOG_E00, LOG_LVL1,
@@ -1708,21 +1717,21 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 	if(notification.source_id == node_id){	// Node is the TX source: do nothing
 
-//		if(save_node_logs) fprintf(node_logger.file,
+//		LOGS(node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s I have finished the TX of packet #%d (type %d) in channel range: %d - %d\n",
 //				SimTime(), node_id, node_state, LOG_E18, LOG_LVL2, notification.packet_id,
 //				notification.packet_type, notification.left_channel, notification.right_channel);
 
 	} else {	// Node is not the TX source
 
-//		if(save_node_logs) fprintf(node_logger.file,
+//		LOGS(node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s N%d has finished the TX of packet #%d (type %d) in channel range: %d - %d\n",
 //				SimTime(), node_id, node_state, LOG_E18, LOG_LVL2, notification.source_id,
 //				notification.packet_id, notification.packet_type, notification.left_channel,
 //				notification.right_channel);
 
 
-//		if(save_node_logs) fprintf(node_logger.file,
+//		LOGS(node_logger.file,
 //			"%.15f;N%d;S%d;%s;%s Channel before updating: ",
 //			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 //
@@ -1750,7 +1759,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		// End of safety condition
 		// -------------------------
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
@@ -1765,13 +1774,13 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			current_cca, num_channels_komondor, SimTime());
 
 		if(save_node_logs) {
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_free: ",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_free: ",
 				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 			for(int i = 0; i < num_channels_komondor; ++i){
 				fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
 			}
 			fprintf(node_logger.file, "\n");
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
 				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 			for(int i = 0; i < num_channels_komondor; ++i){
 				fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
@@ -1790,14 +1799,14 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 					if(!trigger_start_backoff.Active()
 						&& !trigger_end_backoff.Active()){	// BO was paused and DIFS not initiated
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s CASCA\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
 
 						int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_cca,
 								buffer.QueueSize()));
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm (%f)\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							current_primary_channel, ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]), channel_power[current_primary_channel]);
@@ -1809,17 +1818,17 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							time_to_trigger = SimTime() + DIFS;
 							// time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration + DIFS;
 							trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
-							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s BO will be resumed after DIFS at %.12f.\n",
+							LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s BO will be resumed after DIFS at %.12f.\n",
 								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4,
 								trigger_start_backoff.GetTime());
-//							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS started.\n",
+//							LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS started.\n",
 //														SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
 						} else {	// BO cannot be resumed
-							if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS cannot be started.\n",
+							LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS cannot be started.\n",
 								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
 						}
 					} else {	// BO was already active
-						if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s BO was already active.\n",
+						LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s BO was already active.\n",
 								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
 					}
 				}
@@ -1838,7 +1847,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 					if(notification.packet_type == PACKET_TYPE_DATA){	// Data packet transmission finished
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Packet #%d reception from N%d is finished successfully.\n",
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, notification.packet_id,
 							notification.source_id);
@@ -1881,20 +1890,20 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						time_to_trigger = SimTime() + SIFS;
 						trigger_SIFS.Set(fix_time_offset(time_to_trigger,13,12));
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s SIFS will be triggered in %.12f\n",
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
 							trigger_SIFS.GetTime());
 
 					} else {	// Other packet type transmission finished
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Unexpected packet type transmission finished!\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 					}
 
 				} else {	// Node IS NOT THE DESTINATION, do nothing
 
-					if(save_node_logs) fprintf(node_logger.file,
+					LOGS(node_logger.file,
 						"%.15f;N%d;S%d;%s;%s Still noticing a packet transmission (#%d) from N%d.\n",
 						SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, notification.packet_id,
 						notification.source_id);
@@ -1916,7 +1925,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 					if(notification.packet_type == PACKET_TYPE_ACK){	// ACK packet transmission finished
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s ACK #%d reception from N%d is finished successfully.\n",
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, notification.packet_id,
 							notification.source_id);
@@ -1934,7 +1943,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							++data_frames_acked;
 							++num_delay_measurements;
 							sum_delays = sum_delays + (SimTime() - buffer.GetFirstPacket().timestamp_generated);
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
 								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
 								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
@@ -1957,15 +1966,15 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							}
 						}
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Data packet/s removed from buffer (queue: %d/%d).\n",
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
 							buffer.QueueSize(), PACKET_BUFFER_SIZE);
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Handling contention window\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 									"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							cw_current, cw_stage_current, cw_stage_max);
@@ -1973,7 +1982,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// - Transmission succeeded ---> reset CW if binary exponential backoff is implemented
 						HandleContentionWindow(
 								cw_adaptation, RESET_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s To CW = %d, b = %d, m = %d\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							cw_current, cw_stage_current, cw_stage_max);
@@ -1983,14 +1992,14 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						RestartNode(FALSE);
 
 					} else {	// Other packet type transmission finished
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Unexpected packet type transmission finished!\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 					}
 
 				} else {	// Node IS NOT THE DESTINATION
 
-					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
+					LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
 						SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, incoming_notification.packet_id,
 						incoming_notification.source_id);
 				}
@@ -2021,13 +2030,13 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 					if(notification.packet_type == PACKET_TYPE_RTS){	// RTS packet transmission finished
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s RTS #%d reception from N%d is finished successfully.\n",
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, notification.packet_id,
 							notification.source_id);
 
 						// Check channel availability in order to send the CTS
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Checking if CTS can be sent: P_sen = %f dBm, CCA = %f dBm.\n",
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
 							ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]),
@@ -2035,7 +2044,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						if(ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) < current_cca) {
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Channel(s) is (are) clear! Sending CTS to N%d (STATE = %d) ...\n",
 								SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, current_destination_id, node_state);
 
@@ -2059,7 +2068,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							time_to_trigger = SimTime() + SIFS;
 							trigger_SIFS.Set(fix_time_offset(time_to_trigger,13,12)); // triggers the SendResponsePacket() function after SIFS
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s SIFS will be triggered in %.12f\n",
 								SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
 								trigger_SIFS.GetTime());
@@ -2088,7 +2097,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						} else {
 							// CANNOT START PACKET TX
 
-							if(save_node_logs) fprintf(node_logger.file,
+							LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s NO PUEDE PASAR!\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 
@@ -2109,14 +2118,14 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						}
 
 					} else {	// Other packet type transmission finished
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Unexpected packet type transmission finished!\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 					}
 
 				} else {	// Node IS NOT THE DESTINATION
 
-					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
+					LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
 							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, incoming_notification.packet_id,
 							incoming_notification.source_id);
 				}
@@ -2134,7 +2143,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 					if(notification.packet_type == PACKET_TYPE_CTS){	// CTS packet transmission finished
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s CTS #%d reception from N%d is finished successfully.\n",
 								SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
 								notification.packet_id, notification.source_id);
@@ -2160,7 +2169,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						trigger_SIFS.Set(fix_time_offset(time_to_trigger,13,12));
 
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s SIFS will be triggered in %.12f\n",
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
 							trigger_SIFS.GetTime());
@@ -2185,14 +2194,14 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 
 					} else {	// Other packet type transmission finished
-						if(save_node_logs) fprintf(node_logger.file,
+						LOGS(node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Unexpected packet type transmission finished!\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 					}
 
 				} else {	// Node IS NOT THE DESTINATION
 
-					if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
+					LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
 							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, incoming_notification.packet_id,
 							incoming_notification.source_id);
 				}
@@ -2229,7 +2238,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		}
 	}
 
-	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeFinishTX() END",	SimTime(), node_id, node_state, LOG_E01, LOG_LVL1);
+	// LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s InportSomeNodeFinishTX() END",	SimTime(), node_id, node_state, LOG_E01, LOG_LVL1);
 };
 
 /*
@@ -2241,7 +2250,7 @@ void Node :: InportNackReceived(LogicalNack &logical_nack){
 
 	int nack_reason;
 
-//	if(save_node_logs) fprintf(node_logger.file,
+//	LOGS(node_logger.file,
 //			"%.15f;N%d;S%d;%s;%s InportNackReceived(): N%d to N%d (A) and N%d (B)\n",
 //			SimTime(), node_id, node_state, LOG_H00, LOG_LVL1, logical_nack.source_id,
 //			logical_nack.node_id_a, logical_nack.node_id_b);
@@ -2250,7 +2259,7 @@ void Node :: InportNackReceived(LogicalNack &logical_nack){
 	if(logical_nack.source_id != node_id &&
 			(node_id == logical_nack.node_id_a || node_id == logical_nack.node_id_b)){
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s NACK of packet #%d received from N%d sent to a:N%d (and b:N%d) with reason %d\n",
 				SimTime(), node_id, node_state, LOG_H00, LOG_LVL2, logical_nack.packet_id, logical_nack.source_id,
 				logical_nack.node_id_a, logical_nack.node_id_b, logical_nack.loss_reason);
@@ -2262,29 +2271,29 @@ void Node :: InportNackReceived(LogicalNack &logical_nack){
 		if(nack_reason == PACKET_LOST_BO_COLLISION){
 			++ rts_lost_slotted_bo;
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s ++++++++++++++++++++++++++++++++\n",
 				SimTime(), node_id, node_state, LOG_H00, LOG_LVL2);
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s rts_lost_slotted_bo ++\n",
 				SimTime(), node_id, node_state, LOG_H00, LOG_LVL2);
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s ++++++++++++++++++++++++++++++++\n",
 				SimTime(), node_id, node_state, LOG_H00, LOG_LVL2);
 		}
 
 	} else {	// Node is the NACK transmitter, do nothing
 
-//		if(save_node_logs) fprintf(node_logger.file,
+//		LOGS(node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s NACK of packet #%d sent to a) N%d and b) N%d with reason %d\n",
 //				SimTime(), node_id, node_state, LOG_H00, LOG_LVL2, logical_nack.packet_id,
 //				logical_nack.node_id_a, logical_nack.node_id_b, logical_nack.loss_reason);
 
 	}
 
-	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;G01;%s InportNackReceived() END\n", SimTime(), node_id, LOG_LVL1);
+	// LOGS(node_logger.file, "%.15f;N%d;G01;%s InportNackReceived() END\n", SimTime(), node_id, LOG_LVL1);
 }
 
 /*
@@ -2296,7 +2305,7 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 
 	if(notification.destination_id == node_id) {	// If node IS THE DESTINATION
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS request received from N%d\n",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS request received from N%d\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL1, notification.source_id);
 
 //		// Compute distance and power received from transmitter
@@ -2307,7 +2316,7 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 //			notification.tx_info.tx_power, tx_gain, rx_gain,
 //			central_frequency, path_loss_model));
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s I am at distance: %.2f m (sensing P_rx = %.2f dBm)\n",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s I am at distance: %.2f m (sensing P_rx = %.2f dBm)\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL2,
 			distances_array[notification.source_id], ConvertPower(PW_TO_DBM,
 			received_power_array[notification.source_id]));
@@ -2315,7 +2324,7 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 		// Select the modulation according to the SINR perceived corresponding to incoming transmitter
 		SelectMCSResponse(mcs_response, received_power_array[notification.source_id]);
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s mcs_response for 1, 2, 4 and 8 channels: ",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s mcs_response for 1, 2, 4 and 8 channels: ",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3);
 
 		PrintOrWriteArrayInt(mcs_response, 4, WRITE_LOG, save_node_logs,
@@ -2341,18 +2350,18 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 
 	if(notification.destination_id == node_id) {	// If node IS THE DESTINATION
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s InportMCSResponseReceived()\n",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s InportMCSResponseReceived()\n",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL1);
 
 		int ix_aux (current_destination_id - wlan.list_sta_id[0]);	// Auxiliary index for correcting the node id offset
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS per number of channels: ",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s MCS per number of channels: ",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
 
 		// Set receiver modulation to the received one
 		for (int i = 0; i < NUM_OPTIONS_CHANNEL_LENGTH; ++i){
 			mcs_per_node[ix_aux][i] = notification.tx_info.modulation_schemes[i];
-			if(save_node_logs) fprintf(node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
+			LOGS(node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
 		}
 
 		double max_achievable_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
@@ -2365,9 +2374,9 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 		// Update performance measurements
 		current_performance.max_bound_throughput = max_achievable_throughput;
 
-		if(save_node_logs) fprintf(node_logger.file, "\n");
+		LOGS(node_logger.file, "\n");
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s max_achievable_throughput (%d - %d) = %.1f Mbps "
 			"(%d channel/s: Y_sc = %d, MCS %d: Y_m = %d, Y_c = %.2f)\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
@@ -2387,7 +2396,7 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 //				change_modulation_flag[ix_aux] = TRUE;
 			} else {
 				// NODE UNREACHABLE
-				if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Unreachable node: transmissions to N%d are cancelled\n",
+				LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Unreachable node: transmissions to N%d are cancelled\n",
 					SimTime(), node_id, node_state, LOG_G00, LOG_LVL3, current_destination_id);
 				// TODO: unreachable_nodes[current_destination_id] = TRUE;
 			}
@@ -2423,7 +2432,7 @@ void Node :: InportNewPacketGenerated(){
 				new_packet.packet_id = last_packet_generated_id;
 				buffer.PutPacket(new_packet);
 
-				if(save_node_logs) fprintf(node_logger.file,
+				LOGS(node_logger.file,
 						"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been generated (queue: %d/%d)\n",
 						SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
 						new_packet.packet_id, buffer.QueueSize(), PACKET_BUFFER_SIZE);
@@ -2446,7 +2455,7 @@ void Node :: InportNewPacketGenerated(){
 
 			} else {
 				// Buffer overflow - new packet is lost
-				if(save_node_logs) fprintf(node_logger.file,
+				LOGS(node_logger.file,
 					"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been dropped! (queue: %d/%d)\n",
 					SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
 					last_packet_generated_id, buffer.QueueSize(), PACKET_BUFFER_SIZE);
@@ -2465,7 +2474,7 @@ void Node :: InportNewPacketGenerated(){
 
 			int num_packets_generated_in_burst (burst_rate);
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s New traffic burst (#%d) generated %d packets\n",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
 				num_bursts,
@@ -2483,7 +2492,7 @@ void Node :: InportNewPacketGenerated(){
 					new_packet.packet_id = last_packet_generated_id;
 					buffer.PutPacket(new_packet);
 
-					if(save_node_logs) fprintf(node_logger.file,
+					LOGS(node_logger.file,
 							"%.15f;N%d;S%d;%s;%s A new packet (id: %d) has been generated from burst %d (buffer queue: %d/%d)\n",
 							SimTime(), node_id, node_state, LOG_F00, LOG_LVL4,
 							new_packet.packet_id,
@@ -2536,8 +2545,8 @@ void Node :: StartTransmission(trigger_t &){
  */
 void Node :: EndBackoff(trigger_t &){
 
-	if(save_node_logs) fprintf(node_logger.file, "\n----------------------------------------------------------\n");
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EndBackoff()\n",
+	LOGS(node_logger.file, "\n----------------------------------------------------------\n");
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s EndBackoff()\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL1);
 
 	// Sergio on 26th June 2018:
@@ -2555,19 +2564,19 @@ void Node :: EndBackoff(trigger_t &){
 		current_destination_id = wlan.list_sta_id[n];
 		// Receive the possible MCS to be used for each number of channels
 		if (change_modulation_flag[n]) {
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Requesting MCS to N%d\n",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Requesting MCS to N%d\n",
 				SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, current_destination_id);
 			RequestMCS();
 		}
 	}
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Allowed LEFT/RIGHT: %d - %d\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Allowed LEFT/RIGHT: %d - %d\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, min_channel_allowed, max_channel_allowed);
 
 	// Pick one receiver from the pool of potential receivers
 	SelectDestination();
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Trying to start TX to STA N%d\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Trying to start TX to STA N%d\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, current_destination_id);
 
 	// Identify free channels
@@ -2576,7 +2585,7 @@ void Node :: EndBackoff(trigger_t &){
 	GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free, min_channel_allowed,
 		max_channel_allowed, &channel_power, current_cca, timestampt_channel_becomes_free, SimTime(), PIFS);
 
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
 		SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
@@ -2584,13 +2593,13 @@ void Node :: EndBackoff(trigger_t &){
 		&channel_power, num_channels_komondor);
 
 	if(save_node_logs) {
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 		for(int i = 0; i < num_channels_komondor; ++i){
 			fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
 		}
 		fprintf(node_logger.file, "\n");
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 		for(int i = 0; i < num_channels_komondor; ++i){
 			fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
@@ -2598,7 +2607,7 @@ void Node :: EndBackoff(trigger_t &){
 		fprintf(node_logger.file, "\n");
 	}
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free (mind PIFS if activated): ",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free (mind PIFS if activated): ",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 
 	PrintOrWriteChannelsFree(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
@@ -2611,7 +2620,7 @@ void Node :: EndBackoff(trigger_t &){
 		min_channel_allowed, max_channel_allowed, current_primary_channel,
 		mcs_per_node, ix_mcs_per_node, num_channels_komondor);
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting: ",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting: ",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	PrintOrWriteChannelForTx(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
@@ -2629,7 +2638,7 @@ void Node :: EndBackoff(trigger_t &){
 			channels_for_tx, num_channels_komondor);
 		current_right_channel = GetFirstOrLastTrueElemOfArray(LAST_TRUE_IN_ARRAY,
 			channels_for_tx, num_channels_komondor);
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
 
@@ -2661,7 +2670,7 @@ void Node :: EndBackoff(trigger_t &){
 
 		//printf("data transmitted: %d\n", limited_num_packets_aggregated*frame_length);
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Num. of packets to aggregate: %d/%d\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
 			limited_num_packets_aggregated, max_num_packets_aggregated);
@@ -2672,7 +2681,7 @@ void Node :: EndBackoff(trigger_t &){
 			ieee_protocol, num_channels_tx, current_modulation, limited_num_packets_aggregated,
 			frame_length, bits_ofdm_sym);
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmitting (N_agg = %d) in %d channels using modulation %d (%.0f bits per OFDM symbol ---> %.2f Mbps) \n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4, limited_num_packets_aggregated,
 			(int) pow(2, ix_num_channels_used), current_modulation, bits_ofdm_sym,
@@ -2684,7 +2693,7 @@ void Node :: EndBackoff(trigger_t &){
 		current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
 		current_nav_time = fix_time_offset(current_nav_time,13,12); // Update the NAV time according to the time offsets
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
 			rts_duration, current_nav_time);
@@ -2706,7 +2715,7 @@ void Node :: EndBackoff(trigger_t &){
 			// time_rand_value = round_to_digits(time_rand_value, 15);
 			time_rand_value = fix_time_offset(time_rand_value,13,12);
 			current_nav_time = current_nav_time - time_rand_value;
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s time_rand_value = %.12f s - corrected NAV time = %.12f s\n",
 				SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
 				time_rand_value, current_nav_time);
@@ -2719,7 +2728,7 @@ void Node :: EndBackoff(trigger_t &){
 			first_packet_buffer.packet_id, current_num_packets_aggregated,
 			first_packet_buffer.timestamp_generated, current_tx_duration);
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission of RTS #%d started\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, rts_notification.packet_id);
 
@@ -2741,7 +2750,7 @@ void Node :: EndBackoff(trigger_t &){
 
 		time_to_trigger = SimTime() + current_tx_duration;
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s time_to_trigger = %.12f s - fix_time_offset = %.12f s\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
 			time_to_trigger, fix_time_offset(time_to_trigger,13,12));
@@ -2755,7 +2764,7 @@ void Node :: EndBackoff(trigger_t &){
 		AbortRtsTransmission();
 
 	}
-	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s EndBackoff() END\n", SimTime(), node_id, node_state, LOG_F01, LOG_LVL1);
+	// LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s EndBackoff() END\n", SimTime(), node_id, node_state, LOG_F01, LOG_LVL1);
 };
 
 /*
@@ -2765,7 +2774,7 @@ void Node :: EndBackoff(trigger_t &){
  */
 void Node :: MyTxFinished(trigger_t &){
 
-//	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s MyTxFinished()\n",
+//	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s MyTxFinished()\n",
 //			SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
 
 	switch(node_state){
@@ -2789,7 +2798,7 @@ void Node :: MyTxFinished(trigger_t &){
 
 			node_state = STATE_WAIT_CTS;
 
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RTS #%d tx finished. Waiting for CTS until %.12f\n",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s RTS #%d tx finished. Waiting for CTS until %.12f\n",
 				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2,
 				notification.packet_id, trigger_CTS_timeout.GetTime());
 
@@ -2809,7 +2818,7 @@ void Node :: MyTxFinished(trigger_t &){
 			trigger_DATA_timeout.Set(fix_time_offset(time_to_trigger,13,12));
 			node_state = STATE_WAIT_DATA;
 
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s CTS %d tx finished. Waiting for DATA...\n",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s CTS %d tx finished. Waiting for DATA...\n",
 				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
 
 			break;
@@ -2828,7 +2837,7 @@ void Node :: MyTxFinished(trigger_t &){
 			trigger_ACK_timeout.Set(fix_time_offset(time_to_trigger,13,12));
 			node_state = STATE_WAIT_ACK;
 
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s DATA %d tx finished. Waiting for ACK...\n",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s DATA %d tx finished. Waiting for ACK...\n",
 				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
 
 			break;
@@ -2842,7 +2851,7 @@ void Node :: MyTxFinished(trigger_t &){
 
 			outportSelfFinishTX(notification);
 
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s ACK %d tx finished. Restarting node...\n",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s ACK %d tx finished. Restarting node...\n",
 				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
 
 			RestartNode(FALSE);
@@ -2856,7 +2865,7 @@ void Node :: MyTxFinished(trigger_t &){
 			break;
 	}
 
-	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;  MyTxFinished()\n", SimTime(), node_id, node_state, LOG_G01, LOG_LVL1);
+	// LOGS(node_logger.file, "%.15f;N%d;S%d;%s;  MyTxFinished()\n", SimTime(), node_id, node_state, LOG_G01, LOG_LVL1);
 };
 
 /*
@@ -2864,7 +2873,7 @@ void Node :: MyTxFinished(trigger_t &){
  */
 void Node :: RequestMCS(){
 
-//	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMCS() to N%d\n",
+//	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMCS() to N%d\n",
 //				SimTime(), node_id, node_state, LOG_G00, LOG_LVL1, current_destination_id);
 
 	// Only one channel required (logically!)
@@ -2895,7 +2904,7 @@ void Node :: RequestMCS(){
 	if(first_time_requesting_mcs) {
 		first_time_requesting_mcs = FALSE;
 	}
-	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMCS() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
+	// LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMCS() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
 }
 
 /*
@@ -2903,7 +2912,7 @@ void Node :: RequestMCS(){
  */
 void Node :: SelectDestination(){
 
-//	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s SelectDestination()\n",
+//	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s SelectDestination()\n",
 //			SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
 
 	if(node_type == NODE_TYPE_OTHER) {
@@ -2912,7 +2921,7 @@ void Node :: SelectDestination(){
 
 	current_destination_id = PickRandomElementFromArray(wlan.list_sta_id, wlan.num_stas);
 
-	// if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s SelectDestination() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
+	// LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s SelectDestination() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
 }
 
 /*********************/
@@ -3011,7 +3020,7 @@ void Node :: SendLogicalNack(LogicalNack logical_nack){
 
 	outportSendLogicalNack(logical_nack);
 
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s NACK of packet type %d sent to a:N%d (and b:N%d) with reason %d\n",
 		SimTime(), node_id, node_state, LOG_I00, LOG_LVL4, logical_nack.packet_type,
 		logical_nack.node_id_a, logical_nack.node_id_b, logical_nack.loss_reason);
@@ -3027,7 +3036,7 @@ void Node :: SendResponsePacket(trigger_t &){
 
 		case STATE_TX_ACK:{
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s SIFS completed after receiving DATA, sending ACK...\n",
 				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3);
 
@@ -3038,7 +3047,7 @@ void Node :: SendResponsePacket(trigger_t &){
 			time_to_trigger = SimTime() + current_tx_duration;
 			trigger_toFinishTX.Set(fix_time_offset(time_to_trigger,13,12));
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s truncate_Sergio = %.12f - current_tx_duration = %.12f - trigger_toFinishTX = %.12f\n",
 				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3,
 				truncate_Sergio(SimTime() + FEMTO_VALUE,12), current_tx_duration, trigger_toFinishTX.GetTime());
@@ -3047,7 +3056,7 @@ void Node :: SendResponsePacket(trigger_t &){
 		}
 
 		case STATE_TX_CTS:{
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s SIFS completed after receiving RTS, sending CTS (duration = %f)\n",
 				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3, current_tx_duration);
 			outportSelfStartTX(cts_notification);
@@ -3058,7 +3067,7 @@ void Node :: SendResponsePacket(trigger_t &){
 		}
 
 		case STATE_TX_DATA:{
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s SIFS completed after receiving CTS, sending DATA...\n",
 				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3);
 			outportSelfStartTX(data_notification);
@@ -3067,7 +3076,7 @@ void Node :: SendResponsePacket(trigger_t &){
 			data_packets_sent++;
 			// Update performance measurements
 			current_performance.data_packets_sent ++;
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Data TX will be finished at %.15f\n",
 				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3,
 				trigger_toFinishTX.GetTime());
@@ -3089,7 +3098,7 @@ void Node :: AbortRtsTransmission(){
 	num_new_backoff_computations++;
 	node_state = STATE_SENSING;
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
 		SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
 
 }
@@ -3118,14 +3127,14 @@ void Node :: AckTimeout(trigger_t &){
 	// Update performance measurements
 	current_performance.data_packets_lost++;
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d lost\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d lost\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL4,
 		packet_id);
 
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 		cw_current, cw_stage_current, cw_stage_max);
@@ -3133,7 +3142,7 @@ void Node :: AckTimeout(trigger_t &){
 	HandleContentionWindow(
 		cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
 
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = %d, b = %d, m = %d\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 		cw_current, cw_stage_current, cw_stage_max);
@@ -3149,15 +3158,15 @@ void Node :: CtsTimeout(trigger_t &){
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
 		data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel,current_tx_duration);
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s CTS TIMEOUT! RTS-CTS packet lost\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s CTS TIMEOUT! RTS-CTS packet lost\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL2);
 
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 		cw_current, cw_stage_current, cw_stage_max);
@@ -3165,7 +3174,7 @@ void Node :: CtsTimeout(trigger_t &){
 	HandleContentionWindow(
 		cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
 
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = %d, b = %d, m = %d\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 		cw_current, cw_stage_current, cw_stage_max);
@@ -3188,7 +3197,7 @@ void Node :: DataTimeout(trigger_t &){
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
 		data_packets_lost, rts_cts_lost, current_right_channel, current_left_channel, current_tx_duration);
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
 
 	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
@@ -3201,9 +3210,9 @@ void Node :: DataTimeout(trigger_t &){
  */
 void Node :: NavTimeout(trigger_t &){
 
-	if(save_node_logs) fprintf(node_logger.file, "\n **********************************************************************\n");
+	LOGS(node_logger.file, "\n **********************************************************************\n");
 
-	if(save_node_logs) fprintf(node_logger.file,
+	LOGS(node_logger.file,
 		"%.15f;N%d;S%d;%s;%s NAV TIMEOUT!\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
 
@@ -3221,13 +3230,13 @@ void Node :: NavTimeout(trigger_t &){
 
 			trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Starting new DIFS to finsih in %.12f\n",
 				SimTime(), node_id, node_state, LOG_D17, LOG_LVL3,
 				trigger_start_backoff.GetTime());
 
 		} else {
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s New DIFS cannot be started\n",
 				SimTime(), node_id, node_state, LOG_D17, LOG_LVL3);
 		}
@@ -3252,7 +3261,7 @@ void Node :: NavTimeout(trigger_t &){
 void Node :: PauseBackoff(){
 
 	if(trigger_start_backoff.Active()){
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Cancelling DIFS. BO still frozen at %.9f (%.2f slots)\n",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Cancelling DIFS. BO still frozen at %.9f (%.2f slots)\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 			remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
 
@@ -3261,24 +3270,24 @@ void Node :: PauseBackoff(){
 
 		if(trigger_end_backoff.Active()){	// If backoff trigger is active, freeze it
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO is active. Freezing it from %.9f (%.2f slots)...\n",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 				(trigger_end_backoff.GetTime() - SimTime()) * pow(10,6), (trigger_end_backoff.GetTime() - SimTime())/SLOT_TIME);
 
 			remaining_backoff = ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s ... to %.9f (%.2f slots)\n",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 				remaining_backoff * pow(10,6), remaining_backoff/SLOT_TIME);
 
-//			if(save_node_logs) fprintf(node_logger.file,
+//			LOGS(node_logger.file,
 //								"%.15f;N%d;S%d;%s;%s Original remaining BO: %.9f us\n",
 //								SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 //								(trigger_end_backoff.GetTime() - SimTime())*pow(10,6));
 
-//			if(save_node_logs) fprintf(node_logger.file,
+//			LOGS(node_logger.file,
 //					"%.15f;N%d;S%d;%s;%s Backoff is active --> freeze it at %.9f us (%.2f slots)\n",
 //					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 //					remaining_backoff * pow(10,6), remaining_backoff/SLOT_TIME);
@@ -3287,7 +3296,7 @@ void Node :: PauseBackoff(){
 
 		} else {	// If backoff trigger is frozen
 
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Backoff is NOT active - it is already frozen at %.9f us (%.2f slots)\n",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 				remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
@@ -3304,18 +3313,18 @@ void Node :: PauseBackoff(){
  * */
 void Node :: ResumeBackoff(trigger_t &){
 
-//	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s DIFS finished\n",
+//	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s DIFS finished\n",
 //					SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
 
 	time_to_trigger = SimTime() + remaining_backoff;
 
 	trigger_end_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Resuming backoff at %.9f us (%.2f slots)\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Resuming backoff at %.9f us (%.2f slots)\n",
 		SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 		(remaining_backoff * pow(10,6)), (remaining_backoff / (double) SLOT_TIME));
 
-//	if(save_node_logs) fprintf(node_logger.file,
+//	LOGS(node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s DIFS: active = %d, t_DIFS = %f - backoff: active = %d - t_back = %f\n",
 //				SimTime(), node_id, node_state, LOG_D02, LOG_LVL3,
 //				trigger_start_backoff.Active(), trigger_start_backoff.GetTime() - SimTime(),
@@ -3393,8 +3402,8 @@ void Node :: InportReceivingRequestFromAgent() {
 
 //	printf("%s Node #%d: New information request received from the Agent\n", LOG_LVL1, node_id);
 
-	if(save_node_logs) fprintf(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New information request received from the Agent\n",
+	LOGS(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s New information request received from the Agent\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	// Generate the configuration to be sent to the agent
@@ -3404,7 +3413,7 @@ void Node :: InportReceivingRequestFromAgent() {
 	UpdatePerformanceMeasurements();
 
 	// Answer to the agent
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Sending information to the Agent\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Sending information to the Agent\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	outportAnswerToAgent(configuration, current_performance);
@@ -3412,7 +3421,7 @@ void Node :: InportReceivingRequestFromAgent() {
 	// Restart performance metrics for future requests
 	RestartPerformanceMetrics(&current_performance, SimTime());
 
-	if(save_node_logs) fprintf(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	LOGS(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
 }
 
@@ -3424,7 +3433,7 @@ void Node :: InportReceivingRequestFromAgent() {
 void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configuration) {
 
 //	printf("%s Node #%d: New configuration received from the Agent\n", LOG_LVL1, node_id);
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the Agent\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the Agent\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	new_configuration = received_configuration;
@@ -3453,7 +3462,7 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 
 	// TODO: think about recommendation levels done by agents
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Applying the new received configuration\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Applying the new received configuration\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	// Set new configuration according to received instructions
@@ -3487,7 +3496,7 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 void Node :: BroadcastNewConfigurationToStas(Configuration &new_configuration) {
 
 	// ONLY APs connected to agents
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Broadcasting the new configuration to STAs\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Broadcasting the new configuration to STAs\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	// Send the new configuration to the associated STAs
@@ -3504,9 +3513,9 @@ void Node :: InportNewWlanConfigurationReceived(Configuration &received_configur
 
 	if (node_type == NODE_TYPE_STA) {
 
-		if(save_node_logs) fprintf(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+		LOGS(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the AP\n",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the AP\n",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 		// Set new configuration
@@ -3517,7 +3526,7 @@ void Node :: InportNewWlanConfigurationReceived(Configuration &received_configur
 		// Set flag to true in order to apply the new configuration next time the node restarts
 		flag_apply_new_configuration = TRUE;
 
-		if(save_node_logs) fprintf(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+		LOGS(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
 		if(node_state == STATE_SENSING) RestartNode(FALSE);
 
@@ -3552,8 +3561,8 @@ void Node :: CallRestartSta(trigger_t &){
  */
 void Node :: RestartNode(int called_by_time_out){
 
-	if(save_node_logs) fprintf(node_logger.file, "\n **********************************************************************\n");
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Node Restarted (%d)\n",
+	LOGS(node_logger.file, "\n **********************************************************************\n");
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Node Restarted (%d)\n",
 		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL1,
 		called_by_time_out);
 
@@ -3600,18 +3609,18 @@ void Node :: RestartNode(int called_by_time_out){
 		expected_backoff = expected_backoff + remaining_backoff;
 		++num_new_backoff_computations;
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f (%.0f slots).\n",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f (%.0f slots).\n",
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
 			remaining_backoff, remaining_backoff/SLOT_TIME);
 
 		// Add extra slot since node has txed
 		remaining_backoff = remaining_backoff + SLOT_TIME;
 
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Extra slot added --> remaining BO %f slots\n",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Extra slot added --> remaining BO %f slots\n",
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
 			remaining_backoff / SLOT_TIME);
 
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Checking if BO can be resumed. Pow(primary #%d) =  %.2f dBm\n",
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
 			current_primary_channel, ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]));
@@ -3622,14 +3631,14 @@ void Node :: RestartNode(int called_by_time_out){
 
 		// Check if node has to freeze the BO (if it is not already frozen)
 		if (resume) {
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO can be resumed! Starting DIFS...\n",
 				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
 			// time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
 			time_to_trigger = SimTime() + DIFS;
 			trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 		} else {
-			if(save_node_logs) fprintf(node_logger.file,
+			LOGS(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO cannot be resumed!\n",
 				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
 		}
@@ -3685,7 +3694,7 @@ void Node:: HandleSlottedBackoffCollision() {
 void Node:: RecoverFromCtsTimeout(trigger_t &) {
 	// Sergio on 25 Oct 2017
 	// - Just restart the node to start the DIFS
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RecoverFromCtsTimeout\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s RecoverFromCtsTimeout\n",
 		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 	// Cancel trigger for safety
 	trigger_recover_cts_timeout.Cancel();
@@ -3698,21 +3707,21 @@ void Node:: RecoverFromCtsTimeout(trigger_t &) {
 void Node:: MeasureRho(trigger_t &){
 	// if ( (buffer.QueueSize() > 0) && (channel_power[current_primary_channel] < current_cca)){
 	if (node_state == STATE_SENSING && channel_power[current_primary_channel] < current_cca){
-		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Sensing + free\n",
+		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Sensing + free\n",
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 		++num_measures_rho;
 		// DIFS condition: !trigger_start_backoff.Active()
 		if (buffer.QueueSize() > 0){
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Packet in buffer\n",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Packet in buffer\n",
 				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4);
 			num_measures_rho_accomplished ++;
 		} else {
-			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Not packet in buffer\n",
+			LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Not packet in buffer\n",
 				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4);
 		}
 	} else {
 
-//		if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s No RHO!\n",
+//		LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s No RHO!\n",
 //						SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 	}
 	// Utilization
@@ -3777,7 +3786,7 @@ void Node :: PrintNodeInfo(int info_detail_level){
 void Node:: CallSensing(trigger_t &){
 
 
-	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s State changed to sensing due to NAV collision\n",
+	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s State changed to sensing due to NAV collision\n",
 		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 
 	node_state = STATE_SENSING;
@@ -3787,7 +3796,7 @@ void Node:: CallSensing(trigger_t &){
 
 	// Check if node has to freeze the BO (if it is not already frozen)
 	if (resume) {
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s BO can be resumed! Starting DIFS...\n",
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
 
@@ -3795,7 +3804,7 @@ void Node:: CallSensing(trigger_t &){
 		time_to_trigger = SimTime() + DIFS;
 		trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 	} else {
-		if(save_node_logs) fprintf(node_logger.file,
+		LOGS(node_logger.file,
 			"%.15f;N%d;S%d;%s;%s BO canot be resumed!\n",
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
 	}
