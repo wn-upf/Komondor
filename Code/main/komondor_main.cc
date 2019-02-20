@@ -748,6 +748,7 @@ void Komondor :: Stop(){
 		case 11:{
 
 			double time_in_channel_wlan_a = node_container[0].total_time_transmitting_in_num_channels[0];
+			double time_in_channel_wlan_b = node_container[2].total_time_transmitting_in_num_channels[2];
 			double time_in_channel_average = 0;
 			double time_in_channel_max_min = 10000000000000;
 			for(int i = 0; i < total_wlans_number; i++){
@@ -759,16 +760,19 @@ void Komondor :: Stop(){
 
 			time_in_channel_average = time_in_channel_average / total_wlans_number;
 
-			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
-				node_container[0].throughput * pow(10,-6),			// Throughput WLAN A
+			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
+				node_container[0].throughput * pow(10,-6),				// Throughput WLAN A
+				node_container[2].throughput * pow(10,-6),				// Throughput WLAN B
 				(total_throughput * pow(10,-6)/total_wlans_number),		// Average throughput
-				min_throughput * pow(10,-6),					// Max-min throughput
+				min_throughput * pow(10,-6),							// Max-min throughput
 				time_in_channel_wlan_a/simulation_time_komondor,		// Time WLAN A spends transmitting
+				time_in_channel_wlan_b/simulation_time_komondor,		// Time WLAN B spends transmitting
 				time_in_channel_average/simulation_time_komondor,		// Average time WLANs spend transmitting
 				time_in_channel_max_min/simulation_time_komondor,		// Max-min time WLANs spend transmitting
 				node_container[0].average_delay * pow(10,3),			// Delay WLAN A
+				node_container[2].average_delay * pow(10,3),			// Delay WLAN B
 				total_delay * pow(10,3) / total_wlans_number,			// Average delay
-				max_delay * pow(10,3) );					// Maximum delay
+				max_delay * pow(10,3) );								// Maximum delay
 
 			break;
 

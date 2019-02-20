@@ -1,5 +1,5 @@
 # define execution parameters
-SIM_TIME=20
+SIM_TIME=100
 SEED=1992
 # compile KOMONDOR
 cd ..

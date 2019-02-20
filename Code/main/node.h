@@ -5050,7 +5050,7 @@ void Node :: InitializeVariables() {
 	// Initialize the TXOP identified to false
 	txop_sr_identified = FALSE;
 	// Hardcoded: in order to indicate that WLAN B does not apply SR
-	//if (node_id >= 2) spatial_reuse_enabled = FALSE;
+	if (node_id >= 2) spatial_reuse_enabled = FALSE;
 	// Initialize the type of ongoing transmissions to 0
 	for (int i = 0; i < 4; i ++) {
 		type_ongoing_transmissions_sr[i] = 0;
