@@ -462,8 +462,7 @@ void Agent :: InitializeLearningAlgorithm() {
 
 	if (centralized_flag) { // Learning operation managed by the CC
 
-		fprintf(agent_logger.file, "%.15f;A%d;%s;%s Learning operation managed by the CC\n",
-			SimTime(), agent_id, LOG_C03, LOG_LVL2);
+		printf("%s Agent %d: Learning operation managed by the CC\n", LOG_LVL5, agent_id);
 
 	} else  { // Learning operation managed by the agent
 

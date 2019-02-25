@@ -63,12 +63,16 @@ class GraphColoring {
 		int agents_number;
 		int num_channels;
 
+		int total_nodes_number;
+
 	// Private items
 	private:
 
 		// Generic variables to all the learning strategies
 		int initial_reward;
 		int num_iterations;
+
+		double **rssi_table;
 
 	// Methods
 	public:
@@ -89,7 +93,7 @@ class GraphColoring {
 		 * OUTPUT:
 		 *  - suggested_configuration: configuration suggested to the AP
 		 */
-		void UpdateConfiguration(Configuration **configuration_array, Performance *performance_array,
+		void UpdateConfiguration(Configuration *configuration_array, Performance *performance_array,
 			Logger &central_controller_logger, double sim_time) {
 
 			// Find the action ix according to the AP's configuration
@@ -97,18 +101,32 @@ class GraphColoring {
 
 			// Update the RSSI table
 			for (int i = 0; i < agents_number; ++ i) {
-
 				// ...
-				new_primary = i % num_channels;
-				// Update the configuration
-				configuration_array[i]->selected_primary_channel = new_primary;	// Primary
-
+//				printf("rssi_table (agent %d):\n", i);
+				for (int j = 0; j < total_nodes_number; ++ j) {
+					rssi_table[i][j] = performance_array[i].rssi_list[j];
+//					printf("%f, ", rssi_table[i][j]);
+				}
+//				printf("\n");
 			}
 
-			if(save_controller_logs) fprintf(central_controller_logger.file, "%.15f;%s;%s GraphColoring: "
-				"New configurations provided\n", sim_time, LOG_C00, LOG_LVL2);
+			// Update the configuration of each agent
+			for (int i = 0; i < agents_number; ++ i) {
+				new_primary = (int) (i % num_channels);
+				configuration_array[i].selected_primary_channel = new_primary;	// Primary
+			}
 
-		};
+
+			if(save_controller_logs) {
+				fprintf(central_controller_logger.file, "%.15f;%s;%s GraphColoring: "
+					"New configurations provided\n", sim_time, LOG_C00, LOG_LVL2);
+				for (int i = 0; i < agents_number; ++ i) {
+					fprintf(central_controller_logger.file, "%.15f;%s;%s Agent %d - Assigned channel %d\n",
+					sim_time, LOG_C00, LOG_LVL3, i,	configuration_array[i].selected_primary_channel);
+				}
+			}
+
+		}
 
 		/***********************/
 		/***********************/
@@ -123,6 +141,14 @@ class GraphColoring {
 
 			initial_reward = 0;
 			num_iterations = 1;
+
+			rssi_table = new double*[total_nodes_number];
+			for (int i = 0 ; i < total_nodes_number ; ++ i) {
+				rssi_table[i] = new double[total_nodes_number];
+				for (int j = 0 ; j < total_nodes_number ; ++ j) {
+					rssi_table[i][j] = 0;
+				}
+			}
 
 		}
 

@@ -3390,6 +3390,10 @@ void Node :: UpdatePerformanceMeasurements(){
 		current_performance.data_packets_lost) * frame_length
 		* limited_num_packets_aggregated)) / (SimTime()-current_performance.last_time_measured);
 
+	for (int i = 0 ; i < total_nodes_number; ++ i) {
+		current_performance.rssi_list[i] = received_power_array[i];
+	}
+
 }
 
 
@@ -4407,6 +4411,7 @@ void Node :: InitializeVariables() {
 
 	// Measurements to be sent to agents
 	RestartPerformanceMetrics(&current_performance, 0);
+	current_performance.SetSizeOfRssiList(total_nodes_number);
 
 	flag_apply_new_configuration = FALSE;
 

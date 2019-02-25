@@ -63,6 +63,8 @@ struct Performance
 	double num_packets_generated;
 	double num_packets_dropped;
 
+	double *rssi_list;
+
 	// Function to print the node's report
 	void PrintReport(void){
 
@@ -77,6 +79,16 @@ struct Performance
 		printf("%s num_packets_dropped = %f\n", LOG_LVL5, num_packets_dropped);
 		printf("\n");
 
+	}
+
+	/*
+	 * SetSizeOfRssiList(): sets the size of the array list_id_aggregated
+	 */
+	void SetSizeOfRssiList(int total_nodes_number){
+		rssi_list = new double[total_nodes_number];
+		for(int i = 0; i < total_nodes_number; ++i){
+			rssi_list[i] = 0;
+		}
 	}
 
 };

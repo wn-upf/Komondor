@@ -88,8 +88,7 @@ component Komondor : public CostSimEng {
 		void GenerateNodesByReadingNodesInputFile(const char *nodes_filename);
 
 		void GenerateAgents(const char *agents_filename);
-
-		void GenerateCentralController();
+		void GenerateCentralController(const char *agents_filename);
 
 		int GetNumOfLines(const char *nodes_filename);
 		int GetNumOfNodes(const char *nodes_filename, int node_type, std::string wlan_code);
@@ -291,7 +290,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	central_controller_flag = 0;
 	if (agents_enabled) { GenerateAgents(agents_input_filename); }
 
-	if (agents_enabled && central_controller_flag) { GenerateCentralController(); }
+	if (agents_enabled && central_controller_flag) { GenerateCentralController(agents_input_filename); }
 
 	if (print_system_logs) {
 		printf("%s System configuration: \n", LOG_LVL2);
@@ -967,7 +966,7 @@ void Komondor :: GenerateNodes(const char *nodes_filename) {
  */
 void Komondor :: GenerateAgents(const char *agents_filename) {
 
-	if (print_system_logs) printf("%s Generating agents...\n", LOG_LVL2);
+	if (print_system_logs) printf("%s Generating agents...\n", LOG_LVL1);
 
 	if (print_system_logs) printf("%s Reading agents input file '%s'...\n", LOG_LVL2, agents_filename);
 
@@ -1216,9 +1215,9 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
  * Input arguments:
  * -
  */
-void Komondor :: GenerateCentralController() {
+void Komondor :: GenerateCentralController(const char *agents_filename) {
 
-	if (print_system_logs) printf("%s Generating the Central Controller...\n", LOG_LVL2);
+	if (print_system_logs) printf("%s Generating the Central Controller...\n", LOG_LVL1);
 
 	// Despite we only have a single controller, it must be declared as an array,
 	// in order to properly perform inport & outport connections
@@ -1227,7 +1226,6 @@ void Komondor :: GenerateCentralController() {
 	if (total_controlled_agents_number > 0) {
 
 		central_controller[0].InitializeCentralController();
-
 		central_controller[0].agents_number = total_controlled_agents_number;
 
 		int *agents_list;
@@ -1243,13 +1241,66 @@ void Komondor :: GenerateCentralController() {
 				if (agent_time_between_requests > max_time_between_requests) {
 					central_controller[0].time_between_requests = agent_time_between_requests;
 				}
-
 				++agent_list_ix;
 			}
 		}
 
 		// The overall "time between requests" is set to the maximum among all the agents
 		central_controller[0].list_of_agents = agents_list;
+
+		// Initialize the CC with parameters from the agents input file
+		FILE* stream_cc = fopen(agents_filename, "r");
+		char line_agents[CHAR_BUFFER_SIZE];
+		char* tmp_agents (strdup(line_agents));
+		first_line_skiped_flag = 0;		// Flag for skipping first informative line of input file
+
+		while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_cc)){
+			if(!first_line_skiped_flag){
+				first_line_skiped_flag = 1;
+			} else{
+				// Type OF reward
+				tmp_agents = strdup(line_agents);
+				int type_of_reward (atoi(GetField(tmp_agents, IX_AGENT_TYPE_OF_REWARD)));
+				central_controller[0].type_of_reward = type_of_reward;
+				// Learning mechanism
+				tmp_agents = strdup(line_agents);
+				int learning_mechanism (atoi(GetField(tmp_agents, IX_AGENT_LEARNING_MECHANISM)));
+				central_controller[0].learning_mechanism = learning_mechanism;
+				// Selected strategy
+				tmp_agents = strdup(line_agents);
+				int selected_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
+				central_controller[0].selected_strategy = selected_strategy;
+
+				// Find the length of the channel actions array
+				tmp_agents = strdup(line_agents);
+				const char *channel_values_aux (GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
+				std::string channel_values_text;
+				channel_values_text.append(ToString(channel_values_aux));
+				const char *channels_aux;
+				channels_aux = strtok ((char*)channel_values_text.c_str(),",");
+				int num_actions_channels = 0;
+				while (channels_aux != NULL) {
+					channels_aux = strtok (NULL, ",");
+					++ num_actions_channels;
+				}
+				central_controller[0].num_channels = num_actions_channels;
+
+				free(tmp_agents);
+
+			}
+		}
+
+		// System logs
+		central_controller[0].save_controller_logs = save_agent_logs;
+		central_controller[0].print_controller_logs = print_agent_logs;
+
+		central_controller[0].total_nodes_number = total_nodes_number;
+
+		// Initialize learning algorithm in the CC
+		central_controller[0].InitializeLearningAlgorithm();
+
+		// Print CC's information
+		central_controller[0].PrintCentralControllerInfo();
 
 	} else {
 		printf("%s WARNING: THE CENTRAL CONTROLLER DOES NOT HAVE ANY ATTACHED AGENT! CHECK YOUR AGENTS' INPUT FILE\n", LOG_LVL2);
@@ -1533,7 +1584,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 void Komondor :: printSystemInfo(){
 
 	if (print_system_logs){
-		printf("%s total_nodes_number = %d\n", LOG_LVL2, total_nodes_number);
+		printf("%s total_nodes_number = %d\n", LOG_LVL3, total_nodes_number);
 		printf("%s num_channels_komondor = %d\n", LOG_LVL3, num_channels_komondor);
 		printf("%s basic_channel_bandwidth = %f MHz\n", LOG_LVL3, basic_channel_bandwidth);
 		printf("%s pdf_backoff = %d\n", LOG_LVL3, pdf_backoff);
@@ -1563,7 +1614,6 @@ void Komondor :: printSystemInfo(){
  */
 void Komondor :: WriteSystemInfo(Logger logger){
 
-	fprintf(logger.file, "%s total_nodes_number = %d\n", LOG_LVL3, total_nodes_number);
 	fprintf(logger.file, "%s total_nodes_number = %d\n", LOG_LVL3, total_nodes_number);
 	fprintf(logger.file, "%s num_channels_komondor = %d\n", LOG_LVL3, num_channels_komondor);
 	fprintf(logger.file, "%s basic_channel_bandwidth = %f\n", LOG_LVL3, basic_channel_bandwidth);
