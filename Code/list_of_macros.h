@@ -435,6 +435,7 @@
 
 // Learning mechanisms allowed
 #define MULTI_ARMED_BANDITS 			1
+#define GRAPH_COLORING					2
 
 // Action-selection strategies (MABs)
 #define STRATEGY_EGREEDY				1

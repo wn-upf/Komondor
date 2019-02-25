@@ -279,11 +279,6 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	configuration = received_configuration;
 
-//	if(not_initialized) {
-//		InitializeLearningAlgorithm();
-//		not_initialized = false;
-//	}
-
 	if(save_agent_logs) WriteConfiguration(configuration);
 
 	performance = received_performance;
@@ -465,45 +460,54 @@ void Agent :: InitializeAgent() {
  */
 void Agent :: InitializeLearningAlgorithm() {
 
-	switch(learning_mechanism) {
+	if (centralized_flag) { // Learning operation managed by the CC
 
-		/* Multi-Armed Bandits:
-		 *
-		 */
-		case MULTI_ARMED_BANDITS:{
+		fprintf(agent_logger.file, "%.15f;A%d;%s;%s Learning operation managed by the CC\n",
+			SimTime(), agent_id, LOG_C03, LOG_LVL2);
 
-			mab_agent.agent_id = agent_id;
-			mab_agent.save_agent_logs = save_agent_logs;
-			mab_agent.print_agent_logs = print_agent_logs;
+	} else  { // Learning operation managed by the agent
 
-			mab_agent.selected_strategy = selected_strategy;
+		switch(learning_mechanism) {
 
-			mab_agent.type_of_reward = type_of_reward;
+			/* Multi-Armed Bandits:
+			 *
+			 */
+			case MULTI_ARMED_BANDITS:{
 
-			mab_agent.num_actions = num_actions;
-			mab_agent.num_actions_channel = num_actions_channel;
-			mab_agent.num_actions_cca = num_actions_cca;
-			mab_agent.num_actions_tx_power = num_actions_tx_power;
-			mab_agent.num_actions_dcb_policy = num_actions_dcb_policy;
+				mab_agent.agent_id = agent_id;
+				mab_agent.save_agent_logs = save_agent_logs;
+				mab_agent.print_agent_logs = print_agent_logs;
 
-			mab_agent.InitializeVariables();
+				mab_agent.selected_strategy = selected_strategy;
 
-			mab_agent.list_of_channels = list_of_channels;
-			mab_agent.list_of_cca_values = list_of_cca_values;
-			mab_agent.list_of_tx_power_values = list_of_tx_power_values;
-			mab_agent.list_of_dcb_policy = list_of_dcb_policy;
+				mab_agent.type_of_reward = type_of_reward;
 
-			break;
-		}
+				mab_agent.num_actions = num_actions;
+				mab_agent.num_actions_channel = num_actions_channel;
+				mab_agent.num_actions_cca = num_actions_cca;
+				mab_agent.num_actions_tx_power = num_actions_tx_power;
+				mab_agent.num_actions_dcb_policy = num_actions_dcb_policy;
 
-		//  TODO: provide more learning mechanisms
-		// case Q_LEARNING:
-		// ...
+				mab_agent.InitializeVariables();
 
-		default:{
-			printf("ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
-			exit(EXIT_FAILURE);
-			break;
+				mab_agent.list_of_channels = list_of_channels;
+				mab_agent.list_of_cca_values = list_of_cca_values;
+				mab_agent.list_of_tx_power_values = list_of_tx_power_values;
+				mab_agent.list_of_dcb_policy = list_of_dcb_policy;
+
+				break;
+			}
+
+			//  TODO: provide more learning mechanisms
+			// case Q_LEARNING:
+			// ...
+
+			default:{
+				printf("ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
+				exit(EXIT_FAILURE);
+				break;
+			}
+
 		}
 
 	}
