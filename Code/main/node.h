@@ -165,6 +165,7 @@ component Node : public TypeII{
 		/* Same default in every node (parameters from system input and console arguments) */
 		// Generic
 		double simulation_time_komondor;	// Observation time (time when the simulation stops)
+		int total_wlans_number;				// Total number of wlans
 		int total_nodes_number;				// Total number of nodes
 		int collisions_model;				// Collisions model (TODO: implement different collision models)
 		double capture_effect;				// Capture effect threshold [linear ratio]
@@ -212,6 +213,8 @@ component Node : public TypeII{
 		double *distances_array;
 		// Power received from the other nodes
 		double *received_power_array;
+		//Maximum power received from each WLAN
+		double *max_received_power_in_ap_per_wlan;
 
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
@@ -3390,9 +3393,13 @@ void Node :: UpdatePerformanceMeasurements(){
 		current_performance.data_packets_lost) * frame_length
 		* limited_num_packets_aggregated)) / (SimTime()-current_performance.last_time_measured);
 
-	for (int i = 0 ; i < total_nodes_number; ++ i) {
-		current_performance.rssi_list[i] = received_power_array[i];
+//	printf("N%d: max_received_power_in_ap_per_wlan: ", node_id);
+	for (int i = 0 ; i < total_wlans_number; ++ i) {
+//		printf(" %f ", max_received_power_in_ap_per_wlan[i]);
+		current_performance.rssi_list[i] = max_received_power_in_ap_per_wlan[i];
+//		printf(" %f ", current_performance.rssi_list[i]);
 	}
+//	printf("\n");
 
 }
 
@@ -3465,7 +3472,6 @@ void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configu
 void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 
 	// TODO: think about recommendation levels done by agents
-
 	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s Applying the new received configuration\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
@@ -4411,7 +4417,7 @@ void Node :: InitializeVariables() {
 
 	// Measurements to be sent to agents
 	RestartPerformanceMetrics(&current_performance, 0);
-	current_performance.SetSizeOfRssiList(total_nodes_number);
+	current_performance.SetSizeOfRssiList(total_wlans_number);
 
 	flag_apply_new_configuration = FALSE;
 

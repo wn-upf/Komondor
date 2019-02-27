@@ -80,7 +80,8 @@ component CentralController : public TypeII{
 
 		void InitializeLearningAlgorithm();
 		void ComputeNewConfiguration();
-		void SendNewConfigurationToAgent(int destination_agent_id, Configuration conf);
+		void SendConfigurationToAllAgents();
+		void SendConfigurationToSingleAgent(int destination_agent_id, Configuration conf);
 
 		// Print methods
 		void PrintCentralControllerInfo();
@@ -91,6 +92,8 @@ component CentralController : public TypeII{
 
 		int agents_number;
 		int *list_of_agents;
+
+		int wlans_number;
 
 		int *num_requests;
 		double time_between_requests;
@@ -127,6 +130,7 @@ component CentralController : public TypeII{
 
 		GraphColoring graph_coloring;
 
+		bool initialization_flag;
 
 	// Connections and timers
 	public:
@@ -141,13 +145,16 @@ component CentralController : public TypeII{
 
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_agents; // Timer for requesting information to the AP
+		Timer <trigger_t> trigger_safe_responses_collection;
 
 		// Every time the timer expires execute this
 		inport inline void RequestInformationToAgent(trigger_t& t1);
+		inport inline void ComputeNewConfiguration(trigger_t& t1);
 
 		// Connect timers to methods
 		CentralController () {
 			connect trigger_request_information_to_agents.to_component,RequestInformationToAgent;
+			connect trigger_safe_responses_collection.to_component,ComputeNewConfiguration;
 		}
 
 };
@@ -174,8 +181,11 @@ void CentralController :: Start(){
 		central_controller_logger.SetVoidHeadString();
 	}
 
-	if(save_controller_logs) fprintf(central_controller_logger.file,"%.18f;CC;%s;%s Start()\n",
-			SimTime(), LOG_B00, LOG_LVL1);
+	if(save_controller_logs) fprintf(central_controller_logger.file,
+		"%.18f;CC;%s;%s Start()\n", SimTime(), LOG_B00, LOG_LVL1);
+
+	// Initialize learning algorithm in the CC
+	InitializeLearningAlgorithm();
 
 	// Generate the first request, to be triggered after "time_between_requests"
 	trigger_request_information_to_agents.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
@@ -187,8 +197,8 @@ void CentralController :: Start(){
  */
 void CentralController :: Stop(){
 
-	if(save_controller_logs) fprintf(central_controller_logger.file, "%.15f;CC;%s;%s Central Controller Stop()\n",
-		SimTime(), LOG_C00, LOG_LVL1);
+	if(save_controller_logs) fprintf(central_controller_logger.file,
+		"%.15f;CC;%s;%s Central Controller Stop()\n", SimTime(), LOG_C00, LOG_LVL1);
 
 	// Print and write node statistics if required
 //	PrintOrWriteAgentStatistics(PRINT_LOG);
@@ -212,24 +222,18 @@ void CentralController :: Stop(){
  */
 void CentralController :: RequestInformationToAgent(trigger_t &){
 
-	printf("%.15f CC: Requesting info to Agent ...\n" , SimTime());
-
 	for (int ix = 0 ; ix < agents_number ; ++ix ) {
 
-		printf("%.15f CC:   - Requesting info to Agent %d...\n" , SimTime(), ix);
-
+//		printf("%.15f CC:   - Requesting info to Agent %d...\n" , SimTime(), ix);
 		//printf("%s Central Controller: Requesting information to Agent %d\n", LOG_LVL1, list_of_agents[agents_ix]);
-		if(save_controller_logs) fprintf(central_controller_logger.file, "----------------------------------------------------------------\n");
-
 		if(save_controller_logs) fprintf(central_controller_logger.file,
-			"%.15f;CC;%s;%s RequestInformationToAgent() %d\n",
-			SimTime(), LOG_F00, LOG_LVL1, num_requests[ix]);
+			"----------------------------------------------------------------\n");
 
 		if(save_controller_logs) fprintf(central_controller_logger.file,
 			"%.15f;CC;%s;%s Requesting information to Agent %d\n",
-			SimTime(), LOG_C00, LOG_LVL2, list_of_agents[ix]);
+			SimTime(), LOG_C00, LOG_LVL2, ix);
 
-		outportRequestInformationToAgent(list_of_agents[ix]);
+		outportRequestInformationToAgent(ix);
 
 		++ num_requests[ix] ;
 
@@ -245,9 +249,7 @@ void CentralController :: RequestInformationToAgent(trigger_t &){
 void CentralController :: InportReceivingInformationFromAgent(Configuration &received_configuration,
 		Performance &received_performance, int agent_id){
 
-	printf("%.15f CC: Receiving info from Agent %d ...\n" , SimTime(), agent_id);
-
-//	printf("%s Agent #%d: Message received from the AP\n", LOG_LVL1, agent_id);
+//	printf("%s CC: Message received from Agent %d\n", LOG_LVL1, agent_id);
 
 	if(save_controller_logs) fprintf(central_controller_logger.file, "%.15f;CC;%s;%s InportReceivingInformationFromAgent()\n",
 		SimTime(), LOG_F00, LOG_LVL1);
@@ -264,7 +266,17 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
 
 	// Once all the information is available, compute a new configuration according to the updated rewards
 	if (counter_responses_received == agents_number) {
-		ComputeNewConfiguration();
+		if(initialization_flag) {
+			// Initialization phase of the graph coloring method
+			graph_coloring.GraphColoringInitialization(configuration_array);
+			// Send the initial configuration to all the associated agents
+			SendConfigurationToAllAgents();
+			initialization_flag = false;
+			trigger_request_information_to_agents.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
+		} else {
+			trigger_safe_responses_collection.Set(fix_time_offset(SimTime(),13,12));
+//			ComputeNewConfiguration();
+		}
 		counter_responses_received = 0;
 	}
 
@@ -275,63 +287,50 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
  * Input arguments:
  * -
  */
-void CentralController :: ComputeNewConfiguration(){
-
-	printf("%.15f CC: Computing a new configuration ...\n" , SimTime());
-
-	//printf("%s Central Controller: Computing a new configuration\n", LOG_LVL1);
-
+void CentralController :: ComputeNewConfiguration(trigger_t &){
+//	printf("%s Central Controller: Computing a new configuration\n", LOG_LVL1);
 	if(save_controller_logs) fprintf(central_controller_logger.file,
 		"%.15f;CC;%s;%s ComputeNewConfiguration()\n",
 		SimTime(), LOG_F00, LOG_LVL1);
-
 	if(save_controller_logs) fprintf(central_controller_logger.file,
 		"%.15f;CC;%s;%s Computing a new configuration\n",
 		SimTime(), LOG_C00, LOG_LVL2);
-
-	// TODO: Implement X algorithm according to current configuration and performance
-	// ...
-	printf("%.15f CC: UpdateConfiguration through graph coloring ...\n" , SimTime());
-	graph_coloring.UpdateConfiguration(configuration_array,
-		performance_array, central_controller_logger, SimTime());
-
+	// Apply Hminmax to decide the new channels configuration
+	graph_coloring.UpdateConfiguration(configuration_array, performance_array,
+		central_controller_logger, SimTime());
 	// Send the configuration to the AP
-	printf("%.15f CC: Sending the new configuration to agents ...\n" , SimTime());
-	for (int agent_ix = 0 ; agent_ix < agents_number ; ++ agent_ix ) {
-		printf("%.15f CC:  configuration_array[%d] = %d\n" ,
-			SimTime(), agent_ix, configuration_array[agent_ix].selected_primary_channel);
-		SendNewConfigurationToAgent(agent_ix, configuration_array[agent_ix]);
-	}
-
+	SendConfigurationToAllAgents();
 	// Set trigger for next request
 	if(save_controller_logs) fprintf(central_controller_logger.file, "%.15f;CC;%s;%s Next request to be sent at %f\n",
 		SimTime(), LOG_C00, LOG_LVL2, fix_time_offset(SimTime() + time_between_requests,13,12));
-
-	//printf("Next request to be sent at %f, %f\n", fix_time_offset(SimTime() + time_between_requests,13,12), time_between_requests);
 	trigger_request_information_to_agents.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
-
 }
 
 /*
- * SendNewConfigurationToAp():
+ * SendConfigurationToAllAgents():
  * Input arguments:
  * - to be defined
  */
-void CentralController :: SendNewConfigurationToAgent(int destination_agent_id, Configuration conf){
+void CentralController :: SendConfigurationToAllAgents(){
+	for (int ix = 0 ; ix < agents_number ; ++ ix ) {
+		SendConfigurationToSingleAgent(ix, configuration_array[ix]);
+	}
+}
 
-	printf("%.15f CC: Sending the new configuration to agent %d ...\n" , SimTime(), destination_agent_id);
-
+/*
+ * SendConfigurationToSingleAgent():
+ * Input arguments:
+ * - to be defined
+ */
+void CentralController :: SendConfigurationToSingleAgent(int destination_agent_id, Configuration new_conf){
 //	printf("%s Central Controller: Sending new configuration to Agent%d\n", LOG_LVL1, destination_agent_id);
-
-	if(save_controller_logs) fprintf(central_controller_logger.file, "%.15f;CC;%s;%s SendNewConfigurationToAp()\n",
-			SimTime(), LOG_F00, LOG_LVL1);
-
-	if(save_controller_logs) fprintf(central_controller_logger.file, "%.15f;CC;%s;%s Sending a new configuration to Agent %d\n",
-			SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
-
+	if(save_controller_logs) fprintf(central_controller_logger.file,
+		"%.15f;CC;%s;%s SendNewConfigurationToAp()\n", SimTime(), LOG_F00, LOG_LVL1);
+	if(save_controller_logs) fprintf(central_controller_logger.file,
+		"%.15f;CC;%s;%s Sending a new configuration to Agent %d\n",
+		SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
-	outportSendConfigurationToAgent(destination_agent_id, conf);
-
+	outportSendConfigurationToAgent(destination_agent_id, new_conf);
 };
 
 /******************************/
@@ -347,12 +346,12 @@ void CentralController :: InitializeCentralController() {
 
 	counter_responses_received = 0;
 	num_requests = new int[agents_number];
-
 	configuration_array = new Configuration[agents_number];
-	performance_array  = new Performance[agents_number];;
+	performance_array  = new Performance[agents_number];
 
 	for(int i = 0; i < agents_number; ++i){
 		num_requests[i] = 0;
+//		performance_array[i].SetSizeOfRssiList(agents_number);
 	}
 
 	save_controller_logs = TRUE;
@@ -371,17 +370,16 @@ void CentralController :: InitializeLearningAlgorithm() {
 		 *
 		 */
 		case GRAPH_COLORING:{
-
+			initialization_flag = true;
+			// Initialize the graph coloring method
 			graph_coloring.save_controller_logs = save_controller_logs;
 			graph_coloring.print_controller_logs = print_controller_logs;
 			graph_coloring.agents_number = agents_number;
+			graph_coloring.wlans_number = wlans_number;
 			graph_coloring.num_channels = num_channels;
 			graph_coloring.total_nodes_number = total_nodes_number;
-
+			// Initialize variables characteristic to the graph coloring method
 			graph_coloring.InitializeVariables();
-
-			printf("%s CC: Graph coloring initialized!\n", LOG_LVL2);
-
 			break;
 		}
 
@@ -410,6 +408,10 @@ void CentralController :: PrintCentralControllerInfo(){
 	printf("%s time_between_requests = %f\n", LOG_LVL4, time_between_requests);
 	printf("%s learning_mechanism = %d\n", LOG_LVL4, learning_mechanism);
 	printf("%s total_nodes_number = %d\n", LOG_LVL4, total_nodes_number);
+	printf("%s list of agents: ", LOG_LVL4);
+	for (int i = 0; i < agents_number; ++ i) {
+		printf("%d ", list_of_agents[i]);
+	}
 	printf("\n");
 
 }

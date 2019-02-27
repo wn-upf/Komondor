@@ -59,10 +59,9 @@ class GraphColoring {
 
 		int save_controller_logs;
 		int print_controller_logs;
-
 		int agents_number;
+		int wlans_number;
 		int num_channels;
-
 		int total_nodes_number;
 
 	// Private items
@@ -72,7 +71,9 @@ class GraphColoring {
 		int initial_reward;
 		int num_iterations;
 
+		// Variables used bby the graph coloring method
 		double **rssi_table;
+		double **weight_edges;
 
 	// Methods
 	public:
@@ -91,31 +92,16 @@ class GraphColoring {
 		 * 	- central_controller_logger: logger object to write logs
 		 * 	- sim_time: current simulation time
 		 * OUTPUT:
-		 *  - suggested_configuration: configuration suggested to the AP
+		 *  - EMPTY: updates the configuration struct
 		 */
 		void UpdateConfiguration(Configuration *configuration_array, Performance *performance_array,
 			Logger &central_controller_logger, double sim_time) {
 
-			// Find the action ix according to the AP's configuration
-			int new_primary (0);
+			// Update the weights of edges between WLANs
+			UpdateWeightsWlans(performance_array);
 
-			// Update the RSSI table
-			for (int i = 0; i < agents_number; ++ i) {
-				// ...
-//				printf("rssi_table (agent %d):\n", i);
-				for (int j = 0; j < total_nodes_number; ++ j) {
-					rssi_table[i][j] = performance_array[i].rssi_list[j];
-//					printf("%f, ", rssi_table[i][j]);
-				}
-//				printf("\n");
-			}
-
-			// Update the configuration of each agent
-			for (int i = 0; i < agents_number; ++ i) {
-				new_primary = (int) (i % num_channels);
-				configuration_array[i].selected_primary_channel = new_primary;	// Primary
-			}
-
+			// Optimization phase
+			GraphColoringOptimization(configuration_array);
 
 			if(save_controller_logs) {
 				fprintf(central_controller_logger.file, "%.15f;%s;%s GraphColoring: "
@@ -124,6 +110,115 @@ class GraphColoring {
 					fprintf(central_controller_logger.file, "%.15f;%s;%s Agent %d - Assigned channel %d\n",
 					sim_time, LOG_C00, LOG_LVL3, i,	configuration_array[i].selected_primary_channel);
 				}
+			}
+
+		}
+
+		/*
+		 * UpdateWeightsWlans():
+		* INPUT:
+		 * 	- configuration: current configuration report from the AP
+		 * 	- central_controller_logger: logger object to write logs
+		 * 	- sim_time: current simulation time
+		 * OUTPUT:
+		 *  - EMPTY: updates the configuration struct
+		 */
+		void UpdateWeightsWlans(Performance *performance_array) {
+
+			// Update the RSSI table
+			for (int i = 0; i < agents_number; ++ i) {
+//				printf("rssi_table (agent %d): ", i);
+				for (int j = 0; j < agents_number; ++ j) {
+					rssi_table[i][j] = performance_array[i].rssi_list[j];
+//					printf(" %f ", rssi_table[i][j]);
+				}
+//				printf("\n");
+			}
+
+			// Update the weights table (BY NOW, SET THE WEIGHT AS THE MAX RSSI)
+			for (int i = 0; i < agents_number; ++ i) {
+//				printf("weights_table (agent %d): ", i);
+				for (int j = 0; j < agents_number; ++ j) {
+					// BY NOW, SET THE WEIGHT AS THE MAX RSSI
+					weight_edges[i][j] = rssi_table[i][j];
+//					printf(" %f ", weight_edges[i][j]);
+				}
+//				printf("\n");
+			}
+
+		}
+
+		/*
+		 * FindBestChannel(): finds the best channel, according to the selected policy
+		* INPUT:
+		 * 	- wlan_ix: index of the WLAN that must change the channel
+		 * 	- current_channel: current channel being used by WLAN wlan_ix
+		 * OUTPUT:
+		 *  - new_channel: new channel to be selected by WLAN wlan_ix
+		 */
+		int FindBestChannel(int wlan_ix, int current_channel) {
+
+			int new_channel;
+			int max_distance = 0;
+			for (int i = 0; i < num_channels; ++i) {
+				if (abs(current_channel - i) > max_distance) {
+					max_distance = abs(current_channel - i);
+					new_channel = i;
+				}
+			}
+
+			return new_channel;
+
+		}
+
+		/*
+		 * GraphColoringOptimization(): optimizes the current configuration, according to the weight of edges
+		* INPUT:
+		 * 	- configuration: current configuration report from the AP
+		 * 	- central_controller_logger: logger object to write logs
+		 * 	- sim_time: current simulation time
+		 * OUTPUT:
+		 *  - EMPTY: updates the configuration struct
+		 */
+		void GraphColoringOptimization(Configuration *configuration_array) {
+
+			// For each AP "i", find the maximum weight to AP "j" sharing the same channel
+			double max_weight;
+			bool flag_change_channel;
+			for (int i = 0; i < agents_number; ++ i) {
+				max_weight = -100000;
+				flag_change_channel = false;
+				for (int j = 0; j < agents_number; ++ j) {
+					if (i != j && configuration_array[i].selected_primary_channel ==
+						configuration_array[j].selected_primary_channel) {
+						flag_change_channel = true;
+						if (weight_edges[i][j] > max_weight) {
+							max_weight = weight_edges[i][j];
+						}
+					}
+				}
+				if (flag_change_channel) {
+					// Choose a new color for AP "i", so that H(c) = min H(c) for c = 1...k
+					configuration_array[i].selected_primary_channel = FindBestChannel(i, configuration_array[i].selected_primary_channel);
+				}
+//				printf("NEW CHANNEL (agent %d) = %d\n", i, configuration_array[i].selected_primary_channel);
+			}
+		}
+
+		/*
+		 * GraphColoringInitialization(): initializes the centralized graph coloring method
+		* INPUT:
+		 * 	- configuration: current configuration report from the AP
+		 * 	- central_controller_logger: logger object to write logs
+		 * 	- sim_time: current simulation time
+		 * OUTPUT:
+		 *  - EMPTY: updates the configuration struct
+		 */
+		void GraphColoringInitialization(Configuration *configuration_array) {
+
+			// Set the same primary to all the agents/WLANs
+			for (int i = 0; i < agents_number; ++ i) {
+				configuration_array[i].selected_primary_channel = 0;	// Primary
 			}
 
 		}
@@ -147,6 +242,14 @@ class GraphColoring {
 				rssi_table[i] = new double[total_nodes_number];
 				for (int j = 0 ; j < total_nodes_number ; ++ j) {
 					rssi_table[i][j] = 0;
+				}
+			}
+
+			weight_edges = new double*[total_nodes_number];
+			for (int i = 0 ; i < total_nodes_number ; ++ i) {
+				weight_edges[i] = new double[total_nodes_number];
+				for (int j = 0 ; j < total_nodes_number ; ++ j) {
+					weight_edges[i][j] = 0;
 				}
 			}
 

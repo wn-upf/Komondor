@@ -288,7 +288,6 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Answering to the controller with current information\n",
 			SimTime(), agent_id, LOG_F02, LOG_LVL2);
 		outportAnswerToController(configuration, performance, agent_id);
-
 	} else {
 		// Compute a new configuration according to the updated rewards
 		ComputeNewConfiguration();
@@ -340,9 +339,9 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
  */
 void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
 
-//	printf("%s Agent #%d: New information request received from the Controller\n", LOG_LVL1, agent_id);
-
 	if(agent_id == destination_agent_id) {
+
+//		printf("%s Agent #%d: New information request received from the Controller\n", LOG_LVL1, agent_id);
 
 		if(save_agent_logs) fprintf(agent_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
@@ -371,8 +370,6 @@ void Agent :: InportReceiveConfigurationFromController(int destination_agent_id,
 
 		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s New configuration received from the Controller to Agent %d\n",
 			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
-
-		//	printf("%s Agent #%d: New configuration received from the Controller\n", LOG_LVL1, agent_id);
 
 		// Update the received configuration
 		configuration_from_controller = received_configuration;

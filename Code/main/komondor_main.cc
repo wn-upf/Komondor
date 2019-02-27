@@ -286,6 +286,32 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 		}
 	}
 
+	// Compute the maximum power received from each WLAN
+	for(int i = 0; i < total_nodes_number; ++i) {
+		double max_power_received_per_wlan;
+		if (node_container[i].node_type == NODE_TYPE_AP) {
+			node_container[i].max_received_power_in_ap_per_wlan = new double[total_wlans_number];
+			for(int j = 0; j < total_wlans_number; ++j) {
+				if (strcmp(node_container[i].wlan_code.c_str(),wlan_container[j].wlan_code.c_str()) == 0) {
+					// Same WLAN
+					node_container[i].max_received_power_in_ap_per_wlan[j] = 0;
+				} else {
+					// Different WLAN
+					max_power_received_per_wlan = -1000;
+					for (int k = 0; k < total_nodes_number; ++k) {
+						// Check only nodes in WLAN "j"
+						if(strcmp(node_container[k].wlan_code.c_str(),wlan_container[j].wlan_code.c_str()) == 0) {
+							if (node_container[i].received_power_array[k] > max_power_received_per_wlan) {
+								max_power_received_per_wlan = node_container[i].received_power_array[k];
+							}
+						}
+					}
+					node_container[i].max_received_power_in_ap_per_wlan[j] = max_power_received_per_wlan;
+				}
+			}
+		}
+	}
+
 	// Generate agents
 	central_controller_flag = 0;
 	if (agents_enabled) { GenerateAgents(agents_input_filename); }
@@ -308,6 +334,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 				printf("%s Central Controller generated!\n\n", LOG_LVL2);
 				central_controller[0].PrintCentralControllerInfo();
 			}
+			printf("\n");
 		}
 	}
 
@@ -541,7 +568,7 @@ void Komondor :: Stop(){
 		}
 	}
 
-	int simulation_index (10);
+	int simulation_index (1);
 
 	switch(simulation_index){
 
@@ -1225,12 +1252,12 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 
 	if (total_controlled_agents_number > 0) {
 
-		central_controller[0].InitializeCentralController();
 		central_controller[0].agents_number = total_controlled_agents_number;
+		central_controller[0].wlans_number = total_wlans_number;
+		central_controller[0].InitializeCentralController();
 
 		int *agents_list;
 		agents_list = new int[total_controlled_agents_number];
-
 		int agent_list_ix (0);					// Index considering the agents attached to the central entity
 		double max_time_between_requests (0);	// To determine the maximum time between requests for agents
 
@@ -1258,6 +1285,7 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 			if(!first_line_skiped_flag){
 				first_line_skiped_flag = 1;
 			} else{
+
 				// Type OF reward
 				tmp_agents = strdup(line_agents);
 				int type_of_reward (atoi(GetField(tmp_agents, IX_AGENT_TYPE_OF_REWARD)));
@@ -1296,8 +1324,8 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 
 		central_controller[0].total_nodes_number = total_nodes_number;
 
-		// Initialize learning algorithm in the CC
-		central_controller[0].InitializeLearningAlgorithm();
+//		// Initialize learning algorithm in the CC
+//		central_controller[0].InitializeLearningAlgorithm();
 
 		// Print CC's information
 		central_controller[0].PrintCentralControllerInfo();
@@ -1522,6 +1550,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 
 			// System
 			node_container[node_ix].simulation_time_komondor = simulation_time_komondor;
+			node_container[node_ix].total_wlans_number = total_wlans_number;
 			node_container[node_ix].total_nodes_number = total_nodes_number;
 			node_container[node_ix].collisions_model = collisions_model;
 			node_container[node_ix].capture_effect = capture_effect;
