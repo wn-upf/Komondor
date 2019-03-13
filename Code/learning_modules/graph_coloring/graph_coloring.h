@@ -188,6 +188,7 @@ class GraphColoring {
 			for (int i = 0; i < agents_number; ++ i) {
 				max_weight = -100000;
 				flag_change_channel = false;
+				printf("max weight (agent %d): ", i);
 				for (int j = 0; j < agents_number; ++ j) {
 					if (i != j && configuration_array[i].selected_primary_channel ==
 						configuration_array[j].selected_primary_channel) {
@@ -196,6 +197,7 @@ class GraphColoring {
 							max_weight = weight_edges[i][j];
 						}
 					}
+					printf("%f: ", max_weight);
 				}
 				if (flag_change_channel) {
 					// Choose a new color for AP "i", so that H(c) = min H(c) for c = 1...k

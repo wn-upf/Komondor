@@ -187,8 +187,14 @@ void CentralController :: Start(){
 	// Initialize learning algorithm in the CC
 	InitializeLearningAlgorithm();
 
-	// Generate the first request, to be triggered after "time_between_requests"
-	trigger_request_information_to_agents.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
+
+	if(learning_mechanism == GRAPH_COLORING) {
+		// Generate the request for initialization at the beginning (no need to collect performance data)
+		trigger_request_information_to_agents.Set(fix_time_offset(SimTime() + 0.001,13,12));
+	} else {
+		// Generate the first request, to be triggered after "time_between_requests"
+		trigger_request_information_to_agents.Set(fix_time_offset(SimTime() + time_between_requests,13,12));
+	}
 
 };
 

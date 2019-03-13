@@ -41,6 +41,6 @@ do
 	do 
 		echo ""
 		echo "- EXECUTING ${array_nodes[executing_ix_nodes]} (${executing_ix_nodes}/${nodes_file_ix})"
-		valgrind ./komondor_main ../input/fg_ml5g/centralized_graph_coloring/input_system_conf.csv ../input/fg_ml5g/centralized_graph_coloring/random_scenarios/${array_nodes[executing_ix_nodes]} ../input/fg_ml5g/centralized_graph_coloring/agents_random_scenario.csv ../output/script_output_basic_scenarios.txt sim_${executing_ix_nodes}.csv 0 0 0 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
+		./komondor_main ../input/fg_ml5g/centralized_graph_coloring/input_system_conf.csv ../input/fg_ml5g/centralized_graph_coloring/random_scenarios/${array_nodes[executing_ix_nodes]} ../input/fg_ml5g/centralized_graph_coloring/agents_random_scenario.csv ../output/script_output_basic_scenarios.txt sim_${executing_ix_nodes}.csv 0 0 0 0 1 0 $SIM_TIME $SEED >> ../output/logs_console.txt
 	done
 done

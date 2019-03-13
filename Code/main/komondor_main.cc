@@ -375,7 +375,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			connect node_container[n].outportSelfFinishTX,node_container[m].InportSomeNodeFinishTX;
 			connect node_container[n].outportSendLogicalNack,node_container[m].InportNackReceived;
 
-			if(strcmp(node_container[n].wlan_code.c_str(),node_container[m].wlan_code.c_str()) == 0) {
+			if(strcmp(node_container[n].wlan_code.c_str(),node_container[m].wlan_code.c_str()) == 0 && n!=m) {
 				// Connections regarding MCS
 				connect node_container[n].outportAskForTxModulation,node_container[m].InportMCSRequestReceived;
 				connect node_container[n].outportAnswerTxModulation,node_container[m].InportMCSResponseReceived;
@@ -1951,7 +1951,6 @@ total_nodes_number = 0;
 		printf("%s print_node_logs: %d\n", LOG_LVL2, print_node_logs);
 		printf("%s sim_time: %f s\n", LOG_LVL2, sim_time);
 		printf("%s seed: %d\n", LOG_LVL2, seed);
-
 	}
 
 	// Generate Komondor component

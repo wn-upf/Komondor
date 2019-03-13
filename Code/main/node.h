@@ -3447,18 +3447,24 @@ void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configu
 	LOGS(node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the Agent\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
-	new_configuration = received_configuration;
+	if(!flag_apply_new_configuration) {
 
-	if(save_node_logs) WriteNodeConfiguration(node_logger, header_str);
+		new_configuration = received_configuration;
 
-	if(save_node_logs) WriteReceivedConfiguration(node_logger, header_str, new_configuration);
+		if(save_node_logs) WriteNodeConfiguration(node_logger, header_str);
 
-	// Set flag to true in order to apply the new configuration next time the node restarts
-	flag_apply_new_configuration = TRUE;
+		if(save_node_logs) WriteReceivedConfiguration(node_logger, header_str, new_configuration);
 
-	if(node_state == STATE_SENSING) {
-		// FORCE RESTART TO APPLY CHANGES
-		RestartNode(FALSE);
+		// Set flag to true in order to apply the new configuration next time the node restarts
+		flag_apply_new_configuration = TRUE;
+
+		if(node_state == STATE_SENSING) {
+			// FORCE RESTART TO APPLY CHANGES
+			RestartNode(FALSE);
+		}
+
+	} else {
+		printf("Received a new configuration before applying the last one!\n");
 	}
 
 }
@@ -3538,8 +3544,12 @@ void Node :: InportNewWlanConfigurationReceived(Configuration &received_configur
 
 		LOGS(node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
-		if(node_state == STATE_SENSING) RestartNode(FALSE);
+//		if(node_state == STATE_SENSING) RestartNode(FALSE);
+		// Force restart
+		RestartNode(FALSE);
 
+	} else {
+		printf("ERROR: the broadcast of a new configuration cannot be received at APs\n");
 	}
 
 }

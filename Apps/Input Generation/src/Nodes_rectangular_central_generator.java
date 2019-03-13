@@ -274,12 +274,12 @@ public class Nodes_rectangular_central_generator {
                     x = map_width / 2;
                     y = map_heigth / 2;
                     // to be later set
-                    channel_bonding_aux = -1;
+                    channel_bonding_aux = 4;
 
                 } else {
                     x = map_width * new Random().nextDouble();
                     y = map_heigth * new Random().nextDouble();
-                    channel_bonding_aux = 2 * ThreadLocalRandom.current().nextInt(0, 4);
+                    channel_bonding_aux = 4;// 2 * ThreadLocalRandom.current().nextInt(0, 4);
                 }
 
                 if (w > 0) {
