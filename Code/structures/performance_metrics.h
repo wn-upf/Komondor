@@ -63,9 +63,10 @@ struct Performance
 	double num_packets_generated;
 	double num_packets_dropped;
 
+	double *rssi_list;
+
 	// Function to print the node's report
 	void PrintReport(void){
-
 		printf("%s Report (last measurement in %f):\n", LOG_LVL4, last_time_measured);
 		printf("%s throughput = %f\n", LOG_LVL5, throughput);
 		printf("%s max_bound_throughput = %f\n", LOG_LVL5, max_bound_throughput);
@@ -76,7 +77,16 @@ struct Performance
 		printf("%s num_packets_generated = %f\n", LOG_LVL5, num_packets_generated);
 		printf("%s num_packets_dropped = %f\n", LOG_LVL5, num_packets_dropped);
 		printf("\n");
+	}
 
+	/*
+	 * SetSizeOfRssiList(): sets the size of the array list_id_aggregated
+	 */
+	void SetSizeOfRssiList(int total_wlans_number){
+		rssi_list = new double[total_wlans_number];
+		for(int i = 0; i < total_wlans_number; ++i){
+			rssi_list[i] = 0;
+		}
 	}
 
 };

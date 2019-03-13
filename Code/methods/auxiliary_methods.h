@@ -70,18 +70,14 @@ std::string ToString(T val)
  */
 int PickRandomElementFromArray(int *array, int array_size){
 
-	int element = 0;
+	int element (0);
 	// Pick one of the STAs in the WLAN uniformely
 	if(array_size > 0){
-
-		int rand_ix = rand()%(array_size);
+		int rand_ix (rand()%(array_size));
 		element = array[rand_ix];
-
 	} else {
-
 		element = NODE_ID_NONE;
 		printf("The list does not contain elements!\n");
-
 	}
 
 	return element;
@@ -98,7 +94,7 @@ void PrintOrWriteArrayInt(int *list, int list_size, int write_or_print, int save
 
 		case PRINT_LOG:{
 			if(print_node_logs){
-				for(int c = 0; c < list_size; c++){
+				for(int c = 0; c < list_size; ++c){
 					printf("%d  ", list[c]);
 				}
 				printf("\n");
@@ -106,7 +102,7 @@ void PrintOrWriteArrayInt(int *list, int list_size, int write_or_print, int save
 			break;
 		}
 		case WRITE_LOG:{
-			for(int c = 0; c < list_size; c++){
+			for(int c = 0; c < list_size; ++c){
 				 if(save_node_logs)  fprintf(node_logger.file, "%d  ", list[c]);
 			}
 			if(save_node_logs)  fprintf(node_logger.file, "\n");
@@ -125,7 +121,7 @@ void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, in
 
 		case PRINT_LOG:{
 			if(print_node_logs){
-				for(int c = 0; c < list_size; c++){
+				for(int c = 0; c < list_size; ++c){
 					printf("%.2f  ", list[c]);
 				}
 				printf("\n");
@@ -133,7 +129,7 @@ void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, in
 			break;
 		}
 		case WRITE_LOG:{
-			for(int c = 0; c < list_size; c++){
+			for(int c = 0; c < list_size; ++c){
 				 if(save_node_logs)  fprintf(node_logger.file, "%f  ", list[c]);
 			}
 			if(save_node_logs)  fprintf(node_logger.file, "\n");
@@ -148,11 +144,11 @@ void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, in
  */
 int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size){
 
-	int left_ix = 0;
-	int left_ix_is_set = 0;
-	int right_ix = 0;
+	int left_ix (0);
+	int left_ix_is_set (0);
+	int right_ix (0);
 
-	for(int ix = 0; ix < list_size; ix++){
+	for(int ix = 0; ix < list_size; ++ix){
 		if(list[ix]){
 			if(!left_ix_is_set){
 				left_ix = ix;
@@ -177,14 +173,15 @@ int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size){
 			break;
 		}
 	}
+
 }
 
 int GetNumberOfSpecificElementInArray(int value, int* array, int list_size){
 
-	int num = 0;
+	int num (0);
 
-	for(int i=0; i<list_size; i++){
-		if(array[i]==value) num++;
+	for(int i=0; i<list_size; ++i){
+		if(array[i]==value) ++num;
 	}
 
 	return num;
@@ -193,14 +190,14 @@ int GetNumberOfSpecificElementInArray(int value, int* array, int list_size){
 
 double RandomDouble(double min, double max)
 {
-    double f = (double)rand() / RAND_MAX;
+    double f ((double)rand() / RAND_MAX);
     return min + f * (max - min);
 }
 
 double truncate_Sergio(double number, int floating_position){
 
-    double x = pow(10,floating_position) * number;
-    double y = x / pow(10,floating_position);
+    double x (pow(10,floating_position) * number);
+    double y (x / pow(10,floating_position));
     return y;
 
 }
@@ -209,16 +206,11 @@ double round_to_digits(double value, int digits)
 {
     if (value == 0.0) // otherwise it will return 'nan' due to the log10() of zero
         return 0.0;
-
     // denominator
-    double factor = pow(10.0, digits);
-
-    double rounded_numerator =  round(value * factor);
-
-    double rounded_value = rounded_numerator / factor;
-
+    double factor (pow(10.0, digits));
+    double rounded_numerator (round(value * factor));
+    double rounded_value (rounded_numerator / factor);
     // printf("%.24f - %.24f - %.24f\n", value, rounded_numerator, rounded_value);
-
     return rounded_value;
 }
 
@@ -226,16 +218,11 @@ double round_to_digits_float(float value, int digits)
 {
     if (value == 0.0) // otherwise it will return 'nan' due to the log10() of zero
         return 0.0;
-
     // denominator
-    float factor = pow(10.0, digits);
-
-    float rounded_numerator =  round(value * factor);
-
-    float rounded_value = rounded_numerator / factor;
-
-    printf("%.24f - %.24f - %.24f\n", value, rounded_numerator, rounded_value);
-
+    float factor (pow(10.0, digits));
+    float rounded_numerator (round(value * factor));
+    float rounded_value (rounded_numerator / factor);
+//    printf("%.24f - %.24f - %.24f\n", value, rounded_numerator, rounded_value);
 //    printf("------------------------\n");
 //    printf(" - value = %.18f\n", value);
 //    printf(" - digits = %d\n", digits);
@@ -244,39 +231,30 @@ double round_to_digits_float(float value, int digits)
     //printf(" - ceil = %.18f\n", ceil(log10(fabs(value))));
     //printf(" - factor = %.18f\n", factor);
 //    printf(" - rounded_value = %.18f\n", rounded_value);
-
     return rounded_value;
 }
 
 double fix_time_offset(double time_value, int trunc_pos, int round_pos){
 
-	double truncated_value = 0;
-	double rounded_value = 0;
-	double fixed_time_value = 0;
+	double truncated_value (0);
+	double rounded_value (0);
+	double fixed_time_value (0);
 	// double diff = 0;
-
 	if (trunc_pos != 0) {
-
 		truncated_value = truncate_Sergio(time_value, trunc_pos);
 		rounded_value = round_to_digits(truncated_value,round_pos);
 		fixed_time_value = rounded_value;
-
 //		printf("---------------------------------\n");
 //		printf("- time_value = %.15f \n- truncated_value = %.15f \n- rounded_value = %.15f"
 //				"\n- diff = %.15f\n- fixed_time_value = %.15f\n",
 //				time_value, truncated_value, rounded_value, diff, fixed_time_value);
-
-
 	} else {
 		rounded_value = round_to_digits(time_value,round_pos);
 		fixed_time_value = rounded_value;
 	}
-
-
 //	printf("---------------------------------\n");
 //	printf("- time_value = %.15f \n- truncated_value = %.15f -\n -diff = %.15f\n- fixed_time_value = %.15f\n",
 //			time_value, truncated_value, diff, fixed_time_value);
-
 	return fixed_time_value;
 }
 

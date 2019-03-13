@@ -57,9 +57,9 @@
  **/
 void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
 
-	double pw_rx_intereset_dbm = ConvertPower(PW_TO_DBM, power_rx_interest);
+	double pw_rx_intereset_dbm (ConvertPower(PW_TO_DBM, power_rx_interest));
 
-	for (int ch_num_ix = 0; ch_num_ix < 4; ch_num_ix ++){	// For 1, 2, 4 and 8 channels
+	for ( int ch_num_ix = 0; ch_num_ix < 4; ++ ch_num_ix ){	// For 1, 2, 4 and 8 channels
 
 		if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_FORBIDDEN; }
 		else if (pw_rx_intereset_dbm >= -82 + (ch_num_ix*3) && pw_rx_intereset_dbm < -79 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_BPSK_1_2;}
@@ -91,11 +91,11 @@ void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
  */
 double ComputeEbToNoise(double sinr, double bit_rate, int badnwidth, int modulation_type){
 
-	double Es_to_N0 = sinr * (bit_rate/badnwidth);
+	double Es_to_N0 (sinr * (bit_rate/badnwidth));
 
 	//printf("Es_to_N0 = %f (%f) \n", Es_to_N0, ConvertPower(LINEAR_TO_DB, Es_to_N0));
 
-	double Eb_to_N0 = Es_to_N0 * log2(modulation_type);
+	double Eb_to_N0 (Es_to_N0 * log2(modulation_type));
 
 	//printf("Eb_to_N0 = %f (%f)\n", Eb_to_N0, ConvertPower(LINEAR_TO_DB, Eb_to_N0));
 

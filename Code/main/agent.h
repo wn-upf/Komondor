@@ -98,6 +98,7 @@ component Agent : public TypeII{
 
 		// Learning mechanism
 		int learning_mechanism;
+		int selected_strategy;
 
 		// Actions management (tunable parameters)
 		int *list_of_channels; 				// List of channels
@@ -145,7 +146,7 @@ component Agent : public TypeII{
 		char *header_string;				// Header string for the logger
 
 		MultiArmedBandit mab_agent;
-		bool not_initialized;				// Boolean to determine whether the learning alg. has been initialized or not
+//		bool not_initialized;				// Boolean to determine whether the learning alg. has been initialized or not
 
 	// Connections and timers
 	public:
@@ -201,7 +202,7 @@ void Agent :: Start(){
 	}
 	
 	if(save_agent_logs) fprintf(agent_logger.file,"%.18f;A%d;%s;%s Start()\n",
-			SimTime(), agent_id, LOG_B00, LOG_LVL1);
+		SimTime(), agent_id, LOG_B00, LOG_LVL1);
 
 	if(centralized_flag) {
 		// --- Do nothing ---
@@ -255,7 +256,7 @@ void Agent :: RequestInformationToAp(trigger_t &){
 
 	outportRequestInformationToAp();
 
-	num_requests ++;
+	++ num_requests;
 
 };
 
@@ -278,11 +279,6 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	configuration = received_configuration;
 
-	if(not_initialized) {
-		InitializeLearningAlgorithm();
-		not_initialized = false;
-	}
-
 	if(save_agent_logs) WriteConfiguration(configuration);
 
 	performance = received_performance;
@@ -292,7 +288,6 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s Answering to the controller with current information\n",
 			SimTime(), agent_id, LOG_F02, LOG_LVL2);
 		outportAnswerToController(configuration, performance, agent_id);
-
 	} else {
 		// Compute a new configuration according to the updated rewards
 		ComputeNewConfiguration();
@@ -344,9 +339,9 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
  */
 void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
 
-//	printf("%s Agent #%d: New information request received from the Controller\n", LOG_LVL1, agent_id);
-
 	if(agent_id == destination_agent_id) {
+
+//		printf("%s Agent #%d: New information request received from the Controller\n", LOG_LVL1, agent_id);
 
 		if(save_agent_logs) fprintf(agent_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
@@ -375,8 +370,6 @@ void Agent :: InportReceiveConfigurationFromController(int destination_agent_id,
 
 		if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s New configuration received from the Controller to Agent %d\n",
 			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
-
-		//	printf("%s Agent #%d: New configuration received from the Controller\n", LOG_LVL1, agent_id);
 
 		// Update the received configuration
 		configuration_from_controller = received_configuration;
@@ -412,7 +405,6 @@ void Agent :: ComputeNewConfiguration(){
 
 			// Update the configuration according to the MABs operation
 			new_configuration = mab_agent.UpdateConfiguration(configuration, performance, agent_logger, SimTime());
-
 			break;
 
 		}
@@ -455,8 +447,8 @@ void Agent :: InitializeAgent() {
 	// Generate actions
 	actions = new Action[num_actions];
 
-	// Specify that the learning mechanism has not been initialized (to be done for the first AP-agent interaction)
-	not_initialized = true;
+//	// Specify that the learning mechanism has not been initialized (to be done for the first AP-agent interaction)
+//	not_initialized = true;
 
 }
 
@@ -465,43 +457,53 @@ void Agent :: InitializeAgent() {
  */
 void Agent :: InitializeLearningAlgorithm() {
 
-	switch(learning_mechanism) {
+	if (centralized_flag) { // Learning operation managed by the CC
 
-		/* Multi-Armed Bandits:
-		 *
-		 */
-		case MULTI_ARMED_BANDITS:{
+		printf("%s Agent %d: Learning operation managed by the CC\n", LOG_LVL5, agent_id);
 
-			mab_agent.agent_id = agent_id;
-			mab_agent.save_agent_logs = save_agent_logs;
-			mab_agent.print_agent_logs = print_agent_logs;
+	} else  { // Learning operation managed by the agent
 
-			mab_agent.type_of_reward = type_of_reward;
+		switch(learning_mechanism) {
 
-			mab_agent.num_actions = num_actions;
-			mab_agent.num_actions_channel = num_actions_channel;
-			mab_agent.num_actions_cca = num_actions_cca;
-			mab_agent.num_actions_tx_power = num_actions_tx_power;
-			mab_agent.num_actions_dcb_policy = num_actions_dcb_policy;
+			/* Multi-Armed Bandits:
+			 *
+			 */
+			case MULTI_ARMED_BANDITS:{
 
-			mab_agent.InitializeVariables();
+				mab_agent.agent_id = agent_id;
+				mab_agent.save_agent_logs = save_agent_logs;
+				mab_agent.print_agent_logs = print_agent_logs;
 
-			mab_agent.list_of_channels = list_of_channels;
-			mab_agent.list_of_cca_values = list_of_cca_values;
-			mab_agent.list_of_tx_power_values = list_of_tx_power_values;
-			mab_agent.list_of_dcb_policy = list_of_dcb_policy;
+				mab_agent.selected_strategy = selected_strategy;
 
-			break;
-		}
+				mab_agent.type_of_reward = type_of_reward;
 
-		//  TODO: provide more learning mechanisms
-		// case Q_LEARNING:
-		// ...
+				mab_agent.num_actions = num_actions;
+				mab_agent.num_actions_channel = num_actions_channel;
+				mab_agent.num_actions_cca = num_actions_cca;
+				mab_agent.num_actions_tx_power = num_actions_tx_power;
+				mab_agent.num_actions_dcb_policy = num_actions_dcb_policy;
 
-		default:{
-			printf("ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
-			exit(EXIT_FAILURE);
-			break;
+				mab_agent.InitializeVariables();
+
+				mab_agent.list_of_channels = list_of_channels;
+				mab_agent.list_of_cca_values = list_of_cca_values;
+				mab_agent.list_of_tx_power_values = list_of_tx_power_values;
+				mab_agent.list_of_dcb_policy = list_of_dcb_policy;
+
+				break;
+			}
+
+			//  TODO: provide more learning mechanisms
+			// case Q_LEARNING:
+			// ...
+
+			default:{
+				printf("ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
+				exit(EXIT_FAILURE);
+				break;
+			}
+
 		}
 
 	}
@@ -525,30 +527,31 @@ void Agent :: PrintAgentInfo(){
 	printf("%s type_of_reward = %d\n", LOG_LVL4, type_of_reward);
 	printf("%s initial_reward = %f\n", LOG_LVL4, initial_reward);
 	printf("%s list_of_channels: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_channel; i ++) {
+	for (int i = 0; i < num_actions_channel; ++i) {
 		printf("%d  ", list_of_channels[i]);
 	}
 	printf("\n");
 
 	printf("%s list_of_cca_values: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_cca; i ++) {
+	for (int i = 0; i < num_actions_cca; ++i) {
 		printf("%f pW (%f dBm)  ", list_of_cca_values[i], ConvertPower(PW_TO_DBM, list_of_cca_values[i]));
 	}
 	printf("\n");
 
 	printf("%s list_of_tx_power_values: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_tx_power; i ++) {
+	for (int i = 0; i < num_actions_tx_power; ++i) {
 		printf("%f pW (%f dBm)  ", list_of_tx_power_values[i], ConvertPower(PW_TO_DBM, list_of_tx_power_values[i]));
 	}
 	printf("\n");
 
 	printf("%s list_of_dcb_policy: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_dcb_policy; i ++) {
+	for (int i = 0; i < num_actions_dcb_policy; ++i) {
 		printf("%d  ", list_of_dcb_policy[i]);
 	}
 	printf("\n");
 
 	printf("%s learning_mechanism: %d\n", LOG_LVL4, learning_mechanism);
+	printf("%s selected_strategy: %d\n", LOG_LVL4, selected_strategy);
 
 	printf("%s save_agent_logs: %d\n", LOG_LVL4, save_agent_logs);
 	printf("%s print_agent_logs: %d\n", LOG_LVL4, print_agent_logs);

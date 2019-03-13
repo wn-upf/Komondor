@@ -182,18 +182,20 @@ public class Nodes_rectangular_central_generator {
             }
 
             // Channel allocation
-            primary_channel = ThreadLocalRandom.current().nextInt(0, c_sys_width);
-
-            // If WLAN A
-            if (w == 0) {
-                num_channels_allowed_ix = 3;
-            } else {
-                num_channels_allowed_ix = ThreadLocalRandom.current().nextInt(0, log(c_sys_width, 2) + 1);
-            }
+            primary_channel = 0;
+            
+            num_channels_allowed_ix = 0;
+//            // If WLAN A
+//            if (w == 0) {
+//                num_channels_allowed_ix = 0;
+//            } else {
+//                num_channels_allowed_ix = ThreadLocalRandom.current().nextInt(0, log(c_sys_width, 2) + 1);
+//            }
 
             System.out.println("num_channels_allowed: " + num_channels_allowed_ix);
 
-            switch (c_sys_width) {
+//            switch (c_sys_width) {
+            switch (1) {
 
                 case 1: {
                     min_ch_allowed = 0;
@@ -260,7 +262,7 @@ public class Nodes_rectangular_central_generator {
             }
 
             // IEEE 802.11ax or legacy device
-            wlan_80211ax = new Random().nextDouble() <= (1 - legacy_ratio);
+            wlan_80211ax = true; //new Random().nextDouble() <= (1 - legacy_ratio);
 
             // AP position
             while (true) {
@@ -272,12 +274,12 @@ public class Nodes_rectangular_central_generator {
                     x = map_width / 2;
                     y = map_heigth / 2;
                     // to be later set
-                    channel_bonding_aux = -1;
+                    channel_bonding_aux = 4;
 
                 } else {
                     x = map_width * new Random().nextDouble();
                     y = map_heigth * new Random().nextDouble();
-                    channel_bonding_aux = 2 * ThreadLocalRandom.current().nextInt(0, 4);
+                    channel_bonding_aux = 4;// 2 * ThreadLocalRandom.current().nextInt(0, 4);
                 }
 
                 if (w > 0) {
@@ -487,11 +489,9 @@ public class Nodes_rectangular_central_generator {
         System.out.println("input_path: " + input_path);
         String output_path = "";
 
-        // double[] traffic_loads = {1, 25, 50, 75, 100};
-        // double[] traffic_loads = {1, 25};
-        double[] traffic_loads = {1, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240};
+//        double[] traffic_loads = {20, 100, 200};
 
-        int num_outputs = 200;
+        int num_outputs = 100;
 
         Random r = new Random();
 
@@ -504,57 +504,29 @@ public class Nodes_rectangular_central_generator {
 
             for (int w = 1; w < num_wlans; w++) {
                 // In case of random traffic in the rest of WLANs
-                double random_traffic_load = traffic_loads[0]
-                        + (traffic_loads[traffic_loads.length - 1]
-                        - traffic_loads[0]) * r.nextDouble();
-                wlan_container[w].traffic_load = random_traffic_load;
-
+//                double random_traffic_load = traffic_loads[0]
+//                    + (traffic_loads[traffic_loads.length - 1]
+//                    - traffic_loads[0]) * r.nextDouble();
+                //wlan_container[w].traffic_load = random_traffic_load;
+                wlan_container[w].traffic_load = 10000;
             }
 
             // Assign traffic load
-            for (int load_ix = 0; load_ix < traffic_loads.length; load_ix++) {
+            //for (int load_ix = 0; load_ix < traffic_loads.length; load_ix++) {
 
-//                for (int w = 1; w < num_wlans; w++) {
-//
-//                    // Determinsitc traffic load
-//                    wlan_container[w].traffic_load = traffic_loads[load_ix];
-//                }
-
-                wlan_container[0].traffic_load = traffic_loads[load_ix];
-
+                //wlan_container[0].traffic_load = traffic_loads[load_ix];
+                
                 // Assign central WLAN's channel bonding model
                 // Always-max
                 channel_bonding_model = 4;
                 wlan_container[0].channel_bonding_model = channel_bonding_model;
-                output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb" + channel_bonding_model
-                        + "_load" + String.format("%03d", (int) traffic_loads[load_ix]) + ".csv";
+//                output_path = "output/input_nodes_n" + num_wlans + "_s" + out_ix
+//                    + "_load" + String.format("%03d", (int) traffic_loads[load_ix]) + ".csv";
+                output_path = "output/input_nodes_n" + num_wlans + "_s" + out_ix + ".csv";
                 System.out.println("output_path: " + output_path);
                 genearate_file(output_path);
 
-                // SCB
-                channel_bonding_model = 2;
-                wlan_container[0].channel_bonding_model = channel_bonding_model;
-                output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb" + channel_bonding_model
-                        + "_load" + String.format("%03d", (int) traffic_loads[load_ix]) + ".csv";
-                System.out.println("output_path: " + output_path);
-                genearate_file(output_path);
-
-                // OP
-                channel_bonding_model = 0;
-                wlan_container[0].channel_bonding_model = channel_bonding_model;
-                output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb" + channel_bonding_model
-                        + "_load" + String.format("%03d", (int) traffic_loads[load_ix]) + ".csv";
-                System.out.println("output_path: " + output_path);
-                genearate_file(output_path);
-
-                // Prob. uniform
-                channel_bonding_model = 6;
-                wlan_container[0].channel_bonding_model = channel_bonding_model;
-                output_path = "input_nodes_n" + num_wlans + "_s" + out_ix + "_cb" + channel_bonding_model
-                        + "_load" + String.format("%03d", (int) traffic_loads[load_ix]) + ".csv";
-                System.out.println("output_path: " + output_path);
-                genearate_file(output_path);
-            }
+            //}
         }
     }
 }

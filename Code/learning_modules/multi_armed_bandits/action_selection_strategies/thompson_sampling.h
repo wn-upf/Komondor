@@ -48,8 +48,41 @@
 
 #include "../../../list_of_macros.h"
 
+#include <math.h>
+
 #ifndef _AUX_THOMPSON_SAMPLING_
 #define _AUX_THOMPSON_SAMPLING_
+
+double gaussrand(double mean, double std){
+
+	static double V1, V2, S;
+	static int phase = 0;
+	double X;
+
+	if(phase == 0) {
+
+		do {
+
+			double U1 = (double)rand() /  RAND_MAX;
+			double U2 = (double)rand() /  RAND_MAX;
+
+			V1 = 2*U1 - 1;
+			V2 = 2*U2 - 1;
+			S = V1 * V1 + V2 * V2;
+
+		} while (S >= 1 || S == 0);
+
+		X = (V1 * sqrt(-2 * log(S) / S)) * std + mean;
+
+	} else {
+		X = (V1 * sqrt(-2 * log(S) / S)) * std + mean;
+	}
+
+	phase = 1 - phase;
+
+	return X;
+
+}
 
 /*
  * PickArmThompsonSampling(): selects an action according to the epsilon-greedy strategy
@@ -60,28 +93,31 @@
  * OUTPUT:
  *  - arm_index: index of the selected action
  */
-int PickArmThompsonSampling(int num_actions,
-	double *estimated_reward_per_arm, int *times_arm_has_been_selected) {
+int PickArmThompsonSampling(int num_actions, double *estimated_reward_per_arm,
+		int *times_arm_has_been_selected) {
 
 	//TODO: validate the behavior of this implementation
 
 	int action_ix;
 
-	int theta = new int[num_actions];
+	double *theta = new double[num_actions];
+
 	for (int i = 0; i < num_actions; i++) {
-		std::default_random_engine de(time(0)); // seed
-		std:normal_distribution<int> nd(estimated_reward_per_arm[i],
-			times_arm_has_been_selected[i]);
-		theta[i] = nd(de);
+
+		theta[i] = gaussrand(estimated_reward_per_arm[i],
+			1/(1+times_arm_has_been_selected[i]));
+
 	}
 
 	double max = 0;
 	for (int i = 0; i < num_actions; i ++) {
-		if(theta[i] >= max) {
+		if(theta[i] > max) {
 			max = theta[i];
 			action_ix = i;
 		}
+		//  TODO: elseif(theta[i] == max) --> Break ties!
 	}
+
 //		printf("EXPLOIT: arm_index = %d\n", arm_index);
 
 	return action_ix;
