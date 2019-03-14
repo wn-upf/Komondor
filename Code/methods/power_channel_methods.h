@@ -581,7 +581,7 @@ void UpdateChannelsPower(double **channel_power, Notification notification,
 }
 
 /*
- * UpdateSINR(): Computes the SINR according to the power of interest and the interference
+ * UpdateSINR(): Updates the SINR
  **/
 double UpdateSINR(double pw_received_interest, double noise_level, double max_pw_interference){
 

@@ -306,7 +306,7 @@ public class ThreeWLANsGenerator {
 
         String input_path = "input_template_rectangular.csv";
         System.out.println("input_path: " + input_path);
-        String output_path = "\\output";
+        String output_path = "";
 
         input_attributes(input_path);
 

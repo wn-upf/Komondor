@@ -66,12 +66,8 @@
 int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 
 	int type_of_packet;
-
 	int bss_color_enabled = false;
-	int srg_enabled = false;
-
 	if (notification.tx_info.bss_color >= 0 && bss_color >= 0) bss_color_enabled = true;
-	if (notification.tx_info.srg >= 0 && srg >= 0) srg_enabled = true;
 
 	if (!bss_color_enabled) {
 		type_of_packet = INTRA_BSS_FRAME;
@@ -79,14 +75,10 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 		if ( notification.tx_info.bss_color == bss_color ) {
 			type_of_packet = INTRA_BSS_FRAME;
 		} else {
-			if (srg_enabled) {
-				if ( notification.tx_info.srg == srg ) {
-					type_of_packet = SRG_FRAME;
-				} else {
-					type_of_packet = NON_SRG_FRAME;
-				}
+			if ( notification.tx_info.srg == srg ) {
+				type_of_packet = SRG_FRAME;
 			} else {
-				type_of_packet = INTER_BSS_FRAME;
+				type_of_packet = NON_SRG_FRAME;
 			}
 		}
 	}
@@ -108,17 +100,16 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
  * - cst_pw: CST in pW to be used according to the source of the detected frame
  **/
 double GetSensitivitySpatialReuse(int *type_ongoing_transmissions_sr, double cca_default,
-		double obss_pd, double srg_obss_pd, double non_srg_obss_pd, double power_received) {
+	double srg_obss_pd, double non_srg_obss_pd, double power_received) {
 
 	double cst_pw;
 
 //	printf(".......................\n");
 	// Set the CCA for each type of transmission
-	double cca_per_type[4] = {0, 0, 0, 0};
-	if (type_ongoing_transmissions_sr[0] == 1) cca_per_type[0] = cca_default;
-	if (type_ongoing_transmissions_sr[1] == 1) cca_per_type[1] = obss_pd;
-	if (type_ongoing_transmissions_sr[2] == 1) cca_per_type[2] = srg_obss_pd;
-	if (type_ongoing_transmissions_sr[3] == 1) cca_per_type[3] = non_srg_obss_pd;
+	double cca_per_type[3] = {0, 0, 0};
+	if (type_ongoing_transmissions_sr[0] == INTRA_BSS_FRAME) cca_per_type[0] = cca_default;
+	if (type_ongoing_transmissions_sr[1] == NON_SRG_FRAME) cca_per_type[1] = non_srg_obss_pd;
+	if (type_ongoing_transmissions_sr[2] == SRG_FRAME) cca_per_type[2] = srg_obss_pd;
 
 	// Check if the power received is lower than the minimum OBSS_PD (-82 dBm)
 	if (ConvertPower(PW_TO_DBM, power_received) < OBSS_PD_MIN) {
@@ -127,7 +118,7 @@ double GetSensitivitySpatialReuse(int *type_ongoing_transmissions_sr, double cca
 	} else {
 		// Initialize to a high value
 		cst_pw = 1000;
-		for (int i = 0 ; i < 4 ; i ++) {
+		for (int i = 0 ; i < 3 ; i ++) {
 //			printf(" - cca_per_type[%d] = %f / type_ongoing_transmissions_sr = %d\n",
 //				i, ConvertPower(PW_TO_DBM,cca_per_type[i]), type_ongoing_transmissions_sr[i]);
 			if (cca_per_type[i] < cst_pw && type_ongoing_transmissions_sr[i] == 1) {

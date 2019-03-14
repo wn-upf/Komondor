@@ -126,7 +126,7 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 					sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
 //				printf(
-//					"%.12f;N%d;S%d;%s;%s High interference sensed in destination N%d (capture effect not accomplished)!\n",
+//					"%.12f;N%d;S%d;%s;%s High interferences sensed in destination N%d (capture effect not accomplished)!\n",
 //					sim_time, node_id, node_state, LOG_H02, LOG_LVL2, logical_nack.source_id);
 
 				// Increase the number of times of POTENTIAL hidden nodes with the current transmitting nodes
@@ -288,14 +288,14 @@ void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
  * AttemptToDecodePacket(): attempts to decode incoming packet according to SINR and the capture effect (CE)
  **/
 int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
-		double power_rx_interest, double constant_per, int node_id,
-		int packet_type, int destination_id){
+		double power_rx_interest, double constant_per, int node_id, int packet_type,
+		int destination_id){
 
 	int packet_lost;
 	double per (0);
 
 	// Try to decode when power received is greater than CCA
-	if(sinr < ConvertPower(LINEAR_TO_DB, capture_effect) || power_rx_interest < cca) {
+	if(sinr < capture_effect || power_rx_interest < cca) {
 
 		per = 1;
 
@@ -311,12 +311,6 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
 	}
 
 	packet_lost = ((double) rand() / (RAND_MAX)) < per;
-
-//	printf("sinr = %f\n", sinr);
-//	printf("capture_effect = %f\n", ConvertPower(LINEAR_TO_DB, capture_effect));
-//	printf("power_rx_interest = %f\n", power_rx_interest);
-//	printf("cca = %f\n", cca);
-//	printf("packet_lost = %d\n", packet_lost);
 
 	return packet_lost;
 }
@@ -390,9 +384,8 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
  * GenerateTxInfo: generates a TxInfo
  **/
 TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double ack_duration,
-		double rts_duration, double cts_duration, double current_tpc, double current_cca,
-		int num_channels_tx, double tx_gain,	int bits_ofdm_sym, double x, double y,
-		double z, int bss_color, int srg) {
+		double rts_duration, double cts_duration, double current_tpc, int num_channels_tx,
+		double tx_gain,	int bits_ofdm_sym, double x, double y, double z) {
 
 	TxInfo tx_info;
 	tx_info.SetSizeOfMCS(4);	// TODO: make size dynamic
@@ -404,16 +397,12 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	tx_info.rts_duration = rts_duration;
 	tx_info.cts_duration = cts_duration;
 	tx_info.tx_power = ComputeTxPowerPerChannel(current_tpc, num_channels_tx);
-	tx_info.cca = current_cca;
 	tx_info.tx_gain = tx_gain;
 	tx_info.bits_ofdm_sym = bits_ofdm_sym;
 	tx_info.x = x;
 	tx_info.y = y;
 	tx_info.z = z;
 	tx_info.nav_time = 0;
-
-	tx_info.bss_color = bss_color;
-	tx_info.srg = srg;
 
 	return tx_info;
 

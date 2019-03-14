@@ -302,12 +302,10 @@
 
 #define CST_DBM		-68
 
-// Spatial Reuse
-#define INTRA_BSS_FRAME		0
-#define INTER_BSS_FRAME		1
-#define SRG_FRAME			2
-#define NON_SRG_FRAME		3
-
+// SPATIAL REUSE OPERATION
+#define INTRA_BSS_FRAME		0		// Frame type = Intra-BSS or legacy
+#define NON_SRG_FRAME		1		// Frame type = Inter-BSS with different SRG
+#define SRG_FRAME			2		// Frame type = Inter-BSS with same SRG
 #define OBSS_PD_MIN			-82 	// Minimum OBSS_PD (dBm)
 #define OBSS_PD_MAX			-62 	// Maximum OBSS_PD (dBm)
 #define MAX_TX_PWR_SR		20		// Maximum transmit power to be used during the SR operation (dBm)
@@ -355,19 +353,15 @@
 #define IX_PDF_BACKOFF				3
 #define IX_PDF_TX_TIME				4
 #define IX_PACKET_LENGTH			5
-//#define IX_ACK_LENGTH				6
 #define IX_NUM_PACKETS_AGGREGATED	6
 #define IX_PATH_LOSS				7
 #define IX_CAPTURE_EFFECT			8
 #define IX_NOISE_LEVEL				9
 #define IX_COCHANNEL_MODEL			10
 #define IX_COLLISIONS_MODEL			11
-//#define IX_SIFS						12
 #define IX_CONSTANT_PER				12
 #define IX_TRAFFIC_MODEL			13
 #define IX_BO_TYPE					14
-//#define IX_RTS_LENGTH				17
-//#define IX_CTS_LENGTH				18
 #define IX_CW_ADAPTATION			15
 #define IX_PIFS_ACTIVATION			16
 #define IX_CAPTURE_EFFECT_MODEL		17
@@ -401,9 +395,8 @@
 #define IX_TRAFFIC_LOAD				26
 #define IX_BSS_COLOR				27
 #define IX_SRG						28
-#define IX_OBSS_PD					29
+#define IX_NON_SRG_OBSS_PD			29
 #define IX_SRG_OBSS_PD				30
-#define IX_NON_SRG_OBSS_PD			31
 
 // APs file
 #define IX_AP_WLAN_CODE					1

@@ -79,7 +79,6 @@ int findMaximumPacketsAggregated(int num_packets_aggregated, int data_packet_len
 		}
 	}
 
-	limited_num_packets_aggregated = num_packets_aggregated;
 	return limited_num_packets_aggregated;
 
 }
