@@ -110,8 +110,9 @@
 #define PACKET_LOST_BO_COLLISION		8	// Collision by simultaneous backoff
 #define PACKET_LOST_OUTSIDE_CH_RANGE	9	// Packet was transmitted outside the primary channel of the receiver
 #define PACKET_LOST_CAPTURE_EFFECT		10	// A new transmission made that the CE was not longer accomplished
+#define PACKET_IGNORED_SPATIAL_REUSE	11	// The transmission was ignored due to the spatial reuse operation
 
-#define NUM_PACKET_LOST_REASONS			11	// Number of reasons whereby a packet can be lost
+#define NUM_PACKET_LOST_REASONS			12	// Number of reasons whereby a packet can be lost
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1

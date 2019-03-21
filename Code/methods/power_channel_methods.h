@@ -118,6 +118,13 @@ double ComputeDistance(double x1, double y1, double z1, double x2, double y2, do
 double ComputePowerReceived(double distance, double tx_power, double tx_gain, double rx_gain,
 		double central_frequency, int path_loss_model) {
 
+//	printf("    - distance = %f\n", distance);
+//	printf("    - tx_power = %f\n", ConvertPower(PW_TO_DBM,tx_power));
+//	printf("    - tx_gain = %f\n", tx_gain);
+//	printf("    - rx_gain = %f\n", rx_gain);
+//	printf("    - central_frequency = %f\n", central_frequency);
+//	printf("    - path_loss_model = %d\n", path_loss_model);
+
 	double tx_power_dbm (ConvertPower(PW_TO_DBM, tx_power));
 	double tx_gain_db (ConvertPower(LINEAR_TO_DB, tx_gain));
 	double rx_gain_db (ConvertPower(LINEAR_TO_DB, rx_gain));

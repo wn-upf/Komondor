@@ -280,7 +280,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 					node_container[i].received_power_array[j] = 0;
 				} else {
 					node_container[i].received_power_array[j] = ComputePowerReceived(node_container[i].distances_array[j],
-						node_container[i].tpc_default, node_container[i].tx_gain, node_container[i].rx_gain,
+						node_container[j].tpc_default, node_container[j].tx_gain, node_container[i].rx_gain,
 						node_container[i].central_frequency, path_loss_model);
 				}
 			}
@@ -568,7 +568,7 @@ void Komondor :: Stop(){
 		}
 	}
 
-	int simulation_index (11);
+	int simulation_index (10);
 
 	switch(simulation_index){
 

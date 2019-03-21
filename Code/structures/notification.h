@@ -76,9 +76,12 @@ struct TxInfo
 	double z;						// Z position of source node
 	double nav_time;				// RTS/CTS NAV time
 
+	bool flag_change_in_tx_power;	// Flag to indicate whether the transmission power was changed (in order to recompute arrays)
+
 	// Spatial Reuse
 	int bss_color;
 	int srg;
+	bool txop_sr_identified;
 
 	void PrintTxInfo(int packet_id, int destination_id, double tx_duration){
 		printf("packet_id = %d - destination_id = %d - tx_duration = %f - tx_power = %f pw"
