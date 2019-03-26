@@ -1420,7 +1420,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 		}
 	}
 
-	if (print_system_logs) printf("%s WLANs identified\n", LOG_LVL3);
+//	if (print_system_logs) printf("%s WLANs identified\n", LOG_LVL3);
 
 	// Get number of STAs in each WLAN
 	for(int w = 0; w < total_wlans_number; ++w){
@@ -1429,7 +1429,7 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 		wlan_container[w].SetSizeOfSTAsArray(num_stas_in_wlan);
 	}
 
-	if (print_system_logs) printf("%s Num. of STAs per each WLAN identified\n", LOG_LVL3);
+//	if (print_system_logs) printf("%s Num. of STAs per each WLAN identified\n", LOG_LVL3);
 
 	// Generate nodes (without wlan item), finsih WLAN with ID lists, and set the wlan item of each STA.
 	if (print_system_logs) printf("%s Generating nodes...\n", LOG_LVL3);
