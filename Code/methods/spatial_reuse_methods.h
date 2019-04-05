@@ -82,6 +82,10 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 			}
 		}
 	}
+//	printf("notification.tx_info.bss_color = %d\n", notification.tx_info.bss_color);
+//	printf("notification.tx_info.srg = %d\n", notification.tx_info.srg);
+//	printf("bss_color = %d\n", bss_color);
+//	printf("bss_color = %d\n", bss_color);
 
 	return type_of_packet;
 

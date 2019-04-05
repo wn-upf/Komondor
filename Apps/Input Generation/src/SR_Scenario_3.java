@@ -47,9 +47,9 @@ public class SR_Scenario_3 {
     static double traffic_load;
     static int bss_color_input;
     static int srg_input;
-    static int obss_pd_input;       // OBSS_PD_INPUT
+    static int non_srg_obss_pd_input;      // OBSS_PD_INPUT
     static int srg_obss_pd_input;
-    static int non_srg_obss_pd_input;
+    
     // -------------------
     static final int destination_id = -1;
     static double tpc_min;
@@ -130,10 +130,9 @@ public class SR_Scenario_3 {
                     traffic_load = Integer.parseInt(node_info[25]);                    
                     bss_color_input = Integer.parseInt(node_info[26]);
                     srg_input = Integer.parseInt(node_info[27]);
-                    obss_pd_input = Integer.parseInt(node_info[28]);
+                    non_srg_obss_pd_input = Integer.parseInt(node_info[28]);
                     srg_obss_pd_input = Integer.parseInt(node_info[29]);
-                    non_srg_obss_pd_input = Integer.parseInt(node_info[30]);
-
+                    
                     System.out.println(
                         "Input:"
                         + "\n- map_width: " + map_width
@@ -150,9 +149,8 @@ public class SR_Scenario_3 {
                         + "\n- cont_wind: " + cont_wind
                         + "\n- bss_color_input: " + bss_color_input
                         + "\n- srg_input: " + srg_input
-                        + "\n- obss_pd_input: " + obss_pd_input
-                        + "\n- srg_obss_pd_input: " + srg_obss_pd_input
-                        + "\n- non_srg_obss_pd_input: " + non_srg_obss_pd_input);
+                        + "\n- non_srg_obss_pd_input: " + non_srg_obss_pd_input
+                        + "\n- srg_obss_pd_input: " + srg_obss_pd_input);
                 }
             }
         } catch (IOException e) {
@@ -160,7 +158,7 @@ public class SR_Scenario_3 {
         }
     }
 
-    public static void generate_wlans(int srg_obss_pd, int non_srg_obss_pd) {
+    public static void generate_wlans(int srg_obss_pd_input, int non_srg_obss_pd_input) {
 
         int wlan_counter = 0;
 
@@ -220,13 +218,13 @@ public class SR_Scenario_3 {
                         z = 0;
                         break;
                     case 1:
-                        x = 4;
-                        y = 5.5;
+                        x = 9;
+                        y = 0;
                         z = 0;
                         break;
                     case 2:
-                        x = 10;
-                        y = 0;
+                        x = 6.5;
+                        y = 5;
                         z = 0;
                         break;
                     default:
@@ -234,30 +232,32 @@ public class SR_Scenario_3 {
                 }
                 break;
             }
-                       
+                        
             channel_bonding_aux = 0;
                                      
             wlan_aux = new Wlan(wlan_id, wlan_code, num_stas, ap_code,
                 list_sta_code, primary_channel, min_ch_allowed,
-                max_ch_allowed, wlan_80211ax, x, y, z, channel_bonding_model, traffic_load);
+                max_ch_allowed, wlan_80211ax, x, y, z, 
+                channel_bonding_model, traffic_load);
 
 //            // Spatial Reuse Operation
 //            if (w == 0) {
-//                wlan_aux.srg_obss_pd = srg_obss_pd;
+//                wlan_aux.obss_pd = obss_pd;
 //                wlan_aux.bss_color = 1;
 //            } else {
-//                wlan_aux.srg_obss_pd = obss_pd_input;
+//                wlan_aux.obss_pd = obss_pd_input;
 //                wlan_aux.tpc_default = tpc_default_input;
 //                wlan_aux.bss_color = bss_color_input;
 //            }          
             
-            wlan_aux.bss_color = wlan_id;
+            wlan_aux.bss_color = wlan_id + 1;
+           
             wlan_aux.cca_default = cca_default_input;
             wlan_aux.tpc_default = tpc_default_input;
-            wlan_aux.obss_pd = obss_pd_input;
-            wlan_aux.srg_obss_pd = srg_obss_pd;
-            wlan_aux.non_srg_obss_pd = non_srg_obss_pd;
             
+            wlan_aux.non_srg_obss_pd = non_srg_obss_pd_input;
+            wlan_aux.srg_obss_pd = srg_obss_pd_input;
+                        
             Point2D.Double[] stas_position_list = new Point2D.Double[wlan_aux.num_stas];
 
             // Set STAs location
@@ -267,14 +267,15 @@ public class SR_Scenario_3 {
                 point.setLocation(0, 0);
                 wlan_aux.spatial_reuse_group = 1;
             } else if (w == 1) {
-                point.setLocation(4, 0.5);
-                wlan_aux.spatial_reuse_group = 1;
-            } else if (w == 2) {
-                point.setLocation(14, 0);
+                point.setLocation(13, 0);
                 wlan_aux.spatial_reuse_group = 2;
-            }                
+            } else if (w == 2) {
+                point.setLocation(6.5, 9);
+                wlan_aux.spatial_reuse_group = 1;
+            }  
+             
 
-            stas_position_list[0] = point;  
+            stas_position_list[0] = point;
             wlan_aux.set_stas_positions(stas_position_list);
             
             wlan_container[w] = wlan_aux;
@@ -338,9 +339,8 @@ public class SR_Scenario_3 {
                 + "traffic_load[pkt/s]" + CSV_SEPARATOR
                 + "bss_color" + CSV_SEPARATOR
                 + "spatial_reuse_group" + CSV_SEPARATOR
-                + "obss_pd" + CSV_SEPARATOR
-                + "srg_obss_pd" + CSV_SEPARATOR
-                + "non_srg_obss_pd";
+                + "non_srg_obss_pd" + CSV_SEPARATOR
+                + "srg_obss_pd";
 
         // System.out.println(csv_header_line);
         out.println(csv_header_line);
@@ -354,8 +354,8 @@ public class SR_Scenario_3 {
                 wlan.wlan_code, wlan.x, wlan.y, wlan.z, wlan.primary_channel,
                 wlan.min_ch_allowed, wlan.max_ch_allowed,
                 wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
-                wlan.bss_color, wlan.spatial_reuse_group, wlan.obss_pd, 
-                wlan.srg_obss_pd, wlan.non_srg_obss_pd);
+                wlan.bss_color, wlan.spatial_reuse_group, 
+                wlan.non_srg_obss_pd, wlan.srg_obss_pd);
 
             // System.out.println(line);
             out.println(line);
@@ -365,23 +365,13 @@ public class SR_Scenario_3 {
             // Set STAs location
             for (int n = 0; n < wlan.num_stas; n++) {
                 
-                if (w==1) { // Change Z of STA in WLAN A
-                    line = getCompleteLine(wlan.list_sta_code[n], node_type,
-                        wlan.wlan_code, wlan.stas_position_list[n].x, 
-                        wlan.stas_position_list[n].y, 0, wlan.primary_channel,
-                        wlan.min_ch_allowed, wlan.max_ch_allowed,
-                        wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
-                        wlan.bss_color, wlan.spatial_reuse_group, wlan.obss_pd, 
-                        wlan.srg_obss_pd, wlan.non_srg_obss_pd);
-                } else {
-                    line = getCompleteLine(wlan.list_sta_code[n], node_type,
+                line = getCompleteLine(wlan.list_sta_code[n], node_type,
                     wlan.wlan_code, wlan.stas_position_list[n].x, 
                     wlan.stas_position_list[n].y, 0, wlan.primary_channel,
                     wlan.min_ch_allowed, wlan.max_ch_allowed,
                     wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
-                    wlan.bss_color, wlan.spatial_reuse_group, wlan.obss_pd, 
-                    wlan.srg_obss_pd, wlan.non_srg_obss_pd);    
-                }
+                    wlan.bss_color, wlan.spatial_reuse_group, 
+                    wlan.non_srg_obss_pd, wlan.srg_obss_pd);
 
                 // System.out.println(line);
                 out.println(line);
@@ -398,7 +388,7 @@ public class SR_Scenario_3 {
             String wlan_code, double x, double y, double z, int primary_channel,
             int min_channel_allowed, int max_channel_allowed, int channel_bonding_model,
             int tpc_default, int cca_default, int bss_color, int spatial_reuse_group,
-            int obss_pd, int srg_obss_pd, int non_srg_obss_pd) {
+            int non_srg_obss_pd, int srg_obss_pd) {
 
         // Round position coordinates to limited number of decimals
         NumberFormat nf = NumberFormat.getNumberInstance(Locale.UK);
@@ -433,9 +423,8 @@ public class SR_Scenario_3 {
                 + traffic_load + CSV_SEPARATOR
                 + bss_color + CSV_SEPARATOR
                 + spatial_reuse_group + CSV_SEPARATOR
-                + obss_pd + CSV_SEPARATOR                
-                + srg_obss_pd + CSV_SEPARATOR                
-                + non_srg_obss_pd;
+                + non_srg_obss_pd + CSV_SEPARATOR                
+                + srg_obss_pd;
  
         return line;
     }
@@ -499,7 +488,5 @@ public class SR_Scenario_3 {
                 
             }                    
         }
-        
     }
-    
 }
