@@ -750,18 +750,27 @@ void Komondor :: Stop(){
 			double time_in_channel_wlan_b = node_container[2].total_time_transmitting_in_num_channels[2];
 			double time_in_channel_average = 0;
 			double time_in_channel_max_min = 10000000000000;
+			double aggregate_throughput = 0;
 			for(int i = 0; i < total_wlans_number; i++){
-				time_in_channel_average += node_container[2*i].total_time_transmitting_in_num_channels[0];
-				if (node_container[2*i].total_time_transmitting_in_num_channels[0] < time_in_channel_max_min) {
-					time_in_channel_max_min = node_container[2*i].total_time_transmitting_in_num_channels[0];
+				time_in_channel_average = time_in_channel_average +
+					node_container[2*i].total_time_transmitting_in_num_channels[0];
+				if (node_container[2*i].total_time_transmitting_in_num_channels[0]
+					< time_in_channel_max_min) {
+					time_in_channel_max_min =
+						node_container[2*i].total_time_transmitting_in_num_channels[0];
 				}
+				aggregate_throughput = aggregate_throughput + node_container[i*2].throughput;
 			}
+//			double AREA = 100; // in m3
+//			total_bits_per_area = aggregate_throughput / AREA;
 
 			time_in_channel_average = time_in_channel_average / total_wlans_number;
 
-			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
+			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;"
+				"%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
 				node_container[0].throughput * pow(10,-6),				// Throughput WLAN A
 				node_container[2].throughput * pow(10,-6),				// Throughput WLAN B
+				node_container[4].throughput * pow(10,-6),				// Throughput WLAN C
 				(total_throughput * pow(10,-6)/total_wlans_number),		// Average throughput
 				min_throughput * pow(10,-6),							// Max-min throughput
 				time_in_channel_wlan_a/simulation_time_komondor,		// Time WLAN A spends transmitting
@@ -771,8 +780,8 @@ void Komondor :: Stop(){
 				node_container[0].average_delay * pow(10,3),			// Delay WLAN A
 				node_container[2].average_delay * pow(10,3),			// Delay WLAN B
 				total_delay * pow(10,3) / total_wlans_number,			// Average delay
-				max_delay * pow(10,3) );								// Maximum delay
-
+				max_delay * pow(10,3),									// Maximum delay
+				aggregate_throughput);									// Aggregate throughput
 			break;
 
 		}

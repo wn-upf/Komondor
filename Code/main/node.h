@@ -902,12 +902,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.packet_type);
 
 							// Save NAV notification for comparing timestamps in case of need
-							// Save NAV notification for comparing timestamps in case of need
-							if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
-								inter_bss_nav_notification = notification;
-							} else {
+//							if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
+//								inter_bss_nav_notification = notification;
+//							} else {
 								nav_notification = notification;
-							}
+//							}
 
 							if(node_is_transmitter){
 								int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
@@ -1015,7 +1014,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				int inter_bss_nav_collision;	// Variable to indicate whether an inter-BSS NAV collision occurred for the current detected notification
 				// Check if a collision occurred for any of the NAV timers
 				if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
-					inter_bss_nav_collision = abs(inter_bss_nav_notification.timestamp -
+					inter_bss_nav_collision = abs(nav_notification.timestamp -
 						notification.timestamp) < MAX_DIFFERENCE_SAME_TIME;
 				} else {
 					nav_collision = fabs(nav_notification.timestamp -
@@ -1104,10 +1103,16 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									notification.source_id, ConvertPower(LINEAR_TO_DB, current_sinr));
 
 								// Cancel the previous NAV
-								if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
+								if ( spatial_reuse_enabled ) {
 									trigger_inter_bss_NAV_timeout.Cancel(); // Cancel inter-BSS NAV
+									LOGS(save_node_logs,node_logger.file,
+										"%.15f;N%d;S%d;%s;%s INTER-BSS NAV CANCELLED!\n",
+										SimTime(), node_id, node_state, LOG_D16, LOG_LVL4);
 								} else {
 									trigger_NAV_timeout.Cancel();			// Cancel intra-BSS NAV (legacy)
+									LOGS(save_node_logs,node_logger.file,
+										"%.15f;N%d;S%d;%s;%s DEFAULT NAV CANCELLED!\n",
+										SimTime(), node_id, node_state, LOG_D16, LOG_LVL4);
 								}
 
 								// Change state and update receiving info
@@ -1203,7 +1208,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							} else {
 
 								if ( (nav_collision && nav_notification.packet_type == notification.packet_type)
-									|| (inter_bss_nav_collision && inter_bss_nav_notification.packet_type == notification.packet_type) ) {
+									|| (inter_bss_nav_collision && nav_notification.packet_type == notification.packet_type) ) {
 
 									// if(save_node_logs) fprintf(node_logger.file,
 									//	"%.15f;N%d;S%d;%s;%s Waiting just in case of more collisions.\n",
@@ -1295,7 +1300,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									if (loss_reason == PACKET_NOT_LOST && txop_sr_identified) txop_sr_identified = FALSE; // Cancel SR TXOP!
 								/* *****************************************/
 									if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) { // Update inter-BSS NAV trigger
-										inter_bss_nav_notification = notification;
+										nav_notification = notification;
 										if(trigger_inter_bss_NAV_timeout.GetTime() < notification.tx_info.nav_time) {
 											time_to_trigger = SimTime() +  notification.tx_info.nav_time + TIME_OUT_EXTRA_TIME;
 											trigger_inter_bss_NAV_timeout.Set(fix_time_offset(time_to_trigger,13,12));
@@ -2574,8 +2579,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 				} else {	// Node IS NOT THE DESTINATION
 
 					LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Still receiving packet #%d reception from N%d.\n",
-							SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, incoming_notification.packet_id,
-							incoming_notification.source_id);
+						SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, incoming_notification.packet_id,
+						incoming_notification.source_id);
 				}
 
 				break;
@@ -4190,7 +4195,7 @@ void Node:: CallSensing(trigger_t &){
 		int loss_reason_sr = 1;	// lost by default
 		// Check if the packet can be decoded with the CST indicated by the SR operation
 		if (loss_reason == PACKET_NOT_LOST && spatial_reuse_enabled) {
-			loss_reason_sr = IsPacketLost(current_primary_channel, inter_bss_nav_notification, inter_bss_nav_notification,
+			loss_reason_sr = IsPacketLost(current_primary_channel, nav_notification, nav_notification,
 				current_sinr, capture_effect, cca_spatial_reuse, power_rx_interest, constant_per, node_id, capture_effect_model);
 			if (loss_reason_sr != PACKET_NOT_LOST && node_is_transmitter) {
 				txop_sr_identified = TRUE;	// TXOP identified!

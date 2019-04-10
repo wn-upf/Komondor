@@ -47,9 +47,8 @@ public class SR_RANDOM_1 {
     static double traffic_load;
     static int bss_color_input;
     static int srg_input;
-    static int obss_pd_input;       // OBSS_PD_INPUT
-    static int srg_obss_pd_input;
     static int non_srg_obss_pd_input;
+    static int srg_obss_pd_input;    
     // -------------------
     static final int destination_id = -1;
     static double tpc_min;
@@ -130,9 +129,8 @@ public class SR_RANDOM_1 {
                     traffic_load = Integer.parseInt(node_info[25]);                    
                     bss_color_input = Integer.parseInt(node_info[26]);
                     srg_input = Integer.parseInt(node_info[27]);
-                    obss_pd_input = Integer.parseInt(node_info[28]);
+                    non_srg_obss_pd_input = Integer.parseInt(node_info[28]);
                     srg_obss_pd_input = Integer.parseInt(node_info[29]);
-                    non_srg_obss_pd_input = Integer.parseInt(node_info[30]);
 
                     System.out.println(
                         "Input:"
@@ -150,9 +148,8 @@ public class SR_RANDOM_1 {
                         + "\n- cont_wind: " + cont_wind
                         + "\n- bss_color_input: " + bss_color_input
                         + "\n- srg_input: " + srg_input
-                        + "\n- obss_pd_input: " + obss_pd_input
-                        + "\n- srg_obss_pd_input: " + srg_obss_pd_input
-                        + "\n- non_srg_obss_pd_input: " + non_srg_obss_pd_input);
+                        + "\n- non_srg_obss_pd_input: " + non_srg_obss_pd_input
+                        + "\n- srg_obss_pd_input: " + srg_obss_pd_input);
                 }
             }
         } catch (IOException e) {
@@ -160,7 +157,7 @@ public class SR_RANDOM_1 {
         }
     }
 
-    public static void generate_wlans(int obss_pd, Point2D.Double[] aps_position_list, 
+    public static void generate_wlans(int non_srg_obss_pd, Point2D.Double[] aps_position_list, 
             Point2D.Double[] stas_position_list) {
         
 //        int size = aps_position_list.length;
@@ -229,10 +226,9 @@ public class SR_RANDOM_1 {
             wlan_aux.spatial_reuse_group = -1;
             wlan_aux.cca_default = cca_default_input;
             wlan_aux.tpc_default = tpc_default_input;
-            wlan_aux.obss_pd = obss_pd;
+            wlan_aux.non_srg_obss_pd = non_srg_obss_pd;
             wlan_aux.srg_obss_pd = srg_obss_pd_input;
-            wlan_aux.non_srg_obss_pd = non_srg_obss_pd_input;
-            
+                        
             wlan_container[w] = wlan_aux;
             wlan_counter++;
             
@@ -294,9 +290,8 @@ public class SR_RANDOM_1 {
                 + "traffic_load[pkt/s]" + CSV_SEPARATOR
                 + "bss_color" + CSV_SEPARATOR
                 + "spatial_reuse_group" + CSV_SEPARATOR
-                + "obss_pd" + CSV_SEPARATOR
-                + "srg_obss_pd" + CSV_SEPARATOR
-                + "non_srg_obss_pd";
+                + "non_srg_obss_pd" + CSV_SEPARATOR
+                + "srg_obss_pd";
 
         // System.out.println(csv_header_line);
         out.println(csv_header_line);
@@ -310,8 +305,8 @@ public class SR_RANDOM_1 {
                 wlan.wlan_code, wlan.x, wlan.y, wlan.z, wlan.primary_channel,
                 wlan.min_ch_allowed, wlan.max_ch_allowed,
                 wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
-                wlan.bss_color, wlan.spatial_reuse_group, wlan.obss_pd, 
-                wlan.srg_obss_pd, wlan.non_srg_obss_pd);
+                wlan.bss_color, wlan.spatial_reuse_group, wlan.non_srg_obss_pd,
+                wlan.srg_obss_pd);
 
             // System.out.println(line);
             out.println(line);
@@ -327,16 +322,16 @@ public class SR_RANDOM_1 {
                         wlan.stas_position_list[n].y, 0, wlan.primary_channel,
                         wlan.min_ch_allowed, wlan.max_ch_allowed,
                         wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
-                        wlan.bss_color, wlan.spatial_reuse_group, wlan.obss_pd, 
-                        wlan.srg_obss_pd, wlan.non_srg_obss_pd);
+                        wlan.bss_color, wlan.spatial_reuse_group, wlan.non_srg_obss_pd, 
+                        wlan.srg_obss_pd);
                 } else {
                     line = getCompleteLine(wlan.list_sta_code[n], node_type,
                     wlan.wlan_code, wlan.stas_position_list[n].x, 
                     wlan.stas_position_list[n].y, 0, wlan.primary_channel,
                     wlan.min_ch_allowed, wlan.max_ch_allowed,
                     wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
-                    wlan.bss_color, wlan.spatial_reuse_group, wlan.obss_pd, 
-                    wlan.srg_obss_pd, wlan.non_srg_obss_pd);    
+                    wlan.bss_color, wlan.spatial_reuse_group, wlan.non_srg_obss_pd,
+                    wlan.srg_obss_pd);    
                 }
 
                 // System.out.println(line);
@@ -354,7 +349,7 @@ public class SR_RANDOM_1 {
             String wlan_code, double x, double y, double z, int primary_channel,
             int min_channel_allowed, int max_channel_allowed, int channel_bonding_model,
             int tpc_default, int cca_default, int bss_color, int spatial_reuse_group,
-            int obss_pd, int srg_obss_pd, int non_srg_obss_pd) {
+            int non_srg_obss_pd, int srg_obss_pd) {
 
         // Round position coordinates to limited number of decimals
         NumberFormat nf = NumberFormat.getNumberInstance(Locale.UK);
@@ -389,9 +384,8 @@ public class SR_RANDOM_1 {
                 + traffic_load + CSV_SEPARATOR
                 + bss_color + CSV_SEPARATOR
                 + spatial_reuse_group + CSV_SEPARATOR
-                + obss_pd + CSV_SEPARATOR                
-                + srg_obss_pd + CSV_SEPARATOR                
-                + non_srg_obss_pd;
+                + non_srg_obss_pd + CSV_SEPARATOR                
+                + srg_obss_pd;
  
         return line;
     }
@@ -421,14 +415,14 @@ public class SR_RANDOM_1 {
     public static void main(String args[]) throws IOException {
 
         String type_of_scenario = "ultra_dense";
-        String input_path = "./input_constructor/random_scenarios/" + type_of_scenario + ".csv";
+        String input_path = "./input_constructor/random_scenarios/input_template_random_" + type_of_scenario + ".csv";
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";
 
         // DEFINE THE CCA VALUES TO BE USED
-        int[] obss_pd_list = new int[-62 + 82 + 1]; 
+        int[] non_srg_obss_pd_list = new int[-62 + 82 + 1]; 
         for (int i = 0; i < -62 + 82 + 1; i ++) {
-            obss_pd_list[i] = -82 + i;
+            non_srg_obss_pd_list[i] = -82 + i;
         }
 
         int num_outputs = 1;
@@ -519,10 +513,10 @@ public class SR_RANDOM_1 {
 
             // GENERATE EACH .CSV FILE
             for (int out_ix = 1; out_ix <= num_outputs; out_ix++) {
-                for (int f = 0; f < obss_pd_list.length; f++) {  
-                    generate_wlans(obss_pd_list[f], aps_position_list, stas_position_list);
+                for (int f = 0; f < non_srg_obss_pd_list.length; f++) {  
+                    generate_wlans(non_srg_obss_pd_list[f], aps_position_list, stas_position_list);
                     output_path = "./output/input_nodes_" + type_of_scenario + "_sce" + n + 
-                       "_obsspd" + String.format("%03d", (int) obss_pd_list[f]) + ".csv";
+                       "_obsspd" + String.format("%03d", (int) non_srg_obss_pd_list[f]) + ".csv";
                     System.out.println("output_path: " + output_path);
                     generate_file(output_path);  
                 }
