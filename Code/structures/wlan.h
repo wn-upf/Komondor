@@ -66,6 +66,9 @@ struct Wlan
 	int ap_id;				// Id of the Access Point
 	int *list_sta_id;		// List of STAs IDs belonging to the WLAN
 
+	// Information about Spatial Reuse
+	int spatial_reuse_enabled;	// Indicates whether the SR operation is enabled or not
+
 	/*
 	 * SetSizeOfSTAsArray(): sets the size of the array list_sta_id
 	 */

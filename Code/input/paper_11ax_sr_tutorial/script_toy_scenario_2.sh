@@ -1,5 +1,5 @@
 # define execution parameters
-SIM_TIME=20
+SIM_TIME=100
 SEED=920
 # compile KOMONDOR
 cd ..
@@ -13,7 +13,7 @@ pwd
 rm ./output/*
 
 # get input files path in folder 'script_input_files'
-cd input/paper_11ax_sr_tutorial/input_files/toy_scenario_2c
+cd input/paper_11ax_sr_tutorial/input_files/toy_scenarios/toy_scenario_2
 pwd
 
 echo 'DETECTED KOMONDOR INPUT FILES: '
@@ -31,6 +31,7 @@ done < <(ls)
 cd ..
 cd ..
 cd ..
+cd ..
 pwd
 cd ..
 pwd
@@ -41,7 +42,7 @@ do
 	echo ""
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./komondor_main ../input/paper_11ax_sr_tutorial/input_files/input_system_conf_full_buffer.csv ../input/paper_11ax_sr_tutorial/input_files/toy_scenario_2c/${array[executing_ix]} ../output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
+	./komondor_main ../input/paper_11ax_sr_tutorial/input_files/input_system_conf_full_buffer.csv ../input/paper_11ax_sr_tutorial/input_files/toy_scenarios/toy_scenario_2/${array[executing_ix]} ../output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo ""
 done

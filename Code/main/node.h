@@ -369,6 +369,9 @@ component Node : public TypeII{
 		Configuration configuration;
 		Configuration new_configuration;
 
+		// Spatial Reuse configuration
+		Configuration spatial_reuse_configuration;
+
 		// Measurements done for agents
 		Performance current_performance;
 
@@ -414,6 +417,10 @@ component Node : public TypeII{
 		// Traffic generator
 		inport void inline InportNewPacketGenerated();
 
+		// Spatial reuse (virtual) notifications
+		inport void inline InportRequestSpatialReuseConfiguration();
+		inport void inline InportNewSpatialReuseConfiguration(Configuration &new_configuration);
+
 		// OUTPORT connections for sending notifications
 		outport void outportSelfStartTX(Notification &notification);
 		outport void outportSelfFinishTX(Notification &notification);
@@ -424,6 +431,10 @@ component Node : public TypeII{
 
 		outport void outportAnswerToAgent(Configuration &configuration, Performance &performance);
 		outport void outportSetNewWlanConfiguration(Configuration &new_configuration);
+
+		// Spatial reuse (virtual) notifications
+		outport void outportRequestSpatialReuseConfiguration();
+		outport void outportNewSpatialReuseConfiguration(Configuration &new_configuration);
 
 		// Triggers
 		Timer <trigger_t> trigger_sim_time;				// Timer for displaying the exectuion time status (progress bar)
@@ -3755,6 +3766,50 @@ void Node :: ResumeBackoff(trigger_t &){
 
 /*********************/
 /*********************/
+/*  SPATIAL REUSE    */
+/*********************/
+/*********************/
+
+/*
+ * InportRequestSpatialReuseConfiguration():
+ * Input arguments:
+ * -
+ */
+void Node :: InportRequestSpatialReuseConfiguration() {
+
+	// Update the SR configuration
+	spatial_reuse_configuration.spatial_reuse_enabled = spatial_reuse_enabled;
+	spatial_reuse_configuration.bss_color = bss_color;
+	spatial_reuse_configuration.srg = srg;
+	spatial_reuse_configuration.non_srg_obss_pd = non_srg_obss_pd;
+	spatial_reuse_configuration.srg_obss_pd = srg_obss_pd;
+	// Send it to STAs
+	outportNewSpatialReuseConfiguration(spatial_reuse_configuration);
+
+}
+
+
+
+
+/*
+ * InportNewSpatialReuseConfiguration():
+ * Input arguments:
+ * -
+ */
+void Node :: InportNewSpatialReuseConfiguration(Configuration &received_configuration) {
+
+//	printf("N%d InportNewSpatialReuseConfiguration\n", node_id);
+
+	spatial_reuse_enabled = received_configuration.spatial_reuse_enabled;
+	bss_color = received_configuration.bss_color;
+	srg = received_configuration.srg;
+	non_srg_obss_pd = received_configuration.non_srg_obss_pd;
+	srg_obss_pd = received_configuration.srg_obss_pd;
+
+}
+
+/*********************/
+/*********************/
 /*  AGENTS MANAGMENT */
 /*********************/
 /*********************/
@@ -4885,16 +4940,37 @@ void Node :: InitializeVariables() {
 	/******************************
 	 *  SPATIAL REUSE
 	 *****************************/
+
 	// Detect whether the SR is enabled or not
-	if (bss_color >= 0) {
+	if (node_type == NODE_TYPE_AP && bss_color >= 0) {
 		spatial_reuse_enabled = TRUE;
 	} else {
 		spatial_reuse_enabled = FALSE;
 	}
+
+//	// Hardcoded: in order to indicate that WLANs other than WLAN A do not apply SR
+//	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
+//		spatial_reuse_enabled = FALSE;
+//	}
+
+	// Randomly decide whether an WLAN different than WLAN_A applies SR or not
+	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
+		double r = ((double) rand() / (RAND_MAX));
+		if (r > 0.5) {
+			spatial_reuse_enabled = FALSE;
+		}
+	}
+
+	// In case of being an STA, request the SR configuration to the AP
+	if (node_type == NODE_TYPE_STA) {
+		outportRequestSpatialReuseConfiguration();
+	}
+
+//	printf("N%d spatial_reuse_enabled = %d\n",node_id,spatial_reuse_enabled);
+
 	// Initialize the TXOP identified to false
 	txop_sr_identified = FALSE;
-	// Hardcoded: in order to indicate that WLANs other than WLAN A do not apply SR
-	if (node_id >= 2) spatial_reuse_enabled = FALSE;
+
 	// Initialize the type of ongoing transmissions to 0
 	for (int i = 0; i < 3; i ++) {
 		type_ongoing_transmissions_sr[i] = 0;

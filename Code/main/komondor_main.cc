@@ -375,12 +375,18 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 				connect node_container[n].outportSelfFinishTX,node_container[m].InportSomeNodeFinishTX;
 				connect node_container[n].outportSendLogicalNack,node_container[m].InportNackReceived;
 
+				// Nodes belonging to the same WLAN
 				if(strcmp(node_container[n].wlan_code.c_str(),node_container[m].wlan_code.c_str()) == 0 && n!=m) {
 					// Connections regarding MCS
 					connect node_container[n].outportAskForTxModulation,node_container[m].InportMCSRequestReceived;
 					connect node_container[n].outportAnswerTxModulation,node_container[m].InportMCSResponseReceived;
 					// Connections regarding changes in the WLAN
 					connect node_container[n].outportSetNewWlanConfiguration,node_container[m].InportNewWlanConfigurationReceived;
+					// Connections Spatial Reuse
+					if(node_container[n].node_type == NODE_TYPE_AP && node_container[m].node_type == NODE_TYPE_STA) {
+						connect node_container[m].outportRequestSpatialReuseConfiguration,node_container[n].InportRequestSpatialReuseConfiguration;
+						connect node_container[n].outportNewSpatialReuseConfiguration,node_container[m].InportNewSpatialReuseConfiguration;
+					}
 				}
 			}
 

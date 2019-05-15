@@ -114,6 +114,13 @@ struct Configuration
 	double selected_tx_power;	// Selected Tx Power [pW]
 	int selected_dcb_policy;	// Selected DCB policy
 
+	// Spatial reuse
+	int spatial_reuse_enabled;	// Indicates whether the SR operation is enabled or not
+	int bss_color;				// BSS color identifier
+	int srg;					// Spatial Reuse Group (SRG) identifier
+	double non_srg_obss_pd; 	// Threshold to be used for non-SRG transmissions
+	double srg_obss_pd; 		// Threshold to be used for SRG transmissions
+
 	Capabilities capabilities;
 
 	// Function to print the node's configuration
