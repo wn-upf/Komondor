@@ -2065,7 +2065,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 		}
 	}
 
-	// STATISTICS: compute the time the channel is idle (Node 0 is responsible to monitors this)
+	// STATISTICS: compute the time the channel is idle (Node 0 is responsible to monitor this)
 	if (node_id == 0 && channel_idle) {
 		sum_time_channel_idle += (SimTime() - last_time_channel_is_idle);
 		channel_idle = false;
@@ -4505,11 +4505,9 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					num_packets_dropped, generation_drop_ratio);
 
 				if(TRAFFIC_POISSON_BURST){
-
 					printf("%s Buffer: num bursts = %d\n",
 						LOG_LVL2,
 						num_bursts);
-
 				}
 
 				// Number of trials to transmit
@@ -4953,13 +4951,13 @@ void Node :: InitializeVariables() {
 //		spatial_reuse_enabled = FALSE;
 //	}
 
-	// Randomly decide whether an WLAN different than WLAN_A applies SR or not
-	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
-		double r = ((double) rand() / (RAND_MAX));
-		if (r > 0.5) {
-			spatial_reuse_enabled = FALSE;
-		}
-	}
+//	// Randomly decide whether an WLAN different than WLAN_A applies SR or not
+//	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
+//		double r = ((double) rand() / (RAND_MAX));
+//		if (r > 0.5) {
+//			spatial_reuse_enabled = FALSE;
+//		}
+//	}
 
 	// In case of being an STA, request the SR configuration to the AP
 	if (node_type == NODE_TYPE_STA) {
