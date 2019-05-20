@@ -758,22 +758,27 @@ void Komondor :: Stop(){
 				- node_container[0].total_time_lost_in_num_channels[0];
 
 			double time_in_channel_average = 0;
+			double total_waiting_time = 0;
 			for(int i = 0; i < total_wlans_number; i++){
 				time_in_channel_average = time_in_channel_average +
 					node_container[2*i].total_time_transmitting_in_num_channels[0]
 					- node_container[2*i].total_time_lost_in_num_channels[0];
+				total_waiting_time = total_waiting_time + node_container[2*i].average_waiting_time;
 			}
 			time_in_channel_average = time_in_channel_average / total_wlans_number;
 
 			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
-				node_container[0].throughput * pow(10,-6),				// Throughput WLAN A
-				(total_throughput * pow(10,-6)/total_wlans_number),		// Average throughput
-				time_in_channel_wlan_a/simulation_time_komondor,		// Time WLAN A spends transmitting
-				time_in_channel_average/simulation_time_komondor,		// Average time WLANs spend transmitting
-				node_container[0].average_delay * pow(10,3),			// Delay WLAN A
-				total_delay * pow(10,3) / total_wlans_number,			// Average delay
-				node_container[0].sum_time_channel_idle);
+				node_container[0].throughput * pow(10,-6),				// Throughput WLAN A in Mbps
+				(total_throughput * pow(10,-6)/total_wlans_number),		// Average throughput in Mbps
+				time_in_channel_wlan_a*100/simulation_time_komondor,	// Time WLAN A spends transmitting succesfully (in %)
+				time_in_channel_average*100/simulation_time_komondor,	// Average time WLANs spend transmitting succesfully (in %)
+				node_container[0].average_waiting_time * pow(10,3),		// Waiting time WLAN A in ms
+				total_waiting_time * pow(10,3) / total_wlans_number,	// Average waiting time in ms
+				node_container[0].sum_time_channel_idle*100/simulation_time_komondor); // Percentage channel idle (in total)
 			break;
+
+//			node_container[0].average_delay
+//			total_delay
 
 		}
 
