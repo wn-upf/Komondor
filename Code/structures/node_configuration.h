@@ -64,12 +64,12 @@ struct Capabilities
 	int min_channel_allowed;	// Min. allowed channel
 	int max_channel_allowed;	// Max. allowed channel
 	int num_channels_allowed;	// Maximum number of channels allowed to TX in
-	double tpc_min;				// Min. power transmission [pW]
-	double tpc_default;			// Default power transmission [pW]
-	double tpc_max;				// Max. power transmission [pW]
-	double cca_min;				// Min. CCA	("sensitivity" threshold) [pW]
-	double cca_default;			// Default CCA	("sensitivity" threshold) [pW]
-	double cca_max;				// Max. CCA ("sensitivity" threshold)
+	double tx_power_min;				// Min. power transmission [pW]
+	double tx_power_default;			// Default power transmission [pW]
+	double tx_power_max;				// Max. power transmission [pW]
+	double pd_min;				// Min. pd	("sensitivity" threshold) [pW]
+	double pd_default;			// Default pd	("sensitivity" threshold) [pW]
+	double pd_max;				// Max. pd ("sensitivity" threshold)
 	double tx_gain;				// Antenna transmission gain [linear]
 	double rx_gain;				// Antenna reception gain [linear]
 	int dcb_policy;	// Selected DCB policy
@@ -88,12 +88,12 @@ struct Capabilities
 		printf("%s lambda = %f packets/s\n", LOG_LVL4, lambda);
 		printf("%s traffic_load = %.2f packets/s\n", LOG_LVL4, traffic_load);
 		printf("%s destination_id = %d\n", LOG_LVL4, destination_id);
-		printf("%s tpc_min = %f pW (%f dBm)\n", LOG_LVL4, tpc_min, ConvertPower(PW_TO_DBM, tpc_min));
-		printf("%s tpc_default = %f pW (%f dBm)\n", LOG_LVL4, tpc_default, ConvertPower(PW_TO_DBM, tpc_default));
-		printf("%s tpc_max = %f pW (%f dBm)\n", LOG_LVL4, tpc_max, ConvertPower(PW_TO_DBM, tpc_max));
-		printf("%s cca_min = %f pW (%f dBm)\n", LOG_LVL4, cca_min, ConvertPower(PW_TO_DBM, cca_min));
-		printf("%s cca_default = %f pW (%f dBm)\n", LOG_LVL4, cca_default, ConvertPower(PW_TO_DBM, cca_default));
-		printf("%s cca_max = %f pW (%f dBm)\n", LOG_LVL4, cca_max, ConvertPower(PW_TO_DBM, cca_max));
+		printf("%s tx_power_min = %f pW (%f dBm)\n", LOG_LVL4, tx_power_min, ConvertPower(PW_TO_DBM, tx_power_min));
+		printf("%s tx_power_default = %f pW (%f dBm)\n", LOG_LVL4, tx_power_default, ConvertPower(PW_TO_DBM, tx_power_default));
+		printf("%s tx_power_max = %f pW (%f dBm)\n", LOG_LVL4, tx_power_max, ConvertPower(PW_TO_DBM, tx_power_max));
+		printf("%s pd_min = %f pW (%f dBm)\n", LOG_LVL4, pd_min, ConvertPower(PW_TO_DBM, pd_min));
+		printf("%s pd_default = %f pW (%f dBm)\n", LOG_LVL4, pd_default, ConvertPower(PW_TO_DBM, pd_default));
+		printf("%s pd_max = %f pW (%f dBm)\n", LOG_LVL4, pd_max, ConvertPower(PW_TO_DBM, pd_max));
 		printf("%s tx_gain = %f (%f dBi)\n", LOG_LVL4, tx_gain, ConvertPower(LINEAR_TO_DB, tx_gain));
 		printf("%s rx_gain = %f (%f dBi)\n", LOG_LVL4, rx_gain, ConvertPower(LINEAR_TO_DB, rx_gain));
 		printf("%s modulation_default = %d\n", LOG_LVL4, modulation_default);
@@ -110,7 +110,7 @@ struct Configuration
 	double timestamp;
 
 	int selected_primary_channel;		// Selected primary channel
-	double selected_cca;		// Selected CCA ("sensitivity" threshold) [pW]
+	double selected_pd;		// Selected pd ("sensitivity" threshold) [pW]
 	double selected_tx_power;	// Selected Tx Power [pW]
 	int selected_dcb_policy;	// Selected DCB policy
 
@@ -135,8 +135,8 @@ struct Configuration
 		}
 
 		printf("%s selected_primary = %d\n", LOG_LVL4, selected_primary_channel);
-		printf("%s cca_default = %f pW (%f dBm)\n", LOG_LVL4, selected_cca, ConvertPower(PW_TO_DBM, selected_cca));
-		printf("%s tpc_default = %f pW (%f dBm)\n", LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
+		printf("%s pd_default = %f pW (%f dBm)\n", LOG_LVL4, selected_pd, ConvertPower(PW_TO_DBM, selected_pd));
+		printf("%s tx_power_default = %f pW (%f dBm)\n", LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
 		printf("%s selected_dcb_policy = %d\n", LOG_LVL4, selected_dcb_policy);
 		printf("\n");
 

@@ -241,10 +241,10 @@ public class toy_scenario_2 {
                 wlan_aux.spatial_reuse_group = 1;
             } else if (w == 1) {
                 point.setLocation(12, 0);
-                wlan_aux.spatial_reuse_group = 2;
+                wlan_aux.spatial_reuse_group = 1;
             } else if (w == 2) {
                 point.setLocation(6, 9);
-                wlan_aux.spatial_reuse_group = 1;
+                wlan_aux.spatial_reuse_group = 2;
             }  
              
 

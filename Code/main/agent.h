@@ -102,12 +102,12 @@ component Agent : public TypeII{
 
 		// Actions management (tunable parameters)
 		int *list_of_channels; 				// List of channels
-		double *list_of_cca_values;			// List of CCA values
+		double *list_of_pd_values;			// List of pd values
 		double *list_of_tx_power_values;	// List of tx power values
 		int *list_of_dcb_policy;			// List of DCB policies
 		Action *actions;					// List of actions
 		int num_actions_channel;			// Number of channels available
-		int num_actions_cca;				// Number of CCA levels available
+		int num_actions_pd;				// Number of pd levels available
 		int num_actions_tx_power;			// Number of TX power levels available
 		int num_actions_dcb_policy;			// Number of DCB policies available
 
@@ -124,7 +124,7 @@ component Agent : public TypeII{
 	private:
 
 		//
-		int num_actions;					// Number of actions (depends on the configuration parameters - CCA, TPC, channels, etc.)
+		int num_actions;					// Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
 		int num_requests;					// Number of requests made by the agent to the AP
 		int ix_selected_arm; 				// Index of the current selected arm
 		double initial_reward;				// Initial reward assigned to each arm
@@ -438,11 +438,11 @@ void Agent :: InitializeAgent() {
 	num_requests = 0;
 
 	list_of_channels = new int[num_actions_channel];
-	list_of_cca_values = new double[num_actions_cca];
+	list_of_pd_values = new double[num_actions_pd];
 	list_of_tx_power_values = new double[num_actions_tx_power];
 	list_of_dcb_policy = new int[num_actions_dcb_policy];
 
-	num_actions = num_actions_channel * num_actions_cca * num_actions_tx_power * num_actions_dcb_policy;
+	num_actions = num_actions_channel * num_actions_pd * num_actions_tx_power * num_actions_dcb_policy;
 
 	// Generate actions
 	actions = new Action[num_actions];
@@ -480,14 +480,14 @@ void Agent :: InitializeLearningAlgorithm() {
 
 				mab_agent.num_actions = num_actions;
 				mab_agent.num_actions_channel = num_actions_channel;
-				mab_agent.num_actions_cca = num_actions_cca;
+				mab_agent.num_actions_pd = num_actions_pd;
 				mab_agent.num_actions_tx_power = num_actions_tx_power;
 				mab_agent.num_actions_dcb_policy = num_actions_dcb_policy;
 
 				mab_agent.InitializeVariables();
 
 				mab_agent.list_of_channels = list_of_channels;
-				mab_agent.list_of_cca_values = list_of_cca_values;
+				mab_agent.list_of_pd_values = list_of_pd_values;
 				mab_agent.list_of_tx_power_values = list_of_tx_power_values;
 				mab_agent.list_of_dcb_policy = list_of_dcb_policy;
 
@@ -532,9 +532,9 @@ void Agent :: PrintAgentInfo(){
 	}
 	printf("\n");
 
-	printf("%s list_of_cca_values: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_cca; ++i) {
-		printf("%f pW (%f dBm)  ", list_of_cca_values[i], ConvertPower(PW_TO_DBM, list_of_cca_values[i]));
+	printf("%s list_of_pd_values: ", LOG_LVL4);
+	for (int i = 0; i < num_actions_pd; ++i) {
+		printf("%f pW (%f dBm)  ", list_of_pd_values[i], ConvertPower(PW_TO_DBM, list_of_pd_values[i]));
 	}
 	printf("\n");
 
@@ -569,8 +569,8 @@ void Agent :: WriteConfiguration(Configuration configuration_to_write) {
 
 	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_primary_channel = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
 			configuration_to_write.selected_primary_channel);
-	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_cca = %f dBm\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
-			ConvertPower(PW_TO_DBM,configuration_to_write.selected_cca));
+	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_pd = %f dBm\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
+			ConvertPower(PW_TO_DBM,configuration_to_write.selected_pd));
 	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_tx_power = %f dBm\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
 			ConvertPower(PW_TO_DBM,configuration_to_write.selected_tx_power));
 	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_dcb_policy = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,

@@ -68,12 +68,12 @@ class MultiArmedBandit {
 		int selected_strategy;
 
 		int num_actions_channel;
-		int num_actions_cca;
+		int num_actions_pd;
 		int num_actions_tx_power;
 		int num_actions_dcb_policy;
 
 		int *list_of_channels;
-		double *list_of_cca_values;
+		double *list_of_pd_values;
 		double *list_of_tx_power_values;
 		int *list_of_dcb_policy;
 
@@ -265,7 +265,7 @@ class MultiArmedBandit {
 			}
 
 			list_of_channels = new int[num_actions_channel];
-			list_of_cca_values = new double[num_actions_cca];
+			list_of_pd_values = new double[num_actions_pd];
 			list_of_tx_power_values = new double[num_actions_tx_power];
 			list_of_dcb_policy = new int[num_actions_dcb_policy];
 
@@ -286,11 +286,11 @@ class MultiArmedBandit {
 
 			// Find which parameters correspond to the selected arm
 			index2values(indexes_selected_arm, action_ix, num_actions_channel,
-				num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
+				num_actions_pd, num_actions_tx_power, num_actions_dcb_policy);
 
 			// Update each parameter according to the configuration provided by the MAB
 			int new_primary = list_of_channels[indexes_selected_arm[0]];
-			double new_cca = list_of_cca_values[indexes_selected_arm[1]];
+			double new_pd = list_of_pd_values[indexes_selected_arm[1]];
 			double new_tx_power = list_of_tx_power_values[indexes_selected_arm[2]];
 			int new_dcb_policy = list_of_dcb_policy[indexes_selected_arm[3]];
 
@@ -301,7 +301,7 @@ class MultiArmedBandit {
 			new_configuration = configuration;
 			//new_configuration.timestamp = sim_time;						// Timestamp
 			new_configuration.selected_primary_channel = new_primary;	// Primary
-			new_configuration.selected_cca = new_cca;					// CCA
+			new_configuration.selected_pd = new_pd;					// pd
 			new_configuration.selected_tx_power = new_tx_power;			// TX Power
 			new_configuration.selected_dcb_policy = new_dcb_policy;		// DCB policy
 
@@ -319,7 +319,7 @@ class MultiArmedBandit {
 		void FindIndexesOfConfiguration(Configuration configuration, int *indexes_selected_arm) {
 
 			int index_channel = -1;
-			int index_cca = -1;
+			int index_pd = -1;
 			int index_tx_power = -1;
 			int index_dcb_policy = -1;
 
@@ -329,10 +329,10 @@ class MultiArmedBandit {
 					index_channel = i;
 				}
 			}
-			// CCA
-			for(int i = 0; i < num_actions_cca; i++) {
-				if(configuration.selected_cca == list_of_cca_values[i]) {
-					index_cca = i;
+			// pd
+			for(int i = 0; i < num_actions_pd; i++) {
+				if(configuration.selected_pd == list_of_pd_values[i]) {
+					index_pd = i;
 				}
 			}
 			// Tx Power
@@ -349,7 +349,7 @@ class MultiArmedBandit {
 			}
 
 			indexes_selected_arm[0] = index_channel;
-			indexes_selected_arm[1] = index_cca;
+			indexes_selected_arm[1] = index_pd;
 			indexes_selected_arm[2] = index_tx_power;
 			indexes_selected_arm[3] = index_dcb_policy;
 
@@ -367,7 +367,7 @@ class MultiArmedBandit {
 
 			// Find the index of each chosen parameter
 			int index_channel = -1;
-			int index_cca = -1;
+			int index_pd = -1;
 			int index_tx_power = -1;
 			int index_dcb_policy = -1;
 
@@ -377,10 +377,10 @@ class MultiArmedBandit {
 					index_channel = i;
 				}
 			}
-			// CCA
-			for(int i = 0; i < num_actions_cca; i++) {
-				if(configuration.selected_cca == list_of_cca_values[i]) {
-					index_cca = i;
+			// pd
+			for(int i = 0; i < num_actions_pd; i++) {
+				if(configuration.selected_pd == list_of_pd_values[i]) {
+					index_pd = i;
 				}
 			}
 			// Tx Power
@@ -398,13 +398,13 @@ class MultiArmedBandit {
 
 			// Update the index of each chosen parameter
 			indexes_selected_arm[0] = index_channel;
-			indexes_selected_arm[1] = index_cca;
+			indexes_selected_arm[1] = index_pd;
 			indexes_selected_arm[2] = index_tx_power;
 			indexes_selected_arm[3] = index_dcb_policy;
 
 			// Find the action ix and return it
 			int action_ix = values2index(indexes_selected_arm, num_actions_channel,
-				num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
+				num_actions_pd, num_actions_tx_power, num_actions_dcb_policy);
 			return action_ix;
 
 		}
@@ -413,21 +413,21 @@ class MultiArmedBandit {
 		 * index2values(): given different lists of parameters, outputs the index in each list
 		 * according to the index of the joint action (which considers each parameter)
 		 * INPUT:
-		 * 	- indexes: array we want to fill (3 positions, one for each parameter - channel, CCA, Tx power)
-		 * 	- action_ix: index of the action, which represents a combination of channel, CCA and tx power
+		 * 	- indexes: array we want to fill (3 positions, one for each parameter - channel, pd, Tx power)
+		 * 	- action_ix: index of the action, which represents a combination of channel, pd and tx power
 		 * 	- size_channels: size of channels possibilities
-		 * 	- size_cca: size of CCA possibilities
+		 * 	- size_pd: size of pd possibilities
 		 * 	- size_tx_power: size of Tx power possibilities
 		 * 	- size_dcb_policy: size of the DCB policy possibilities
 		 * OUTPUT:
 		 *  - fills "indexes", which indicates the index of the parameter in each of the lists
 		 */
-		void index2values(int *indexes, int action_ix, int size_channels, int size_cca, int size_tx_power, int size_dcb_policy) {
+		void index2values(int *indexes, int action_ix, int size_channels, int size_pd, int size_tx_power, int size_dcb_policy) {
 
-			indexes[0] = (int) action_ix/(size_cca * size_tx_power * size_dcb_policy);
-			indexes[1] = (int) (action_ix - indexes[0] * (size_cca * size_tx_power * size_dcb_policy))
+			indexes[0] = (int) action_ix/(size_pd * size_tx_power * size_dcb_policy);
+			indexes[1] = (int) (action_ix - indexes[0] * (size_pd * size_tx_power * size_dcb_policy))
 					/(size_tx_power * size_dcb_policy);
-			indexes[2] = (int) (action_ix -  indexes[0] * (size_cca * size_tx_power * size_dcb_policy)
+			indexes[2] = (int) (action_ix -  indexes[0] * (size_pd * size_tx_power * size_dcb_policy)
 					- indexes[1] * (size_tx_power * size_dcb_policy))
 					/(size_dcb_policy);
 			indexes[3] = action_ix % size_dcb_policy;
@@ -438,16 +438,16 @@ class MultiArmedBandit {
 		 * values2index(): given different indexes of actions, outputs the index of the
 		 * joint action (which represents a combination of each parameter)
 		 * INPUT:
-		 * 	- indexes: array of 3 positions, one for each parameter - channel, CCA, Tx power)
+		 * 	- indexes: array of 3 positions, one for each parameter - channel, pd, Tx power)
 		 * 	- size_channels: size of channels possibilities
-		 * 	- size_cca: size of CCA possibilities
+		 * 	- size_pd: size of pd possibilities
 		 *	- NOTE: size of tx power elements is not necessary
 		 * OUTPUT:
-		 *  - index: index of the action, which represents a combination of channel, CCA and tx power
+		 *  - index: index of the action, which represents a combination of channel, pd and tx power
 		 */
-		int values2index(int *indexes, int size_channels, int size_cca, int size_tx_power, int size_dcb_policy) {
+		int values2index(int *indexes, int size_channels, int size_pd, int size_tx_power, int size_dcb_policy) {
 
-			int index = indexes[0] * (size_cca * size_tx_power * size_dcb_policy)
+			int index = indexes[0] * (size_pd * size_tx_power * size_dcb_policy)
 				+ indexes[1] * (size_tx_power * size_dcb_policy)
 				+ indexes[2] * size_dcb_policy
 				+ indexes[3];
@@ -470,14 +470,14 @@ class MultiArmedBandit {
 		void PrintAction(int action_ix){
 
 			index2values(indexes_selected_arm, action_ix, num_actions_channel,
-				num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
+				num_actions_pd, num_actions_tx_power, num_actions_dcb_policy);
 
 			printf("%s Action %d ([%d %d %d %d]\n", LOG_LVL2,
 				action_ix, indexes_selected_arm[0], indexes_selected_arm[1], indexes_selected_arm[2], indexes_selected_arm[3]);
 
 			printf("%s Channel: %d\n", LOG_LVL3, list_of_channels[indexes_selected_arm[0]]);
-			printf("%s CCA: %.2f dBm\n", LOG_LVL3,
-				ConvertPower(PW_TO_DBM, list_of_cca_values[indexes_selected_arm[1]]));
+			printf("%s pd: %.2f dBm\n", LOG_LVL3,
+				ConvertPower(PW_TO_DBM, list_of_pd_values[indexes_selected_arm[1]]));
 			printf("%s Tx Power: %.2f dBm\n", LOG_LVL3,
 				ConvertPower(PW_TO_DBM, list_of_tx_power_values[indexes_selected_arm[2]]));
 			printf("%s DCB policy: %d\n", LOG_LVL3, list_of_dcb_policy[indexes_selected_arm[3]]);
@@ -581,13 +581,13 @@ class MultiArmedBandit {
 						for(int i = 0; i < num_actions; i++){
 
 							index2values(indexes_selected_arm, i, num_actions_channel,
-									num_actions_cca, num_actions_tx_power, num_actions_dcb_policy);
+									num_actions_pd, num_actions_tx_power, num_actions_dcb_policy);
 							// Write logs
 
 							fprintf(agent_logger.file, "%.15f;A%d;%s;%s Action %d:\n", sim_time, agent_id, LOG_C03, LOG_LVL2, i);
 							fprintf(agent_logger.file, "%.15f;A%d;%s;%s Channel: %d\n", sim_time, agent_id, LOG_C03, LOG_LVL3,list_of_channels[indexes_selected_arm[0]]);
-							fprintf(agent_logger.file, "%.15f;A%d;%s;%s CCA: %f (%f dBm)\n", sim_time, agent_id, LOG_C03, LOG_LVL3, list_of_cca_values[indexes_selected_arm[1]],
-									ConvertPower(PW_TO_DBM, list_of_cca_values[indexes_selected_arm[1]]));
+							fprintf(agent_logger.file, "%.15f;A%d;%s;%s pd: %f (%f dBm)\n", sim_time, agent_id, LOG_C03, LOG_LVL3, list_of_pd_values[indexes_selected_arm[1]],
+									ConvertPower(PW_TO_DBM, list_of_pd_values[indexes_selected_arm[1]]));
 							fprintf(agent_logger.file, "%.15f;A%d;%s;%s Tx Power: %f (%f dBm)\n", sim_time, agent_id, LOG_C03, LOG_LVL3, list_of_tx_power_values[indexes_selected_arm[2]],
 									ConvertPower(PW_TO_DBM, list_of_tx_power_values[indexes_selected_arm[2]]));
 							fprintf(agent_logger.file, "%.15f;A%d;%s;%s DCB policy: %d\n", sim_time, agent_id, LOG_C03, LOG_LVL3,list_of_dcb_policy[indexes_selected_arm[3]]);

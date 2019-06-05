@@ -341,9 +341,9 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 /*
  * ComputeTxPowerPerChannel(): computes power sent per channel
  **/
-double ComputeTxPowerPerChannel(double current_tpc, int num_channels_tx){
+double ComputeTxPowerPerChannel(double current_tx_power, int num_channels_tx){
 
-	double tx_power_per_channel (current_tpc);
+	double tx_power_per_channel (current_tx_power);
 	int num_channels_tx_ix (log2(num_channels_tx));
 	for (int num_ch_ix = 0; num_ch_ix < num_channels_tx_ix; ++num_ch_ix){
 		// P_tx issue #113
@@ -362,7 +362,7 @@ double ComputeTxPowerPerChannel(double current_tpc, int num_channels_tx){
  * GetChannelOccupancyByCCA(): indicates the channels occupied and free in a binary way
  */
 void GetChannelOccupancyByCCA(int primary_channel, int pifs_activated, int *channels_free, int min_channel_allowed,
-		int max_channel_allowed, double **channel_power, double cca, double *timestampt_channel_becomes_free,
+		int max_channel_allowed, double **channel_power, double pd, double *timestampt_channel_becomes_free,
 		double sim_time, double pifs){
 
 	switch(pifs_activated){
@@ -371,13 +371,13 @@ void GetChannelOccupancyByCCA(int primary_channel, int pifs_activated, int *chan
 			double time_channel_has_been_free;	// Time channel has been free since last P(ch) > CCA
 			for(int c = min_channel_allowed; c <= max_channel_allowed; ++c){
 				if(c == primary_channel){
-					if((*channel_power)[c] < cca) channels_free[c] = CHANNEL_FREE;
+					if((*channel_power)[c] < pd) channels_free[c] = CHANNEL_FREE;
 				} else {
 					time_channel_has_been_free = sim_time - timestampt_channel_becomes_free[c];
 					// Sergio on 19 Oct 2017:
 					// - Added condidition time_channel_has_been_free < MICRO_VALUE to consider events that happen at the same time.
 					// - That is, when the BO expires and other nodes start transmitting PIFS must no be considered, but collision.
-					if((*channel_power)[c] < cca && time_channel_has_been_free > pifs){
+					if((*channel_power)[c] < pd && time_channel_has_been_free > pifs){
 					  channels_free[c] = CHANNEL_FREE;
 					} else {
 					  channels_free[c] = CHANNEL_OCCUPIED;
@@ -390,7 +390,7 @@ void GetChannelOccupancyByCCA(int primary_channel, int pifs_activated, int *chan
 
 		case FALSE:{
 			for(int c = min_channel_allowed; c <= max_channel_allowed; ++c){
-				if((*channel_power)[c] < cca){
+				if((*channel_power)[c] < pd){
 				  channels_free[c] = CHANNEL_FREE;
 				} else {
 				  channels_free[c] = CHANNEL_OCCUPIED;
@@ -1027,11 +1027,11 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
  * UpdateTimestamptChannelFreeAgain: updates the timestamp at which channels became free again
  **/
 void UpdateTimestamptChannelFreeAgain(double *timestampt_channel_becomes_free, double **channel_power,
-		double current_cca, int num_channels_komondor, double sim_time) {
+		double current_pd, int num_channels_komondor, double sim_time) {
 
 	for(int i = 0; i < num_channels_komondor; ++i){
 
-		if((*channel_power)[i] > current_cca) {
+		if((*channel_power)[i] > current_pd) {
 
 			timestampt_channel_becomes_free[i] = -1;
 

@@ -96,7 +96,7 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
  * 	of ongoing transmissions (intra-BSS, inter-BSS, SRG or non-SRG frames)
  * Arguments:
  * - type_ongoing_transmissions_sr: type of the ongoing detected frames (according to source)
- * - cca_default: default CST (for intra-BSS communications)
+ * - pd_default: default CST (for intra-BSS communications)
  * - obss_pd: CST to be used for inter-BSS communications (different BSS color)
  * - srg_obss_pd: CST to be used for communications within the same SRG
  * - non_srg_obss_pd: CST to be used for communications within different SRG
@@ -104,33 +104,33 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
  * - cst_pw: CST in pW to be used according to the source of the detected frame
  **/
 double GetSensitivitySpatialReuse( int type_last_sensed_packet,
-	double srg_obss_pd, double non_srg_obss_pd, double cca_default,
-	double current_cca_spatial_reuse, int txop_detected, double power_received ) {
+	double srg_obss_pd, double non_srg_obss_pd, double pd_default,
+	double current_pd_spatial_reuse, int txop_detected, double power_received ) {
 
-	double cca_spatial_reuse_pw;
+	double pd_spatial_reuse_pw;
 
-	// First, set the CCA according to the source of the detected transmission
+	// First, set the pd according to the source of the detected transmission
 	switch(type_last_sensed_packet) {
 		case NON_SRG_FRAME:{
-			cca_spatial_reuse_pw = non_srg_obss_pd;
+			pd_spatial_reuse_pw = non_srg_obss_pd;
 			break;
 		}
 		case SRG_FRAME:{
-			cca_spatial_reuse_pw = srg_obss_pd;
+			pd_spatial_reuse_pw = srg_obss_pd;
 			break;
 		}
 		default:{
-			cca_spatial_reuse_pw = cca_default;
+			pd_spatial_reuse_pw = pd_default;
 			break;
 		}
 	}
 
 	/* Restriction 1:
-   	    Check if the node is already in a TXOP, and update the CCA accordingly
+   	    Check if the node is already in a TXOP, and update the pd accordingly
 		(use always the most restrictive one) */
 	if (txop_detected) {
-		if(current_cca_spatial_reuse < cca_spatial_reuse_pw) {
-			cca_spatial_reuse_pw = current_cca_spatial_reuse; 	// Apply the most restrictive CCA
+		if(current_pd_spatial_reuse < pd_spatial_reuse_pw) {
+			pd_spatial_reuse_pw = current_pd_spatial_reuse; 	// Apply the most restrictive pd
 		}
 	}
 
@@ -138,31 +138,31 @@ double GetSensitivitySpatialReuse( int type_last_sensed_packet,
 //	if (ConvertPower(PW_TO_DBM, power_received) < OBSS_PD_MIN) {
 //		printf("- Power received = %f dBm\n",ConvertPower(PW_TO_DBM, power_received));
 //		printf("- OBSS_PD_MIN = %d dBm\n", OBSS_PD_MIN);
-//		cca_spatial_reuse_pw = ConvertPower(DBM_TO_PW, OBSS_PD_MIN);
+//		pd_spatial_reuse_pw = ConvertPower(DBM_TO_PW, OBSS_PD_MIN);
 //	}
 
-	return cca_spatial_reuse_pw;
+	return pd_spatial_reuse_pw;
 
 }
 
 /*
  * ApplyTxPowerRestriction(): applies a transmit power restriction, according to the CST used
  * Arguments:
- * - current_cca: default CCA used by the node
- * - current_tpc: default transmit power used by the node
+ * - current_pd: default pd used by the node
+ * - current_tx_power: default transmit power used by the node
  * Output:
  * - tx_power_pw: transmit power in pW to be used during the next TXOP
  **/
-double ApplyTxPowerRestriction(double current_cca, double current_tpc) {
+double ApplyTxPowerRestriction(double current_pd, double current_tx_power) {
 
 	double tx_power_pw;
 
-	double current_cca_dbm = ConvertPower(PW_TO_DBM, current_cca);
+	double current_pd_dbm = ConvertPower(PW_TO_DBM, current_pd);
 
-	if (current_cca_dbm <= OBSS_PD_MIN) {
-		tx_power_pw = current_tpc; // No restriction
+	if (current_pd_dbm <= OBSS_PD_MIN) {
+		tx_power_pw = current_tx_power; // No restriction
 	} else {
-		tx_power_pw = ConvertPower(DBM_TO_PW, TX_PWR_REF - (current_cca_dbm - OBSS_PD_MIN));
+		tx_power_pw = ConvertPower(DBM_TO_PW, TX_PWR_REF - (current_pd_dbm - OBSS_PD_MIN));
 	}
 
 	// Apply general restriction

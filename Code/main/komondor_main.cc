@@ -149,11 +149,11 @@ component Komondor : public CostSimEng {
 		// Agents info
 		Agent[] agent_container;
 		int num_actions_channel;
-		int num_actions_cca;
+		int num_actions_pd;
 		int num_actions_tx_power;
 		int num_actions_dcb_policy;
 
-		double *actions_cca;
+		double *actions_pd;
 		double *actions_tx_power;
 
 		// Central controller info
@@ -280,7 +280,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 					node_container[i].received_power_array[j] = 0;
 				} else {
 					node_container[i].received_power_array[j] = ComputePowerReceived(node_container[i].distances_array[j],
-						node_container[j].tpc_default, node_container[j].tx_gain, node_container[i].rx_gain,
+						node_container[j].tx_power_default, node_container[j].tx_gain, node_container[i].rx_gain,
 						node_container[i].central_frequency, path_loss_model);
 				}
 			}
@@ -574,7 +574,7 @@ void Komondor :: Stop(){
 		}
 	}
 
-	int simulation_index (11);
+	int simulation_index (10);
 
 	switch(simulation_index){
 
@@ -731,8 +731,9 @@ void Komondor :: Stop(){
 			break;
 		}
 
-		// Validation scenarios
+		// SPATIAL REUSE (toy scenarios)
 		case 10:{
+
 			if (total_nodes_number == 2 || total_nodes_number == 3) {
 				// Basic scenarios
 				fprintf(logger_script.file, ";%.2f\n",
@@ -743,43 +744,53 @@ void Komondor :: Stop(){
 					node_container[0].throughput * pow(10,-6),
 					node_container[2].throughput * pow(10,-6),
 					node_container[4].throughput * pow(10,-6));
+			} else if (total_nodes_number == 18) {
+				fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
+					";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
+					";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
+				// Throughput per WLAN (Mbps)
+				node_container[0].throughput * pow(10,-6),
+				node_container[2].throughput * pow(10,-6),
+				node_container[4].throughput * pow(10,-6),
+				node_container[6].throughput * pow(10,-6),
+				node_container[8].throughput * pow(10,-6),
+				node_container[10].throughput * pow(10,-6),
+				node_container[12].throughput * pow(10,-6),
+				node_container[14].throughput * pow(10,-6),
+				node_container[16].throughput * pow(10,-6),
+				// Time occupying the channel successfully (%)
+				((node_container[0].total_time_transmitting_in_num_channels[0]
+				- node_container[0].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+				((node_container[2].total_time_transmitting_in_num_channels[0]
+				- node_container[2].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+				((node_container[4].total_time_transmitting_in_num_channels[0]
+				- node_container[4].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+				((node_container[6].total_time_transmitting_in_num_channels[0]
+				- node_container[6].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+				((node_container[8].total_time_transmitting_in_num_channels[0]
+				- node_container[8].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+				((node_container[10].total_time_transmitting_in_num_channels[0]
+				- node_container[10].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+				((node_container[12].total_time_transmitting_in_num_channels[0]
+				- node_container[12].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+				((node_container[14].total_time_transmitting_in_num_channels[0]
+				- node_container[14].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+				((node_container[16].total_time_transmitting_in_num_channels[0]
+				- node_container[16].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+				// Average delay (ms)
+				node_container[0].average_waiting_time * pow(10,3),
+				node_container[2].average_waiting_time * pow(10,3),
+				node_container[4].average_waiting_time * pow(10,3),
+				node_container[6].average_waiting_time * pow(10,3),
+				node_container[8].average_waiting_time * pow(10,3),
+				node_container[10].average_waiting_time * pow(10,3),
+				node_container[12].average_waiting_time * pow(10,3),
+				node_container[14].average_waiting_time * pow(10,3),
+				node_container[16].average_waiting_time * pow(10,3));
 			} else {
 				printf("Error in Komondor :: Stop(): be care of the desired generated logs (script)\n");
 			}
 			break;
-		}
-
-		// SPATIAL REUSE (toy scenarios)
-		case 11:{
-
-			//double time_in_channel_wlan_a = node_container[0].total_time_transmitting_per_channel[0];
-			double time_in_channel_wlan_a =
-				node_container[0].total_time_transmitting_in_num_channels[0]
-				- node_container[0].total_time_lost_in_num_channels[0];
-
-			double time_in_channel_average = 0;
-			double total_waiting_time = 0;
-			for(int i = 0; i < total_wlans_number; i++){
-				time_in_channel_average = time_in_channel_average +
-					node_container[2*i].total_time_transmitting_in_num_channels[0]
-					- node_container[2*i].total_time_lost_in_num_channels[0];
-				total_waiting_time = total_waiting_time + node_container[2*i].average_waiting_time;
-			}
-			time_in_channel_average = time_in_channel_average / total_wlans_number;
-
-			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
-				node_container[0].throughput * pow(10,-6),				// Throughput WLAN A in Mbps
-				(total_throughput * pow(10,-6)/total_wlans_number),		// Average throughput in Mbps
-				time_in_channel_wlan_a*100/simulation_time_komondor,	// Time WLAN A spends transmitting succesfully (in %)
-				time_in_channel_average*100/simulation_time_komondor,	// Average time WLANs spend transmitting succesfully (in %)
-				node_container[0].average_waiting_time * pow(10,3),		// Waiting time WLAN A in ms
-				total_waiting_time * pow(10,3) / total_wlans_number,	// Average waiting time in ms
-				node_container[0].sum_time_channel_idle*100/simulation_time_komondor); // Percentage channel idle (in total)
-			break;
-
-//			node_container[0].average_delay
-//			total_delay
-
 		}
 
 		default:{
@@ -826,23 +837,23 @@ void Komondor :: InputChecker(){
 		nodes_y[i] = node_container[i].y;
 		nodes_z[i] = node_container[i].z;
 
-		// TPC values (min <= defalut <= max)
-		if (node_container[i].tpc_min > node_container[i].tpc_max
-				|| node_container[i].tpc_default > node_container[i].tpc_max
-				|| node_container[i].tpc_default < node_container[i].tpc_min) {
-			printf("\nERROR: TPC values are not properly configured at node in line %d\n"
-					"node_container[i].tpc_min = %f\n"
-					"node_container[i].tpc_default = %f\n"
-					"node_container[i].tpc_max = %f\n\n",
-					i+2, node_container[i].tpc_min, node_container[i].tpc_default, node_container[i].tpc_max);
+		// tx_power values (min <= defalut <= max)
+		if (node_container[i].tx_power_min > node_container[i].tx_power_max
+				|| node_container[i].tx_power_default > node_container[i].tx_power_max
+				|| node_container[i].tx_power_default < node_container[i].tx_power_min) {
+			printf("\nERROR: tx_power values are not properly configured at node in line %d\n"
+					"node_container[i].tx_power_min = %f\n"
+					"node_container[i].tx_power_default = %f\n"
+					"node_container[i].tx_power_max = %f\n\n",
+					i+2, node_container[i].tx_power_min, node_container[i].tx_power_default, node_container[i].tx_power_max);
 			exit(-1);
 		}
 
-		// CCA values (min <= defalut <= max)
-		if (node_container[i].cca_min > node_container[i].cca_max
-				|| node_container[i].cca_default > node_container[i].cca_max
-				|| node_container[i].cca_default < node_container[i].cca_min) {
-			printf("\nERROR: CCA values are not properly configured at node in line %d\n\n",i+2);
+		// pd values (min <= defalut <= max)
+		if (node_container[i].pd_min > node_container[i].pd_max
+				|| node_container[i].pd_default > node_container[i].pd_max
+				|| node_container[i].pd_default < node_container[i].pd_min) {
+			printf("\nERROR: pd values are not properly configured at node in line %d\n\n",i+2);
 			exit(-1);
 		}
 
@@ -1075,21 +1086,21 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			// Set the length of channel actions to agent's field
 			agent_container[agent_ix].num_actions_channel = num_actions_channel;
 
-			// Find the length of the CCA actions array
+			// Find the length of the pd actions array
 			tmp_agents = strdup(line_agents);
-			const char *cca_values_aux (GetField(tmp_agents, IX_AGENT_CCA_VALUES));
-			std::string cca_values_text;
-			cca_values_text.append(ToString(cca_values_aux));
-			const char *cca_aux;
-			cca_aux = strtok ((char*)cca_values_text.c_str(),",");
-			num_actions_cca = 0;
-			while (cca_aux != NULL) {
-				cca_aux = strtok (NULL, ",");
-				++ num_actions_cca;
+			const char *pd_values_aux (GetField(tmp_agents, IX_AGENT_PD_VALUES));
+			std::string pd_values_text;
+			pd_values_text.append(ToString(pd_values_aux));
+			const char *pd_aux;
+			pd_aux = strtok ((char*)pd_values_text.c_str(),",");
+			num_actions_pd = 0;
+			while (pd_aux != NULL) {
+				pd_aux = strtok (NULL, ",");
+				++ num_actions_pd;
 			}
 
-			// Set the length of CCA actions to agent's field
-			agent_container[agent_ix].num_actions_cca = num_actions_cca;
+			// Set the length of pd actions to agent's field
+			agent_container[agent_ix].num_actions_pd = num_actions_pd;
 
 			// Find the length of the Tx power actions array
 			tmp_agents = strdup(line_agents);
@@ -1190,21 +1201,21 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 				++ix;
 			}
 
-			// CCA values
+			// pd values
 			tmp_agents = strdup(line_agents);
-			std::string cca_values_text = ToString(GetField(tmp_agents, IX_AGENT_CCA_VALUES));
+			std::string pd_values_text = ToString(GetField(tmp_agents, IX_AGENT_PD_VALUES));
 
-			// Fill the CCA actions array
-			char *cca_aux_2;
-			char *cca_values_text_char = new char[cca_values_text.length() + 1];
-			strcpy(cca_values_text_char, cca_values_text.c_str());
-			cca_aux_2 = strtok (cca_values_text_char,",");
+			// Fill the pd actions array
+			char *pd_aux_2;
+			char *pd_values_text_char = new char[pd_values_text.length() + 1];
+			strcpy(pd_values_text_char, pd_values_text.c_str());
+			pd_aux_2 = strtok (pd_values_text_char,",");
 
 			ix = 0;
-			while (cca_aux_2 != NULL) {
-				int a = atoi(cca_aux_2);
-				agent_container[agent_ix].list_of_cca_values[ix] = ConvertPower(DBM_TO_PW, a);
-				cca_aux_2 = strtok (NULL, ",");
+			while (pd_aux_2 != NULL) {
+				int a = atoi(pd_aux_2);
+				agent_container[agent_ix].list_of_pd_values[ix] = ConvertPower(DBM_TO_PW, a);
+				pd_aux_2 = strtok (NULL, ",");
 				++ix;
 			}
 
@@ -1521,35 +1532,35 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 			tmp_nodes = strdup(line_nodes);
 			node_container[node_ix].max_channel_allowed = atoi(GetField(tmp_nodes, IX_MAX_CH_ALLOWED));
 
-			// Min TPC
+			// Min tx_power
 			tmp_nodes = strdup(line_nodes);
-			double tpc_min_dbm (atof(GetField(tmp_nodes, IX_TPC_MIN)));
-			node_container[node_ix].tpc_min = ConvertPower(DBM_TO_PW, tpc_min_dbm);
+			double tx_power_min_dbm (atof(GetField(tmp_nodes, IX_TX_POWER_MIN)));
+			node_container[node_ix].tx_power_min = ConvertPower(DBM_TO_PW, tx_power_min_dbm);
 
-			// Default TPC
+			// Default tx_power
 			tmp_nodes = strdup(line_nodes);
-			double tpc_default_dbm (atof(GetField(tmp_nodes, IX_TPC_DEFAULT)));
-			node_container[node_ix].tpc_default = ConvertPower(DBM_TO_PW, tpc_default_dbm);
+			double tx_power_default_dbm (atof(GetField(tmp_nodes, IX_TX_POWER_DEFAULT)));
+			node_container[node_ix].tx_power_default = ConvertPower(DBM_TO_PW, tx_power_default_dbm);
 
-			// Max TPC
+			// Max tx_power
 			tmp_nodes = strdup(line_nodes);
-			double tpc_max_dbm = atof(GetField(tmp_nodes, IX_TPC_MAX));
-			node_container[node_ix].tpc_max = ConvertPower(DBM_TO_PW, tpc_max_dbm);
+			double tx_power_max_dbm = atof(GetField(tmp_nodes, IX_TX_POWER_MAX));
+			node_container[node_ix].tx_power_max = ConvertPower(DBM_TO_PW, tx_power_max_dbm);
 
-			// Min CCA
+			// Min pd
 			tmp_nodes = strdup(line_nodes);
-			double cca_min_dbm (atoi(GetField(tmp_nodes, IX_CCA_MIN)));
-			node_container[node_ix].cca_min = ConvertPower(DBM_TO_PW, cca_min_dbm);
+			double pd_min_dbm (atoi(GetField(tmp_nodes, IX_PD_MIN)));
+			node_container[node_ix].pd_min = ConvertPower(DBM_TO_PW, pd_min_dbm);
 
-			// Default CCA
+			// Default pd
 			tmp_nodes = strdup(line_nodes);
-			double cca_default_dbm (atoi(GetField(tmp_nodes, IX_CCA_DEFAULT)));
-			node_container[node_ix].cca_default = ConvertPower(DBM_TO_PW, cca_default_dbm);
+			double pd_default_dbm (atoi(GetField(tmp_nodes, IX_PD_DEFAULT)));
+			node_container[node_ix].pd_default = ConvertPower(DBM_TO_PW, pd_default_dbm);
 
-			// Max CCA
+			// Max pd
 			tmp_nodes = strdup(line_nodes);
-			double cca_max_dbm (atoi(GetField(tmp_nodes, IX_CCA_MAX)));
-			node_container[node_ix].cca_max = ConvertPower(DBM_TO_PW, cca_max_dbm);
+			double pd_max_dbm (atoi(GetField(tmp_nodes, IX_PD_MAX)));
+			node_container[node_ix].pd_max = ConvertPower(DBM_TO_PW, pd_max_dbm);
 
 			// TX gain
 			tmp_nodes = strdup(line_nodes);
