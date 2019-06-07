@@ -738,13 +738,19 @@ void Komondor :: Stop(){
 				// Basic scenarios
 				fprintf(logger_script.file, ";%.2f\n",
 					node_container[0].throughput * pow(10,-6));
+			} else if (total_nodes_number == 4) {
+				// Toy scenario 1
+				fprintf(logger_script.file, ";%.2f;%.2f\n",
+					node_container[0].throughput * pow(10,-6),
+					node_container[2].throughput * pow(10,-6));
 			} else if (total_nodes_number == 6) {
-				// Complex scenarios
+				// Toy scenario 2
 				fprintf(logger_script.file, ";%.2f;%.2f;%.2f\n",
 					node_container[0].throughput * pow(10,-6),
 					node_container[2].throughput * pow(10,-6),
 					node_container[4].throughput * pow(10,-6));
 			} else if (total_nodes_number == 18) {
+				// Random scenarios
 				fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
 					";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
 					";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",

@@ -105,7 +105,7 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
  **/
 double GetSensitivitySpatialReuse( int type_last_sensed_packet,
 	double srg_obss_pd, double non_srg_obss_pd, double pd_default,
-	double current_pd_spatial_reuse, int txop_detected, double power_received ) {
+	double power_received ) {
 
 	double pd_spatial_reuse_pw;
 
@@ -125,14 +125,14 @@ double GetSensitivitySpatialReuse( int type_last_sensed_packet,
 		}
 	}
 
-	/* Restriction 1:
-   	    Check if the node is already in a TXOP, and update the pd accordingly
-		(use always the most restrictive one) */
-	if (txop_detected) {
-		if(current_pd_spatial_reuse < pd_spatial_reuse_pw) {
-			pd_spatial_reuse_pw = current_pd_spatial_reuse; 	// Apply the most restrictive pd
-		}
-	}
+//	/* Restriction 1:
+//   	    Check if the node is already in a TXOP, and update the pd accordingly
+//		(use always the most restrictive one) */
+//	if (txop_detected) {
+//		if(current_pd_spatial_reuse < pd_spatial_reuse_pw) {
+//			pd_spatial_reuse_pw = current_pd_spatial_reuse; 	// Apply the most restrictive pd
+//		}
+//	}
 
 //	// Restriction 2: Check if the power received is lower than the minimum OBSS_PD (-82 dBm)
 //	if (ConvertPower(PW_TO_DBM, power_received) < OBSS_PD_MIN) {
@@ -142,6 +142,23 @@ double GetSensitivitySpatialReuse( int type_last_sensed_packet,
 //	}
 
 	return pd_spatial_reuse_pw;
+
+}
+
+/*
+ * IdentifySpatialReuseOpportunity():
+ * Arguments:
+ * -
+ * Output:
+ * -
+ **/
+int IdentifySpatialReuseOpportunity( double power_received, double obss_pd) {
+
+	if (power_received < obss_pd) {
+		return 1;
+	} else {
+		return 0;
+	}
 
 }
 

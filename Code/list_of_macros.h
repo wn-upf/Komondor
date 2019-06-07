@@ -264,7 +264,7 @@
 // --- PHY parameters ---
 
 #define SIFS 		(16 * MICRO_VALUE)			// SIFS value
-#define DIFS		(SIFS + (2 * SLOT_TIME))		// DIFS value
+#define DIFS		(SIFS + (2 * SLOT_TIME))	// DIFS value
 #define PIFS		(SIFS + SLOT_TIME)			// PIFS value
 
 #define IEEE_AX_OFDM_SYMBOL_LEGACY			(4 * MICRO_VALUE)	// Duration of an OFDM symbol in legacy mode

@@ -130,6 +130,9 @@ component Node : public TypeII{
 		void BroadcastNewConfigurationToStas(Configuration &received_configuration);
 		void UpdatePerformanceMeasurements();
 
+		// Spatial Reuse
+		void SpatialReuseOpportunityEnds();
+
 	// Public items (entered by nodes constructor in komondor_main)
 	public:
 
@@ -311,8 +314,6 @@ component Node : public TypeII{
 
 		// Last notification that made the node change state or reamin in NAV. It is used for detecting simultaneous events.
 		Notification nav_notification;
-		// Last inter-BSS notification that made the node change state or remain in NAV (only SR operation). It is used for detecting simultaneous events.
-		Notification inter_bss_nav_notification;
 
 		// NAV notification sent in a different primary channel. Store it for detecting BO collisions when using CB.
 		Notification outrange_nav_notification;
@@ -390,7 +391,7 @@ component Node : public TypeII{
 		int spatial_reuse_enabled;		// Indicates whether SR is enabled or not
 		int type_last_sensed_packet;	// Stores the type of the last sensed packet
 		double pd_spatial_reuse;		// Stores the PD in pW to be used during the SR operation
-		double tx_power_sr; 					// Stores the limited tx power in pW to be used during the SR operation
+		double tx_power_sr; 			// Stores the limited tx power in pW to be used during the SR operation
 		int txop_sr_identified;			// Indicates whether a TXOP has been identified under the SR operation
 
 		int type_ongoing_transmissions_sr[3]; 	// Array indicating which types of transmissions are currently being held
@@ -398,6 +399,11 @@ component Node : public TypeII{
 		double next_pd_spatial_reuse; 	// pd to be used when restarting after detecting a TXOP
 
 		bool flag_change_in_tx_power;	// Flag to indicate that the tx power has been modified
+
+		double potential_obss_pd_threshold;
+		double current_obss_pd_threshold;
+		double next_tx_power_limit;
+		double current_tx_power_sr;
 
 	// Connections and timers
 	public:
@@ -453,6 +459,7 @@ component Node : public TypeII{
 		Timer <trigger_t> trigger_start_saving_logs; 	// Trigger for starting saving logs
 		Timer <trigger_t> trigger_recover_cts_timeout; 	// Trigger for waiting part of EIFS after CTS timeout detected
 		Timer <trigger_t> trigger_rho_measurement; 		// Trigger for periodically measuring the rho metric
+		Timer <trigger_t> txop_sr_end;					// Trigger to determine the duration of an identified SR-based opportunity
 
 		// Every time the timer expires execute this
 		inport inline void EndBackoff(trigger_t& t1);
@@ -470,6 +477,7 @@ component Node : public TypeII{
 		inport inline void StartSavingLogs(trigger_t& t1);
 		inport inline void RecoverFromCtsTimeout(trigger_t& t1);
 		inport inline void MeasureRho(trigger_t& t1);
+		inport inline void SpatialReuseOpportunityEnds(trigger_t& t1);
 
 		// Connect timers to methods
 		Node () {
@@ -489,6 +497,7 @@ component Node : public TypeII{
 			connect trigger_start_saving_logs.to_component,StartSavingLogs;
 			connect trigger_recover_cts_timeout.to_component,RecoverFromCtsTimeout;
 			connect trigger_rho_measurement.to_component,MeasureRho;
+			connect txop_sr_end.to_component,SpatialReuseOpportunityEnds;
 		}
 };
 
@@ -691,22 +700,21 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 		if (spatial_reuse_enabled) {
 			// Identify the source of detected packet
 			type_last_sensed_packet = CheckPacketOrigin(notification, bss_color, srg);
-			// In case of detecting an inter-BSS frame, check the type and the PD threshold to be potentially used
+			// Obtain the CST to be used
+			potential_obss_pd_threshold = GetSensitivitySpatialReuse(type_last_sensed_packet,
+				srg_obss_pd, non_srg_obss_pd, current_pd, power_received_per_node[notification.source_id]);
+			// In case of detecting an inter-BSS frame, print the information
 			if (type_last_sensed_packet != INTRA_BSS_FRAME) {
 				LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s SPATIAL REUSE OPERATION: \n",
 					SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 				LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s type_last_sensed_packet = %d\n",
 					SimTime(), node_id, node_state, LOG_F02, LOG_LVL4, type_last_sensed_packet);
-				LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s previous pd_spatial_reuse = %f\n",
-					SimTime(), node_id, node_state, LOG_F02, LOG_LVL4, ConvertPower(PW_TO_DBM, pd_spatial_reuse));
+				LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Previous current_obss_pd_threshold = %f\n",
+					SimTime(), node_id, node_state, LOG_F02, LOG_LVL4, ConvertPower(PW_TO_DBM, current_obss_pd_threshold));
 				LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s previous txop_sr_identified = %d\n",
 					SimTime(), node_id, node_state, LOG_F02, LOG_LVL4, txop_sr_identified);
-				// Obtain the CST to be used
-				pd_spatial_reuse = GetSensitivitySpatialReuse(type_last_sensed_packet,
-					srg_obss_pd, non_srg_obss_pd, pd_default, pd_spatial_reuse,
-					txop_sr_identified, power_received_per_node[notification.source_id]);
-				LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s new pd_spatial_reuse = %f\n",
-					SimTime(), node_id, node_state, LOG_F02, LOG_LVL4, ConvertPower(PW_TO_DBM, pd_spatial_reuse));
+				LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s New potential_obss_pd_threshold = %f\n",
+					SimTime(), node_id, node_state, LOG_F02, LOG_LVL4, ConvertPower(PW_TO_DBM, potential_obss_pd_threshold));
 			}
 		}
 		/* **************************************** */
@@ -766,12 +774,10 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							// Check if lost due to BO collision
 							if(loss_reason == PACKET_LOST_INTERFERENCE){
-
 								if(fabs(outrange_nav_notification.timestamp - notification.timestamp)
-										< MAX_DIFFERENCE_SAME_TIME){
+									< MAX_DIFFERENCE_SAME_TIME){
 									loss_reason = PACKET_LOST_BO_COLLISION;
 								}
-
 							}
 
 							LOGS(save_node_logs,node_logger.file,
@@ -782,7 +788,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							if(nack_activated) {
 								// Send logical NACK to transmitter sending incoming notification for indicating the loss reason
 								logical_nack = GenerateLogicalNack(notification.packet_type, notification.packet_id,
-										node_id, notification.source_id, NODE_ID_NONE, loss_reason, BER, current_sinr);
+									node_id, notification.source_id, NODE_ID_NONE, loss_reason, BER, current_sinr);
 								SendLogicalNack(logical_nack);
 							}
 
@@ -838,7 +844,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					if(notification.packet_type == PACKET_TYPE_RTS
 						|| notification.packet_type == PACKET_TYPE_CTS
 						|| notification.packet_type == PACKET_TYPE_DATA
-						|| notification.packet_type == PACKET_TYPE_ACK){
+						|| notification.packet_type == PACKET_TYPE_ACK) {
 
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s I am not the TX destination (N%d to N%d). Checking if Frame can be decoded.\n",
@@ -869,33 +875,38 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						/* SPATIAL REUSE OPERATION
 						 * *****************************************/
 						// If the packet is not lost, check if we can ignore it by applying another pd
-						if (spatial_reuse_enabled) {
-							if(loss_reason == PACKET_NOT_LOST && node_is_transmitter) {
-								// The incoming packet can be decoded by the default pd
+						if (spatial_reuse_enabled && loss_reason == PACKET_NOT_LOST) {
+							// The incoming packet can be decoded by the default pd
+							LOGS(save_node_logs, node_logger.file,
+								"%.15f;N%d;S%d;%s;%s The packet could be decoded with the default pd (%f dBm)...\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, current_pd));
+							// Check if a new SR-based opportunity can be identified to ignore the incoming tranmission
+							int new_txop_sr_identified(IdentifySpatialReuseOpportunity(power_rx_interest, potential_obss_pd_threshold));
+							// Two cases:
+							// (1) An SR-based opportunity was already identified and needs to be overwritten
+							// (2) None SR opportunites were previously detected
+							LOGS(save_node_logs, node_logger.file,
+								"%.15f;N%d;S%d;%s;%s txop_sr_identified = %d / new_txop_sr_identified = %d\n",
+								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4, txop_sr_identified, new_txop_sr_identified);
+							if ( (txop_sr_identified && new_txop_sr_identified &&
+									potential_obss_pd_threshold <= current_obss_pd_threshold) ||
+								(!txop_sr_identified && new_txop_sr_identified) ) {
+								// Set the current OBSS/PD threshold for inter-BSS transmissions
+								current_obss_pd_threshold = potential_obss_pd_threshold;
+								// Update the variable that indicates that an SR-based opportunity has been detected
+								txop_sr_identified = new_txop_sr_identified;
+								// Indicate that the packet was "lost" in order to continue with the backoff procedure
+								loss_reason = PACKET_IGNORED_SPATIAL_REUSE;
+								// Define the limited transmission power
+								next_tx_power_limit = ApplyTxPowerRestriction(current_obss_pd_threshold, current_tx_power);
+								// Start (update) the trigger that indicates the end of the SR-based opportunity
+								time_to_trigger = SimTime() + notification.tx_info.nav_time;
+								txop_sr_end.Set(fix_time_offset(time_to_trigger,13,12));
 								LOGS(save_node_logs, node_logger.file,
-									"%.15f;N%d;S%d;%s;%s The packet could be decoded with the default pd (%f dBm)...\n",
-									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, current_pd));
-								// Check if the SR-based pd allows to ignore the incoming tranmission
-								if (power_rx_interest < pd_spatial_reuse) {
-									// TXOP identified!
-									txop_sr_identified = TRUE;
-									// Update the pd
-									current_pd = pd_spatial_reuse;
-//									next_pd_spatial_reuse = pd_spatial_reuse;
-									// INDICATE THAT THE PACKET WAS LOST
-									loss_reason = PACKET_IGNORED_SPATIAL_REUSE;
-									LOGS(save_node_logs, node_logger.file,
-										"%.15f;N%d;S%d;%s;%s An SR TXOP was detected for OBSS_PD = %f dBm "
-										"(received RTS/CTS while being in SENSING state.)\n",
-										SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
-										ConvertPower(PW_TO_DBM, current_pd));
-								} else if (power_rx_interest >= pd_spatial_reuse && txop_sr_identified) {
-									// Cancel the current SR TXOP
-									txop_sr_identified = FALSE;
-									LOGS(save_node_logs, node_logger.file,
-										"%.15f;N%d;S%d;%s;%s Cancelling SR TXOP...\n",
-										SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-								}
+									"%.15f;N%d;S%d;%s;%s An SR TXOP was detected for OBSS_PD = %f dBm "
+									"(received RTS/CTS while being in SENSING state.)\n",
+									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
+									ConvertPower(PW_TO_DBM, current_obss_pd_threshold));
 							}
 						}
 						/* **************************************** */
@@ -907,11 +918,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.packet_type);
 
 							// Save NAV notification for comparing timestamps in case of need
-//							if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
-//								inter_bss_nav_notification = notification;
-//							} else {
-								nav_notification = notification;
-//							}
+							nav_notification = notification;
 
 							if(node_is_transmitter){
 								int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
@@ -964,8 +971,16 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								LOGS(save_node_logs,node_logger.file,
 									"%.15f;N%d;S%d;%s;%s Checking if BO must be paused...\n",
 									SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
-								int pause = HandleBackoff(PAUSE_TIMER, &channel_power, current_primary_channel, current_pd,
-										buffer.QueueSize());
+
+								int pause;
+
+								if(spatial_reuse_enabled && txop_sr_identified) {
+									pause = HandleBackoff(PAUSE_TIMER, &channel_power,
+										current_primary_channel, current_obss_pd_threshold, buffer.QueueSize());
+								} else {
+									pause = HandleBackoff(PAUSE_TIMER, &channel_power, current_primary_channel,
+										current_pd, buffer.QueueSize());
+								}
 
 								// Check if node has to freeze the BO (if it is not already frozen)
 								if (pause) {
@@ -975,8 +990,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								} else {
 
 									LOGS(save_node_logs,node_logger.file,
-										"%.15f;N%d;S%d;%s;%s BO must not be paused.\n",
-										SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
+										"%.15f;N%d;S%d;%s;%s BO must not be paused (%f remaining slots).\n",
+										SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, remaining_backoff/SLOT_TIME);
 								}
 
 							}
@@ -1018,8 +1033,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				int nav_collision;				// Variable to indicate whether a NAV collision occurred for the current detected notification
 				int inter_bss_nav_collision;	// Variable to indicate whether an inter-BSS NAV collision occurred for the current detected notification
 				// Check if a collision occurred for any of the NAV timers
+
 				if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
-					inter_bss_nav_collision = abs(nav_notification.timestamp -
+					inter_bss_nav_collision = fabs(nav_notification.timestamp -
 						notification.timestamp) < MAX_DIFFERENCE_SAME_TIME;
 				} else {
 					nav_collision = fabs(nav_notification.timestamp -
@@ -1182,7 +1198,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(PW_TO_DBM, max_pw_interference));
 						// Check if notification can be decoded
 						int loss_reason (IsPacketLost(current_primary_channel, notification, notification,
-							current_sinr, capture_effect, pd_default, power_rx_interest, constant_per,
+							current_sinr, capture_effect, current_pd, power_rx_interest, constant_per,
 							node_id, capture_effect_model));
 
 						// NAV collision detected
@@ -1274,7 +1290,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								ConvertPower(LINEAR_TO_DB,current_sinr));
 
 							loss_reason = IsPacketLost(current_primary_channel, notification, notification,
-								current_sinr, capture_effect, pd_default, power_rx_interest, constant_per,
+								current_sinr, capture_effect, current_pd, power_rx_interest, constant_per,
 								node_id, capture_effect_model);
 
 							int power_condition (ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > pd_default);
@@ -1291,13 +1307,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) { 	// Check for TXOP
 									double power_interference (power_received_per_node[notification.source_id]);
 									loss_reason_sr = IsPacketLost(current_primary_channel, notification, notification,
-										current_sinr, capture_effect, pd_spatial_reuse, power_interference, constant_per,
+										current_sinr, capture_effect, potential_obss_pd_threshold, power_interference, constant_per,
 										node_id, capture_effect_model);
-									power_condition_sr = ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > pd_spatial_reuse;
+									power_condition_sr = ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > potential_obss_pd_threshold;
 								}
 								if (loss_reason_sr != PACKET_NOT_LOST && power_condition_sr) {
 									txop_sr_identified = TRUE;	// TXOP identified!
-									next_pd_spatial_reuse = pd_spatial_reuse;	// Update the pd
+									next_pd_spatial_reuse = potential_obss_pd_threshold;	// Update the pd
 									LOGS(save_node_logs, node_logger.file,
 										"%.15f;N%d;S%d;%s;%s TXOP detected while being in NAV state\n",
 										SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
@@ -1397,7 +1413,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				// If two or more packets sent at the same time
 				if(nav_collision || inter_bss_nav_collision) {
 
-				} else {
+				}
+//				else {
 					// Check if new TXOP are detected when transmitting (in order to transmit again when restarting)
 					if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) {
 
@@ -1410,7 +1427,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							node_id, capture_effect_model));
 						// Is packet lost with the SR pd?
 						int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
-							sinr_interference, capture_effect, pd_spatial_reuse, power_interference, constant_per,
+							sinr_interference, capture_effect, potential_obss_pd_threshold, power_interference, constant_per,
 							node_id, capture_effect_model));
 
 						if(save_node_logs && node_id == 0) LOGS(save_node_logs, node_logger.file,
@@ -1428,7 +1445,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
 						if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
 							txop_sr_identified = TRUE;	// TXOP identified!
-							next_pd_spatial_reuse = pd_spatial_reuse;
+							current_obss_pd_threshold = potential_obss_pd_threshold;
+							// Define the limited transmission power
+							next_tx_power_limit = ApplyTxPowerRestriction(current_obss_pd_threshold, current_tx_power);
+							// Start (update) the trigger that indicates the end of the SR-based opportunity
+							time_to_trigger = SimTime() + notification.tx_info.nav_time;
+							txop_sr_end.Set(fix_time_offset(time_to_trigger,13,12));
 							LOGS(save_node_logs, node_logger.file,
 								"%.15f;N%d;S%d;%s;%s TXOP detected while being in TX state\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
@@ -1440,7 +1462,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
 						}
 					}
-				}
+//				}
 				/* **************************************** */
 
 				break;
@@ -1467,8 +1489,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
 					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
-							current_sinr, capture_effect, current_pd,
-							power_rx_interest, constant_per, node_id, capture_effect_model);
+						current_sinr, capture_effect, current_pd,
+						power_rx_interest, constant_per, node_id, capture_effect_model);
 
 					switch(capture_effect_model){
 
@@ -1602,9 +1624,15 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ConvertPower(LINEAR_TO_DB, current_sinr));
 
 					// Check if the notification that was already being received is lost due to new notification
-					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
-						current_sinr, capture_effect, current_pd,
-						power_rx_interest, constant_per, node_id, capture_effect_model);
+					if (spatial_reuse_enabled && txop_sr_identified) {
+						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
+							current_sinr, capture_effect, current_obss_pd_threshold,
+							power_rx_interest, constant_per, node_id, capture_effect_model);
+					} else {
+						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
+							current_sinr, capture_effect, current_pd,
+							power_rx_interest, constant_per, node_id, capture_effect_model);
+					}
 
 					LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
 						SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, loss_reason);
@@ -1660,39 +1688,39 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					}
 				}
 
-				/* ****************************************
-				/* SPATIAL REUSE OPERATION
-				 * *****************************************/
-				// Check if new TXOP are detected when transmitting (in order to transmit again when restarting)
-				if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) {
-
-					double power_interference (power_received_per_node[notification.source_id]);
-					double sinr_interference (UpdateSINR(power_interference, noise_level, max_pw_interference));
-
-					// Is packet lost with the default pd?
-					int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
-						sinr_interference, capture_effect, pd_default, power_interference, constant_per,
-						node_id, capture_effect_model));
-					// Is packet lost with the SR pd?
-					int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
-						sinr_interference, capture_effect, pd_spatial_reuse, power_interference, constant_per,
-						node_id, capture_effect_model));
-					// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
-					if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
-						txop_sr_identified = TRUE;	// TXOP identified!
-						next_pd_spatial_reuse = pd_spatial_reuse;
-						LOGS(save_node_logs, node_logger.file,
-							"%.15f;N%d;S%d;%s;%s TXOP detected while being in RX state\n",
-							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-					} else if (loss_reason_legacy == PACKET_NOT_LOST && txop_sr_identified) {
-						// Cancel SR TXOP
-						txop_sr_identified = FALSE;
-						LOGS(save_node_logs, node_logger.file,
-							"%.15f;N%d;S%d;%s;%s Cancelling SR TXOP while being in RX state\n",
-							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-					}
-				}
-				/* **************************************** */
+//				/* ****************************************
+//				/* SPATIAL REUSE OPERATION
+//				 * *****************************************/
+//				// Check if new TXOP are detected when transmitting (in order to transmit again when restarting)
+//				if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) {
+//
+//					double power_interference (power_received_per_node[notification.source_id]);
+//					double sinr_interference (UpdateSINR(power_interference, noise_level, max_pw_interference));
+//
+//					// Is packet lost with the default pd?
+//					int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
+//						sinr_interference, capture_effect, pd_default, power_interference, constant_per,
+//						node_id, capture_effect_model));
+//					// Is packet lost with the SR pd?
+//					int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
+//						sinr_interference, capture_effect, pd_spatial_reuse, power_interference, constant_per,
+//						node_id, capture_effect_model));
+//					// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
+//					if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
+//						txop_sr_identified = TRUE;	// TXOP identified!
+//						next_pd_spatial_reuse = pd_spatial_reuse;
+//						LOGS(save_node_logs, node_logger.file,
+//							"%.15f;N%d;S%d;%s;%s TXOP detected while being in RX state\n",
+//							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+//					} else if (loss_reason_legacy == PACKET_NOT_LOST && txop_sr_identified) {
+//						// Cancel SR TXOP
+//						txop_sr_identified = FALSE;
+//						LOGS(save_node_logs, node_logger.file,
+//							"%.15f;N%d;S%d;%s;%s Cancelling SR TXOP while being in RX state\n",
+//							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+//					}
+//				}
+//				/* **************************************** */
 
 				break;
 			}
@@ -1779,37 +1807,37 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //
 //					LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
 //								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
-
-					/* ****************************************
-					/* SPATIAL REUSE OPERATION
-					 * *****************************************/
-					// Check if new TXOP are detected when transmitting (in order to transmit again when restarting)
-					if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) {
-						double sinr_interference (UpdateSINR(power_rx_interest, noise_level, max_pw_interference));
-						// Is packet lost with the default pd?
-						int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
-							sinr_interference, capture_effect, pd_default, power_rx_interest, constant_per,
-							node_id, capture_effect_model));
-						// Is packet lost with the SR pd?
-						int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
-							sinr_interference, capture_effect, pd_spatial_reuse, power_rx_interest, constant_per,
-							node_id, capture_effect_model));
-						// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
-						if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
-							txop_sr_identified = TRUE;	// TXOP identified!
-							next_pd_spatial_reuse = pd_spatial_reuse;
-							LOGS(save_node_logs, node_logger.file,
-								"%.15f;N%d;S%d;%s;%s TXOP detected while being in WAIT ACK state\n",
-								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-						} else if (loss_reason_legacy == PACKET_NOT_LOST && txop_sr_identified) {
-							// Cancel SR TXOP
-							txop_sr_identified = FALSE;
-							LOGS(save_node_logs, node_logger.file,
-								"%.15f;N%d;S%d;%s;%s Cancelling SR TXOP while being in WAIT ACK state\n",
-								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-						}
-					}
-					/* **************************************** */
+//
+//					/* ****************************************
+//					/* SPATIAL REUSE OPERATION
+//					 * *****************************************/
+//					// Check if new TXOP are detected when transmitting (in order to transmit again when restarting)
+//					if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) {
+//						double sinr_interference (UpdateSINR(power_rx_interest, noise_level, max_pw_interference));
+//						// Is packet lost with the default pd?
+//						int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
+//							sinr_interference, capture_effect, pd_default, power_rx_interest, constant_per,
+//							node_id, capture_effect_model));
+//						// Is packet lost with the SR pd?
+//						int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
+//							sinr_interference, capture_effect, pd_spatial_reuse, power_rx_interest, constant_per,
+//							node_id, capture_effect_model));
+//						// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
+//						if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
+//							txop_sr_identified = TRUE;	// TXOP identified!
+//							next_pd_spatial_reuse = pd_spatial_reuse;
+//							LOGS(save_node_logs, node_logger.file,
+//								"%.15f;N%d;S%d;%s;%s TXOP detected while being in WAIT ACK state\n",
+//								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+//						} else if (loss_reason_legacy == PACKET_NOT_LOST && txop_sr_identified) {
+//							// Cancel SR TXOP
+//							txop_sr_identified = FALSE;
+//							LOGS(save_node_logs, node_logger.file,
+//								"%.15f;N%d;S%d;%s;%s Cancelling SR TXOP while being in WAIT ACK state\n",
+//								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+//						}
+//					}
+//					/* **************************************** */
 				}
 				break;
 			}
@@ -1906,39 +1934,39 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					}
 
 				} else {	// Node IS NOT THE DESTINATION, do nothing
-//					LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
-//						SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
-					/* ****************************************
-					/* SPATIAL REUSE OPERATION
-					 * *****************************************/
-					// Check if new TXOP are detected when transmitting (in order to transmit again when restarting)
-					if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) {
-
-						double sinr_interference (UpdateSINR(power_rx_interest, noise_level, max_pw_interference));
-						// Is packet lost with the default pd?
-						int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
-							sinr_interference, capture_effect, pd_default, power_rx_interest, constant_per,
-							node_id, capture_effect_model));
-						// Is packet lost with the SR pd?
-						int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
-							sinr_interference, capture_effect, pd_spatial_reuse, power_rx_interest, constant_per,
-							node_id, capture_effect_model));
-						// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
-						if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
-							txop_sr_identified = TRUE;	// TXOP identified!
-							next_pd_spatial_reuse = pd_spatial_reuse;
-							LOGS(save_node_logs, node_logger.file,
-								"%.15f;N%d;S%d;%s;%s TXOP detected while being in WAIT CTS state\n",
-								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-						} else if (loss_reason_legacy == PACKET_NOT_LOST && txop_sr_identified) {
-							// Cancel SR TXOP
-							txop_sr_identified = FALSE;
-							LOGS(save_node_logs, node_logger.file,
-								"%.15f;N%d;S%d;%s;%s Cancelling SR TXOP while being in WAIT CTS state\n",
-								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-						}
-					}
-					/* **************************************** */
+////					LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
+////						SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
+//					/* ****************************************
+//					/* SPATIAL REUSE OPERATION
+//					 * *****************************************/
+//					// Check if new TXOP are detected when transmitting (in order to transmit again when restarting)
+//					if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) {
+//
+//						double sinr_interference (UpdateSINR(power_rx_interest, noise_level, max_pw_interference));
+//						// Is packet lost with the default pd?
+//						int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
+//							sinr_interference, capture_effect, pd_default, power_rx_interest, constant_per,
+//							node_id, capture_effect_model));
+//						// Is packet lost with the SR pd?
+//						int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
+//							sinr_interference, capture_effect, pd_spatial_reuse, power_rx_interest, constant_per,
+//							node_id, capture_effect_model));
+//						// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
+//						if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
+//							txop_sr_identified = TRUE;	// TXOP identified!
+//							next_pd_spatial_reuse = pd_spatial_reuse;
+//							LOGS(save_node_logs, node_logger.file,
+//								"%.15f;N%d;S%d;%s;%s TXOP detected while being in WAIT CTS state\n",
+//								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+//						} else if (loss_reason_legacy == PACKET_NOT_LOST && txop_sr_identified) {
+//							// Cancel SR TXOP
+//							txop_sr_identified = FALSE;
+//							LOGS(save_node_logs, node_logger.file,
+//								"%.15f;N%d;S%d;%s;%s Cancelling SR TXOP while being in WAIT CTS state\n",
+//								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+//						}
+//					}
+//					/* **************************************** */
 
 				}
 
@@ -2032,32 +2060,32 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				/* ****************************************
 				/* SPATIAL REUSE OPERATION
 				 * *****************************************/
-				// Check if new TXOP are detected when transmitting (in order to transmit again when restarting)
-				if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) {
-					double sinr_interference (UpdateSINR(power_rx_interest, noise_level, max_pw_interference));
-					// Is packet lost with the default pd?
-					int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
-						sinr_interference, capture_effect, pd_default, power_rx_interest, constant_per,
-						node_id, capture_effect_model));
-					// Is packet lost with the SR pd?
-					int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
-						sinr_interference, capture_effect, pd_spatial_reuse, power_rx_interest, constant_per,
-						node_id, capture_effect_model));
-					// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
-					if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
-						txop_sr_identified = TRUE;	// TXOP identified!
-						next_pd_spatial_reuse = pd_spatial_reuse;
-						LOGS(save_node_logs, node_logger.file,
-							"%.15f;N%d;S%d;%s;%s TXOP detected while being in WAIT DATA state\n",
-							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-					} else if (loss_reason_legacy == PACKET_NOT_LOST && txop_sr_identified) {
-						// Cancel SR TXOP
-						txop_sr_identified = FALSE;
-						LOGS(save_node_logs, node_logger.file,
-							"%.15f;N%d;S%d;%s;%s Cancelling SR TXOP while being in WAIT DATA state (SHOULD NOT HAPPEN!)\n",
-							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
-					}
-				}
+//				// Check if new TXOP are detected when transmitting (in order to transmit again when restarting)
+//				if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) {
+//					double sinr_interference (UpdateSINR(power_rx_interest, noise_level, max_pw_interference));
+//					// Is packet lost with the default pd?
+//					int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
+//						sinr_interference, capture_effect, pd_default, power_rx_interest, constant_per,
+//						node_id, capture_effect_model));
+//					// Is packet lost with the SR pd?
+//					int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
+//						sinr_interference, capture_effect, pd_spatial_reuse, power_rx_interest, constant_per,
+//						node_id, capture_effect_model));
+//					// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
+//					if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
+//						txop_sr_identified = TRUE;	// TXOP identified!
+//						next_pd_spatial_reuse = pd_spatial_reuse;
+//						LOGS(save_node_logs, node_logger.file,
+//							"%.15f;N%d;S%d;%s;%s TXOP detected while being in WAIT DATA state\n",
+//							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+//					} else if (loss_reason_legacy == PACKET_NOT_LOST && txop_sr_identified) {
+//						// Cancel SR TXOP
+//						txop_sr_identified = FALSE;
+//						LOGS(save_node_logs, node_logger.file,
+//							"%.15f;N%d;S%d;%s;%s Cancelling SR TXOP while being in WAIT DATA state (SHOULD NOT HAPPEN!)\n",
+//							SimTime(), node_id, node_state, LOG_D08, LOG_LVL3);
+//					}
+//				}
 				/* **************************************** */
 
 				break;
@@ -2715,6 +2743,13 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 //			notification.tx_info.tx_power, tx_gain, rx_gain,
 //			central_frequency, path_loss_model));
 
+		// Update 'power received' array in case a new tx power is used
+		if (notification.tx_info.flag_change_in_tx_power) {
+			received_power_array[notification.source_id] =
+				ComputePowerReceived(distances_array[notification.source_id],
+				notification.tx_info.tx_power, tx_gain, rx_gain, central_frequency, path_loss_model);
+		}
+
 		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s I am at distance: %.2f m (sensing P_rx = %.2f dBm)\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL2,
 			distances_array[notification.source_id], ConvertPower(PW_TO_DBM,
@@ -2759,7 +2794,13 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 
 		// Set receiver modulation to the received one
 		for (int i = 0; i < NUM_OPTIONS_CHANNEL_LENGTH; ++i){
-			mcs_per_node[ix_aux][i] = notification.tx_info.modulation_schemes[i];
+			if (spatial_reuse_enabled && txop_sr_identified &&
+					notification.tx_info.modulation_schemes[i] == MODULATION_FORBIDDEN) {
+				// Force to use the minimum MCS in case of applying the SR operation and receiving the forbidden MCS
+				mcs_per_node[ix_aux][i] = MODULATION_BPSK_1_2;
+			} else {
+				mcs_per_node[ix_aux][i] = notification.tx_info.modulation_schemes[i];
+			}
 			LOGS(save_node_logs,node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
 		}
 
@@ -2955,27 +2996,24 @@ void Node :: EndBackoff(trigger_t &){
 	 *  to the SR operation (in case of having detected a TXOP).
 	 *
 	 * *****************************************/
-
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s txop_sr_identified = %d\n",
 		SimTime(), node_id, node_state, LOG_F00, LOG_LVL1, txop_sr_identified);
-	if (spatial_reuse_enabled && txop_sr_identified) {
-//		// Set the pd to the SR threshold computed for the last detected transmission
-		current_pd = pd_spatial_reuse;//pd_spatial_reuse;
+	if (spatial_reuse_enabled) {
+		flag_change_in_tx_power = TRUE;
+		if(txop_sr_identified) {
 		// Apply the transmission power limitation
-		current_tx_power = ApplyTxPowerRestriction(current_pd, current_tx_power);
+		current_tx_power_sr = next_tx_power_limit;
 		// In order to request a new MCS (the tx power may have changed)
 		for(int n = 0; n < wlan.num_stas; n++) {
 			change_modulation_flag[n] = TRUE;
 		}
-		txop_sr_identified = FALSE;
 	} else {
 		// Use default values
-//		current_pd = pd_default;
-//		current_tx_power = tx_power_default;
 	}
 	if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Intended values for the next TX: "
 		"pd = %f dBm, Tx Power = %f dBm\n", SimTime(), node_id, node_state, LOG_F02, LOG_LVL3,
-		ConvertPower(PW_TO_DBM, current_pd), ConvertPower(PW_TO_DBM, current_tx_power));
+		ConvertPower(PW_TO_DBM, current_obss_pd_threshold), ConvertPower(PW_TO_DBM, current_tx_power_sr));
+	}
 	/* **************************************** */
 
 	// Sergio on 26th June 2018:
@@ -3011,8 +3049,13 @@ void Node :: EndBackoff(trigger_t &){
 	// Identify free channels
 	++num_tx_init_tried;
 
-	GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free, min_channel_allowed,
-		max_channel_allowed, &channel_power, current_pd, timestampt_channel_becomes_free, SimTime(), PIFS);
+	if (spatial_reuse_enabled && txop_sr_identified) {
+		GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free, min_channel_allowed,
+			max_channel_allowed, &channel_power, current_obss_pd_threshold, timestampt_channel_becomes_free, SimTime(), PIFS);
+	} else {
+		GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free, min_channel_allowed,
+			max_channel_allowed, &channel_power, current_pd, timestampt_channel_becomes_free, SimTime(), PIFS);
+	}
 
 	LOGS(save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
@@ -3110,10 +3153,15 @@ void Node :: EndBackoff(trigger_t &){
 			ieee_protocol, num_channels_tx, current_modulation, limited_num_packets_aggregated,
 			frame_length, bits_ofdm_sym);
 
-//		printf("rts_duration = %f\n", rts_duration * pow(10,6));
-//		printf("cts_duration = %f\n", cts_duration * pow(10,6));
-//		printf("data_duration = %f\n", data_duration * pow(10,6));
-//		printf("ack_duration = %f\n", ack_duration * pow(10,6));
+//		if(node_id == 0) {
+//			printf("----------------\n");
+//			printf("rts_duration = %f\n", rts_duration * pow(10,6));
+//			printf("cts_duration = %f\n", cts_duration * pow(10,6));
+//			printf("data_duration = %f\n", data_duration * pow(10,6));
+//			printf("current_modulation = %d\n", current_modulation);
+//			printf("limited_num_packets_aggregated = %d\n", limited_num_packets_aggregated);
+//			printf("ack_duration = %f\n", ack_duration * pow(10,6));
+//		}
 
 		LOGS(save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmitting (N_agg = %d) in %d channels using modulation %d (%.0f bits per OFDM symbol ---> %.2f Mbps) \n",
@@ -3121,10 +3169,17 @@ void Node :: EndBackoff(trigger_t &){
 			(int) pow(2, ix_num_channels_used), current_modulation, bits_ofdm_sym,
 			bits_ofdm_sym/IEEE_AX_OFDM_SYMBOL_GI32_DURATION * pow(10,-6));
 
-		LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s Using tx power = %f dBm \n",
-			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
-			ConvertPower(PW_TO_DBM, current_tx_power));
+		if(spatial_reuse_enabled && txop_sr_identified) {
+			LOGS(save_node_logs,node_logger.file,
+				"%.15f;N%d;S%d;%s;%s Using tx power = %f dBm \n",
+				SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
+				ConvertPower(PW_TO_DBM, current_tx_power_sr));
+		} else {
+			LOGS(save_node_logs,node_logger.file,
+				"%.15f;N%d;S%d;%s;%s Using tx power = %f dBm \n",
+				SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
+				ConvertPower(PW_TO_DBM, current_tx_power));
+		}
 
 		current_tx_duration = rts_duration;
 
@@ -3164,7 +3219,7 @@ void Node :: EndBackoff(trigger_t &){
 		Notification first_packet_buffer = buffer.GetFirstPacket();
 
 		rts_notification = GenerateNotification(PACKET_TYPE_RTS, current_destination_id,
-			first_packet_buffer.packet_id, current_num_packets_aggregated,
+			first_packet_buffer.packet_id, limited_num_packets_aggregated,
 			first_packet_buffer.timestamp_generated, current_tx_duration);
 
 		LOGS(save_node_logs,node_logger.file,
@@ -3222,7 +3277,7 @@ void Node :: MyTxFinished(trigger_t &){
 
 			// Set CTS timeout and change state to STATE_WAIT_CTS
 			Notification notification = GenerateNotification(PACKET_TYPE_RTS, current_destination_id,
-				rts_notification.packet_id, current_num_packets_aggregated,
+				rts_notification.packet_id, limited_num_packets_aggregated,
 				rts_notification.timestamp_generated, TX_DURATION_NONE);
 
 			outportSelfFinishTX(notification);
@@ -3333,6 +3388,8 @@ void Node :: RequestMCS(){
 		Notification request_modulation = GenerateNotification(PACKET_TYPE_MCS_REQUEST, current_destination_id,
 			-1, -1, -1, TX_DURATION_NONE);
 
+		request_modulation.tx_info.flag_change_in_tx_power = TRUE;
+
 		outportAskForTxModulation(request_modulation);
 
 		int ix_aux (current_destination_id - wlan.list_sta_id[0]);	// Auxiliary variable for correcting the node id offset
@@ -3400,13 +3457,23 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 	// P_tx issue #113
 	num_channels_tx = current_right_channel - current_left_channel + 1;
 
-	notification.tx_info = GenerateTxInfo(num_packets_aggregated, data_duration,
-		ack_duration, rts_duration, cts_duration, current_tx_power, num_channels_tx,
-		tx_gain, bits_ofdm_sym, x, y, z);
+	if (spatial_reuse_enabled && txop_sr_identified) {
+		notification.tx_info = GenerateTxInfo(num_packets_aggregated, data_duration,
+			ack_duration, rts_duration, cts_duration, current_tx_power_sr, num_channels_tx,
+			tx_gain, bits_ofdm_sym, x, y, z);
+	} else {
+		notification.tx_info = GenerateTxInfo(num_packets_aggregated, data_duration,
+			ack_duration, rts_duration, cts_duration, current_tx_power, num_channels_tx,
+			tx_gain, bits_ofdm_sym, x, y, z);
+	}
+
 
 	// Spatial Reuse parameters
 	notification.tx_info.bss_color = bss_color;
 	notification.tx_info.srg = srg;
+
+	// Notify potential changes in the tx power
+	notification.tx_info.flag_change_in_tx_power = flag_change_in_tx_power;
 
 	switch(packet_type){
 
@@ -3763,7 +3830,7 @@ void Node :: ResumeBackoff(trigger_t &){
 
 	trigger_end_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Resuming backoff at %.9f us (%.2f slots)\n",
+	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Resuming backoff in %.9f us (%.2f slots)\n",
 		SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 		(remaining_backoff * pow(10,6)), (remaining_backoff / (double) SLOT_TIME));
 
@@ -3782,12 +3849,41 @@ void Node :: ResumeBackoff(trigger_t &){
 /*********************/
 
 /*
+ * SpatialReuseOpportunityEnds():
+ * Input arguments:
+ * -
+ */
+void Node :: SpatialReuseOpportunityEnds(trigger_t &){
+	LOGS(save_node_logs,node_logger.file,
+		"%.15f;N%d;S%d;%s;%s SpatialReuseOpportunityEnds()\n",
+		SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
+	// Set the SR parameters to the default values (disable mechanism to activate SR opportunities)
+	current_obss_pd_threshold = current_pd;
+	txop_sr_identified = FALSE;
+	current_tx_power_sr = current_tx_power;
+	flag_change_in_tx_power = FALSE;
+	// Indicate that the MCS must be changed
+	for(int n = 0; n < wlan.num_stas; ++n) {
+		change_modulation_flag[n] = true;
+	}
+
+	LOGS(save_node_logs,node_logger.file,
+		"%.15f;N%d;S%d;%s;%s current_obss_pd_threshold = %f\n",
+		SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+		ConvertPower(PW_TO_DBM,current_obss_pd_threshold));
+	LOGS(save_node_logs,node_logger.file,
+		"%.15f;N%d;S%d;%s;%s current_tx_power_sr = %f\n",
+		SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+		ConvertPower(PW_TO_DBM,current_tx_power_sr));
+
+}
+
+/*
  * InportRequestSpatialReuseConfiguration():
  * Input arguments:
  * -
  */
 void Node :: InportRequestSpatialReuseConfiguration() {
-
 	// Update the SR configuration
 	spatial_reuse_configuration.spatial_reuse_enabled = spatial_reuse_enabled;
 	spatial_reuse_configuration.bss_color = bss_color;
@@ -3796,7 +3892,6 @@ void Node :: InportRequestSpatialReuseConfiguration() {
 	spatial_reuse_configuration.srg_obss_pd = srg_obss_pd;
 	// Send it to STAs
 	outportNewSpatialReuseConfiguration(spatial_reuse_configuration);
-
 }
 
 
@@ -4080,8 +4175,7 @@ void Node :: RestartNode(int called_by_time_out){
 	if (flag_apply_new_configuration) {
 		ApplyNewConfiguration(new_configuration);
 	}
-	// Turn flag off
-	flag_apply_new_configuration = FALSE;
+	flag_apply_new_configuration = FALSE; // Turn flag off
 	//PrintNodeInfo(INFO_DETAIL_LEVEL_2);
 
 	// Reinitialize parameters
@@ -4092,6 +4186,8 @@ void Node :: RestartNode(int called_by_time_out){
 
 	receiving_from_node_id = NODE_ID_NONE;
 	receiving_packet_id = NO_PACKET_ID;
+
+	flag_change_in_tx_power = FALSE;
 
 	// Cancel triggers for safety
 	trigger_end_backoff.Cancel();
@@ -4130,8 +4226,14 @@ void Node :: RestartNode(int called_by_time_out){
 			current_primary_channel, ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]));
 
 		// Freeze backoff immediately if primary channel is occupied
-		int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_pd,
-			buffer.QueueSize()));
+		int resume;
+		if (spatial_reuse_enabled && txop_sr_identified) {
+			resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
+				current_obss_pd_threshold, buffer.QueueSize());
+		} else {
+			resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
+				current_pd, buffer.QueueSize());
+		}
 
 		// Check if node has to freeze the BO (if it is not already frozen)
 		if (resume) {
@@ -4262,13 +4364,13 @@ void Node:: CallSensing(trigger_t &){
 		// Check if the packet can be decoded with the CST indicated by the SR operation
 		if (loss_reason == PACKET_NOT_LOST && spatial_reuse_enabled) {
 			loss_reason_sr = IsPacketLost(current_primary_channel, nav_notification, nav_notification,
-				current_sinr, capture_effect, pd_spatial_reuse, power_rx_interest, constant_per, node_id, capture_effect_model);
+				current_sinr, capture_effect, potential_obss_pd_threshold, power_rx_interest, constant_per, node_id, capture_effect_model);
 			if (loss_reason_sr != PACKET_NOT_LOST && node_is_transmitter) {
 				txop_sr_identified = TRUE;	// TXOP identified!
-				current_pd = pd_spatial_reuse;	// Update the pd
+				current_obss_pd_threshold = potential_obss_pd_threshold;	// Update the pd
 				if(save_node_logs) fprintf(node_logger.file,
 					"%.15f;N%d;S%d;%s;%s TXOP detected for OBSS_PD = %f dBm (in CallSensing())\n",
-					SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, pd_spatial_reuse));
+					SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, current_obss_pd_threshold));
 			}
 		/* **************************************** */
 		} else {
@@ -4957,10 +5059,10 @@ void Node :: InitializeVariables() {
 		spatial_reuse_enabled = FALSE;
 	}
 
-//	// Hardcoded: in order to indicate that WLANs other than WLAN A do not apply SR
-//	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
-//		spatial_reuse_enabled = FALSE;
-//	}
+	// Hardcoded: in order to indicate that WLANs other than WLAN A do not apply SR
+	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
+		spatial_reuse_enabled = FALSE;
+	}
 
 //	// Randomly decide whether an WLAN different than WLAN_A applies SR or not
 //	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
