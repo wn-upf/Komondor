@@ -332,6 +332,25 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	  break;
 	}
 
+	case PATHLOSS_TMB:{
+
+//		L0 = 54.12;
+//		gamma = 2.06067;
+//		k = 5.25;
+//		W = 0.1467;
+//		loss = L0 + 10*gamma*log10(distance)+k*W*distance;
+
+		double pl_overall_db;
+
+		pl_overall_db = 54.12 + 10 * 2.06067 * log10(distance) + 5.25 * 0.1467 * distance;
+
+		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+
+		break;
+	}
+
 	}
 
 	return pw_received;

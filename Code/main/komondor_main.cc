@@ -574,7 +574,7 @@ void Komondor :: Stop(){
 		}
 	}
 
-	int simulation_index (10);
+	int simulation_index (12);
 
 	switch(simulation_index){
 
@@ -731,9 +731,26 @@ void Komondor :: Stop(){
 			break;
 		}
 
-		// SPATIAL REUSE (toy scenarios)
+		// Regression (scenarios paper Komondor)
 		case 10:{
+			if (total_nodes_number == 2 || total_nodes_number == 3) {
+				// Basic scenarios (1 WLAN)
+				fprintf(logger_script.file, ";%.2f\n",
+					node_container[0].throughput * pow(10,-6));
+			} else if (total_nodes_number == 6) {
+				// Complex scenarios (3 WLANs)
+				fprintf(logger_script.file, ";%.2f;%.2f;%.2f\n",
+					node_container[0].throughput * pow(10,-6),
+					node_container[2].throughput * pow(10,-6),
+					node_container[4].throughput * pow(10,-6));
+			} else {
+				printf("Error in Komondor :: Stop(): be care of the desired generated logs (script)\n");
+			}
+			break;
+		}
 
+		// SPATIAL REUSE (toy scenarios)
+		case 11:{
 			if (total_nodes_number == 2 || total_nodes_number == 3) {
 				// Basic scenarios
 				fprintf(logger_script.file, ";%.2f\n",
@@ -796,6 +813,58 @@ void Komondor :: Stop(){
 			} else {
 				printf("Error in Komondor :: Stop(): be care of the desired generated logs (script)\n");
 			}
+			break;
+		}
+
+		// SPATIAL REUSE (toy scenarios)
+		case 12:{
+			// Random scenarios
+			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
+				";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
+				";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;\n",
+			// Throughput per WLAN (Mbps)
+			node_container[0].throughput * pow(10,-6),
+			node_container[2].throughput * pow(10,-6),
+			node_container[4].throughput * pow(10,-6),
+			node_container[6].throughput * pow(10,-6),
+			node_container[8].throughput * pow(10,-6),
+			node_container[10].throughput * pow(10,-6),
+			node_container[12].throughput * pow(10,-6),
+			node_container[14].throughput * pow(10,-6),
+			node_container[16].throughput * pow(10,-6),
+			node_container[18].throughput * pow(10,-6),
+			// Time occupying the channel successfully (%)
+			((node_container[0].total_time_transmitting_in_num_channels[0]
+			- node_container[0].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			((node_container[2].total_time_transmitting_in_num_channels[0]
+			- node_container[2].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			((node_container[4].total_time_transmitting_in_num_channels[0]
+			- node_container[4].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			((node_container[6].total_time_transmitting_in_num_channels[0]
+			- node_container[6].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			((node_container[8].total_time_transmitting_in_num_channels[0]
+			- node_container[8].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			((node_container[10].total_time_transmitting_in_num_channels[0]
+			- node_container[10].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			((node_container[12].total_time_transmitting_in_num_channels[0]
+			- node_container[12].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			((node_container[14].total_time_transmitting_in_num_channels[0]
+			- node_container[14].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			((node_container[16].total_time_transmitting_in_num_channels[0]
+			- node_container[16].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			((node_container[18].total_time_transmitting_in_num_channels[0]
+			- node_container[18].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
+			// Average delay (ms)
+			node_container[0].average_waiting_time * pow(10,3),
+			node_container[2].average_waiting_time * pow(10,3),
+			node_container[4].average_waiting_time * pow(10,3),
+			node_container[6].average_waiting_time * pow(10,3),
+			node_container[8].average_waiting_time * pow(10,3),
+			node_container[10].average_waiting_time * pow(10,3),
+			node_container[12].average_waiting_time * pow(10,3),
+			node_container[14].average_waiting_time * pow(10,3),
+			node_container[16].average_waiting_time * pow(10,3),
+			node_container[18].average_waiting_time * pow(10,3));
 			break;
 		}
 

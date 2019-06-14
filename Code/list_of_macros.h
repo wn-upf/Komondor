@@ -189,6 +189,7 @@
 #define PATHLOSS_5GHZ_OFFICE_BUILDING	9	// Office building indoor pathloss for 5 GHz
 #define PATHLOSS_INROOM_LOSS_5250KHZ	10	// In-room LoS for 5.25 GHz
 #define PATHLOSS_ROOM_CORRIDOR_5250KHZ	11	// Room-corridor for 5.25 GHz
+#define PATHLOSS_TMB	12					// 11ax for 5 GHz
 
 #define PATH_LOSS_DISTANCE_BREAKPOINT_CHANNEL_B	5	// Breakpoint distance for channel model B [m]
 

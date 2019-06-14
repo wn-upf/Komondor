@@ -552,6 +552,7 @@ void Node :: Start(){
 			}
 
 			time_to_trigger = SimTime() + DIFS;
+
 			trigger_start_backoff.Set(fix_time_offset(time_to_trigger,13,12));
 
 		}
@@ -1030,8 +1031,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				/* ****************************************
 				/* SPATIAL REUSE OPERATION
 				 * *****************************************/
-				int nav_collision;				// Variable to indicate whether a NAV collision occurred for the current detected notification
-				int inter_bss_nav_collision;	// Variable to indicate whether an inter-BSS NAV collision occurred for the current detected notification
+				int nav_collision(0);				// Variable to indicate whether a NAV collision occurred for the current detected notification
+				int inter_bss_nav_collision(0);	// Variable to indicate whether an inter-BSS NAV collision occurred for the current detected notification
 				// Check if a collision occurred for any of the NAV timers
 
 				if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
@@ -1040,6 +1041,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				} else {
 					nav_collision = fabs(nav_notification.timestamp -
 						notification.timestamp) < MAX_DIFFERENCE_SAME_TIME;
+
 				}
 				/* **************************************** */
 
@@ -1205,7 +1207,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						if((nav_collision || inter_bss_nav_collision) && loss_reason == PACKET_NOT_LOST)  {
 
 							LOGS(save_node_logs, node_logger.file,
-								"%.15f;N%d;S%d;%s;%s NAV collision detected\n",
+								"%.15f;N%d;S%d;%s;%s Updating the NAV according to the last sensed transmission\n",
 								SimTime(), node_id, node_state, LOG_D07, LOG_LVL2);
 
 							if(!node_is_transmitter) {
