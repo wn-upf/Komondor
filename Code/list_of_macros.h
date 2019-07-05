@@ -69,7 +69,7 @@
 
 // Node states
 #define STATE_UNKNOWN	-1	// Unknown state (e.g. at the beginning of the simulation)
-#define STATE_SENSING	0	// Sensing the channel and decreasing backoff counter when possible according CCA requirements
+#define STATE_SENSING	0	// Sensing the channel and decreasing backoff counter when possible according PD requirements
 #define STATE_TX_DATA	1	// Transmitting. Transmission are finished after the transmission duration established.
 #define STATE_RX_DATA	2	// Receiving a packet from other node.
 #define STATE_WAIT_ACK	3	// Waiting ACK
@@ -100,8 +100,8 @@
 // Logical Nack reasons
 #define PACKET_NOT_LOST					-1	// Packet is not lost
 #define PACKET_LOST_DESTINATION_TX		0	// Destination was already transmitting when the transmission was attempted
-#define PACKET_LOST_LOW_SIGNAL			1	// Signal strength is not enough (< CCA) to be decoded
-#define PACKET_LOST_INTERFERENCE		2	// There are interference signals greater than cca (collision)
+#define PACKET_LOST_LOW_SIGNAL			1	// Signal strength is not enough (< PD) to be decoded
+#define PACKET_LOST_INTERFERENCE		2	// There are interference signals greater than PD (collision)
 #define PACKET_LOST_PURE_COLLISION		3	// Two nodes transmitting to same destination with signal strengths enough to be decoded
 #define PACKET_LOST_LOW_SIGNAL_AND_RX	4	// Destination already receiving and new signal strength was not enough to be decoded
 #define PACKET_LOST_SINR_PROB			5	// Packet lost due to SINR probability
@@ -110,8 +110,9 @@
 #define PACKET_LOST_BO_COLLISION		8	// Collision by simultaneous backoff
 #define PACKET_LOST_OUTSIDE_CH_RANGE	9	// Packet was transmitted outside the primary channel of the receiver
 #define PACKET_LOST_CAPTURE_EFFECT		10	// A new transmission made that the CE was not longer accomplished
+#define PACKET_IGNORED_SPATIAL_REUSE	11	// The transmission was ignored due to the spatial reuse operation
 
-#define NUM_PACKET_LOST_REASONS			11	// Number of reasons whereby a packet can be lost
+#define NUM_PACKET_LOST_REASONS			12	// Number of reasons whereby a packet can be lost
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1
@@ -131,9 +132,9 @@
 #define BACKOFF_SLOTTED		0
 #define BACKOFF_CONTINUOUS	1
 
-// CCA
-#define CCA_NOT_EXCEEDED	0	// CCA is not exceeded (primary channel is free)
-#define CCA_EXCEEDED		1	// CCA is exceeded
+// PD
+#define PD_NOT_EXCEEDED	0	// PD is not exceeded (primary channel is free)
+#define PD_EXCEEDED		1	// PD is exceeded
 
 // Power units conversion
 #define PW_TO_DBM		0	// Convert pW to dBm
@@ -188,6 +189,7 @@
 #define PATHLOSS_5GHZ_OFFICE_BUILDING	9	// Office building indoor pathloss for 5 GHz
 #define PATHLOSS_INROOM_LOSS_5250KHZ	10	// In-room LoS for 5.25 GHz
 #define PATHLOSS_ROOM_CORRIDOR_5250KHZ	11	// Room-corridor for 5.25 GHz
+#define PATHLOSS_TMB	12					// 11ax for 5 GHz
 
 #define PATH_LOSS_DISTANCE_BREAKPOINT_CHANNEL_B	5	// Breakpoint distance for channel model B [m]
 
@@ -263,7 +265,7 @@
 // --- PHY parameters ---
 
 #define SIFS 		(16 * MICRO_VALUE)			// SIFS value
-#define DIFS		(SIFS + (2 * SLOT_TIME))		// DIFS value
+#define DIFS		(SIFS + (2 * SLOT_TIME))	// DIFS value
 #define PIFS		(SIFS + SLOT_TIME)			// PIFS value
 
 #define IEEE_AX_OFDM_SYMBOL_LEGACY			(4 * MICRO_VALUE)	// Duration of an OFDM symbol in legacy mode
@@ -302,7 +304,14 @@
 
 #define CST_DBM		-68
 
-
+// SPATIAL REUSE OPERATION
+#define INTRA_BSS_FRAME		0		// Frame type = Intra-BSS or legacy
+#define NON_SRG_FRAME		1		// Frame type = Inter-BSS with different SRG
+#define SRG_FRAME			2		// Frame type = Inter-BSS with same SRG
+#define OBSS_PD_MIN			-82 	// Minimum OBSS_PD (dBm)
+#define OBSS_PD_MAX			-62 	// Maximum OBSS_PD (dBm)
+#define MAX_TX_PWR_SR		20		// Maximum transmit power to be used during the SR operation (dBm)
+#define TX_PWR_REF			21		// TX PWR REF (dBm)
 
 /* ************************************************
  * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
@@ -346,19 +355,15 @@
 #define IX_PDF_BACKOFF				3
 #define IX_PDF_TX_TIME				4
 #define IX_PACKET_LENGTH			5
-//#define IX_ACK_LENGTH				6
 #define IX_NUM_PACKETS_AGGREGATED	6
 #define IX_PATH_LOSS				7
 #define IX_CAPTURE_EFFECT			8
 #define IX_NOISE_LEVEL				9
 #define IX_COCHANNEL_MODEL			10
 #define IX_COLLISIONS_MODEL			11
-//#define IX_SIFS						12
 #define IX_CONSTANT_PER				12
 #define IX_TRAFFIC_MODEL			13
 #define IX_BO_TYPE					14
-//#define IX_RTS_LENGTH				17
-//#define IX_CTS_LENGTH				18
 #define IX_CW_ADAPTATION			15
 #define IX_PIFS_ACTIVATION			16
 #define IX_CAPTURE_EFFECT_MODEL		17
@@ -376,12 +381,12 @@
 #define IX_MAX_CH_ALLOWED			10
 #define IX_CW_MIN					11
 #define IX_CW_STAGE_MAX				12
-#define IX_TPC_MIN					13
-#define IX_TPC_DEFAULT				14
-#define IX_TPC_MAX					15
-#define IX_CCA_MIN					16
-#define IX_CCA_DEFAULT				17
-#define IX_CCA_MAX					18
+#define IX_TX_POWER_MIN					13
+#define IX_TX_POWER_DEFAULT				14
+#define IX_TX_POWER_MAX					15
+#define IX_PD_MIN					16
+#define IX_PD_DEFAULT				17
+#define IX_PD_MAX					18
 #define IX_TX_GAIN					19
 #define IX_RX_GAIN					20
 #define IX_CHANNEL_BONDING_MODEL	21
@@ -390,48 +395,24 @@
 #define IX_LAMBDA					24
 #define IX_IEEE_PROTOCOL_TYPE		25
 #define IX_TRAFFIC_LOAD				26
-
-// APs file
-#define IX_AP_WLAN_CODE					1
-#define IX_AP_POSITION_X				2
-#define IX_AP_POSITION_Y				3
-#define IX_AP_POSITION_Z				4
-#define IX_AP_MIN_NUM_OF_STAS			5
-#define IX_AP_MAX_NUM_OF_STAS			6
-#define IX_AP_MAX_DISTANCE_AP_STA		7
-#define IX_AP_PRIMARY_CHANNEL			8
-#define IX_AP_MIN_CH_ALLOWED			9
-#define IX_AP_MAX_CH_ALLOWED			10
-#define IX_AP_CW_MIN					11
-#define IX_AP_CW_STAGE_MAX				12
-#define IX_AP_TPC_MIN					13
-#define IX_AP_TPC_DEFAULT				14
-#define IX_AP_TPC_MAX					15
-#define IX_AP_CCA_MIN					16
-#define IX_AP_CCA_DEFAULT				17
-#define IX_AP_CCA_MAX					18
-#define IX_AP_TX_GAIN					19
-#define IX_AP_RX_GAIN					20
-#define IX_AP_CHANNEL_BONDING_MODEL		21
-#define IX_AP_MODULATION_DEFAULT		22
-#define IX_AP_CENTRAL_FREQ				23
-#define IX_AP_LAMBDA					24
-#define IX_AP_IEEE_PROTOCOL_TYPE		25
-#define IX_AP_TRAFFIC_LOAD				26
+#define IX_BSS_COLOR				27
+#define IX_SRG						28
+#define IX_NON_SRG_OBSS_PD			29
+#define IX_SRG_OBSS_PD				30
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1
 #define IX_CENTRALIZED_FLAG				2
 #define IX_AGENT_TIME_BW_REQUESTS		3
 #define IX_AGENT_CHANNEL_VALUES			4
-#define IX_AGENT_CCA_VALUES				5
+#define IX_AGENT_PD_VALUES				5
 #define IX_AGENT_TX_POWER_VALUES		6
 #define IX_AGENT_DCB_POLICY				7
 #define IX_AGENT_TYPE_OF_REWARD			8
 #define IX_AGENT_LEARNING_MECHANISM		9
 #define IX_AGENT_SELECTED_STRATEGY 		10
 
-#define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, CCA, P_tx, DCB policy)
+#define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, PD, P_tx, DCB policy)
 
 // Learning mechanisms allowed
 #define MULTI_ARMED_BANDITS 			1

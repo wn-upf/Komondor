@@ -287,15 +287,15 @@ void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
 /*
  * AttemptToDecodePacket(): attempts to decode incoming packet according to SINR and the capture effect (CE)
  **/
-int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
+int AttemptToDecodePacket(double sinr, double capture_effect, double pd,
 		double power_rx_interest, double constant_per, int node_id, int packet_type,
 		int destination_id){
 
 	int packet_lost;
 	double per (0);
 
-	// Try to decode when power received is greater than CCA
-	if(sinr < capture_effect || power_rx_interest < cca) {
+	// Try to decode when power received is greater than pd
+	if(sinr < capture_effect || power_rx_interest < pd) {
 
 		per = 1;
 
@@ -319,7 +319,7 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double cca,
  * IsPacketLost(): computes notification loss according to SINR received
  **/
 int IsPacketLost(int primary_channel, Notification incoming_notification, Notification new_notification,
-		double sinr, double capture_effect, double cca, double power_rx_interest, double constant_per,
+		double sinr, double capture_effect, double pd, double power_rx_interest, double constant_per,
 		int node_id, int capture_effect_model){
 
 	int loss_reason (PACKET_NOT_LOST);
@@ -338,11 +338,11 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 			if(primary_channel >= incoming_notification.left_channel && primary_channel <= incoming_notification.right_channel){
 
 				// Attempt to decode (or continue decoding) the notification of interest
-				is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, cca, power_rx_interest, constant_per, node_id,
+				is_packet_lost = AttemptToDecodePacket(sinr, capture_effect, pd, power_rx_interest, constant_per, node_id,
 					new_notification.packet_type, new_notification.destination_id);
 
 				if (is_packet_lost) {	// Incoming packet is lost
-					if (power_rx_interest < cca) {	// Signal strength is not enough (< CCA) to be decoded
+					if (power_rx_interest < pd) {	// Signal strength is not enough (< pd) to be decoded
 						loss_reason = PACKET_LOST_LOW_SIGNAL;
 //						hidden_nodes_list[new_notification.source_id] = TRUE;
 					} else if (sinr < capture_effect){	// Capture effect not accomplished
@@ -364,7 +364,7 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 		case CE_IEEE_802_11: {
 
 			// Check if the RSSI is higher than the CST
-			if (power_rx_interest > cca) {
+			if (power_rx_interest > pd) {
 				// The packet can be properly decoded
 				loss_reason = -1;
 			} else {
@@ -384,7 +384,7 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
  * GenerateTxInfo: generates a TxInfo
  **/
 TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double ack_duration,
-		double rts_duration, double cts_duration, double current_tpc, int num_channels_tx,
+		double rts_duration, double cts_duration, double current_tx_power, int num_channels_tx,
 		double tx_gain,	int bits_ofdm_sym, double x, double y, double z) {
 
 	TxInfo tx_info;
@@ -396,7 +396,7 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	tx_info.ack_duration = ack_duration;
 	tx_info.rts_duration = rts_duration;
 	tx_info.cts_duration = cts_duration;
-	tx_info.tx_power = ComputeTxPowerPerChannel(current_tpc, num_channels_tx);
+	tx_info.tx_power = ComputeTxPowerPerChannel(current_tx_power, num_channels_tx);
 	tx_info.tx_gain = tx_gain;
 	tx_info.bits_ofdm_sym = bits_ofdm_sym;
 	tx_info.x = x;

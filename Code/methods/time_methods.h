@@ -127,7 +127,7 @@ double computeRtsTxTime80211ax(double bits_ofdm_sym_legacy){
 //		(double) IEEE_AX_RTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
 
 	return (IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
-			(double) IEEE_AX_RTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
+		(double) IEEE_AX_RTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
 
 }
 
@@ -139,7 +139,7 @@ double computeCtsTxTime80211ax(double bits_ofdm_sym_legacy){
 //	double cts_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 //			(double) IEEE_AX_CTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
 
-	//printf("CTS = %f\n", cts_duration * pow(10,6));
+//	printf("CTS = %f\n", cts_duration * pow(10,6));
 
 	return (IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 		(double) IEEE_AX_CTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
@@ -170,11 +170,17 @@ double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_leng
 
 	}
 
-//	printf("data_packet_length = %d\n",data_packet_length);
+//	double test = (double) IEEE_AX_SF_LENGTH + (double) num_packets_aggregated
+//		* ( (double) IEEE_AX_MD_LENGTH + (double) IEEE_AX_MH_LENGTH + (double) data_packet_length);
+
 //	printf("num_packets_aggregated = %d\n", num_packets_aggregated);
+//	printf("data_packet_length = %d\n", data_packet_length);
+//	printf("IEEE_AX_PHY_HE_SU_DURATION = %f\n", IEEE_AX_PHY_HE_SU_DURATION);
+//	printf("bits_ofdsm_sym = %f\n", bits_ofdm_sym);
+//	printf("IEEE_AX_OFDM_SYMBOL_GI32_DURATION = %f\n", IEEE_AX_OFDM_SYMBOL_GI32_DURATION);
 //	printf("SIZE DATA = %d\n", num_packets_aggregated*
 //			( IEEE_AX_MD_LENGTH + IEEE_AX_MH_LENGTH + data_packet_length));
-	//printf("DATA DURATION = %f\n", data_duration * pow(10,6));
+//	printf("DATA DURATION = %f\n", data_duration * pow(10,6));
 
 	return data_duration;
 

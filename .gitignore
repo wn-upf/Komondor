@@ -34,7 +34,6 @@
 *.csv~
 
 Code/output/.keep
+Code/input/
+Code/output/
 !.gitignore
-
-# Whitelist 
-!Code/input/*

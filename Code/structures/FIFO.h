@@ -1,7 +1,5 @@
-
 #include "notification.h"
 #include <deque>
-
 
 /*
 	FIFO Class
