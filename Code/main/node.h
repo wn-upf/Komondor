@@ -2229,7 +2229,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						&& !trigger_end_backoff.Active()){	// BO was paused and DIFS not initiated
 
 						LOGS(save_node_logs,node_logger.file,
-							"%.15f;N%d;S%d;%s;%s CASCA\n",
+							"%.15f;N%d;S%d;%s;%s UNEXPECTED ERROR IN THE BACKOFF!\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
 
 						int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_pd,
@@ -5061,10 +5061,10 @@ void Node :: InitializeVariables() {
 		spatial_reuse_enabled = FALSE;
 	}
 
-	// Hardcoded: in order to indicate that WLANs other than WLAN A do not apply SR
-	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
-		spatial_reuse_enabled = FALSE;
-	}
+//	// Hardcoded: in order to indicate that WLANs other than WLAN A do not apply SR
+//	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
+//		spatial_reuse_enabled = FALSE;
+//	}
 
 //	// Randomly decide whether an WLAN different than WLAN_A applies SR or not
 //	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
@@ -5078,8 +5078,6 @@ void Node :: InitializeVariables() {
 	if (node_type == NODE_TYPE_STA) {
 		outportRequestSpatialReuseConfiguration();
 	}
-
-//	printf("N%d spatial_reuse_enabled = %d\n",node_id,spatial_reuse_enabled);
 
 	// Initialize the TXOP identified to false
 	txop_sr_identified = FALSE;

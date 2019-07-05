@@ -66,26 +66,22 @@
 int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 
 	int type_of_packet;
-	int bss_color_enabled = false;
+	int bss_color_enabled (false);
 	if (notification.tx_info.bss_color >= 0 && bss_color >= 0) bss_color_enabled = true;
 
 	if (!bss_color_enabled) {
 		type_of_packet = INTRA_BSS_FRAME;
 	} else {
-		if ( notification.tx_info.bss_color == bss_color ) {
+		if ( notification.tx_info.bss_color == bss_color && notification.tx_info.bss_color > 0 ) {
 			type_of_packet = INTRA_BSS_FRAME;
 		} else {
-			if ( notification.tx_info.srg == srg ) {
+			if ( notification.tx_info.srg == srg && notification.tx_info.srg > 0) {
 				type_of_packet = SRG_FRAME;
 			} else {
 				type_of_packet = NON_SRG_FRAME;
 			}
 		}
 	}
-//	printf("notification.tx_info.bss_color = %d\n", notification.tx_info.bss_color);
-//	printf("notification.tx_info.srg = %d\n", notification.tx_info.srg);
-//	printf("bss_color = %d\n", bss_color);
-//	printf("bss_color = %d\n", bss_color);
 
 	return type_of_packet;
 
@@ -95,21 +91,20 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
  * GetSensitivitySpatialReuse(): returns the CCA threshold to be used, according to the type
  * 	of ongoing transmissions (intra-BSS, inter-BSS, SRG or non-SRG frames)
  * Arguments:
- * - type_ongoing_transmissions_sr: type of the ongoing detected frames (according to source)
- * - pd_default: default CST (for intra-BSS communications)
- * - obss_pd: CST to be used for inter-BSS communications (different BSS color)
+ * - type_last_sensed_packet: type of the ongoing detected frames (according to source)
  * - srg_obss_pd: CST to be used for communications within the same SRG
  * - non_srg_obss_pd: CST to be used for communications within different SRG
+ * - pd_default: default CST (for intra-BSS communications)
+ * - power_received: RSSI detected from the ongoing transmission
  * Output:
- * - cst_pw: CST in pW to be used according to the source of the detected frame
+ * - pd_spatial_reuse_pw: CST in pW to be used according to the source of the detected frame
  **/
 double GetSensitivitySpatialReuse( int type_last_sensed_packet,
 	double srg_obss_pd, double non_srg_obss_pd, double pd_default,
 	double power_received ) {
 
 	double pd_spatial_reuse_pw;
-
-	// First, set the pd according to the source of the detected transmission
+	// Choose the PD threshold according to the source of the detected transmission
 	switch(type_last_sensed_packet) {
 		case NON_SRG_FRAME:{
 			pd_spatial_reuse_pw = non_srg_obss_pd;
@@ -124,37 +119,21 @@ double GetSensitivitySpatialReuse( int type_last_sensed_packet,
 			break;
 		}
 	}
-
-//	/* Restriction 1:
-//   	    Check if the node is already in a TXOP, and update the pd accordingly
-//		(use always the most restrictive one) */
-//	if (txop_detected) {
-//		if(current_pd_spatial_reuse < pd_spatial_reuse_pw) {
-//			pd_spatial_reuse_pw = current_pd_spatial_reuse; 	// Apply the most restrictive pd
-//		}
-//	}
-
-//	// Restriction 2: Check if the power received is lower than the minimum OBSS_PD (-82 dBm)
-//	if (ConvertPower(PW_TO_DBM, power_received) < OBSS_PD_MIN) {
-//		printf("- Power received = %f dBm\n",ConvertPower(PW_TO_DBM, power_received));
-//		printf("- OBSS_PD_MIN = %d dBm\n", OBSS_PD_MIN);
-//		pd_spatial_reuse_pw = ConvertPower(DBM_TO_PW, OBSS_PD_MIN);
-//	}
-
 	return pd_spatial_reuse_pw;
 
 }
 
 /*
- * IdentifySpatialReuseOpportunity():
+ * IdentifySpatialReuseOpportunity(): indicates whether an SR-based opp. has been detected or not
  * Arguments:
- * -
+ * - power_received: RSSI detected from the ongoing transmission
+ * - current_obss_pd: SR-based CST being used at this moment
  * Output:
- * -
+ * - boolean indicating whether an SR-based opportunity has been detected or not
  **/
-int IdentifySpatialReuseOpportunity( double power_received, double obss_pd) {
+int IdentifySpatialReuseOpportunity( double power_received, double current_obss_pd) {
 
-	if (power_received < obss_pd) {
+	if (power_received < current_obss_pd) {
 		return 1;
 	} else {
 		return 0;
@@ -165,10 +144,10 @@ int IdentifySpatialReuseOpportunity( double power_received, double obss_pd) {
 /*
  * ApplyTxPowerRestriction(): applies a transmit power restriction, according to the CST used
  * Arguments:
- * - current_pd: default pd used by the node
- * - current_tx_power: default transmit power used by the node
+ * - current_pd: current PD threshold being used by the node
+ * - current_tx_power: current transmit power being used by the node
  * Output:
- * - tx_power_pw: transmit power in pW to be used during the next TXOP
+ * - tx_power_pw: limited transmit power (in pW) to be used during the next TXOP
  **/
 double ApplyTxPowerRestriction(double current_pd, double current_tx_power) {
 
@@ -195,8 +174,8 @@ double ApplyTxPowerRestriction(double current_pd, double current_tx_power) {
  * UpdateTypeOngoingTransmissions(): updates array "type_ongoing_transmissions",
  * 	which stands for the type of sensed ongoing transmissions.
  * Arguments:
- * - type_ongoing_transmissions: array to be updated
- * - notification: last notification obtained
+ * - type_ongoing_transmissions: array of the types of ongoing transmissions (to be updated by this method)
+ * - notification: last notification received
  * - bss_color: BSS color of the node updating the array
  * - srg: SRG of the node updating the array
  * - enter_or_leave: indicates whether the transmission starts (1) or ends (0)
@@ -218,7 +197,7 @@ void UpdateTypeOngoingTransmissions(int *type_ongoing_transmissions,
 }
 
 /****************************************************************
- * OLD (TO BE REFACTORED/ADAPTED)
+ * OLD (TO BE REFACTORED/ADAPTED ACCORDING TO NEWER VERSIONS OF THE AMENDMENT)
  ****************************************************************/
 
 /*
@@ -227,17 +206,9 @@ void UpdateTypeOngoingTransmissions(int *type_ongoing_transmissions,
  **/
 int CheckObssPdConstraints(double current_obss_pd, double obss_pd_min, double obss_pd_max,
 		double tx_power_ref, double tx_power) {
-
 	double obss_pd_ref_dbm = std::max(ConvertPower(PW_TO_DBM, obss_pd_min),
-			std::min(ConvertPower(PW_TO_DBM, obss_pd_max), ConvertPower(PW_TO_DBM, obss_pd_min)
-			+ (ConvertPower(PW_TO_DBM, tx_power_ref) - ConvertPower(PW_TO_DBM,tx_power))));
-
-//	printf("obss_pd_ref = %f (%f pW)\n", obss_pd_ref, ConvertPower(DBM_TO_PW, obss_pd_ref));
-//	printf("  - obss_pd_min = %f (%f pW)\n", ConvertPower(PW_TO_DBM, obss_pd_min), obss_pd_min);
-//	printf("  - obss_pd_max = %f (%f pW)\n", ConvertPower(PW_TO_DBM, obss_pd_max), obss_pd_max);
-//	printf("  - tx_power_ref = %f (%f pW)\n", ConvertPower(PW_TO_DBM, tx_power_ref), tx_power_ref);
-//	printf("  - tx_power = %f (%f pW)\n", ConvertPower(PW_TO_DBM,tx_power), tx_power);
-
+		std::min(ConvertPower(PW_TO_DBM, obss_pd_max), ConvertPower(PW_TO_DBM, obss_pd_min)
+		+ (ConvertPower(PW_TO_DBM, tx_power_ref) - ConvertPower(PW_TO_DBM,tx_power))));
 	if( ConvertPower(PW_TO_DBM, current_obss_pd) <=  obss_pd_ref_dbm ) {
 		//printf("The OBSS_PD level is appropriate!\n");
 		return 1;
@@ -245,58 +216,12 @@ int CheckObssPdConstraints(double current_obss_pd, double obss_pd_min, double ob
 		//printf("ALERT! The OBSS_PD level is NOT appropriate!\n");
 		return 0;
 	}
-
-}
-
-/*
- * CheckSrgObssPdConstraints(): checks if the proposed srg_obss_pd_level is valid, according to
- * the constraints indicated in the IEEE 802.11ax amendment
- **/
-int CheckSrgObssPdConstraints(double current_srg_obss_pd,
-		double srg_obss_pd_min, double srg_obss_pd_max,
-		double srg_obss_pd_min_offset, double srg_obss_pd_max_offset) {
-
-	if( (ConvertPower(PW_TO_DBM, srg_obss_pd_min_offset) - 82) <= -62 &&
-			(ConvertPower(PW_TO_DBM, srg_obss_pd_min_offset) - 82) >= -82 &&
-			ConvertPower(PW_TO_DBM, srg_obss_pd_min_offset) <= ConvertPower(PW_TO_DBM, srg_obss_pd_max_offset) &&
-			(ConvertPower(PW_TO_DBM, srg_obss_pd_max_offset) - 82) <= -62 &&
-			ConvertPower(PW_TO_DBM, current_srg_obss_pd) >= ConvertPower(PW_TO_DBM, srg_obss_pd_min) &&
-			ConvertPower(PW_TO_DBM, current_srg_obss_pd) <= ConvertPower(PW_TO_DBM, srg_obss_pd_max)) {
-		//printf("The SRG_OBSS_PD level is appropriate!\n");
-		return 1;
-	} else {
-		//printf("ALERT! The SRG_OBSS_PD level is NOT appropriate!\n");
-		return 0;
-	}
-
-}
-
-/*
- * CheckNonSrgObssPdConstraints(): checks if the proposed non_srg_obss_pd_level is valid, according to
- * the constraints indicated in the IEEE 802.11ax amendment
- **/
-int CheckNonSrgObssPdConstraints(double current_non_srg_obss_pd,
-		double non_srg_obss_pd_min, double non_srg_obss_pd_max,
-		double non_srg_obss_pd_max_offset, double srg_obss_pd_max_offset) {
-
-	if( non_srg_obss_pd_max_offset <= srg_obss_pd_max_offset &&
-			ConvertPower(PW_TO_DBM, non_srg_obss_pd_max_offset) -82 <= -62 &&
-			current_non_srg_obss_pd >= non_srg_obss_pd_min &&
-			current_non_srg_obss_pd <= non_srg_obss_pd_max ) {
-		//printf("The NON_SRG_OBSS_PD level is appropriate!\n");
-		return 1;
-	} else {
-		//printf("ALERT! The NON_SRG_OBSS_PD level is NOT appropriate!\n");
-		return 0;
-	}
-
 }
 
 /*
  * CheckPowerConstraints():
  **/
 int CheckPowerConstraints(double current_obss_pd, double obss_pd_min, double obss_pd_max) {
-
 	if (current_obss_pd <= obss_pd_min) {
 		// Unconstrained
 		return 1;
@@ -304,5 +229,4 @@ int CheckPowerConstraints(double current_obss_pd, double obss_pd_min, double obs
 		// Apply constraint
 		return 0;
 	}
-
 }

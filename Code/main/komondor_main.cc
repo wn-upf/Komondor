@@ -574,7 +574,7 @@ void Komondor :: Stop(){
 		}
 	}
 
-	int simulation_index (12);
+	int simulation_index (11);
 
 	switch(simulation_index){
 
