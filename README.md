@@ -103,6 +103,18 @@ Komondor v.2.0 has been validated by means of ns-3 and SF-CTMN and Bianchi analy
 3) SF-CTMN: simulation environment, to be executed through the SF-CTMN framework, available at https://github.com/sergiobarra/SFCTMN
 4) Bianchi: Matlab files emulating the Bianchi model ("Bianchi, G., Fratta, L., & Oliveri, M. (1996, October). Performance evaluation and enhancement of the CSMA/CA MAC protocol for 802.11 wireless LANs. In Personal, Indoor and Mobile Radio Communications, 1996. PIMRC'96., Seventh IEEE International Symposium on (Vol. 2, pp. 392-396). IEEE.") can be found, which simulate the throughput achieved by each WLAN in each of the proposed scenarios.
 
+# Regression test
+An automated regression test is available to ensure that the development of new features does not affect to the previous implementation, which was validated in Barrachina-Muñoz, S., Wilhelmi, F., Selinis, I., & Bellalta, B. (2019, April). Komondor: a Wireless Network Simulator for Next-Generation High-Density WLANs. In 2019 Wireless Days (WD) (pp. 1-8). IEEE.
+
+In order to execute the regression test, go to ./Komondor/Code/input and run the script named "script_regression_validation_scenarios.sh". This script will take the inputs from the "validation" folder, execute the corresponding simulations, and compare the output with the expected results (i.e., the results obtained for the aforementioned paper).
+
+The output of the regression test will be displayed by console. In case of success, the following output should be observed:
+<p align="center"> 
+<img src="https://github.com/wn-upf/Komondor/blob/master/Documentation/Other/Images and resources/example_execution_regression_test.png">
+</p>
+
+Before executing the regression test, it is important to ensure that "simulation_index" in komondor_main.cc is set to 10.
+
 ### Contribute
 
 If you want to contribute, please contact to sergio.barrachina@upf.edu and/or francisco.wilhelmi@upf.edu
