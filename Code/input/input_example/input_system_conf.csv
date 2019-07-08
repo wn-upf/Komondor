@@ -1,2 +1,2 @@
 num_channels;basic_channel_bandwidth[Mbps];pdf_backoff;pdf_tx_time;packet_length;num_packets_aggregated;path_loss_model;capture_effect;noise_level[dBm];adjacent_channel_model;collisions_model;constant PER;traffic_model;backoff_type;cw_adaptation;pifs_activated;ce_model
-2;20;0;1;12000;64;4;10;-95;0;0;0;99;1;0;0;0
+2;20;0;1;12000;64;4;10;-95;0;0;0;99;0;0;0;0

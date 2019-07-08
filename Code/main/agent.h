@@ -107,7 +107,7 @@ component Agent : public TypeII{
 		int *list_of_dcb_policy;			// List of DCB policies
 		Action *actions;					// List of actions
 		int num_actions_channel;			// Number of channels available
-		int num_actions_pd;				// Number of pd levels available
+		int num_actions_sensitivity;				// Number of pd levels available
 		int num_actions_tx_power;			// Number of TX power levels available
 		int num_actions_dcb_policy;			// Number of DCB policies available
 
@@ -438,11 +438,11 @@ void Agent :: InitializeAgent() {
 	num_requests = 0;
 
 	list_of_channels = new int[num_actions_channel];
-	list_of_pd_values = new double[num_actions_pd];
+	list_of_pd_values = new double[num_actions_sensitivity];
 	list_of_tx_power_values = new double[num_actions_tx_power];
 	list_of_dcb_policy = new int[num_actions_dcb_policy];
 
-	num_actions = num_actions_channel * num_actions_pd * num_actions_tx_power * num_actions_dcb_policy;
+	num_actions = num_actions_channel * num_actions_sensitivity * num_actions_tx_power * num_actions_dcb_policy;
 
 	// Generate actions
 	actions = new Action[num_actions];
@@ -480,7 +480,7 @@ void Agent :: InitializeLearningAlgorithm() {
 
 				mab_agent.num_actions = num_actions;
 				mab_agent.num_actions_channel = num_actions_channel;
-				mab_agent.num_actions_pd = num_actions_pd;
+				mab_agent.num_actions_sensitivity = num_actions_sensitivity;
 				mab_agent.num_actions_tx_power = num_actions_tx_power;
 				mab_agent.num_actions_dcb_policy = num_actions_dcb_policy;
 
@@ -533,7 +533,7 @@ void Agent :: PrintAgentInfo(){
 	printf("\n");
 
 	printf("%s list_of_pd_values: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_pd; ++i) {
+	for (int i = 0; i < num_actions_sensitivity; ++i) {
 		printf("%f pW (%f dBm)  ", list_of_pd_values[i], ConvertPower(PW_TO_DBM, list_of_pd_values[i]));
 	}
 	printf("\n");

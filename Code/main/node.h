@@ -152,9 +152,9 @@ component Node : public TypeII{
 		double tx_power_min;					// Min. power transmission [pW]
 		double tx_power_default;				// Default power transmission [pW]
 		double tx_power_max;					// Max. power transmission [pW]
-		double pd_min;					// Min. pd	("sensitivity" threshold) [pW]
-		double pd_default;				// Default pd	("sensitivity" threshold) [pW]
-		double pd_max;					// Max. pd ("sensitivity" threshold)
+		double sensitivity_min;					// Min. pd	("sensitivity" threshold) [pW]
+		double sensitivity_default;				// Default pd	("sensitivity" threshold) [pW]
+		double sensitivity_max;					// Max. pd ("sensitivity" threshold)
 		double tx_gain;					// Antenna transmission gain [linear]
 		double rx_gain;					// Antenna reception gain [linear]
 		int current_dcb_policy;			// Channel bonding model (definition of models in function GetTxChannelsByChannelBonding())
@@ -1295,7 +1295,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								current_sinr, capture_effect, current_pd, power_rx_interest, constant_per,
 								node_id, capture_effect_model);
 
-							int power_condition (ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > pd_default);
+							int power_condition (ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > sensitivity_default);
 
 							if (loss_reason == PACKET_NOT_LOST && power_condition) {	// Packet IS NOT LOST
 
@@ -1425,7 +1425,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 						// Is packet lost with the default pd?
 						int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
-							sinr_interference, capture_effect, pd_default, power_interference, constant_per,
+							sinr_interference, capture_effect, sensitivity_default, power_interference, constant_per,
 							node_id, capture_effect_model));
 						// Is packet lost with the SR pd?
 						int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
@@ -1701,7 +1701,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //
 //					// Is packet lost with the default pd?
 //					int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
-//						sinr_interference, capture_effect, pd_default, power_interference, constant_per,
+//						sinr_interference, capture_effect, sensitivity_default, power_interference, constant_per,
 //						node_id, capture_effect_model));
 //					// Is packet lost with the SR pd?
 //					int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
@@ -1818,7 +1818,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //						double sinr_interference (UpdateSINR(power_rx_interest, noise_level, max_pw_interference));
 //						// Is packet lost with the default pd?
 //						int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
-//							sinr_interference, capture_effect, pd_default, power_rx_interest, constant_per,
+//							sinr_interference, capture_effect, sensitivity_default, power_rx_interest, constant_per,
 //							node_id, capture_effect_model));
 //						// Is packet lost with the SR pd?
 //						int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
@@ -1947,7 +1947,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //						double sinr_interference (UpdateSINR(power_rx_interest, noise_level, max_pw_interference));
 //						// Is packet lost with the default pd?
 //						int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
-//							sinr_interference, capture_effect, pd_default, power_rx_interest, constant_per,
+//							sinr_interference, capture_effect, sensitivity_default, power_rx_interest, constant_per,
 //							node_id, capture_effect_model));
 //						// Is packet lost with the SR pd?
 //						int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
@@ -2067,7 +2067,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //					double sinr_interference (UpdateSINR(power_rx_interest, noise_level, max_pw_interference));
 //					// Is packet lost with the default pd?
 //					int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
-//						sinr_interference, capture_effect, pd_default, power_rx_interest, constant_per,
+//						sinr_interference, capture_effect, sensitivity_default, power_rx_interest, constant_per,
 //						node_id, capture_effect_model));
 //					// Is packet lost with the SR pd?
 //					int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
@@ -3944,9 +3944,9 @@ void Node :: GenerateConfiguration(){
 	capabilities.tx_power_min = tx_power_min;
 	capabilities.tx_power_default = tx_power_default;
 	capabilities.tx_power_max = tx_power_max;
-	capabilities.pd_min = pd_min;
-	capabilities.pd_default = pd_default;
-	capabilities.pd_max = pd_max;
+	capabilities.sensitivity_min = sensitivity_min;
+	capabilities.sensitivity_default = sensitivity_default;
+	capabilities.sensitivity_max = sensitivity_max;
 	capabilities.tx_gain = tx_gain;
 	capabilities.rx_gain = rx_gain;
 	capabilities.dcb_policy = current_dcb_policy;
@@ -4430,9 +4430,9 @@ void Node :: PrintNodeInfo(int info_detail_level){
 		printf("%s tx_power_min = %f pW (%f dBm)\n", LOG_LVL4, tx_power_min, ConvertPower(PW_TO_DBM, tx_power_min));
 		printf("%s tx_power_default = %f pW (%f dBm)\n", LOG_LVL4, tx_power_default, ConvertPower(PW_TO_DBM, tx_power_default));
 		printf("%s tx_power_max = %f pW (%f dBm)\n", LOG_LVL4, tx_power_max, ConvertPower(PW_TO_DBM, tx_power_max));
-		printf("%s pd_min = %f pW (%f dBm)\n", LOG_LVL4, pd_min, ConvertPower(PW_TO_DBM, pd_min));
-		printf("%s pd_default = %f pW (%f dBm)\n", LOG_LVL4, pd_default, ConvertPower(PW_TO_DBM, pd_default));
-		printf("%s pd_max = %f pW (%f dBm)\n", LOG_LVL4, pd_max, ConvertPower(PW_TO_DBM, pd_max));
+		printf("%s sensitivity_min = %f pW (%f dBm)\n", LOG_LVL4, sensitivity_min, ConvertPower(PW_TO_DBM, sensitivity_min));
+		printf("%s sensitivity_default = %f pW (%f dBm)\n", LOG_LVL4, sensitivity_default, ConvertPower(PW_TO_DBM, sensitivity_default));
+		printf("%s sensitivity_max = %f pW (%f dBm)\n", LOG_LVL4, sensitivity_max, ConvertPower(PW_TO_DBM, sensitivity_max));
 		printf("%s tx_gain = %f (%f dBi)\n", LOG_LVL4, tx_gain, ConvertPower(LINEAR_TO_DB, tx_gain));
 		printf("%s rx_gain = %f (%f dBi)\n", LOG_LVL4, rx_gain, ConvertPower(LINEAR_TO_DB, rx_gain));
 		printf("%s modulation_default = %d\n", LOG_LVL4, modulation_default);
@@ -4471,7 +4471,7 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, std::strin
 		fprintf(node_logger.file, "%s - cw_stage_max = %d\n", header_str.c_str(), cw_stage_max);
 		fprintf(node_logger.file, "%s - destination_id = %d\n", header_str.c_str(), destination_id);
 		fprintf(node_logger.file, "%s - tx_power_default = %f pW\n", header_str.c_str(), tx_power_default);
-		fprintf(node_logger.file, "%s - pd_default = %f pW\n", header_str.c_str(), pd_default);
+		fprintf(node_logger.file, "%s - sensitivity_default = %f pW\n", header_str.c_str(), sensitivity_default);
 	}
 
 }
@@ -4965,7 +4965,7 @@ void Node :: InitializeVariables() {
 	}
 
 	current_tx_power = tx_power_default;
-	current_pd = pd_default;
+	current_pd = sensitivity_default;
 	channel_max_intereference = current_primary_channel;
 
 	data_duration = 0;
@@ -5061,12 +5061,12 @@ void Node :: InitializeVariables() {
 		spatial_reuse_enabled = FALSE;
 	}
 
-//	// Hardcoded: in order to indicate that WLANs other than WLAN A do not apply SR
+//	// Hardcoded: indicate that WLANs other than WLAN A do not apply SR
 //	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
 //		spatial_reuse_enabled = FALSE;
 //	}
 
-//	// Randomly decide whether an WLAN different than WLAN_A applies SR or not
+//	// Hardcoded: Randomly decide whether an WLAN different than WLAN_A applies SR or not
 //	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
 //		double r = ((double) rand() / (RAND_MAX));
 //		if (r > 0.5) {

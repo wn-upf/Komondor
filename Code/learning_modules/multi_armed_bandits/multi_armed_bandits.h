@@ -68,7 +68,7 @@ class MultiArmedBandit {
 		int selected_strategy;
 
 		int num_actions_channel;
-		int num_actions_pd;
+		int num_actions_sensitivity;
 		int num_actions_tx_power;
 		int num_actions_dcb_policy;
 
@@ -265,7 +265,7 @@ class MultiArmedBandit {
 			}
 
 			list_of_channels = new int[num_actions_channel];
-			list_of_pd_values = new double[num_actions_pd];
+			list_of_pd_values = new double[num_actions_sensitivity];
 			list_of_tx_power_values = new double[num_actions_tx_power];
 			list_of_dcb_policy = new int[num_actions_dcb_policy];
 
@@ -286,7 +286,7 @@ class MultiArmedBandit {
 
 			// Find which parameters correspond to the selected arm
 			index2values(indexes_selected_arm, action_ix, num_actions_channel,
-				num_actions_pd, num_actions_tx_power, num_actions_dcb_policy);
+				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
 
 			// Update each parameter according to the configuration provided by the MAB
 			int new_primary = list_of_channels[indexes_selected_arm[0]];
@@ -330,7 +330,7 @@ class MultiArmedBandit {
 				}
 			}
 			// pd
-			for(int i = 0; i < num_actions_pd; i++) {
+			for(int i = 0; i < num_actions_sensitivity; i++) {
 				if(configuration.selected_pd == list_of_pd_values[i]) {
 					index_pd = i;
 				}
@@ -378,7 +378,7 @@ class MultiArmedBandit {
 				}
 			}
 			// pd
-			for(int i = 0; i < num_actions_pd; i++) {
+			for(int i = 0; i < num_actions_sensitivity; i++) {
 				if(configuration.selected_pd == list_of_pd_values[i]) {
 					index_pd = i;
 				}
@@ -404,7 +404,7 @@ class MultiArmedBandit {
 
 			// Find the action ix and return it
 			int action_ix = values2index(indexes_selected_arm, num_actions_channel,
-				num_actions_pd, num_actions_tx_power, num_actions_dcb_policy);
+				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
 			return action_ix;
 
 		}
@@ -470,7 +470,7 @@ class MultiArmedBandit {
 		void PrintAction(int action_ix){
 
 			index2values(indexes_selected_arm, action_ix, num_actions_channel,
-				num_actions_pd, num_actions_tx_power, num_actions_dcb_policy);
+				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
 
 			printf("%s Action %d ([%d %d %d %d]\n", LOG_LVL2,
 				action_ix, indexes_selected_arm[0], indexes_selected_arm[1], indexes_selected_arm[2], indexes_selected_arm[3]);
@@ -581,7 +581,7 @@ class MultiArmedBandit {
 						for(int i = 0; i < num_actions; i++){
 
 							index2values(indexes_selected_arm, i, num_actions_channel,
-									num_actions_pd, num_actions_tx_power, num_actions_dcb_policy);
+									num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
 							// Write logs
 
 							fprintf(agent_logger.file, "%.15f;A%d;%s;%s Action %d:\n", sim_time, agent_id, LOG_C03, LOG_LVL2, i);

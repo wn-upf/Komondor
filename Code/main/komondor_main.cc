@@ -149,7 +149,7 @@ component Komondor : public CostSimEng {
 		// Agents info
 		Agent[] agent_container;
 		int num_actions_channel;
-		int num_actions_pd;
+		int num_actions_sensitivity;
 		int num_actions_tx_power;
 		int num_actions_dcb_policy;
 
@@ -574,7 +574,7 @@ void Komondor :: Stop(){
 		}
 	}
 
-	int simulation_index (11);
+	int simulation_index (10);
 
 	switch(simulation_index){
 
@@ -615,7 +615,7 @@ void Komondor :: Stop(){
 		}
 
 		case 3:{
-			// Biancci multiple WLANs
+			// Bianchi multiple WLANs
 			fprintf(logger_script.file, ";%.2f;%.3f;%.5f\n",
 				av_expected_backoff / SLOT_TIME,
 				(total_throughput * pow(10,-6)/total_wlans_number),
@@ -731,7 +731,7 @@ void Komondor :: Stop(){
 			break;
 		}
 
-		// Regression (scenarios paper Komondor)
+		// Regression test (scenarios paper Komondor - Wireless Days 2019)
 		case 10:{
 			if (total_nodes_number == 2 || total_nodes_number == 3) {
 				// Basic scenarios (1 WLAN)
@@ -749,7 +749,7 @@ void Komondor :: Stop(){
 			break;
 		}
 
-		// SPATIAL REUSE (toy scenarios)
+		// SPATIAL REUSE - Tutorial
 		case 11:{
 			if (total_nodes_number == 2 || total_nodes_number == 3) {
 				// Basic scenarios
@@ -816,7 +816,7 @@ void Komondor :: Stop(){
 			break;
 		}
 
-		// SPATIAL REUSE (toy scenarios)
+		// SPATIAL REUSE - CSCN
 		case 12:{
 			// Random scenarios
 			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
@@ -925,9 +925,9 @@ void Komondor :: InputChecker(){
 		}
 
 		// pd values (min <= defalut <= max)
-		if (node_container[i].pd_min > node_container[i].pd_max
-				|| node_container[i].pd_default > node_container[i].pd_max
-				|| node_container[i].pd_default < node_container[i].pd_min) {
+		if (node_container[i].sensitivity_min > node_container[i].sensitivity_max
+				|| node_container[i].sensitivity_default > node_container[i].sensitivity_max
+				|| node_container[i].sensitivity_default < node_container[i].sensitivity_min) {
 			printf("\nERROR: pd values are not properly configured at node in line %d\n\n",i+2);
 			exit(-1);
 		}
@@ -1168,14 +1168,14 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			pd_values_text.append(ToString(pd_values_aux));
 			const char *pd_aux;
 			pd_aux = strtok ((char*)pd_values_text.c_str(),",");
-			num_actions_pd = 0;
+			num_actions_sensitivity = 0;
 			while (pd_aux != NULL) {
 				pd_aux = strtok (NULL, ",");
-				++ num_actions_pd;
+				++ num_actions_sensitivity;
 			}
 
 			// Set the length of pd actions to agent's field
-			agent_container[agent_ix].num_actions_pd = num_actions_pd;
+			agent_container[agent_ix].num_actions_sensitivity = num_actions_sensitivity;
 
 			// Find the length of the Tx power actions array
 			tmp_agents = strdup(line_agents);
@@ -1624,18 +1624,18 @@ void Komondor :: GenerateNodesByReadingNodesInputFile(const char *nodes_filename
 
 			// Min pd
 			tmp_nodes = strdup(line_nodes);
-			double pd_min_dbm (atoi(GetField(tmp_nodes, IX_PD_MIN)));
-			node_container[node_ix].pd_min = ConvertPower(DBM_TO_PW, pd_min_dbm);
+			double sensitivity_min_dbm (atoi(GetField(tmp_nodes, IX_PD_MIN)));
+			node_container[node_ix].sensitivity_min = ConvertPower(DBM_TO_PW, sensitivity_min_dbm);
 
 			// Default pd
 			tmp_nodes = strdup(line_nodes);
-			double pd_default_dbm (atoi(GetField(tmp_nodes, IX_PD_DEFAULT)));
-			node_container[node_ix].pd_default = ConvertPower(DBM_TO_PW, pd_default_dbm);
+			double sensitivity_default_dbm (atoi(GetField(tmp_nodes, IX_PD_DEFAULT)));
+			node_container[node_ix].sensitivity_default = ConvertPower(DBM_TO_PW, sensitivity_default_dbm);
 
 			// Max pd
 			tmp_nodes = strdup(line_nodes);
-			double pd_max_dbm (atoi(GetField(tmp_nodes, IX_PD_MAX)));
-			node_container[node_ix].pd_max = ConvertPower(DBM_TO_PW, pd_max_dbm);
+			double sensitivity_max_dbm (atoi(GetField(tmp_nodes, IX_PD_MAX)));
+			node_container[node_ix].sensitivity_max = ConvertPower(DBM_TO_PW, sensitivity_max_dbm);
 
 			// TX gain
 			tmp_nodes = strdup(line_nodes);
