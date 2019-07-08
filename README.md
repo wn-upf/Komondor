@@ -83,7 +83,7 @@ The new inputs are described next:
 * ```FLAG_SAVE_AGENT_LOGS``` :flag to indicate whether to save the agent logs into separate files (1) or not (0). If this flag is activated, one file per agent will be created.
 * ```FLAG_PRINT_AGENT_LOGS```: flag to indicate whether to print the agent logs (1) or not (0). 
 
-# Input files
+### Input files
 
 There are two types of input files that are required for basic Komondor's execution. These files are located at the "input" folder, and which allow to configure system and nodes parameters, respectively:
 * ```input_system_conf.csv```: define parameters such as the number of total available channels, the CW...
@@ -103,7 +103,7 @@ Komondor v.2.0 has been validated by means of ns-3 and SF-CTMN and Bianchi analy
 3) SF-CTMN: simulation environment, to be executed through the SF-CTMN framework, available at https://github.com/sergiobarra/SFCTMN
 4) Bianchi: Matlab files emulating the Bianchi model ("Bianchi, G., Fratta, L., & Oliveri, M. (1996, October). Performance evaluation and enhancement of the CSMA/CA MAC protocol for 802.11 wireless LANs. In Personal, Indoor and Mobile Radio Communications, 1996. PIMRC'96., Seventh IEEE International Symposium on (Vol. 2, pp. 392-396). IEEE.") can be found, which simulate the throughput achieved by each WLAN in each of the proposed scenarios.
 
-# Regression test
+### Regression test
 An automated regression test is available to ensure that the development of new features does not affect to the previous implementation, which was validated in Barrachina-Muñoz, S., Wilhelmi, F., Selinis, I., & Bellalta, B. (2019, April). Komondor: a Wireless Network Simulator for Next-Generation High-Density WLANs. In 2019 Wireless Days (WD) (pp. 1-8). IEEE.
 
 In order to execute the regression test, go to ./Komondor/Code/input and run the script named "script_regression_validation_scenarios.sh". This script will take the inputs from the "validation" folder, execute the corresponding simulations, and compare the output with the expected results (i.e., the results obtained for the aforementioned paper).
