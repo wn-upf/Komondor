@@ -28,6 +28,10 @@
 *.out
 *.app
 
+# IDE-related
+.project
+.classpath
+
 # Komondor
 *.cxx
 *.txt~
