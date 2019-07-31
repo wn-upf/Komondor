@@ -269,8 +269,8 @@ void CleanNack(LogicalNack *nack){
  * handlePacketLoss(): handles a packet loss.
  */
 void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double *total_time_lost_per_channel,
-		int &packets_lost, int &rts_cts_lost, int current_right_channel, int current_left_channel,
-		double current_tx_duration){
+		int &packets_lost, int &rts_cts_lost, int **packets_lost_per_sta, int **rts_cts_lost_per_sta,
+		int current_right_channel, int current_left_channel,double current_tx_duration, int node_id, int destination_id){
 
 	if(type == PACKET_TYPE_DATA) {
 		for(int c = current_left_channel; c <= current_right_channel; c++){
@@ -278,8 +278,10 @@ void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
 		}
 		total_time_lost_in_num_channels[current_right_channel - current_left_channel] += current_tx_duration;
 		++packets_lost;
+		++(*packets_lost_per_sta)[destination_id-node_id-1];
 	} else if(type == PACKET_TYPE_CTS){
 		++rts_cts_lost;
+		++(*rts_cts_lost_per_sta)[destination_id-node_id-1];
 	}
 
 }

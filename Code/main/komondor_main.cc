@@ -55,6 +55,7 @@
 #include <time.h>
 #include <vector>
 #include <map>
+#include <string>     // std::string, std::to_string
 
 #include ".././COST/cost.h"
 #include "../list_of_macros.h"
@@ -520,7 +521,7 @@ void Komondor :: Stop(){
 	}
 
 	// Generate the content for the "Script output"
-	int simulation_index (11);
+	int simulation_index (13);
 	switch(simulation_index){
 
 		case 0:{
@@ -766,7 +767,7 @@ void Komondor :: Stop(){
 			// Random scenarios
 			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
 				";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
-				";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;\n",
+				";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
 			// Throughput per WLAN (Mbps)
 			node_container[0].throughput * pow(10,-6),
 			node_container[2].throughput * pow(10,-6),
@@ -810,6 +811,47 @@ void Komondor :: Stop(){
 			node_container[14].average_waiting_time * pow(10,3),
 			node_container[16].average_waiting_time * pow(10,3),
 			node_container[18].average_waiting_time * pow(10,3));
+			break;
+		}
+
+		// FG-ML5G - Students projects (Akshara P)
+		case 13: {
+
+			// STEP 1: Concatenate the information obtained from each STA in each WLAN
+			char tpt_per_device[250] = "{";
+			char aux_tpt_per_device[50];
+			char time_in_nav_per_device[250] = "{";
+			char aux_time_in_nav_per_device[50];
+			int counter_nodes_visited = 0;
+			for(int i = 0; i < total_nodes_number; i ++) {
+				// Throughput (Mbps)
+				if(node_container[i].node_type == NODE_TYPE_AP) {
+					sprintf(aux_tpt_per_device, "%.2f", node_container[i].throughput * pow(10,-6));
+					strcat(tpt_per_device, aux_tpt_per_device);
+					++counter_nodes_visited;
+					if(i < total_nodes_number-1) strcat(tpt_per_device, ",");
+					for(int w = 0; w < total_wlans_number; w ++) {
+						if(wlan_container[w].ap_id == node_container[i].node_id) {
+							for(int s = 0; s < wlan_container[w].num_stas; s ++) {
+								sprintf(aux_tpt_per_device, "%.2f", node_container[i].throughput_per_sta[s] * pow(10,-6));
+								strcat(tpt_per_device, aux_tpt_per_device);
+								++counter_nodes_visited;
+								if(counter_nodes_visited < total_nodes_number) strcat(tpt_per_device, ",");
+							}
+						}
+					}
+				}
+				// Time in NAV (%)
+				sprintf(aux_time_in_nav_per_device, "%.2f", node_container[i].time_in_nav/simulation_time_komondor*100);
+				strcat(time_in_nav_per_device, aux_time_in_nav_per_device);
+				if(i < total_nodes_number-1) strcat(time_in_nav_per_device, ",");
+			}
+			strcat(tpt_per_device, "}");
+			strcat(time_in_nav_per_device, "}");
+			printf("%s\n",tpt_per_device);
+
+			// STEP 2: Print the data to the output .csv file
+			fprintf(logger_script.file, ";%s;%s\n", tpt_per_device,time_in_nav_per_device);
 			break;
 		}
 
