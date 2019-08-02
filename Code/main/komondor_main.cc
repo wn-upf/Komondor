@@ -818,25 +818,66 @@ void Komondor :: Stop(){
 		case 13: {
 
 			// STEP 1: Concatenate the information obtained from each STA in each WLAN
+			//  - Throughput experienced/allocated for each device (AP and STAs)
 			char tpt_per_device[250] = "{";
 			char aux_tpt_per_device[50];
+			// - RSSI in STAs from the associated AP
+			char rssi_per_device[250] = "{";
+			char aux_rssi_per_device[50];
+			// - Packets sent vs packets lost
+			char data_loss_ratio_per_device[250] = "{";
+			char aux_data_loss_ratio_per_device[50];
+			// - RTS/CTS sent vs packets lost
+			char rtscts_loss_ratio_per_device[250] = "{";
+			char aux_rtscts_loss_ratio_per_device[50];
+			// - Time each device is in NAV state
 			char time_in_nav_per_device[250] = "{";
 			char aux_time_in_nav_per_device[50];
+
 			int counter_nodes_visited = 0;
 			for(int i = 0; i < total_nodes_number; i ++) {
-				// Throughput (Mbps)
 				if(node_container[i].node_type == NODE_TYPE_AP) {
-					sprintf(aux_tpt_per_device, "%.2f", node_container[i].throughput * pow(10,-6));
+					// Throughput (Mbps)
+					sprintf(aux_tpt_per_device, "%.2f,", node_container[i].throughput * pow(10,-6));
 					strcat(tpt_per_device, aux_tpt_per_device);
+					// RSSI received from the AP (dBm)
+					strcat(rssi_per_device, "Inf,");
+					// Data packets sent vs packets lost (%)
+					sprintf(aux_data_loss_ratio_per_device, "%.2f,", (double)
+						100*node_container[i].data_packets_lost/node_container[i].data_packets_sent);
+					strcat(data_loss_ratio_per_device, aux_data_loss_ratio_per_device);
+					// RTS/CTS packets sent vs packets lost (%)
+					sprintf(aux_rtscts_loss_ratio_per_device, "%.2f,", (double)
+						100*node_container[i].rts_cts_lost/node_container[i].rts_cts_sent);
+					strcat(rtscts_loss_ratio_per_device, aux_rtscts_loss_ratio_per_device);
+					// Increase the number of visited nodes
 					++counter_nodes_visited;
-					if(i < total_nodes_number-1) strcat(tpt_per_device, ",");
 					for(int w = 0; w < total_wlans_number; w ++) {
 						if(wlan_container[w].ap_id == node_container[i].node_id) {
 							for(int s = 0; s < wlan_container[w].num_stas; s ++) {
+								// Throughput allocated to the STA
 								sprintf(aux_tpt_per_device, "%.2f", node_container[i].throughput_per_sta[s] * pow(10,-6));
 								strcat(tpt_per_device, aux_tpt_per_device);
+								// RSSI received from the AP
+								sprintf(aux_rssi_per_device, "%.2f", ConvertPower(PW_TO_DBM,
+									node_container[counter_nodes_visited].received_power_array[i]));
+								strcat(rssi_per_device, aux_rssi_per_device);
+								// Data packets sent vs packets lost
+								sprintf(aux_data_loss_ratio_per_device, "%.2f", (double)
+									100*node_container[i].data_packets_lost_per_sta[s]/
+									node_container[i].data_packets_sent_per_sta[s]);
+								strcat(data_loss_ratio_per_device, aux_data_loss_ratio_per_device);
+								// RTS/CTS packets sent vs packets lost
+								sprintf(aux_rtscts_loss_ratio_per_device, "%.2f", (double)
+									100*node_container[i].rts_cts_lost_per_sta[s]/
+									node_container[i].rts_cts_sent_per_sta[s]);
+								strcat(rtscts_loss_ratio_per_device, aux_rtscts_loss_ratio_per_device);
+								// Increase the number of visited nodes
 								++counter_nodes_visited;
 								if(counter_nodes_visited < total_nodes_number) strcat(tpt_per_device, ",");
+								if(counter_nodes_visited < total_nodes_number) strcat(rssi_per_device, ",");
+								if(counter_nodes_visited < total_nodes_number) strcat(data_loss_ratio_per_device, ",");
+								if(counter_nodes_visited < total_nodes_number) strcat(rtscts_loss_ratio_per_device, ",");
 							}
 						}
 					}
@@ -847,11 +888,15 @@ void Komondor :: Stop(){
 				if(i < total_nodes_number-1) strcat(time_in_nav_per_device, ",");
 			}
 			strcat(tpt_per_device, "}");
+			strcat(rssi_per_device, "}");
+			strcat(data_loss_ratio_per_device, "}");
+			strcat(rtscts_loss_ratio_per_device, "}");
 			strcat(time_in_nav_per_device, "}");
-			printf("%s\n",tpt_per_device);
 
 			// STEP 2: Print the data to the output .csv file
-			fprintf(logger_script.file, ";%s;%s\n", tpt_per_device,time_in_nav_per_device);
+			fprintf(logger_script.file, ";%s;%s;%s;%s;%s\n", tpt_per_device,rssi_per_device,
+				data_loss_ratio_per_device,rtscts_loss_ratio_per_device,time_in_nav_per_device);
+
 			break;
 		}
 

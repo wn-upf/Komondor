@@ -3991,6 +3991,7 @@ void Node :: GenerateConfiguration(){
 void Node :: UpdatePerformanceMeasurements(){
 
 	// Update performance measurements
+	// - Throughput
 	performance_report.throughput =
 		(((double)(performance_report.data_packets_sent -
 		performance_report.data_packets_lost) * frame_length
