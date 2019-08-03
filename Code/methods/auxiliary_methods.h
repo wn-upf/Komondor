@@ -7,7 +7,7 @@
  * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
  * Everyone is permitted to copy and distribute verbatim copies
  * of this license document, but changing it is not allowed.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -43,7 +43,7 @@
  * -----------------------------------------------------------------
  * File description: this is the main Komondor file
  *
- * - This file contains the auxiliary methods to carry out the rest of operations 
+ * - This file contains the auxiliary methods to carry out the rest of operations
  */
 
 #include <math.h>
@@ -82,6 +82,25 @@ int PickRandomElementFromArray(int *array, int array_size){
 
 	return element;
 
+}
+
+/*
+ *  PickElementFromArrayRR(): pick element from array in RR manner
+ */
+
+int PickElementFromArrayRR(int *array, int array_size){
+	static int i,j;
+	int element (0);
+	if(array_size > 0){
+		element = array[j];
+		j = (++i)%array_size;
+	}
+	else {
+		element = NODE_ID_NONE;
+		printf("The list does not contain elements!\n");
+	}
+
+	return element;
 }
 
 /*

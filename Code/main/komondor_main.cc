@@ -7,7 +7,7 @@
  * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
  * Everyone is permitted to copy and distribute verbatim copies
  * of this license document, but changing it is not allowed.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -874,10 +874,11 @@ void Komondor :: Stop(){
 								strcat(rtscts_loss_ratio_per_device, aux_rtscts_loss_ratio_per_device);
 								// Increase the number of visited nodes
 								++counter_nodes_visited;
-								if(counter_nodes_visited < total_nodes_number) strcat(tpt_per_device, ",");
-								if(counter_nodes_visited < total_nodes_number) strcat(rssi_per_device, ",");
-								if(counter_nodes_visited < total_nodes_number) strcat(data_loss_ratio_per_device, ",");
-								if(counter_nodes_visited < total_nodes_number) strcat(rtscts_loss_ratio_per_device, ",");
+								if(counter_nodes_visited < total_nodes_number){
+									strcat(tpt_per_device, ",");
+									strcat(rssi_per_device, ",");
+									strcat(data_loss_ratio_per_device, ",");
+									strcat(rtscts_loss_ratio_per_device, ",");}
 							}
 						}
 					}
