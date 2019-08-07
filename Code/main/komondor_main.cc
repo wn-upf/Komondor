@@ -7,7 +7,7 @@
  * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
  * Everyone is permitted to copy and distribute verbatim copies
  * of this license document, but changing it is not allowed.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -833,6 +833,7 @@ void Komondor :: Stop(){
 			// - Time each device is in NAV state
 			char time_in_nav_per_device[250] = "{";
 			char aux_time_in_nav_per_device[50];
+			char aux_time_in_nav_per_sta[50];
 
 			int counter_nodes_visited = 0;
 			for(int i = 0; i < total_nodes_number; i ++) {
@@ -855,34 +856,58 @@ void Komondor :: Stop(){
 					for(int w = 0; w < total_wlans_number; w ++) {
 						if(wlan_container[w].ap_id == node_container[i].node_id) {
 							for(int s = 0; s < wlan_container[w].num_stas; s ++) {
+
+								// Array to store all details of STA
+								char sta_details[250] = "";
+
 								// Throughput allocated to the STA
 								sprintf(aux_tpt_per_device, "%.2f", node_container[i].throughput_per_sta[s] * pow(10,-6));
 								strcat(tpt_per_device, aux_tpt_per_device);
+								strcat(sta_details, aux_tpt_per_device);
+								strcat(sta_details, ";");
+
 								// RSSI received from the AP
 								sprintf(aux_rssi_per_device, "%.2f", ConvertPower(PW_TO_DBM,
 									node_container[counter_nodes_visited].received_power_array[i]));
 								strcat(rssi_per_device, aux_rssi_per_device);
+								strcat(sta_details, aux_rssi_per_device);
+								strcat(sta_details, ";");
+
 								// Data packets sent vs packets lost
 								sprintf(aux_data_loss_ratio_per_device, "%.2f", (double)
 									100*node_container[i].data_packets_lost_per_sta[s]/
 									node_container[i].data_packets_sent_per_sta[s]);
 								strcat(data_loss_ratio_per_device, aux_data_loss_ratio_per_device);
+								strcat(sta_details, aux_data_loss_ratio_per_device);
+								strcat(sta_details, ";");
+
 								// RTS/CTS packets sent vs packets lost
 								sprintf(aux_rtscts_loss_ratio_per_device, "%.2f", (double)
 									100*node_container[i].rts_cts_lost_per_sta[s]/
 									node_container[i].rts_cts_sent_per_sta[s]);
 								strcat(rtscts_loss_ratio_per_device, aux_rtscts_loss_ratio_per_device);
+								strcat(sta_details, aux_rtscts_loss_ratio_per_device);
+								strcat(sta_details, ";");
+
+								// Time in NAV for STA (%)
+								sprintf(aux_time_in_nav_per_sta, "%.2f", node_container[i+s+1].time_in_nav/simulation_time_komondor*100);
+								strcat(sta_details,aux_time_in_nav_per_sta);
+
 								// Increase the number of visited nodes
 								++counter_nodes_visited;
-								if(counter_nodes_visited < total_nodes_number) strcat(tpt_per_device, ",");
-								if(counter_nodes_visited < total_nodes_number) strcat(rssi_per_device, ",");
-								if(counter_nodes_visited < total_nodes_number) strcat(data_loss_ratio_per_device, ",");
-								if(counter_nodes_visited < total_nodes_number) strcat(rtscts_loss_ratio_per_device, ",");
+								if(counter_nodes_visited < total_nodes_number){
+									strcat(tpt_per_device, ",");
+									strcat(rssi_per_device, ",");
+									strcat(data_loss_ratio_per_device, ",");
+									strcat(rtscts_loss_ratio_per_device, ",");}
+
+								// Printing STA details row-wise
+								fprintf(logger_script.file, ";%s\n", sta_details);
 							}
 						}
 					}
 				}
-				// Time in NAV (%)
+				// Time in NAV per device (%)
 				sprintf(aux_time_in_nav_per_device, "%.2f", node_container[i].time_in_nav/simulation_time_komondor*100);
 				strcat(time_in_nav_per_device, aux_time_in_nav_per_device);
 				if(i < total_nodes_number-1) strcat(time_in_nav_per_device, ",");
@@ -894,8 +919,8 @@ void Komondor :: Stop(){
 			strcat(time_in_nav_per_device, "}");
 
 			// STEP 2: Print the data to the output .csv file
-			fprintf(logger_script.file, ";%s;%s;%s;%s;%s\n", tpt_per_device,rssi_per_device,
-				data_loss_ratio_per_device,rtscts_loss_ratio_per_device,time_in_nav_per_device);
+			/* fprintf(logger_script.file, ";%s;%s;%s;%s;%s\n", tpt_per_device,rssi_per_device,
+			data_loss_ratio_per_device,rtscts_loss_ratio_per_device,time_in_nav_per_device); */
 
 			break;
 		}
