@@ -46,6 +46,9 @@
  * - This file defines modulations and MCS parameters
  */
 
+#ifndef _MCS_CONFIGURATION_
+#define _MCS_CONFIGURATION_
+
 struct Mcs_array {
    static const double mcs_array[4][12];
    static const double coding_rate_array[12];
@@ -140,3 +143,5 @@ int getNumberSubcarriers(int num_channels){
 	return num_subcarriers;
 
 }
+
+#endif

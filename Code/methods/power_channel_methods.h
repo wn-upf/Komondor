@@ -54,6 +54,9 @@
 #include "../structures/modulations.h"
 #include "auxiliary_methods.h"
 
+#ifndef _POWER_METHODS_
+#define _POWER_METHODS_
+
 /***********************/
 /***********************/
 /*  POWER MANAGEMENT   */
@@ -1182,3 +1185,5 @@ void PrintOrWriteChannelForTx(int write_or_print,
 		}
 	}
 }
+
+#endif

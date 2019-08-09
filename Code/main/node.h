@@ -103,6 +103,7 @@ component Node : public TypeII{
 		void StartSavingLogs();
 		void RecoverFromCtsTimeout();
 		void MeasureRho();
+		void SaveSimulationPerformance();
 
 		// Packets
 		Notification GenerateNotification(int packet_type, int destination_id,
@@ -282,6 +283,19 @@ component Node : public TypeII{
 		int *data_packets_acked_per_sta;
 		int *data_frames_acked_per_sta;
 
+		// Store the simulation performance
+		Performance simulation_performance;
+
+		// Configurations sent/received to/from the agent
+		Configuration configuration;
+		Configuration new_configuration;
+
+		// Spatial Reuse configuration
+		Configuration spatial_reuse_configuration;
+
+		// Measurements done for agents
+		Performance performance_report;
+
 	// Private items (just for node operation)
 	private:
 
@@ -378,16 +392,6 @@ component Node : public TypeII{
 		// Burst traffic
 		double burst_rate;				// Average time between two packet generation bursts [bursts/s]
 		int num_bursts;					// Total number of bursts occurred in the simulation
-
-		// Configurations sent/received to/from the agent
-		Configuration configuration;
-		Configuration new_configuration;
-
-		// Spatial Reuse configuration
-		Configuration spatial_reuse_configuration;
-
-		// Measurements done for agents
-		Performance performance_report;
 
 		// Flag to determine if there is any new configuration to be applied when doing "RestartNode()"
 		int flag_apply_new_configuration;
@@ -611,6 +615,12 @@ void Node :: Stop(){
 
 	// Close node logs file
 	if(save_node_logs) fclose(node_logger.file);
+
+	// Save performance into the simulation_performance object
+	SaveSimulationPerformance();
+
+	// Save the configuration currently being used by the node
+	GenerateConfiguration();
 
 	// LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Node info:\n", SimTime(), node_id, node_state, LOG_C01, LOG_LVL1);
 };
@@ -3971,7 +3981,7 @@ void Node :: GenerateConfiguration(){
 	capabilities.sensitivity_max = sensitivity_max;
 	capabilities.tx_gain = tx_gain;
 	capabilities.rx_gain = rx_gain;
-	capabilities.dcb_policy = current_dcb_policy;
+	capabilities.current_dcb_policy = current_dcb_policy;
 	capabilities.modulation_default = modulation_default;
 
 	// Configuration
@@ -4837,6 +4847,65 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 	}
 }
 
+void Node :: SaveSimulationPerformance() {
+
+	if(node_id == 0) simulation_performance.sum_time_channel_idle = sum_time_channel_idle;
+
+	// Throughput
+	simulation_performance.throughput = throughput;
+	simulation_performance.throughput_loss = throughput_loss;
+
+	// Frames
+	simulation_performance.data_packets_acked = data_packets_acked;
+	simulation_performance.data_frames_acked = data_frames_acked;
+	simulation_performance.data_packets_sent = data_packets_sent;
+	simulation_performance.data_packets_lost = data_packets_lost;
+	simulation_performance.rts_cts_sent = rts_cts_sent;
+	simulation_performance.rts_cts_lost = rts_cts_lost;
+	simulation_performance.rts_lost_slotted_bo = rts_lost_slotted_bo;
+
+	// Buffer
+	simulation_performance.num_packets_generated = num_packets_generated;
+	simulation_performance.num_packets_dropped = num_packets_dropped;
+	simulation_performance.num_delay_measurements = num_delay_measurements;
+	simulation_performance.sum_delays = sum_delays;
+	simulation_performance.average_delay = average_delay;
+	simulation_performance.average_rho = average_rho;
+	simulation_performance.average_utilization = average_utilization;
+	simulation_performance.generation_drop_ratio = generation_drop_ratio;
+
+	// Channel occupancy
+	simulation_performance.expected_backoff = expected_backoff;
+	simulation_performance.num_new_backoff_computations = num_new_backoff_computations;
+	simulation_performance.num_trials_tx_per_num_channels = num_trials_tx_per_num_channels;
+	simulation_performance.average_waiting_time = average_waiting_time;
+	simulation_performance.bandwidth_used_txing = bandwidth_used_txing;
+	simulation_performance.total_time_transmitting_per_channel = total_time_transmitting_per_channel;
+	simulation_performance.total_time_transmitting_in_num_channels = total_time_transmitting_in_num_channels;
+	simulation_performance.total_time_lost_per_channel = total_time_lost_per_channel;
+	simulation_performance.total_time_lost_in_num_channels = total_time_lost_in_num_channels;
+	simulation_performance.total_time_spectrum_per_channel = total_time_spectrum_per_channel;
+	simulation_performance.time_in_nav = time_in_nav;
+
+	// Per-STA statistics
+	if(node_type == NODE_TYPE_AP) {
+		simulation_performance.throughput_per_sta = throughput_per_sta;
+		simulation_performance.data_packets_sent_per_sta = data_packets_sent_per_sta;
+		simulation_performance.rts_cts_sent_per_sta = rts_cts_sent_per_sta;
+		simulation_performance.data_packets_lost_per_sta = data_packets_lost_per_sta;
+		simulation_performance.rts_cts_lost_per_sta = rts_cts_lost_per_sta;
+		simulation_performance.data_packets_acked_per_sta = data_packets_acked_per_sta;
+		simulation_performance.data_frames_acked_per_sta = data_frames_acked_per_sta;
+	}
+	simulation_performance.received_power_array = received_power_array;
+
+	// Other
+	simulation_performance.num_tx_init_tried = num_tx_init_tried;
+	simulation_performance.num_tx_init_not_possible = num_tx_init_not_possible;
+	simulation_performance.prob_slotted_bo_collision = prob_slotted_bo_collision;
+
+}
+
 /*****************************/
 /*****************************/
 /*  VARIABLE INITIALISATION  */
@@ -5068,6 +5137,9 @@ void Node :: InitializeVariables() {
 		data_packets_acked_per_sta[i] = 0;
 		data_frames_acked_per_sta[i] = 0;
 	}
+
+	performance_report.SetSizeOfChannelLists(num_channels_komondor);
+	performance_report.SetSizeOfRssiList(wlan.num_stas);
 
 	// Measurements to be sent to agents
 	RestartPerformanceMetrics(&performance_report, 0);

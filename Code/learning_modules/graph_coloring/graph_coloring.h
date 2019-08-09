@@ -104,10 +104,10 @@ class GraphColoring {
 			GraphColoringOptimization(configuration_array);
 
 			if(save_controller_logs) {
-				fprintf(central_controller_logger.file, "%.15f;%s;%s GraphColoring: "
+				fprintf(central_controller_logger.file, "%.15f;%s;CC;%s GraphColoring: "
 					"New configurations provided\n", sim_time, LOG_C00, LOG_LVL2);
 				for (int i = 0; i < agents_number; ++ i) {
-					fprintf(central_controller_logger.file, "%.15f;%s;%s Agent %d - Assigned channel %d\n",
+					fprintf(central_controller_logger.file, "%.15f;%s;CC;%s Agent %d - Assigned channel %d\n",
 					sim_time, LOG_C00, LOG_LVL3, i,	configuration_array[i].selected_primary_channel);
 				}
 			}
@@ -188,7 +188,7 @@ class GraphColoring {
 			for (int i = 0; i < agents_number; ++ i) {
 				max_weight = -100000;
 				flag_change_channel = false;
-				printf("max weight (agent %d): ", i);
+//				printf("max weight (agent %d): ", i);
 				for (int j = 0; j < agents_number; ++ j) {
 					if (i != j && configuration_array[i].selected_primary_channel ==
 						configuration_array[j].selected_primary_channel) {
@@ -197,7 +197,7 @@ class GraphColoring {
 							max_weight = weight_edges[i][j];
 						}
 					}
-					printf("%f: ", max_weight);
+//					printf("%f: ", max_weight);
 				}
 				if (flag_change_channel) {
 					// Choose a new color for AP "i", so that H(c) = min H(c) for c = 1...k

@@ -187,7 +187,6 @@ void CentralController :: Start(){
 	// Initialize learning algorithm in the CC
 	InitializeLearningAlgorithm();
 
-
 	if(learning_mechanism == GRAPH_COLORING) {
 		// Generate the request for initialization at the beginning (no need to collect performance data)
 		trigger_request_information_to_agents.Set(fix_time_offset(SimTime() + 0.001,13,12));
@@ -201,7 +200,7 @@ void CentralController :: Start(){
 /*
  * Stop()
  */
-void CentralController :: Stop(){
+void CentralController :: Stop() {
 
 	if(save_controller_logs) fprintf(central_controller_logger.file,
 		"%.15f;CC;%s;%s Central Controller Stop()\n", SimTime(), LOG_C00, LOG_LVL1);
@@ -228,12 +227,10 @@ void CentralController :: Stop(){
  */
 void CentralController :: RequestInformationToAgent(trigger_t &){
 
-	for (int ix = 0 ; ix < agents_number ; ++ix ) {
+	if(save_controller_logs) fprintf(central_controller_logger.file,"%.15f;CC;%s;%s "
+		"Requesting information to Agents\n", SimTime(), LOG_C00, LOG_LVL1);
 
-//		printf("%.15f CC:   - Requesting info to Agent %d...\n" , SimTime(), ix);
-		//printf("%s Central Controller: Requesting information to Agent %d\n", LOG_LVL1, list_of_agents[agents_ix]);
-		if(save_controller_logs) fprintf(central_controller_logger.file,
-			"----------------------------------------------------------------\n");
+	for (int ix = 0 ; ix < agents_number ; ++ix ) {
 
 		if(save_controller_logs) fprintf(central_controller_logger.file,
 			"%.15f;CC;%s;%s Requesting information to Agent %d\n",
@@ -253,9 +250,7 @@ void CentralController :: RequestInformationToAgent(trigger_t &){
  * - to be defined
  */
 void CentralController :: InportReceivingInformationFromAgent(Configuration &received_configuration,
-		Performance &received_performance, int agent_id){
-
-//	printf("%s CC: Message received from Agent %d\n", LOG_LVL1, agent_id);
+	Performance &received_performance, int agent_id){
 
 	if(save_controller_logs) fprintf(central_controller_logger.file, "%.15f;CC;%s;%s InportReceivingInformationFromAgent()\n",
 		SimTime(), LOG_F00, LOG_LVL1);
@@ -266,6 +261,12 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
 	// Update the configuration and performance received
 	configuration_array[agent_id] = received_configuration;
 	performance_array[agent_id] = received_performance;
+
+	// Print configuration and performance report
+	if(save_controller_logs) {
+		configuration_array[agent_id].WriteConfiguration(central_controller_logger, SimTime());
+		configuration_array[agent_id].capabilities.WriteCapabilities(central_controller_logger, SimTime());
+	}
 
 	// Update the number of responses received
 	++ counter_responses_received ;
@@ -372,9 +373,7 @@ void CentralController :: InitializeLearningAlgorithm() {
 
 	switch(learning_mechanism) {
 
-		/* Multi-Armed Bandits:
-		 *
-		 */
+		/* GRAPH COLORING */
 		case GRAPH_COLORING:{
 			initialization_flag = true;
 			// Initialize the graph coloring method
@@ -394,7 +393,6 @@ void CentralController :: InitializeLearningAlgorithm() {
 			exit(EXIT_FAILURE);
 			break;
 		}
-
 	}
 }
 

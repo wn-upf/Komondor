@@ -61,8 +61,8 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 	current_performance->max_bound_throughput = 0;
 	current_performance->data_packets_sent = 0;
 	current_performance->data_packets_lost = 0;
-	current_performance->rts_cts_packets_sent = 0;
-	current_performance->rts_cts_packets_lost = 0;
+	current_performance->rts_cts_sent = 0;
+	current_performance->rts_cts_lost = 0;
 	current_performance->num_packets_generated = 0;
 	current_performance->num_packets_dropped = 0;
 

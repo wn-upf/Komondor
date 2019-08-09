@@ -87,6 +87,7 @@ component Agent : public TypeII{
 		// Print methods
 		void PrintAgentInfo();
 		void WriteConfiguration(Configuration configuration_to_write);
+		void WritePerformance(Performance performance_to_write);
 
 	// Public items (entered by agents constructor in komondor_main)
 	public:
@@ -278,10 +279,12 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 			SimTime(), agent_id, LOG_C00, LOG_LVL2);
 
 	configuration = received_configuration;
-
-	if(save_agent_logs) WriteConfiguration(configuration);
-
 	performance = received_performance;
+
+	if(save_agent_logs) {
+		WriteConfiguration(configuration);
+		WritePerformance(performance);
+	}
 
 	if (centralized_flag) {
 		// Forward the information to the controller
@@ -459,7 +462,7 @@ void Agent :: InitializeLearningAlgorithm() {
 
 	if (centralized_flag) { // Learning operation managed by the CC
 
-		printf("%s Agent %d: Learning operation managed by the CC\n", LOG_LVL5, agent_id);
+//		printf("%s Agent %d: Learning operation managed by the CC\n", LOG_LVL5, agent_id);
 
 	} else  { // Learning operation managed by the agent
 
@@ -564,9 +567,7 @@ void Agent :: PrintAgentInfo(){
  * WriteConfiguration(): writes Agent info
  */
 void Agent :: WriteConfiguration(Configuration configuration_to_write) {
-
 	fprintf(agent_logger.file, "%.15f;A%d;%s;%s Configuration:\n", SimTime(), agent_id, LOG_C03, LOG_LVL2);
-
 	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_primary_channel = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
 			configuration_to_write.selected_primary_channel);
 	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_pd = %f dBm\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
@@ -575,5 +576,13 @@ void Agent :: WriteConfiguration(Configuration configuration_to_write) {
 			ConvertPower(PW_TO_DBM,configuration_to_write.selected_tx_power));
 	fprintf(agent_logger.file, "%.15f;A%d;%s;%s selected_dcb_policy = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
 			configuration_to_write.selected_dcb_policy);
+}
 
+/*
+ * WritePerformance(): writes performance
+ */
+void Agent :: WritePerformance(Performance performance_to_write) {
+	fprintf(agent_logger.file, "%.15f;A%d;%s;%s Performance:\n", SimTime(), agent_id, LOG_C03, LOG_LVL2);
+	fprintf(agent_logger.file, "%.15f;A%d;%s;%s throughput = %.2f\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
+			performance_to_write.throughput * pow(10,-6));
 }

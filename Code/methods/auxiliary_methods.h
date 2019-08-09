@@ -66,12 +66,12 @@ std::string ToString(T val)
 }
 
 /*
- * PickRandomElementFromArray(): pick uniformely random an element of an array
+ * PickRandomElementFromArray(): pick uniformly random an element of an array
  */
 int PickRandomElementFromArray(int *array, int array_size){
 
 	int element (0);
-	// Pick one of the STAs in the WLAN uniformely
+	// Pick one of the STAs in the WLAN uniformly
 	if(array_size > 0){
 		int rand_ix (rand()%(array_size));
 		element = array[rand_ix];
@@ -89,6 +89,7 @@ int PickRandomElementFromArray(int *array, int array_size){
  */
 
 int PickElementFromArrayRR(int *array, int array_size){
+
 	static int i,j;
 	int element (0);
 	if(array_size > 0){
@@ -101,6 +102,7 @@ int PickElementFromArrayRR(int *array, int array_size){
 	}
 
 	return element;
+
 }
 
 /*
