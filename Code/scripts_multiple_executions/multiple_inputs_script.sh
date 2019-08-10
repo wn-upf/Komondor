@@ -1,5 +1,5 @@
 # define execution parameters
-SIM_TIME=2000
+SIM_TIME=0.1
 SEED=1992
 # compile KOMONDOR
 pwd
@@ -15,7 +15,7 @@ pwd
 rm output/*
 
 # get input files path in folder 'script_input_files'
-cd input/script_input_files/nodes
+cd input/centralized_graph_coloring/random_scenarios
 pwd
 
 echo 'DETECTED KOMONDOR INPUT FILES: '
@@ -42,7 +42,7 @@ do
 	echo ""
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./komondor_main ../input/script_input_files/system/input_system_conf.csv ../input/script_input_files/nodes/${array[executing_ix]} ../output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
+	./komondor_main ../input/centralized_graph_coloring/input_system_conf.csv ../input/centralized_graph_coloring/random_scenarios/${array[executing_ix]} ../output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo ""
 done

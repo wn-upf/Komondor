@@ -4027,8 +4027,8 @@ void Node :: InportReceivingRequestFromAgent() {
 
 //	printf("%s Node #%d: New information request received from the Agent\n", LOG_LVL1, node_id);
 
-	LOGS(save_node_logs,node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s New information request received from the Agent\n",
+	LOGS(save_node_logs, node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s New information request received from the Agent\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	// Generate the configuration to be sent to the agent
@@ -4091,7 +4091,7 @@ void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configu
  */
 void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 
-	// TODO: think about recommendation levels done by agents
+	// TODO: think about recommendation levels done by agents (e.g., Critical, Recommended ...)
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Applying the new received configuration\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
@@ -4143,9 +4143,9 @@ void Node :: InportNewWlanConfigurationReceived(Configuration &received_configur
 
 	if (node_type == NODE_TYPE_STA) {
 
-		LOGS(save_node_logs,node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+		LOGS(save_node_logs, node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
-		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the AP\n",
+		LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the AP\n",
 			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 		// Set new configuration
@@ -4195,8 +4195,8 @@ void Node :: CallRestartSta(trigger_t &){
  */
 void Node :: RestartNode(int called_by_time_out){
 
-	LOGS(save_node_logs,node_logger.file, "\n **********************************************************************\n");
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Node Restarted (%d)\n",
+	LOGS(save_node_logs, node_logger.file, "\n **********************************************************************\n");
+	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Node Restarted (%d)\n",
 		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL1,
 		called_by_time_out);
 

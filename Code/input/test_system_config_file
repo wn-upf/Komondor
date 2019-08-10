@@ -1,0 +1,4 @@
+# Simulation index for script's output (set to -1 if not used)
+SIMULATION_INDEX=13
+# Random seed
+SEED=1

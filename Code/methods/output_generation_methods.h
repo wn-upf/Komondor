@@ -481,8 +481,8 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			break;
 		}
 
-			// FG-ML5G - Students projects (Akshara P)
-			case 13: {
+		// FG-ML5G - Students projects (Akshara P)
+		case 13: {
 
 			// STEP 1: Concatenate the information obtained from each STA in each WLAN
 			//  - Throughput experienced/allocated for each device (AP and STAs)

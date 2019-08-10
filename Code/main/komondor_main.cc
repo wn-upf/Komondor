@@ -105,6 +105,8 @@ component Komondor : public CostSimEng {
 		void WriteAllWlansInfo(Logger logger, std::string header_str);
 		void WriteAllNodesInfo(Logger logger, int info_detail_level,  std::string header_str);
 
+		void ReadSystemConfigurationFile();
+
 	// Public items (to shared with the nodes)
 	public:
 
@@ -217,6 +219,9 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	seed = seed_console;
 	agents_enabled = agents_enabled_console;
 	total_wlans_number = 0;
+
+	// Read system configuration file
+	ReadSystemConfigurationFile();
 
 	// Generate output files
 	if (print_system_logs) printf("%s Creating output files\n", LOG_LVL1);
@@ -1498,6 +1503,38 @@ int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::st
 	return num_nodes;
 }
 
+/*
+ * ReadSystemConfigurationFile():  READ CONFIG FILE (MS-DOS type) WITH SPECIFIC INFORMATION (SUCH AS THE SIMULATION_INDEX)
+ */
+void Komondor :: ReadSystemConfigurationFile() {
+
+	const char *filename_test = "../input/test_system_config_file";
+	printf("%s Reading TEST configuration file '%s'...\n", LOG_LVL1, filename_test);
+	FILE* test_input_config = fopen(filename_test, "r");
+	if (!test_input_config){
+		printf("%s Test file '%s' not found!\n", LOG_LVL3, filename_test);
+		exit(-1);
+	}
+	char line_system[CHAR_BUFFER_SIZE];
+	while (fgets(line_system, CHAR_BUFFER_SIZE, test_input_config)){
+		if(line_system[0] == '#') continue;
+		char delim[] = "=";
+		char *ptr = strtok(line_system, delim);
+		while(ptr != NULL)
+		{
+			if(strcmp(ptr, "SIMULATION_INDEX")) {
+				ptr = strtok(NULL, delim);
+				if(ptr!=NULL) printf("SIMULATION_INDEX: %s\n", ptr);
+			} else if (strcmp(ptr, "SEED")) {
+				ptr = strtok(NULL, delim);
+				if(ptr!=NULL) printf("SEED: %s\n", ptr);
+			}
+		}
+		printf("\n");
+	}
+	fclose(test_input_config);
+
+}
 
 /**********/
 /* main() */
