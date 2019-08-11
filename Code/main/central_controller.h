@@ -103,7 +103,7 @@ component CentralController : public TypeII{
 
 		int type_of_reward;
 		int learning_mechanism;
-		int selected_strategy;
+		int action_selection_strategy;
 
 		int num_channels;
 
@@ -389,7 +389,7 @@ void CentralController :: InitializeLearningAlgorithm() {
 		}
 
 		default:{
-			printf("ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
+			printf("[CC] ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
 			exit(EXIT_FAILURE);
 			break;
 		}

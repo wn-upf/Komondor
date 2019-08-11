@@ -220,8 +220,8 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	agents_enabled = agents_enabled_console;
 	total_wlans_number = 0;
 
-	// Read system configuration file
-	ReadSystemConfigurationFile();
+	// Read system configuration file [TODO: discuss about this and provide further implementation (if necessary)]
+//	ReadSystemConfigurationFile();
 
 	// Generate output files
 	if (print_system_logs) printf("%s Creating output files\n", LOG_LVL1);
@@ -1088,7 +1088,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 				central_controller_flag = 1;
 			}
 
-			// Time between requests
+			// Time between requests (in seconds)
 			tmp_agents = strdup(line_agents);
 			double time_between_requests (atof(GetField(tmp_agents, IX_AGENT_TIME_BW_REQUESTS)));
 			agent_container[agent_ix].time_between_requests = time_between_requests;
@@ -1176,14 +1176,15 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 
 			// Selected strategy
 			tmp_agents = strdup(line_agents);
-			int selected_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
-			agent_container[agent_ix].selected_strategy = selected_strategy;
+			int action_selection_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
+			agent_container[agent_ix].action_selection_strategy = action_selection_strategy;
 
 			// System
 			agent_container[agent_ix].save_agent_logs = save_agent_logs;
 			agent_container[agent_ix].print_agent_logs = print_agent_logs;
 
 			// Initialize learning algorithm in agent
+			agent_container[agent_ix].InitializePreProcessor();
 			agent_container[agent_ix].InitializeLearningAlgorithm();
 
 			++agent_ix;
@@ -1255,8 +1256,8 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 				central_controller[0].learning_mechanism = learning_mechanism;
 				// Selected strategy
 				tmp_agents = strdup(line_agents);
-				int selected_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
-				central_controller[0].selected_strategy = selected_strategy;
+				int action_selection_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
+				central_controller[0].action_selection_strategy = action_selection_strategy;
 
 				// Find the length of the channel actions array
 				tmp_agents = strdup(line_agents);
@@ -1462,7 +1463,7 @@ int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::st
 	FILE* stream_nodes = fopen(nodes_filename, "r");
 
 	if (!stream_nodes){
-		printf("ERROR: Nodes configuration file %s not found!\n", nodes_filename);
+		printf("[MAIN] ERROR: Nodes configuration file %s not found!\n", nodes_filename);
 		exit(-1);
 	}
 

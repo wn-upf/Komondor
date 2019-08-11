@@ -59,6 +59,9 @@
 #include "../structures/action.h"
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
+
+#include "../learning_modules/pre_processor.h"
+
 #include "../learning_modules/multi_armed_bandits/multi_armed_bandits.h"
 
 // Agent component: "TypeII" represents components that are aware of the existence of the simulated time.
@@ -74,6 +77,7 @@ component Agent : public TypeII{
 
 		// Generic
 		void InitializeAgent();
+		void InitializePreProcessor();
 		void InitializeLearningAlgorithm();
 
 		// Communication with AP
@@ -99,7 +103,7 @@ component Agent : public TypeII{
 
 		// Learning mechanism
 		int learning_mechanism;
-		int selected_strategy;
+		int action_selection_strategy;
 
 		// Actions management (tunable parameters)
 		int *list_of_channels; 				// List of channels
@@ -147,31 +151,31 @@ component Agent : public TypeII{
 		char *header_string;				// Header string for the logger
 
 		MultiArmedBandit mab_agent;
+		PreProcessor pre_processor;
 //		bool not_initialized;				// Boolean to determine whether the learning alg. has been initialized or not
+
+		int processed_configuration;
+		double processed_performance;
+
+		int ML_output;
 
 	// Connections and timers
 	public:
 
 		// INPORT connections for receiving notifications
 		inport void inline InportReceivingInformationFromAp(Configuration &configuration, Performance &performance);
-
 		// INPORT (centralized system only)
 		inport void inline InportReceivingRequestFromController(int destination_agent_id);
 		inport void inline InportReceiveConfigurationFromController(int destination_agent_id, Configuration &new_configuration);
-
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAp();
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
-
 		// OUTPORT (centralized system only)
 		outport void outportAnswerToController(Configuration &configuration, Performance &performance, int agent_id);
-
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap; // Timer for requesting information to the AP
-
 		// Every time the timer expires execute this
 		inport inline void RequestInformationToAp(trigger_t& t1);
-
 		// Connect timers to methods
 		Agent () {
 			connect trigger_request_information_to_ap.to_component,RequestInformationToAp;
@@ -396,29 +400,30 @@ void Agent :: InportReceiveConfigurationFromController(int destination_agent_id,
 void Agent :: ComputeNewConfiguration(){
 
 	if(save_agent_logs) fprintf(agent_logger.file, "%.15f;A%d;%s;%s ComputeNewConfiguration()\n",
-			SimTime(), agent_id, LOG_F00, LOG_LVL1);
+		SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
-	// Update the current configuration according to the selected learning method
+	// Process the configuration and performance reports obtained from the WLAN
+	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
+	processed_performance = pre_processor.ProcessWlanPerformance(MULTI_ARMED_BANDITS, performance, type_of_reward);
+
+	// Update the configuration according to the selected learning method
 	switch(learning_mechanism) {
 
-		/* Multi-Armed Bandits:
-		 *
-		 */
+		/* Multi-Armed Bandits */
 		case MULTI_ARMED_BANDITS:{
-
 			// Update the configuration according to the MABs operation
-			new_configuration = mab_agent.UpdateConfiguration(configuration, performance, agent_logger, SimTime());
+			ML_output = mab_agent.UpdateConfiguration(processed_configuration, processed_performance, agent_logger, SimTime());
 			break;
-
 		}
-
 		default:{
-			printf("ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
+			printf("[AGENT] ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
 			exit(EXIT_FAILURE);
 			break;
 		}
-
 	}
+
+	// Process the configuration from the output of the ML method
+	new_configuration = pre_processor.ProcessMLOutput(learning_mechanism, configuration, ML_output);
 
 	// Send the configuration to the AP
 	SendNewConfigurationToAp(new_configuration);
@@ -456,6 +461,34 @@ void Agent :: InitializeAgent() {
 }
 
 /*
+ * InitializeVariables(): initializes all the necessary variables
+ */
+void Agent :: InitializePreProcessor() {
+
+//	printf("num_actions_channel = %d\n", num_actions_channel);
+//	printf("num_actions_sensitivity = %d\n", num_actions_sensitivity);
+//	printf("num_actions_tx_power = %d\n", num_actions_tx_power);
+//	printf("num_actions_dcb_policy = %d\n", num_actions_dcb_policy);
+
+	pre_processor.type_of_reward = type_of_reward;
+
+	pre_processor.num_actions = num_actions;
+	pre_processor.num_actions_channel = num_actions_channel;
+	pre_processor.num_actions_sensitivity = num_actions_sensitivity;
+	pre_processor.num_actions_tx_power = num_actions_tx_power;
+	pre_processor.num_actions_dcb_policy = num_actions_dcb_policy;
+
+	pre_processor.InitializeVariables();
+
+	pre_processor.list_of_channels = list_of_channels;
+	pre_processor.list_of_pd_values = list_of_pd_values;
+	pre_processor.list_of_tx_power_values = list_of_tx_power_values;
+	pre_processor.list_of_dcb_policy = list_of_dcb_policy;
+
+}
+
+
+/*
  * InitializeLearningAlgorithm(): initializes all the necessary variables of the chosen learning alg.
  */
 void Agent :: InitializeLearningAlgorithm() {
@@ -476,23 +509,9 @@ void Agent :: InitializeLearningAlgorithm() {
 				mab_agent.agent_id = agent_id;
 				mab_agent.save_agent_logs = save_agent_logs;
 				mab_agent.print_agent_logs = print_agent_logs;
-
-				mab_agent.selected_strategy = selected_strategy;
-
-				mab_agent.type_of_reward = type_of_reward;
-
+				mab_agent.action_selection_strategy = action_selection_strategy;
 				mab_agent.num_actions = num_actions;
-				mab_agent.num_actions_channel = num_actions_channel;
-				mab_agent.num_actions_sensitivity = num_actions_sensitivity;
-				mab_agent.num_actions_tx_power = num_actions_tx_power;
-				mab_agent.num_actions_dcb_policy = num_actions_dcb_policy;
-
 				mab_agent.InitializeVariables();
-
-				mab_agent.list_of_channels = list_of_channels;
-				mab_agent.list_of_pd_values = list_of_pd_values;
-				mab_agent.list_of_tx_power_values = list_of_tx_power_values;
-				mab_agent.list_of_dcb_policy = list_of_dcb_policy;
 
 				break;
 			}
@@ -502,7 +521,7 @@ void Agent :: InitializeLearningAlgorithm() {
 			// ...
 
 			default:{
-				printf("ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
+				printf("[AGENT] ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
 				exit(EXIT_FAILURE);
 				break;
 			}
@@ -554,7 +573,7 @@ void Agent :: PrintAgentInfo(){
 	printf("\n");
 
 	printf("%s learning_mechanism: %d\n", LOG_LVL4, learning_mechanism);
-	printf("%s selected_strategy: %d\n", LOG_LVL4, selected_strategy);
+	printf("%s action_selection_strategy: %d\n", LOG_LVL4, action_selection_strategy);
 
 	printf("%s save_agent_logs: %d\n", LOG_LVL4, save_agent_logs);
 	printf("%s print_agent_logs: %d\n", LOG_LVL4, print_agent_logs);
