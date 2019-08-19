@@ -429,7 +429,7 @@ void Komondor :: Stop(){
 		frame_length, max_num_packets_aggregated, simulation_time_komondor);
 
 	// Generate the output for scripts
-	int simulation_index (13);	// Choose the simulation index (TODO: change the way the simulation index is inputted)
+	int simulation_index (13);	// Choose the simulation index (TODO: change the way the simulation index is introduced by the user)
 	GenerateScriptOutput(simulation_index, performance_per_node, configuration_per_node, logger_script,
 		total_wlans_number, total_nodes_number, frame_length, max_num_packets_aggregated,
 		wlan_container, simulation_time_komondor);

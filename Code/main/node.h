@@ -3961,7 +3961,7 @@ void Node :: GenerateConfiguration(){
 
 	// Capabilities
 	Capabilities capabilities;
-
+	capabilities.node_code = node_code.c_str();
 	capabilities.node_id = node_id;
 	capabilities.x = x;
 	capabilities.y = y;
@@ -4626,9 +4626,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					LOG_LVL2, data_frames_acked, (double) data_frames_acked/data_packets_acked);
 				// Data packets sent and lost
 				printf("%s Buffer: packets generated = %.0f (%.2f pkt/s) - Packets dropped = %.0f  (%f %% drop ratio)\n",
-					LOG_LVL2,
-					num_packets_generated, num_packets_generated / SimTime(),
-					num_packets_dropped, generation_drop_ratio);
+					LOG_LVL2, num_packets_generated, num_packets_generated / SimTime(), num_packets_dropped, generation_drop_ratio);
 				if(TRAFFIC_POISSON_BURST){
 					printf("%s Buffer: num bursts = %d\n",
 						LOG_LVL2,
@@ -4636,7 +4634,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				}
 				// Number of trials to transmit
 				printf("%s num_tx_init_tried = %d - num_tx_init_not_possible = %d (%f %% failed)\n",
-						LOG_LVL2, num_tx_init_tried, num_tx_init_not_possible, tx_init_failure_percentage);
+					LOG_LVL2, num_tx_init_tried, num_tx_init_not_possible, tx_init_failure_percentage);
 				// Time EFFECTIVELY transmitting in a given number of channels (no losses)
 				printf("%s Time EFFECTIVELY transmitting in N channels:", LOG_LVL3);
 				for(int n = 0; n < num_channels_allowed; ++n){

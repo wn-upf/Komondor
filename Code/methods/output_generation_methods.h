@@ -87,34 +87,50 @@ void ComputeSimulationStatistics(Performance *performance_report, Configuration 
 		int total_nodes_number, int total_wlans_number){
 
 	for(int m=0; m < total_nodes_number; ++m){
+		// Take into account only APs (transmitters)
 		if( configuration_per_node[m].capabilities.node_type == NODE_TYPE_AP ){
+			// Data packets sent in total
 			total_data_packets_sent = total_data_packets_sent + performance_report[m].data_packets_sent;
+			// Aggregate throughput
 			total_throughput = total_throughput + performance_report[m].throughput;
+			// Total number of packets generated
 			total_num_packets_generated = total_num_packets_generated + performance_report[m].num_packets_generated;
+			// Total number of RTS lost due to slotted backoff collisions
 			total_rts_lost_slotted_bo = total_rts_lost_slotted_bo + performance_report[m].rts_lost_slotted_bo;
+			// Total number of RTS sent
 			total_rts_cts_sent = total_rts_cts_sent + performance_report[m].rts_cts_sent;
+			// Sum of probabilities of finding a collision by slotted backoff
 			total_prob_slotted_bo_collision = total_prob_slotted_bo_collision + performance_report[m].prob_slotted_bo_collision;
+			// Total number of trials for transmitting
 			total_num_tx_init_not_possible = total_num_tx_init_not_possible + performance_report[m].num_tx_init_not_possible;
+			// Proportional fairness metric
 			proportional_fairness = proportional_fairness + log10(performance_report[m].throughput);
+			// Jain's fairness metric
 			jains_fairness_aux = jains_fairness_aux + pow(performance_report[m].throughput, 2);
+			// Sum of the average delay experienced by each transmitter
 			total_delay = total_delay + performance_report[m].average_delay;
+			// Maximum average delay in the network
 			if(performance_report[m].average_delay > max_delay) max_delay = performance_report[m].average_delay;
+			// Minimum average delay in the network
 			if(performance_report[m].average_delay < min_delay) min_delay = performance_report[m].average_delay;
+			// Average expected backoff
 			av_expected_backoff = av_expected_backoff + performance_report[m].expected_backoff;
+			// Average waiting time before transmitting
 			av_expected_waiting_time = av_expected_waiting_time + performance_report[m].average_waiting_time;
+			// Total bandwidth used in transmissions
 			total_bandiwdth_tx = total_bandiwdth_tx + performance_report[m].bandwidth_used_txing;
+			// Minimum throughput experienced in the network
 			if(performance_report[m].throughput < min_throughput) {
 				ix_wlan_min_throughput = m;
 				min_throughput = performance_report[m].throughput;
 			}
+			// Maximum throughput experienced in the network
 			if(performance_report[m].throughput > max_throughput) max_throughput = performance_report[m].throughput;
 		}
 	}
 	av_expected_backoff = av_expected_backoff / total_wlans_number;
 	av_expected_waiting_time = av_expected_waiting_time / total_wlans_number;
-	// Supposing that number_aps = number_nodes/2
-	jains_fairness = pow(total_throughput, 2) /
-		(total_nodes_number/2 * jains_fairness_aux);
+	jains_fairness = pow(total_throughput, 2) / (total_nodes_number/2 * jains_fairness_aux); // Supposing that number_aps = number_nodes/2
 }
 
 /*
@@ -483,8 +499,9 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		// FG-ML5G - Students projects (Akshara P)
 		case 13: {
-
 			// STEP 1: Concatenate the information obtained from each STA in each WLAN
+			//  - Label of each device (AP and STAs)
+			char label_per_device[250] = "{";
 			//  - Throughput experienced/allocated for each device (AP and STAs)
 			char tpt_per_device[250] = "{";
 			char aux_tpt_per_device[50];
@@ -504,6 +521,9 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 			int counter_nodes_visited = 0;
 			for(int i = 0; i < total_nodes_number; i ++) {
+				// Node id
+				strcat(label_per_device, configuration_per_node[i].capabilities.node_code.c_str());
+				if (i < total_nodes_number - 1) strcat(label_per_device, ",");
 				if(configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
 					// Throughput (Mbps)
 					sprintf(aux_tpt_per_device, "%.2f,", performance_report[i].throughput * pow(10,-6));
@@ -561,7 +581,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 									strcat(data_loss_ratio_per_device, ",");
 									strcat(rtscts_loss_ratio_per_device, ",");}
 								// Printing STA details row-wise
-								fprintf(logger_script.file, ";%s\n", sta_details);
+//								fprintf(logger_script.file, ";%s\n", sta_details);
 							}
 						}
 					}
@@ -571,6 +591,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 				strcat(time_in_nav_per_device, aux_time_in_nav_per_device);
 				if(i < total_nodes_number-1) strcat(time_in_nav_per_device, ",");
 			}
+			strcat(label_per_device, "}");
 			strcat(tpt_per_device, "}");
 			strcat(rssi_per_device, "}");
 			strcat(data_loss_ratio_per_device, "}");
@@ -578,7 +599,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			strcat(time_in_nav_per_device, "}");
 
 			// STEP 2: Print the data to the output .csv file
-			fprintf(logger_script.file, ";%s;%s;%s;%s;%s\n", tpt_per_device,rssi_per_device,
+			fprintf(logger_script.file, ";%s;%s;%s;%s;%s;%s\n", label_per_device, tpt_per_device,rssi_per_device,
 				data_loss_ratio_per_device,rtscts_loss_ratio_per_device,time_in_nav_per_device);
 
 			break;

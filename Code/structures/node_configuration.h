@@ -53,6 +53,7 @@
 
 struct Capabilities
 {
+	std::string node_code;		// Node code
 	int node_id;				// Node id
 	double x;					// X position coordinate
 	double y;					// Y position coordinate
