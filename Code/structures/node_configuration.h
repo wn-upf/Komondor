@@ -43,7 +43,7 @@
  * -----------------------------------------------------------------
  * File description: this is the main Komondor file
  *
- * - This file defines a NOTIFICATION and provides basic displaying methods
+ * - This file defines a CONFIGURATION and provides basic displaying methods
  */
 
 #ifndef _AUX_CONFIGURATION_

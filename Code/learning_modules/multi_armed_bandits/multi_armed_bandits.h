@@ -64,9 +64,6 @@ class MultiArmedBandit {
 		int num_actions;
 		int action_selection_strategy;
 
-	// Private items
-	private:
-
 		// Generic variables to all the learning strategies
 		int initial_reward;
 		int num_iterations;
@@ -92,31 +89,13 @@ class MultiArmedBandit {
 		/******************/
 
 		/*
-		* UpdateConfiguration(): main method for updating the configuration according to past experience
-		* INPUT:
-		* 	- arm_ix: index of the last played arm
-		* 	- reward: reward of the last played arm
-		* 	- agent_logger: logger object to write logs
-		* 	- sim_time: current simulation time
-		* OUTPUT:
-		*  - new_action_ix: new arm to be selected
-		*/
-		int UpdateConfiguration(int arm_ix, double reward, Logger &agent_logger, double sim_time) {
-			// Update the reward of the last played configuration
-			UpdateArmStatistics(arm_ix, reward);
-			// Select a new action according to the updated information
-//			int new_action_ix = SelectNewAction();
-//			return new_action_ix;
-			return SelectNewAction();
-		};
-
-		/*
 		 * UpdateRewardStatistics(): updates the statistics maintained for each arm
 		 * INPUT:
 		 * 	- action_ix: index of the action to be updated
 		 * 	- reward: last reward observed from the action of interest
 		 **/
 		void UpdateArmStatistics(int action_ix, double reward){
+
 			if(action_ix >= 0) { // Avoid indexing errors
 				// Update the reward for the chosen arm
 				reward_per_arm[action_ix] = reward;
@@ -170,6 +149,11 @@ class MultiArmedBandit {
 					num_iterations ++;
 					break;
 				}
+				default:{
+					printf("[MAB] ERROR: '%d' is not a correct action-selection strategy!\n", action_selection_strategy);
+					PrintAvailableActionSelectionStrategies();
+					exit(EXIT_FAILURE);
+				}
 			}
 			return action_ix;
 		}
@@ -181,27 +165,27 @@ class MultiArmedBandit {
 		/*************************/
 
 		/*
-		 * PrintOrWriteArmsStatistics: prints (or writes) the statistics of each arm
+		 * PrintOrWriteStatistics: prints (or writes) the statistics of each arm
 		 * INPUT:
 		 * 	- write_or_print: variable to indicate whether to print on the  console or to write on the the output logs file
 		 * 	- aggent_logger: logger object to write on the output file
 		 * 	- sim_time: simulation time
 		 */
-		void PrintOrWriteArmsStatistics(int write_or_print, Logger &agent_logger, double sim_time) {
+		void PrintOrWriteStatistics(int write_or_print, Logger &agent_logger, double sim_time) {
 			// Write or print according the input parameter "write_or_print"
 			switch(write_or_print){
 				// Print logs in console
 				case PRINT_LOG:{
 					if(print_agent_logs){
-						printf("Reward per arm: ");
+						printf("%s Reward per arm: ", LOG_LVL3);
 						for(int n = 0; n < num_actions; n++){
 							printf("%f  ", reward_per_arm[n]);
 						}
-						printf("\nCumulative reward per arm: ");
+						printf("\n%s Cumulative reward per arm: ", LOG_LVL3);
 						for(int n = 0; n < num_actions; n++){
 							printf("%f  ", cumulative_reward_per_arm[n]);
 						}
-						printf("\nTimes each arm has been selected: ");
+						printf("\n%s Times each arm has been selected: ", LOG_LVL3);
 						for(int n = 0; n < num_actions; n++){
 							printf("%d  ", times_arm_has_been_selected[n]);
 						}
@@ -236,6 +220,15 @@ class MultiArmedBandit {
 					break;
 				}
 			}
+		}
+
+		/*
+		 * PrintAvailableLearningMechanisms(): prints the available ML mechanisms types
+		 */
+		void PrintAvailableActionSelectionStrategies(){
+			printf("%s Available types of action-selection strategies:\n", LOG_LVL2);
+			printf("%s STRATEGY_EGREEDY (%d)\n", LOG_LVL3, STRATEGY_EGREEDY);
+			printf("%s STRATEGY_THOMPSON_SAMPLING (%d)\n", LOG_LVL3, STRATEGY_THOMPSON_SAMPLING);
 		}
 
 

@@ -110,7 +110,8 @@ class PreProcessor {
 				}
 				/* Default */
 				default:{
-					printf("[PP] ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
+					printf("[Pre-Processor] ERROR: '%d' is not a correct learning mechanism\n", learning_mechanism);
+					PrintAvailableLearningMechanisms();
 					exit(EXIT_FAILURE);
 					break;
 				}
@@ -139,7 +140,8 @@ class PreProcessor {
 				}
 				/* Default */
 				default:{
-					printf("[PP] ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
+					printf("[Pre-Processor] ERROR: '%d' is not a correct learning mechanism\n", learning_mechanism);
+					PrintAvailableLearningMechanisms();
 					exit(EXIT_FAILURE);
 					break;
 				}
@@ -174,7 +176,6 @@ class PreProcessor {
 				 * 	 (e.g., consider the data rate granted by the modulation and the total time)
 				 */
 				case REWARD_TYPE_THROUGHPUT:{
-
 					if (performance.max_bound_throughput == 0) {
 						reward = 0;
 					} else {
@@ -192,7 +193,8 @@ class PreProcessor {
 				}
 				/* Default */
 				default:{
-					printf("[PP] ERROR: %d is not a correct type of performance indicator\n", type_of_reward);
+					printf("[Pre-Processor] ERROR: '%d' is not a correct type of performance indicator\n", type_of_reward);
+					PrintAvailableRewardTypes();
 					exit(EXIT_FAILURE);
 					break;
 				}
@@ -261,52 +263,6 @@ class PreProcessor {
 			new_configuration.selected_dcb_policy = new_dcb_policy;		// DCB policy
 			return new_configuration;
 		}
-
-//		/*
-//		 * FindIndexesOfConfigurationBandits(): given a configuration, fills the "indexes_selected_arm" object, which
-//		 * includes the index of each parameter
-//		 * INPUT:
-//		 * 	- configuration: configuration of the AP
-//		 * 	- indexes_selected_arm: array to be filled
-//		 */
-//		void FindIndexesOfConfigurationBandits(Configuration configuration, int *indexes_selected_arm) {
-//
-//			int index_channel = -1;
-//			int index_pd = -1;
-//			int index_tx_power = -1;
-//			int index_dcb_policy = -1;
-//
-//			// Channel
-//			for(int i = 0; i < num_actions_channel; i++) {
-//				if(configuration.selected_primary_channel == list_of_channels[i]) {
-//					index_channel = i;
-//				}
-//			}
-//			// Packet Detection (PD) threshold
-//			for(int i = 0; i < num_actions_sensitivity; i++) {
-//				if(configuration.selected_pd == list_of_pd_values[i]) {
-//					index_pd = i;
-//				}
-//			}
-//			// Transmit Power
-//			for(int i = 0; i < num_actions_tx_power; i++) {
-//				if(configuration.selected_tx_power == list_of_tx_power_values[i]) {
-//					index_tx_power = i;
-//				}
-//			}
-//			// DCB policy
-//			for(int i = 0; i < num_actions_dcb_policy; i++) {
-//				if(configuration.selected_dcb_policy == list_of_dcb_policy[i]) {
-//					index_dcb_policy = i;
-//				}
-//			}
-//
-//			indexes_selected_arm[0] = index_channel;
-//			indexes_selected_arm[1] = index_pd;
-//			indexes_selected_arm[2] = index_tx_power;
-//			indexes_selected_arm[3] = index_dcb_policy;
-//
-//		}
 
 		/*
 		 * FindActionIndexFromConfigurationBandits(): finds the action index according to the global configuration report
@@ -381,6 +337,24 @@ class PreProcessor {
 			printf("%s DCB policy: %d\n", LOG_LVL3, list_of_dcb_policy[indexes_selected_arm[3]]);
 		}
 
+		/*
+		 * PrintAvailableRewards(): prints the available reward types
+		 */
+		void PrintAvailableRewardTypes(){
+			printf("%s Available types of rewards:\n%s REWARD_TYPE_PACKETS_SENT (%d)\n"
+				"%s REWARD_TYPE_THROUGHPUT (%d)\n%s REWARD_TYPE_PACKETS_GENERATED (%d)\n",
+				LOG_LVL2, LOG_LVL3, REWARD_TYPE_PACKETS_SENT, LOG_LVL3, REWARD_TYPE_THROUGHPUT,
+				LOG_LVL3, REWARD_TYPE_PACKETS_GENERATED);
+		}
+
+		/*
+		 * PrintAvailableLearningMechanisms(): prints the available ML mechanisms types
+		 */
+		void PrintAvailableLearningMechanisms(){
+			printf("%s Available types of learning mechanisms:\n", LOG_LVL2);
+			printf("%s MULTI_ARMED_BANDITS (%d)\n", LOG_LVL3, MULTI_ARMED_BANDITS);
+		}
+
 		/***********************/
 		/***********************/
 		/*  AUXILIARY METHODS  */
@@ -391,8 +365,8 @@ class PreProcessor {
 		 * index2values(): given different lists of parameters, outputs the index in each list
 		 * according to the index of the joint action (which considers each parameter)
 		 * INPUT:
-		 * 	- indexes: array we want to fill (3 positions, one for each parameter - channel, pd, Tx power)
-		 * 	- action_ix: index of the action, which represents a combination of channel, pd and tx power
+		 * 	- indexes: array we want to fill (3 positions, one for each parameter - channel, PD, Tx power)
+		 * 	- action_ix: index of the action, which represents a combination of channel, PD and tx power
 		 * 	- size_channels: size of channels possibilities
 		 * 	- size_pd: size of pd possibilities
 		 * 	- size_tx_power: size of Tx power possibilities

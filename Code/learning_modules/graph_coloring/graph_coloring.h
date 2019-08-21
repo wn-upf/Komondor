@@ -257,6 +257,28 @@ class GraphColoring {
 
 		}
 
+		/*
+		 * PrintOrWriteStatistics: prints (or writes) the statistics of Graph Coloring
+		 * INPUT:
+		 * 	- write_or_print: variable to indicate whether to print on the  console or to write on the the output logs file
+		 * 	- aggent_logger: logger object to write on the output file
+		 * 	- sim_time: simulation time
+		 */
+		void PrintOrWriteStatistics(int write_or_print) {
+			// Write or print according the input parameter "write_or_print"
+			switch(write_or_print){
+				// Print logs in console
+				case PRINT_LOG:{
+
+				}
+				// Write logs in agent's output file
+				case WRITE_LOG:{
+
+				}
+			}
+		}
+
+
 };
 
 #endif

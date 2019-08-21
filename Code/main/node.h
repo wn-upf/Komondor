@@ -4817,10 +4817,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					}
 
 					fprintf(node_logger.file,"\n%s - Average bandwidth used for transmitting = %.2f MHz / %d MHz (%.2f %%)\n",
-						LOG_LVL4,
-						bandwidth_used_txing,
-						num_channels_allowed * 20,
-						bandwidth_used_txing * 100 / (num_channels_allowed * 20));
+						LOG_LVL4, bandwidth_used_txing, num_channels_allowed * 20, bandwidth_used_txing * 100 / (num_channels_allowed * 20));
 
 					fprintf(node_logger.file,"\n");
 

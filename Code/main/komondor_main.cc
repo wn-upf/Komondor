@@ -320,7 +320,8 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			PrintAllAgentsInfo();
 			if (central_controller_flag) {
 				printf("%s Central Controller generated!\n\n", LOG_LVL2);
-				central_controller[0].PrintCentralControllerInfo();
+				central_controller[0].PrintOrWriteControllerInfo(PRINT_LOG);
+				//central_controller[0].PrintOrWriteControllerInfo(WRITE_LOG);
 			}
 			printf("\n");
 		}
@@ -390,7 +391,8 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	// Connect the agents to the central controller, if applicable
 	if (agents_enabled) {
 		for(int w = 0; w < total_agents_number; ++w){
-			if (agent_container[w].centralized_flag) {
+			if(agent_container[w].communication_level ==  PURE_CENTRALIZED ||
+				agent_container[w].communication_level == HYBRID_CENTRALIZED_DECENTRALIZED) {
 				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
 				connect agent_container[w].outportAnswerToController,central_controller[0].InportReceivingInformationFromAgent;
 				connect central_controller[0].outportSendConfigurationToAgent,agent_container[w].InportReceiveConfigurationFromController;
@@ -1078,12 +1080,13 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			wlan_code.append(ToString(wlan_code_aux));
 			agent_container[agent_ix].wlan_code = wlan_code.c_str();
 
-			//  Centralized flag
+			//  Communication level
 			tmp_agents = strdup(line_agents);
-			int centralized_flag (atoi(GetField(tmp_agents, IX_CENTRALIZED_FLAG)));
-			agent_container[agent_ix].centralized_flag = centralized_flag;
+			int communication_level (atoi(GetField(tmp_agents, IX_COMMUNICATION_LEVEL)));
+			agent_container[agent_ix].communication_level = communication_level;
 
-			if(centralized_flag) {
+			// Check if the central controller has to be created or not
+			if(communication_level ==  PURE_CENTRALIZED || communication_level == HYBRID_CENTRALIZED_DECENTRALIZED) {
 				++total_controlled_agents_number;
 				central_controller_flag = 1;
 			}
@@ -1184,8 +1187,8 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			agent_container[agent_ix].print_agent_logs = print_agent_logs;
 
 			// Initialize learning algorithm in agent
-			agent_container[agent_ix].InitializePreProcessor();
-			agent_container[agent_ix].InitializeLearningAlgorithm();
+			//agent_container[agent_ix].InitializePreProcessor();
+			//agent_container[agent_ix].InitializeLearningAlgorithm();
 
 			++agent_ix;
 			free(tmp_agents);
@@ -1214,6 +1217,7 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 
 		central_controller[0].agents_number = total_controlled_agents_number;
 		central_controller[0].wlans_number = total_wlans_number;
+
 		central_controller[0].InitializeCentralController();
 
 		int *agents_list;
@@ -1221,10 +1225,14 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 		int agent_list_ix (0);					// Index considering the agents attached to the central entity
 		double max_time_between_requests (0);	// To determine the maximum time between requests for agents
 
+		// Check which agents are attached to the central controller
 		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
-			if(agent_container[agent_ix].centralized_flag) {
+			if(agent_container[agent_ix].communication_level ==  PURE_CENTRALIZED ||
+				agent_container[agent_ix].communication_level == HYBRID_CENTRALIZED_DECENTRALIZED) {
+				// Add agent id to list of agents attached to the controller
 				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
 				double agent_time_between_requests (agent_container[agent_list_ix].time_between_requests);
+				// Store the maximum time between requests
 				if (agent_time_between_requests > max_time_between_requests) {
 					central_controller[0].time_between_requests = agent_time_between_requests;
 				}

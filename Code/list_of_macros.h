@@ -261,12 +261,14 @@
 #define IEEE_NOT_SPECIFIED		0
 #define IEEE_802_11_AX			1
 
-// IEEE 802.11ax
+/* *****************
+ * * IEEE 802.11ax *
+ * *****************
+ */
+
 // --- PHY parameters ---
 
-#define SIFS 		(16 * MICRO_VALUE)			// SIFS value
-#define DIFS		(SIFS + (2 * SLOT_TIME))	// DIFS value
-#define PIFS		(SIFS + SLOT_TIME)			// PIFS value
+#define CST_DBM		-68
 
 #define IEEE_AX_OFDM_SYMBOL_LEGACY			(4 * MICRO_VALUE)	// Duration of an OFDM symbol in legacy mode
 #define IEEE_AX_OFDM_SYMBOL_GI32_DURATION	(16 * MICRO_VALUE)	// Duration of OFDM symbol (for guard interval 3.2) [s]
@@ -276,6 +278,11 @@
 // #define IEEE_AX_PHY_HE_SU_DURATION	 		(32 * MICRO_VALUE)	// HE single-user preamble [s]
 
 // --- MAC parameters ---
+
+#define SIFS 		(16 * MICRO_VALUE)			// SIFS value
+#define DIFS		(SIFS + (2 * SLOT_TIME))	// DIFS value
+#define PIFS		(SIFS + SLOT_TIME)			// PIFS value
+
 #define IEEE_AX_SF_LENGTH				16					// Service field length [bits]
 #define IEEE_AX_MD_LENGTH				32					// MPDU delimiter if packet aggregation is used [bits]
 
@@ -294,17 +301,11 @@
 
 #define IEEE_BITS_OFDM_SYM_LEGACY 		24					// Number of bits per symbol in the legacy OFDM operation
 
-// Agents
-#define ORIGIN_AGENT	0		// To determine the source of a received configuration (agent)
-#define ORIGIN_AP		1		// To determine the source of a received configuration (AP)
+/* *****************************************
+ * * SPATIAL REUSE OPERATION IEEE 802.11ax *
+ * *****************************************
+ */
 
-#define REWARD_TYPE_PACKETS_SENT 		0	// To determine the reward according to the type of performance indicator
-#define REWARD_TYPE_THROUGHPUT 			1	// To determine the reward according to the type of performance indicator
-#define REWARD_TYPE_PACKETS_GENERATED 	2
-
-#define CST_DBM		-68
-
-// SPATIAL REUSE OPERATION
 #define INTRA_BSS_FRAME		0		// Frame type = Intra-BSS or legacy
 #define NON_SRG_FRAME		1		// Frame type = Inter-BSS with different SRG
 #define SRG_FRAME			2		// Frame type = Inter-BSS with same SRG
@@ -313,9 +314,45 @@
 #define MAX_TX_PWR_SR		20		// Maximum transmit power to be used during the SR operation (dBm)
 #define TX_PWR_REF			21		// TX PWR REF (dBm)
 
-/* ************************************************
- * * INPUT FILES TERM INDEX AND CONSOLE ARGUMENTS *
- * ************************************************
+/* *****************************************
+ * * AGENTS OPERATION AND MACHINE LERANING *
+ * *****************************************
+ */
+
+#define ORIGIN_AGENT	0		// To determine the source of a received configuration (agent)
+#define ORIGIN_AP		1		// To determine the source of a received configuration (AP)
+
+#define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, PD, P_tx, DCB policy)
+
+// Types of rewards
+#define REWARD_TYPE_PACKETS_SENT 		0	// To determine the reward according to the type of performance indicator
+#define REWARD_TYPE_THROUGHPUT 			1	// To determine the reward according to the type of performance indicator
+#define REWARD_TYPE_PACKETS_GENERATED 	2
+
+// Communication levels provided
+#define PURE_DECENTRALIZED 					0	// Agents learn based on their own information
+#define DISTRIBUTED		 					1	// Agents exchange information among them
+#define PURE_CENTRALIZED					2	// The learning operation is fully controlled by a central controller
+#define HYBRID_CENTRALIZED_DECENTRALIZED	3	// The learning operation is held at both controller and agents
+
+// Learning mechanisms allowed
+#define MULTI_ARMED_BANDITS 			1
+#define GRAPH_COLORING					2
+#define ACTION_BANNING					3
+
+// Action-selection strategies (MABs)
+#define STRATEGY_EGREEDY				1
+#define STRATEGY_THOMPSON_SAMPLING		2
+
+// Levels of applicability for configurations computed by agents / central controller
+#define CONFIGURATION_SUGGESTED 		0
+#define CONFIGURATION_RECOMMENDED 		1
+#define CONFIGURATION_REQUIRED			2
+
+
+/* ********************************************
+ * * INPUT/OUTPUT FILES AND CONSOLE ARGUMENTS *
+ * ********************************************
  */
 
 // CONSOLE ARGUMENTS
@@ -346,7 +383,6 @@
 #define FILE_TYPE_UNKNOWN		-1
 #define FILE_TYPE_APS			0
 #define FILE_TYPE_NODES			1
-#define FILE_NAME_CODE_APS		"aps"
 #define FILE_NAME_CODE_NODES	"nodes"
 
 // System file
@@ -381,9 +417,9 @@
 #define IX_MAX_CH_ALLOWED			10
 #define IX_CW_MIN					11
 #define IX_CW_STAGE_MAX				12
-#define IX_TX_POWER_MIN					13
-#define IX_TX_POWER_DEFAULT				14
-#define IX_TX_POWER_MAX					15
+#define IX_TX_POWER_MIN				13
+#define IX_TX_POWER_DEFAULT			14
+#define IX_TX_POWER_MAX				15
 #define IX_PD_MIN					16
 #define IX_PD_DEFAULT				17
 #define IX_PD_MAX					18
@@ -402,7 +438,7 @@
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1
-#define IX_CENTRALIZED_FLAG				2
+#define IX_COMMUNICATION_LEVEL			2
 #define IX_AGENT_TIME_BW_REQUESTS		3
 #define IX_AGENT_CHANNEL_VALUES			4
 #define IX_AGENT_PD_VALUES				5
@@ -411,16 +447,6 @@
 #define IX_AGENT_TYPE_OF_REWARD			8
 #define IX_AGENT_LEARNING_MECHANISM		9
 #define IX_AGENT_SELECTED_STRATEGY 		10
-
-#define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, PD, P_tx, DCB policy)
-
-// Learning mechanisms allowed
-#define MULTI_ARMED_BANDITS 			1
-#define GRAPH_COLORING					2
-
-// Action-selection strategies (MABs)
-#define STRATEGY_EGREEDY				1
-#define STRATEGY_THOMPSON_SAMPLING		2
 
 /* *********************
  * * LOG TYPE ENCODING *
