@@ -41,10 +41,14 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
+ */
+
+ /**
+ * modulations_methods.h: this file contains functions related to the main Komondor's operation
  *
  * - This file contains the methods related to "modulations" operations
  */
+
 
 #include <math.h>
 #include <algorithm>
@@ -52,9 +56,11 @@
 
 #include "../list_of_macros.h"
 
-/*
- * SelectMCSResponse(): select the proper MCS of transmitter per number of channels
- **/
+/**
+* Select the proper MCS per each number of channels based on the power received from transmitter
+* @param "mcs_response" [type int*]: array containing the MCS to be used for each number of channels
+* @param "power_rx_interest" [type double]: power received of interest
+*/
 void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
 
 	double pw_rx_intereset_dbm (ConvertPower(PW_TO_DBM, power_rx_interest));
@@ -77,29 +83,23 @@ void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
 	}
 }
 
-/*
- * ComputeEbToNoise():
- * "Energy per bit to noise power spectral density ratio"
- * (normalized SNR to compare the BER performance of a digital modulation scheme)
- * Arguments:
- * - SINR: SINR received (pW)
- * - bit_rate: bit rate (bps)
- * - B: channel bandwidth (Hz)
- * - M: number of alternative modulation symbols
- * Output:
- * - Eb_to_N0: Eb_to_N0 value in linear
- */
-double ComputeEbToNoise(double sinr, double bit_rate, int badnwidth, int modulation_type){
+/**
+* Compute the "Energy per bit to noise power spectral density ratio"(normalized SNR to compare the BER performance of a digital modulation scheme)
+* @param "sinr" [type double]: SINR received (pW)
+* @param "bit_rate" [type double]: bit rate (bps)
+* @param "bandwidth" [type double]: channel bandwidth (Hz)
+* @param "modulation_type" [type double]: number of alternative modulation symbols
+* @return "Eb_to_N0" [type double]: Eb_to_N0 value in linear
+*/
+double ComputeEbToNoise(double sinr, double bit_rate, int bandwidth, int modulation_type){
 
-	double Es_to_N0 (sinr * (bit_rate/badnwidth));
-
+	double Es_to_N0 (sinr * (bit_rate/bandwidth));
 	//printf("Es_to_N0 = %f (%f) \n", Es_to_N0, ConvertPower(LINEAR_TO_DB, Es_to_N0));
-
 	double Eb_to_N0 (Es_to_N0 * log2(modulation_type));
-
 	//printf("Eb_to_N0 = %f (%f)\n", Eb_to_N0, ConvertPower(LINEAR_TO_DB, Eb_to_N0));
 
 	return Eb_to_N0;
+
 }
 
 ///*

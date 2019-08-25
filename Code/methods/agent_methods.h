@@ -41,9 +41,12 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this file contains functions related to the agents' operation
+ */
+
+ /**
+ * agents_methods.h: this file contains functions related to the agents' operation
  *
- * - This file contains the methods related to "time" operations
+ * - This file contains the methods employed by intelligent agents
  */
 
 #include "../list_of_macros.h"
@@ -51,9 +54,11 @@
 #ifndef _AUX_AGENT_METHODS_
 #define _AUX_AGENT_METHODS_
 
-/*
- * RestartPerformanceMetrics(): restarts the performance metrics being tracked by a given AP-agent pair
- **/
+/**
+* Restarts the performance metrics being tracked by a given AP-agent pair
+* @param "current_performance" [type Performance]: performance obtained by the corresponding WLAN
+* @param "sim_time" [type double]: simulation time at the moment of calling the function (for logging purposes)
+*/
 void RestartPerformanceMetrics(Performance *current_performance, double sim_time) {
 
 	current_performance->last_time_measured = sim_time;

@@ -1,0 +1,111 @@
+\hypertarget{structMcs__array}{}\section{Mcs\+\_\+array Struct Reference}
+\label{structMcs__array}\index{Mcs\+\_\+array@{Mcs\+\_\+array}}
+
+
+{\ttfamily \#include $<$modulations.\+h$>$}
+
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static const double {\bfseries mcs\+\_\+array} \mbox{[}4\mbox{]}\mbox{[}12\mbox{]}
+\item 
+static const double {\bfseries coding\+\_\+rate\+\_\+array} \mbox{[}12\mbox{]}
+\item 
+\mbox{\Hypertarget{structMcs__array_afe262b6955f38fdd852d4878bdbf9765}\label{structMcs__array_afe262b6955f38fdd852d4878bdbf9765}} 
+static const int {\bfseries bits\+\_\+per\+\_\+symbol\+\_\+modulation\+\_\+array} \mbox{[}12\mbox{]} = \{2, 4, 4, 16, 16, 64, 64, 64, 256, 256, 1024, 1024\}
+\item 
+static const int {\bfseries modulation\+\_\+bits} \mbox{[}12\mbox{]}
+\item 
+static const double {\bfseries coding\+\_\+rates} \mbox{[}12\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{modulations_8h_source}{modulations.\+h}\+: this file defines modulations and M\+CS parameters 
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{structMcs__array_a27d0964a77ed2694614b439bcf4cc1b6}\label{structMcs__array_a27d0964a77ed2694614b439bcf4cc1b6}} 
+\index{Mcs\+\_\+array@{Mcs\+\_\+array}!coding\+\_\+rate\+\_\+array@{coding\+\_\+rate\+\_\+array}}
+\index{coding\+\_\+rate\+\_\+array@{coding\+\_\+rate\+\_\+array}!Mcs\+\_\+array@{Mcs\+\_\+array}}
+\subsubsection{\texorpdfstring{coding\+\_\+rate\+\_\+array}{coding\_rate\_array}}
+{\footnotesize\ttfamily const double Mcs\+\_\+array\+::coding\+\_\+rate\+\_\+array\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+= \{1/double(2), 1/double(2), 3/double(4), 1/double(2),
+    3/double(4), 2/double(3), 3/double(4), 5/double(6), 3/double(4), 5/double(6), 3/double(4), 5/double(6)\}
+\end{DoxyCode}
+\mbox{\Hypertarget{structMcs__array_a16b9cd21a380a8155fd31d6151ba23a1}\label{structMcs__array_a16b9cd21a380a8155fd31d6151ba23a1}} 
+\index{Mcs\+\_\+array@{Mcs\+\_\+array}!coding\+\_\+rates@{coding\+\_\+rates}}
+\index{coding\+\_\+rates@{coding\+\_\+rates}!Mcs\+\_\+array@{Mcs\+\_\+array}}
+\subsubsection{\texorpdfstring{coding\+\_\+rates}{coding\_rates}}
+{\footnotesize\ttfamily const double Mcs\+\_\+array\+::coding\+\_\+rates\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+= \{ 
+    1/double(2),    
+    1/double(2),    
+    3/double(4),    
+    1/double(2),    
+    3/double(4),    
+    1/double(2),    
+    2/double(3),    
+    3/double(4),    
+    3/double(4),    
+    5/double(6),    
+    3/double(4),    
+    5/double(6)     
+\}
+\end{DoxyCode}
+\mbox{\Hypertarget{structMcs__array_aa65862049737b2d20059c0b9d6439639}\label{structMcs__array_aa65862049737b2d20059c0b9d6439639}} 
+\index{Mcs\+\_\+array@{Mcs\+\_\+array}!mcs\+\_\+array@{mcs\+\_\+array}}
+\index{mcs\+\_\+array@{mcs\+\_\+array}!Mcs\+\_\+array@{Mcs\+\_\+array}}
+\subsubsection{\texorpdfstring{mcs\+\_\+array}{mcs\_array}}
+{\footnotesize\ttfamily const double Mcs\+\_\+array\+::mcs\+\_\+array\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+= \{ 
+    \{4* pow(10,6),16* pow(10,6),24* pow(10,6),33* pow(10,6),49* pow(10,6),65* pow(10,6),73* pow(10,6),81* 
+      pow(10,6),
+            98* pow(10,6),108* pow(10,6),122* pow(10,6),135* pow(10,6)\},
+    \{8* pow(10,6),33* pow(10,6),49* pow(10,6),65* pow(10,6),98* pow(10,6),130* pow(10,6),146* pow(10,6),163
+      * pow(10,6),
+            195* pow(10,6),217* pow(10,6),244* pow(10,6),271* pow(10,6)\},
+    \{17* pow(10,6),68* pow(10,6),102* pow(10,6),136* pow(10,6),204* pow(10,6),272* pow(10,6),306* pow(10,6)
+      ,
+            340*pow(10,6),408* pow(10,6),453* pow(10,6),510 * pow(10,6),567 * pow(10,6)\},
+    \{34 * pow(10,6),136 * pow(10,6),204 * pow(10,6),272 * pow(10,6),408 * pow(10,6),544 * pow(10,6),613 * 
+      pow(10,6),
+            681 * pow(10,6),817 * pow(10,6),907 * pow(10,6),1021 * pow(10,6),1134 * pow(10,6)\}\}
+\end{DoxyCode}
+\mbox{\Hypertarget{structMcs__array_a6c8e5de2869bf2c1fa707f6ad7d4b968}\label{structMcs__array_a6c8e5de2869bf2c1fa707f6ad7d4b968}} 
+\index{Mcs\+\_\+array@{Mcs\+\_\+array}!modulation\+\_\+bits@{modulation\+\_\+bits}}
+\index{modulation\+\_\+bits@{modulation\+\_\+bits}!Mcs\+\_\+array@{Mcs\+\_\+array}}
+\subsubsection{\texorpdfstring{modulation\+\_\+bits}{modulation\_bits}}
+{\footnotesize\ttfamily const int Mcs\+\_\+array\+::modulation\+\_\+bits\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+= \{ 
+    1,  
+    2,  
+    2,  
+    4,  
+    4,  
+    6,  
+    6,  
+    6,  
+    8,  
+    8,  
+    10, 
+    10  
+\}
+\end{DoxyCode}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/structures/modulations.\+h\end{DoxyCompactItemize}

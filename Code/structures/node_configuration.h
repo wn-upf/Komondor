@@ -41,9 +41,10 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
- *
- * - This file defines a CONFIGURATION and provides basic displaying methods
+ */
+
+ /**
+ * node_configuration.h: this file defines a CONFIGURATION and provides basic displaying methods
  */
 
 #ifndef _AUX_CONFIGURATION_
@@ -53,34 +54,35 @@
 
 struct Capabilities
 {
-	std::string node_code;		// Node code
-	int node_id;				// Node id
-	double x;					// X position coordinate
-	double y;					// Y position coordinate
-	double z;					// Z position coordinate
-	int node_type;				// Node type (e.g., AP, STA, ...)
-	int destination_id;			// Destination node id (for nodes not belonging to any WLAN)
-	double lambda;				// Average notification generation rate (related to exponential BO) [notification/s]
-	double traffic_load;		// Average traffic load of the AP [packets/s]
-	int ieee_protocol;			// IEEE protocol type
-	int primary_channel;		// Primary channel
-	int min_channel_allowed;	// Min. allowed channel
-	int max_channel_allowed;	// Max. allowed channel
-	int num_channels_allowed;	// Maximum number of channels allowed to TX in
-	double tx_power_min;				// Min. power transmission [pW]
-	double tx_power_default;			// Default power transmission [pW]
-	double tx_power_max;				// Max. power transmission [pW]
-	double sensitivity_min;				// Min. pd	("sensitivity" threshold) [pW]
-	double sensitivity_default;			// Default pd	("sensitivity" threshold) [pW]
-	double sensitivity_max;				// Max. pd ("sensitivity" threshold)
-	double tx_gain;				// Antenna transmission gain [linear]
-	double rx_gain;				// Antenna reception gain [linear]
-	int current_dcb_policy;	// Selected DCB policy
-	int modulation_default;		// Default modulation
+	std::string node_code;		///> Node code
+	int node_id;				///> Node id
+	double x;					///> X position coordinate
+	double y;					///> Y position coordinate
+	double z;					///> Z position coordinate
+	int node_type;				///> Node type (e.g., AP, STA, ...)
+	int destination_id;			///> Destination node id (for nodes not belonging to any WLAN)
+	double lambda;				///> Average notification generation rate (related to exponential BO) [notification/s]
+	double traffic_load;		///> Average traffic load of the AP [packets/s]
+	int ieee_protocol;			///> IEEE protocol type
+	int primary_channel;		///> Primary channel
+	int min_channel_allowed;	///> Min. allowed channel
+	int max_channel_allowed;	///> Max. allowed channel
+	int num_channels_allowed;	///> Maximum number of channels allowed to TX in
+	double tx_power_min;		///> Min. power transmission [pW]
+	double tx_power_default;	///> Default power transmission [pW]
+	double tx_power_max;		///> Max. power transmission [pW]
+	double sensitivity_min;		///> Min. pd	("sensitivity" threshold) [pW]
+	double sensitivity_default;	///> Default pd	("sensitivity" threshold) [pW]
+	double sensitivity_max;		///> Max. pd ("sensitivity" threshold)
+	double tx_gain;				///> Antenna transmission gain [linear]
+	double rx_gain;				///> Antenna reception gain [linear]
+	int current_dcb_policy;		///> Selected DCB policy
+	int modulation_default;		///> Default modulation
 
-	// Function to print the node's capabilities
+	/**
+	 * Function to print the node's capabilities
+	 */
 	void PrintCapabilities(){
-
 		printf("%s Capabilities of node %d:\n", LOG_LVL3, node_id);
 		printf("%s node_type = %d\n", LOG_LVL4, node_type);
 		printf("%s position = (%.2f, %.2f, %.2f)\n", LOG_LVL4, x, y, z);
@@ -100,12 +102,14 @@ struct Capabilities
 		printf("%s tx_gain = %f (%f dBi)\n", LOG_LVL4, tx_gain, ConvertPower(LINEAR_TO_DB, tx_gain));
 		printf("%s rx_gain = %f (%f dBi)\n", LOG_LVL4, rx_gain, ConvertPower(LINEAR_TO_DB, rx_gain));
 		printf("%s modulation_default = %d\n", LOG_LVL4, modulation_default);
-
 		printf("\n");
-
 	}
 
-	// Function to write the node's capabilities
+	/**
+	 * Function to write the node's capabilities
+	 * @param "logger" [type Logger]: logger object for printing logs into a file
+	 * @param "sim_time" [type double]: current simulation time
+	 */
 	void WriteCapabilities(Logger logger, double sim_time){
 		fprintf(logger.file, "%.15f;CC;%s;%s WLAN capabilities:\n", sim_time, LOG_F00, LOG_LVL3);
 		fprintf(logger.file, "%.15f;CC;%s;%s node_type = %d\n",
@@ -153,23 +157,25 @@ struct Configuration
 {
 	double timestamp;
 
-	int selected_primary_channel;		// Selected primary channel
-	double selected_pd;		// Selected pd ("sensitivity" threshold) [pW]
-	double selected_tx_power;	// Selected Tx Power [pW]
-	int selected_dcb_policy;	// Selected DCB policy
+	int selected_primary_channel;		///> Selected primary channel
+	double selected_pd;					///> Selected pd ("sensitivity" threshold) [pW]
+	double selected_tx_power;			///> Selected Tx Power [pW]
+	int selected_dcb_policy;			///> Selected DCB policy
 
 	// Spatial reuse
-	int spatial_reuse_enabled;	// Indicates whether the SR operation is enabled or not
-	int bss_color;				// BSS color identifier
-	int srg;					// Spatial Reuse Group (SRG) identifier
-	double non_srg_obss_pd; 	// Threshold to be used for non-SRG transmissions
-	double srg_obss_pd; 		// Threshold to be used for SRG transmissions
+	int spatial_reuse_enabled;	///> Indicates whether the SR operation is enabled or not
+	int bss_color;				///> BSS color identifier
+	int srg;					///> Spatial Reuse Group (SRG) identifier
+	double non_srg_obss_pd; 	///> Threshold to be used for non-SRG transmissions
+	double srg_obss_pd; 		///> Threshold to be used for SRG transmissions
 
 	Capabilities capabilities;
 
-	// Function to print the node's configuration
+	/**
+	 * Function to print the node's configuration
+	 * @param "origin" [type int]: type of node printing the configuration
+	 */
 	void PrintConfiguration(int origin){
-
 		if (origin == ORIGIN_AGENT) {
 			printf("%s Recommended configuration by the agent:\n", LOG_LVL3);
 		} else if (origin == ORIGIN_AP) {
@@ -182,10 +188,13 @@ struct Configuration
 		printf("%s tx_power_default = %f pW (%f dBm)\n", LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
 		printf("%s selected_dcb_policy = %d\n", LOG_LVL4, selected_dcb_policy);
 		printf("\n");
-
 	}
 
-	// Function to write the node's configuration
+	/**
+	 * Function to write the node's configuration
+	 * @param "logger" [type Logger]: logger object for printing logs into a file
+	 * @param "sim_time" [type double]: current simulation time
+	 */
 	void WriteConfiguration(Logger logger, double sim_time){
 		fprintf(logger.file, "%.15f;CC;%s;%s WLAN configuration:\n", sim_time, LOG_F00, LOG_LVL3);
 		fprintf(logger.file, "%.15f;CC;%s;%s selected_primary = %d\n",

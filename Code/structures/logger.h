@@ -41,9 +41,10 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
- *
- * - This file defines a LOGGER to generate logs
+ */
+
+/**
+ * logger.h: this file defines a LOGGER to generate logs
  */
 
 #ifndef _AUX_LOGGER_
@@ -51,10 +52,13 @@
 
 struct Logger
 {
-	int save_logs;		// Flag for activating the log writting
-	FILE *file;			// File for writting logs
-	char head_string[INTEGER_SIZE];	// Header string (to be passed as argument when it is needed to write info from other class or component)
+	int save_logs;					///> Flag for activating the log writting
+	FILE *file;						///> File for writting logs
+	char head_string[INTEGER_SIZE];	///> Header string (to be passed as argument when it is needed to write info from other class or component)
 
+	/**
+	 * Creates an empty head string
+	 */
 	void SetVoidHeadString(){
 		sprintf(head_string, "%s", " ");
 	}

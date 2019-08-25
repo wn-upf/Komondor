@@ -41,7 +41,10 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
+ */
+
+ /**
+ * auxiliary_methods.h: this file contains functions related to the main Komondor's operation
  *
  * - This file contains the auxiliary methods to carry out the rest of operations
  */
@@ -65,11 +68,13 @@ std::string ToString(T val)
     return stream.str();
 }
 
-/*
- * PickRandomElementFromArray(): pick uniformly random an element of an array
- */
+/**
+* Pick uniformly random an element of an array
+* @param "array" [type int*]: array of integers
+* @param "array_size" [type int]: size of the introduced array
+* @return "element" [type int]: random element from the input array of integers
+*/
 int PickRandomElementFromArray(int *array, int array_size){
-
 	int element (0);
 	// Pick one of the STAs in the WLAN uniformly
 	if(array_size > 0){
@@ -79,17 +84,16 @@ int PickRandomElementFromArray(int *array, int array_size){
 		element = NODE_ID_NONE;
 		printf("The list does not contain elements!\n");
 	}
-
 	return element;
-
 }
 
-/*
- *  PickElementFromArrayRR(): pick element from array in RR manner
- */
-
+/**
+* Pick element from array in RR manner
+* @param "array" [type int*]: array of integers
+* @param "array_size" [type int]: size of the introduced array
+* @return "element" [type int]: random element from the input array of integers
+*/
 int PickElementFromArrayRR(int *array, int array_size){
-
 	static int i,j;
 	int element (0);
 	if(array_size > 0){
@@ -100,16 +104,20 @@ int PickElementFromArrayRR(int *array, int array_size){
 		element = NODE_ID_NONE;
 		printf("The list does not contain elements!\n");
 	}
-
 	return element;
-
 }
 
-/*
- * PrintOrWriteArrayInt(): prints per console or writes to a given file the elements of an "int" array
- */
+/**
+* Print per console or write to a given file the elements of an array of integers
+* @param "list" [type int*]: array of integers to be printed or written
+* @param "list_size" [type int]: size of the introduced array
+* @param "write_or_print" [type int]: variable indicating whether to print or write
+* @param "save_node_logs" [type int]: boolean indicating whether to save node logs in a file or not
+* @param "print_node_logs" [type int]: boolean indicating whether to print node logs to console or not
+* @param "node_logger" [type Logger]: logger objects used for writing logs into a file
+*/
 void PrintOrWriteArrayInt(int *list, int list_size, int write_or_print, int save_node_logs,
-		int print_node_logs, Logger node_logger) {
+	int print_node_logs, Logger node_logger) {
 
 	switch(write_or_print){
 
@@ -132,11 +140,17 @@ void PrintOrWriteArrayInt(int *list, int list_size, int write_or_print, int save
 	}
 }
 
-/*
- * PrintOrWriteArrayDouble(): prints per console or writes to a given file the elements of an "double" array
- */
+/**
+* Print per console or write to a given file the elements of an "double" array
+* @param "list" [type double*]: array of doubles to be printed or written
+* @param "list_size" [type int]: size of the introduced array
+* @param "write_or_print" [type int]: variable indicating whether to print or write
+* @param "save_node_logs" [type int]: boolean indicating whether to save node logs in a file or not
+* @param "print_node_logs" [type int]: boolean indicating whether to print node logs to console or not
+* @param "node_logger" [type Logger]: logger objects used for writing logs into a file
+*/
 void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, int save_node_logs,
-		int print_node_logs, Logger node_logger) {
+	int print_node_logs, Logger node_logger) {
 
 	switch(write_or_print){
 
@@ -160,9 +174,13 @@ void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, in
 
 }
 
-/*
- * GetFirstOrLastTrueElemOfArray(): pick the first or last TRUE element of an array
- */
+/**
+* Pick the first or last TRUE element of an array
+* @param "first_or_last" [type int]: boolean indicating whether to choose the first or the last element of the array
+* @param "list" [type int*]: array of integers
+* @param "list_size" [type int]: size of the introduced array
+* @return "left_ix" or "right_ix" [type int]: element to be returned
+*/
 int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size){
 
 	int left_ix (0);
@@ -197,33 +215,52 @@ int GetFirstOrLastTrueElemOfArray(int first_or_last, int *list, int list_size){
 
 }
 
+/**
+* Calculate the number of times an element appears in an array of integers
+* @param "value" [type int]: value to be counted in the target array of integers
+* @param "array" [type int*]: array of integers
+* @param "list_size" [type int]: size of the introduced array
+* @return "num" [type int]: number of times that "value" appears in "array"
+*/
 int GetNumberOfSpecificElementInArray(int value, int* array, int list_size){
-
 	int num (0);
-
 	for(int i=0; i<list_size; ++i){
 		if(array[i]==value) ++num;
 	}
-
 	return num;
-
 }
 
+/**
+* Return a random value between min and max
+* @param "min" [type double]: minimum value to be provided
+* @param "max" [type double]: maximum value to be provided
+* @return "num" [type double]: random double number
+*/
 double RandomDouble(double min, double max)
 {
     double f ((double)rand() / RAND_MAX);
     return min + f * (max - min);
 }
 
-double truncate_Sergio(double number, int floating_position){
-
+/**
+* Truncate a double value in order to avoid issues with long decimals
+* @param "number" [type double]: number to be truncated
+* @param "floating_position" [type int]: maximum precision of the truncate
+* @return "y" [type double]: truncated double number
+*/
+double TruncateDouble(double number, int floating_position){
     double x (pow(10,floating_position) * number);
     double y (x / pow(10,floating_position));
     return y;
-
 }
 
-double round_to_digits(double value, int digits)
+/**
+* Round a double to the specific amount of decimals
+* @param "value" [type double]: double value to be rounded
+* @param "digits" [type int]: number of decimals allowed for rounding the input value
+* @return "rounded_value" [type double]: rounded value
+*/
+double RoundToDigits(double value, int digits)
 {
     if (value == 0.0) // otherwise it will return 'nan' due to the log10() of zero
         return 0.0;
@@ -235,42 +272,29 @@ double round_to_digits(double value, int digits)
     return rounded_value;
 }
 
-double round_to_digits_float(float value, int digits)
-{
-    if (value == 0.0) // otherwise it will return 'nan' due to the log10() of zero
-        return 0.0;
-    // denominator
-    float factor (pow(10.0, digits));
-    float rounded_numerator (round(value * factor));
-    float rounded_value (rounded_numerator / factor);
-//    printf("%.24f - %.24f - %.24f\n", value, rounded_numerator, rounded_value);
-//    printf("------------------------\n");
-//    printf(" - value = %.18f\n", value);
-//    printf(" - digits = %d\n", digits);
-    //printf(" - fabs = %.18f\n", fabs(value));
-    //printf(" - log10 = %.18f\n", log10(fabs(value)));
-    //printf(" - ceil = %.18f\n", ceil(log10(fabs(value))));
-    //printf(" - factor = %.18f\n", factor);
-//    printf(" - rounded_value = %.18f\n", rounded_value);
-    return rounded_value;
-}
-
-double fix_time_offset(double time_value, int trunc_pos, int round_pos){
+/**
+* Fix the time offset generated by long decimal values (allows keeping the synchronism of the simulation)
+* @param "time_value" [type double]: time value to be fixed
+* @param "trunc_pos" [type int]: maximum decimal number to be truncated
+* @param "round_pos" [type int]: maximum decimal position to be rounded
+* @return "fixed_time_value" [type double]: fixed time value
+*/
+double FixTimeOffset(double time_value, int trunc_pos, int round_pos){
 
 	double truncated_value (0);
 	double rounded_value (0);
 	double fixed_time_value (0);
 	// double diff = 0;
 	if (trunc_pos != 0) {
-		truncated_value = truncate_Sergio(time_value, trunc_pos);
-		rounded_value = round_to_digits(truncated_value,round_pos);
+		truncated_value = TruncateDouble(time_value, trunc_pos);
+		rounded_value = RoundToDigits(truncated_value,round_pos);
 		fixed_time_value = rounded_value;
 //		printf("---------------------------------\n");
 //		printf("- time_value = %.15f \n- truncated_value = %.15f \n- rounded_value = %.15f"
 //				"\n- diff = %.15f\n- fixed_time_value = %.15f\n",
 //				time_value, truncated_value, rounded_value, diff, fixed_time_value);
 	} else {
-		rounded_value = round_to_digits(time_value,round_pos);
+		rounded_value = RoundToDigits(time_value,round_pos);
 		fixed_time_value = rounded_value;
 	}
 //	printf("---------------------------------\n");

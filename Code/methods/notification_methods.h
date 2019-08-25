@@ -41,7 +41,10 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
+ */
+
+ /**
+ * modulations_methods.h: this file contains functions related to the main Komondor's operation
  *
  * - This file contains the methods related to "notifications" operations
  */
@@ -51,9 +54,18 @@
 #include <stddef.h>
 #include "../list_of_macros.h"
 
-/*
- * GenerateLogicalNack: generates a logical NACK
- **/
+/**
+* Generates a logical NACK
+* @param "packet_type" [type int]: type of packet lost (RTS, CTS, DATA, ACK...)
+* @param "packet_id" [type int]: packet id of the packet lost
+* @param "node_id" [type int]: node sending the logical NACK
+* @param "node_id_a" [type int]: node A implied in the packet loss
+* @param "node_id_b" [type int]: node B implied in the packet loss
+* @param "loss_reason" [type int]: potential loss reason
+* @param "ber" [type double]: Bit Error Rate (BER)
+* @param "sinr" [type double]: SINR at the moment of detecting the loss
+* @return "logical_nack" [type LogicalNack]: logical NACK indicating potential packet loss causes
+*/
 LogicalNack GenerateLogicalNack(int packet_type, int packet_id, int node_id,
 		int node_id_a, int node_id_b, int loss_reason, double ber, double sinr){
 
@@ -71,9 +83,20 @@ LogicalNack GenerateLogicalNack(int packet_type, int packet_id, int node_id,
 	return logical_nack;
 }
 
-/*
- * ProcessNack(): processes a NACK notification.
- **/
+/**
+* Process a NACK notification.
+* @param "logical_nack" [type LogicalNack]: logical NACK to be processed
+* @param "packet_type" [type int]: type of packet lost (RTS, CTS, DATA, ACK...)
+* @param "node_id" [type int]: node processing the logical NACK
+* @param "node_logger" [type Logger]: logger object at which to write information
+* @param "node_state" [type int]: current state of the node that is processing the NACK
+* @param "save_node_logs" [type int]: variable to indicate whether to save node logs or not
+* @param "sim_time" [type double]: current simulation time
+* @param "nacks_received" [type int*]: list containing the number of NACKs received for each time of loss reason
+* @param "total_nodes_number" [type int]: total number of nodes in the network
+* @param "nodes_transmitting" [type int*]: list of nodes transmitting
+* @return "reason" [type int]: potential reason for the packet loss
+*/
 int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int node_state,
 		int save_node_logs,	double sim_time, int *nacks_received,
 		int total_nodes_number, int *nodes_transmitting) {
@@ -252,25 +275,36 @@ int ProcessNack(LogicalNack logical_nack, int node_id, Logger node_logger, int n
 	return reason;
 }
 
-/*
- * CleanNack(LogicalNack nack): re-initializes the Nack info.
- */
+/**
+* Re-initialize the information of a logical NACK object
+* @param "nack" [type LogicalNack]: logical NACK to be cleaned
+*/
 void CleanNack(LogicalNack *nack){
-
 	nack->source_id = NODE_ID_NONE;
 	nack->packet_id = NO_PACKET_ID;
 	nack->loss_reason = PACKET_NOT_LOST;
 	nack->node_id_a = NODE_ID_NONE;
 	nack->node_id_b = NODE_ID_NONE;
-
 }
 
-/*
- * handlePacketLoss(): handles a packet loss.
- */
+/**
+* Handles a packet loss
+* @param "type" [type int]: type of packet loss
+* @param "total_time_lost_in_num_channels" [type double*]: array containing the total time lost for each number of channels used (to be updated by this method)
+* @param "total_time_lost_per_channel" [type double*]: array containing the total time lost in each channels used (to be updated by this method)
+* @param "packets_lost" [type int]: total number of packets lost (to be updated by this method)
+* @param "rts_cts_lost" [type int]: total number of RTS/CTS packets lost (to be updated by this method)
+* @param "packets_lost_per_sta" [type int**]: list of the total number of packets lost per STA (to be updated by this method)
+* @param "rts_cts_lost_per_sta" [type int**]: list of the total number of RTS/CTS packets lost per STA (to be updated by this method)
+* @param "current_right_channel" [type int]: current right channel
+* @param "current_left_channel" [type int]: current left channel
+* @param "current_tx_duration" [type double]: current transmission duration
+* @param "node_id" [type int]: node id
+* @param "destination_id" [type int]: destination id
+*/
 void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double *total_time_lost_per_channel,
 		int &packets_lost, int &rts_cts_lost, int **packets_lost_per_sta, int **rts_cts_lost_per_sta,
-		int current_right_channel, int current_left_channel,double current_tx_duration, int node_id, int destination_id){
+		int current_right_channel, int current_left_channel, double current_tx_duration, int node_id, int destination_id){
 
 	if(type == PACKET_TYPE_DATA) {
 		for(int c = current_left_channel; c <= current_right_channel; c++){
@@ -286,9 +320,18 @@ void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
 
 }
 
-/*
- * AttemptToDecodePacket(): attempts to decode incoming packet according to SINR and the capture effect (CE)
- **/
+/**
+* Attempt to decode incoming packet according to SINR and the capture effect (CE)
+* @param "sinr" [type double]: SINR in pW
+* @param "capture_effect" [type double]: capture effect threshold in pW
+* @param "pd" [type double]: packet detect (PD) threshold in pW
+* @param "power_rx_interest" [type double]: power received of interest in pW
+* @param "constant_per" [type int]: constant packet error rate (PER)
+* @param "node_id" [type int]: node id
+* @param "packet_type" [type int]: type of packet being decoded
+* @param "destination_id" [type int]: destination id
+* @return "packet_lost" [type int]: boolean indicating whether the packet can be decoded or not
+*/
 int AttemptToDecodePacket(double sinr, double capture_effect, double pd,
 		double power_rx_interest, double constant_per, int node_id, int packet_type,
 		int destination_id){
@@ -298,18 +341,12 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double pd,
 
 	// Try to decode when power received is greater than pd
 	if(sinr < capture_effect || power_rx_interest < pd) {
-
 		per = 1;
-
 	} else {
-
 		// Just apply PER to DATA packets
 		if( (destination_id == node_id) && (packet_type == PACKET_TYPE_DATA) ){
-
 			per = constant_per;
-
 		}
-
 	}
 
 	packet_lost = ((double) rand() / (RAND_MAX)) < per;
@@ -317,9 +354,20 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double pd,
 	return packet_lost;
 }
 
-/*
- * IsPacketLost(): computes notification loss according to SINR received
- **/
+/**
+* Compute notification loss according to SINR received and other parameters
+* @param "primary_channel" [type int]: primary channel
+* @param "incoming_notification" [type Notification]: notification that was being decoded after detecting the newest one
+* @param "new_notification" [type Notification]: new detected notification
+* @param "sinr" [type double]: SINR in pW
+* @param "capture_effect" [type double]: capture effect threshold in pW
+* @param "pd" [type double]: packet detect (PD) threshold in pW
+* @param "power_rx_interest" [type double]: power received of interest in pW
+* @param "constant_per" [type int]: constant packet error rate (PER)
+* @param "node_id" [type int]: node id
+* @param "capture_effect_model" [type int]: capture effect model
+* @return "loss_reason" [type int]: loss reason
+*/
 int IsPacketLost(int primary_channel, Notification incoming_notification, Notification new_notification,
 		double sinr, double capture_effect, double pd, double power_rx_interest, double constant_per,
 		int node_id, int capture_effect_model){
@@ -382,9 +430,22 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 
 }
 
-/*
- * GenerateTxInfo: generates a TxInfo
- **/
+/**
+* Generate the TxInfo struct in a Notification
+* @param "num_packets_aggregated" [type int]: primary channel
+* @param "data_duration" [type double]: duration of the DATA frame
+* @param "ack_duration" [type double]: duration of the ACK frame
+* @param "rts_duration" [type double]: duration of the RTS frame
+* @param "cts_duration" [type double]: duration of the CTS frame
+* @param "current_tx_power" [type double]: transmission power used
+* @param "num_channels_tx" [type int]: number of channels for transmitting
+* @param "tx_gain" [type double]: transmission gain of the antenna
+* @param "bits_ofdm_sym" [type int]: bits of an OFDM symbol
+* @param "x" [type double]: x position of the node sending the notification
+* @param "y" [type double]: y position of the node sending the notification
+* @param "z" [type double]: z position of the node sending the notification
+* @return "tx_info" [type TxInfo]: transmission information to be included in a notification
+*/
 TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double ack_duration,
 		double rts_duration, double cts_duration, double current_tx_power, int num_channels_tx,
 		double tx_gain,	int bits_ofdm_sym, double x, double y, double z) {

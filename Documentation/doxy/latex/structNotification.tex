@@ -1,0 +1,103 @@
+\hypertarget{structNotification}{}\section{Notification Struct Reference}
+\label{structNotification}\index{Notification@{Notification}}
+
+
+Collaboration diagram for Notification\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=146pt]{structNotification__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structNotification_a88f50763a773d8d9f548df6408d58839}\label{structNotification_a88f50763a773d8d9f548df6408d58839}} 
+void {\bfseries Print\+Notification} (void)
+\item 
+void \hyperlink{structNotification_a88f50763a773d8d9f548df6408d58839}{Print\+Notification} (void)
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Specific transmission info (may not be checked by the others nodes) \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structNotification_a9fecc49917b3c9ca69b20ed7a0c91c59}\label{structNotification_a9fecc49917b3c9ca69b20ed7a0c91c59}} 
+int {\bfseries packet\+\_\+id}
+\item 
+\mbox{\Hypertarget{structNotification_afe3dc85424cded1a3c2076bbc641dcd7}\label{structNotification_afe3dc85424cded1a3c2076bbc641dcd7}} 
+int \hyperlink{structNotification_afe3dc85424cded1a3c2076bbc641dcd7}{packet\+\_\+type}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Packet identifier of the first frame \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_a7f2170a750a23aa91940c0579ec6cbe4}\label{structNotification_a7f2170a750a23aa91940c0579ec6cbe4}} 
+int \hyperlink{structNotification_a7f2170a750a23aa91940c0579ec6cbe4}{source\+\_\+id}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Type of packet\+: Data, A\+CK, etc. \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_a414df0d49c275659d4a4475e3de9c538}\label{structNotification_a414df0d49c275659d4a4475e3de9c538}} 
+int \hyperlink{structNotification_a414df0d49c275659d4a4475e3de9c538}{destination\+\_\+id}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Node id of the source \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_af517be5564ab353c4beaa1aecd18f935}\label{structNotification_af517be5564ab353c4beaa1aecd18f935}} 
+double \hyperlink{structNotification_af517be5564ab353c4beaa1aecd18f935}{tx\+\_\+duration}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Destination node of the transmission \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_ad3d19dc302e88f3d7f0dfcbb2e4d0174}\label{structNotification_ad3d19dc302e88f3d7f0dfcbb2e4d0174}} 
+int \hyperlink{structNotification_ad3d19dc302e88f3d7f0dfcbb2e4d0174}{left\+\_\+channel}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Duration of the transmission \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_aee5c4a59db06180176e0bf40d3bc32d5}\label{structNotification_aee5c4a59db06180176e0bf40d3bc32d5}} 
+int \hyperlink{structNotification_aee5c4a59db06180176e0bf40d3bc32d5}{right\+\_\+channel}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Left channel used in the transmission \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_a72014fb56946d8358523b8e1bec188f5}\label{structNotification_a72014fb56946d8358523b8e1bec188f5}} 
+int \hyperlink{structNotification_a72014fb56946d8358523b8e1bec188f5}{frame\+\_\+length}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Right channel used in the transmission \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_aff3003b26e95c5fd93f66cd4f636758f}\label{structNotification_aff3003b26e95c5fd93f66cd4f636758f}} 
+int \hyperlink{structNotification_aff3003b26e95c5fd93f66cd4f636758f}{modulation\+\_\+id}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Size of the packet to transmit \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_af562f68f9bdd5b058b4f6a20d84f9818}\label{structNotification_af562f68f9bdd5b058b4f6a20d84f9818}} 
+double \hyperlink{structNotification_af562f68f9bdd5b058b4f6a20d84f9818}{timestamp}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Modulation being used during the transmission \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_a872687a57485c5a6ebbdba813c3829a1}\label{structNotification_a872687a57485c5a6ebbdba813c3829a1}} 
+double \hyperlink{structNotification_a872687a57485c5a6ebbdba813c3829a1}{timestamp\+\_\+generated}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Timestamp when notification is sent \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structNotification_ac17bbde3b9c16c42c37eeac3805a1d47}\label{structNotification_ac17bbde3b9c16c42c37eeac3805a1d47}} 
+\hyperlink{structTxInfo}{Tx\+Info} \hyperlink{structNotification_ac17bbde3b9c16c42c37eeac3805a1d47}{tx\+\_\+info}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Timestamp when notification was generated \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{structNotification_a88f50763a773d8d9f548df6408d58839}\label{structNotification_a88f50763a773d8d9f548df6408d58839}} 
+\index{Notification@{Notification}!Print\+Notification@{Print\+Notification}}
+\index{Print\+Notification@{Print\+Notification}!Notification@{Notification}}
+\subsubsection{\texorpdfstring{Print\+Notification()}{PrintNotification()}}
+{\footnotesize\ttfamily void Notification\+::\+Print\+Notification (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Specific transmission info (may not be checked by the others nodes) \end{quote}
+
+
+Function to print the parameters of a notification 
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/structures/notification.\+h\end{DoxyCompactItemize}

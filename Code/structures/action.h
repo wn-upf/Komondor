@@ -41,9 +41,10 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
- *
- * - This file defines a WLAN and provides basic displaying methods
+ */
+
+/**
+ * action.h: this file defines an action to be used by intelligent agents in Multi-Armed Bandits
  */
 
 #include "../list_of_macros.h"
@@ -52,29 +53,15 @@
 // Action info
 struct Action
 {
-	int channel;	// Channel selected
-	double cca;		// CCA level
-	double tx_power;	// Tx Power
-	int dcb_policy;
-//	int *list_sta_id;	// List of STAs IDs belonging to the WLAN
-//
-//	/*
-//	 * SetSizeOfSTAsArray(): sets the size of the array list_sta_id
-//	 */
-//	void SetSizeOfSTAsArray(int num_stas){
-//
-//		list_sta_id = (int *) malloc(num_stas * sizeof(*list_sta_id));
-//
-//		for(int s = 0; s < num_stas; s++){
-//			list_sta_id[s] = NODE_ID_NONE;
-//		}
-//	}
+	int channel;		///> Channel selected
+	double cca;			///> CCA level
+	double tx_power;	///> Tx Power
+	int dcb_policy;		///> DCB policy
 
-	/*
-	 * PrintStaIds(): prints the list of STAs IDs belonging to the WLAN
+	/**
+	 * Print the list of STAs IDs belonging to the WLAN
 	 */
 	void PrintAction(){
-
 		printf("------------\n Action:\n");
 		printf(" * channel = %d\n", channel);
 		printf(" * cca = %f\n", cca);
@@ -82,6 +69,5 @@ struct Action
 		printf(" * dcb_policy = %d\n", dcb_policy);
 		printf("------------\n");
 	}
-
 
 };

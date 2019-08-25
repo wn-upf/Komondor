@@ -41,9 +41,17 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description:
+ */
+
+ /**
+ * spatial_reuse_methods.h: this file contains functions related to the main Komondor's operation
  *
  * - This file contains the methods related to "spatial reuse" operations
+ *
+ * For more information regarding the IEEE 802.11ax Spatial Reuse operation, refer to:
+ * 	- https://arxiv.org/abs/1907.04141
+ * 	- https://arxiv.org/abs/1906.08063
+ *
  */
 
 #include <stddef.h>
@@ -53,16 +61,13 @@
 #include "../list_of_macros.h"
 #include "auxiliary_methods.h"
 
-/*
- * CheckPacketOrigin(): checks whether the received notification is an intra-BSS,
- * an inter-BSS, an SRG or a non-SRG frame
- * Arguments:
- * - notification: notification to be inspected
- * - bss_color: BSS color of the node inspecting the notification
- * - srg: SRG of the node inspecting the notification
- * Output:
- * - type_of_packet: type of packet
- **/
+/**
+* Check whether the received notification is an intra-BSS, an inter-BSS, an SRG or a non-SRG frame
+* @param "notification" [type Notification]: notification to be inspected
+* @param "bss_color" [type int]: BSS color of the node inspecting the notification
+* @param "srg" [type int]: SRG of the node inspecting the notification
+* @return "type_of_packet" [type int]: type of packet
+*/
 int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 
 	int type_of_packet;
@@ -87,21 +92,17 @@ int CheckPacketOrigin(Notification notification, int bss_color, int srg) {
 
 }
 
-/*
- * GetSensitivitySpatialReuse(): returns the CCA threshold to be used, according to the type
- * 	of ongoing transmissions (intra-BSS, inter-BSS, SRG or non-SRG frames)
- * Arguments:
- * - type_last_sensed_packet: type of the ongoing detected frames (according to source)
- * - srg_obss_pd: CST to be used for communications within the same SRG
- * - non_srg_obss_pd: CST to be used for communications within different SRG
- * - pd_default: default CST (for intra-BSS communications)
- * - power_received: RSSI detected from the ongoing transmission
- * Output:
- * - pd_spatial_reuse_pw: CST in pW to be used according to the source of the detected frame
- **/
-double GetSensitivitySpatialReuse( int type_last_sensed_packet,
-	double srg_obss_pd, double non_srg_obss_pd, double pd_default,
-	double power_received ) {
+/**
+* Compute the PD threshold to be used, according to the type of ongoing transmissions (intra-BSS, inter-BSS, SRG or non-SRG frames)
+* @param "type_last_sensed_packet" [type int]: type of packet
+* @param "srg_obss_pd" [type double]: SRG OBSS/PD threshold in pW
+* @param "non_srg_obss_pd" [type double]: non-SRG OBSS/PD threshold in pW
+* @param "pd_default" [type double]: default PD threshold in pW
+* @param "power_received" [type double]: power received in pW
+* @return "pd_spatial_reuse_pw" [type double]: CST in pW to be used according to the source of the detected frame
+*/
+double GetSensitivitySpatialReuse( int type_last_sensed_packet, double srg_obss_pd,
+	double non_srg_obss_pd, double pd_default, double power_received ) {
 
 	double pd_spatial_reuse_pw;
 	// Choose the PD threshold according to the source of the detected transmission
@@ -123,32 +124,26 @@ double GetSensitivitySpatialReuse( int type_last_sensed_packet,
 
 }
 
-/*
- * IdentifySpatialReuseOpportunity(): indicates whether an SR-based opp. has been detected or not
- * Arguments:
- * - power_received: RSSI detected from the ongoing transmission
- * - current_obss_pd: SR-based CST being used at this moment
- * Output:
- * - boolean indicating whether an SR-based opportunity has been detected or not
- **/
+/**
+* Indicate whether an SR-based opportunity has been detected or not
+* @param "power_received" [type double]: RSSI detected from the ongoing transmission
+* @param "current_obss_pd" [type double]: OBSS/PD threshold in pW currently being used
+* @return "1" or "0" [type int]: boolean indicating whether an SR-based opportunity has been detected or not
+*/
 int IdentifySpatialReuseOpportunity( double power_received, double current_obss_pd) {
-
 	if (power_received < current_obss_pd) {
 		return 1;
 	} else {
 		return 0;
 	}
-
 }
 
-/*
- * ApplyTxPowerRestriction(): applies a transmit power restriction, according to the CST used
- * Arguments:
- * - current_pd: current PD threshold being used by the node
- * - current_tx_power: current transmit power being used by the node
- * Output:
- * - tx_power_pw: limited transmit power (in pW) to be used during the next TXOP
- **/
+/**
+* Apply a transmit power restriction, according to the OBSS/PD threshold used
+* @param "current_pd" [type double]: current PD threshold being used by the node
+* @param "current_tx_power" [type double]: current transmit power being used by the node
+* @return "tx_power_pw" [type int]: limited transmit power (in pW) to be used during the next TXOP
+*/
 double ApplyTxPowerRestriction(double current_pd, double current_tx_power) {
 
 	double tx_power_pw;
@@ -170,17 +165,14 @@ double ApplyTxPowerRestriction(double current_pd, double current_tx_power) {
 
 }
 
-/*
- * UpdateTypeOngoingTransmissions(): updates array "type_ongoing_transmissions",
- * 	which stands for the type of sensed ongoing transmissions.
- * Arguments:
- * - type_ongoing_transmissions: array of the types of ongoing transmissions (to be updated by this method)
- * - notification: last notification received
- * - bss_color: BSS color of the node updating the array
- * - srg: SRG of the node updating the array
- * - enter_or_leave: indicates whether the transmission starts (1) or ends (0)
-
- **/
+/**
+* Update the array "type_ongoing_transmissions", which stores the type of each sensed ongoing transmissions.
+* @param "type_ongoing_transmissions" [type int*]: array of the types of ongoing transmissions (to be updated by this method)
+* @param "notification" [type Notification]: last notification received
+* @param "bss_color" [type int]: BSS color of the node updating the array
+* @param "srg" [type int]: SRG of the node updating the array
+* @param "enter_or_leave" [type int]: indicates whether the transmission starts (1) or ends (0)
+*/
 void UpdateTypeOngoingTransmissions(int *type_ongoing_transmissions,
 	Notification notification, int bss_color, int srg, int enter_or_leave) {
 
@@ -199,7 +191,6 @@ void UpdateTypeOngoingTransmissions(int *type_ongoing_transmissions,
 /****************************************************************
  * OLD (TO BE REFACTORED/ADAPTED ACCORDING TO NEWER VERSIONS OF THE AMENDMENT)
  ****************************************************************/
-
 /*
  * CheckOBSSPDConstraints(): checks if the proposed obss_pd_level is valid, according to
  * the constraints indicated in the IEEE 802.11ax amendment

@@ -41,9 +41,10 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
- *
- * - This file defines a NOTIFICATION and provides basic displaying methods
+ */
+
+ /**
+ * performance_metrics.h: this file defines the performance object used for statistics and the agents operation
  */
 
 #ifndef _AUX_PERFORMANCE_
@@ -52,78 +53,65 @@
 struct Performance
 {
 	// Time of the last measurement
-	double last_time_measured;
-	double sum_time_channel_idle;
+	double last_time_measured;		///> Timestampt of the last measurement
+	double sum_time_channel_idle;	///> Sum time the channel has been idle
 
 	// Throughput statistics
-	double throughput;
-	double throughput_loss;
-	double max_bound_throughput;
+	double throughput;				///> Throughput
+	double throughput_loss;			///> Throughput lost
+	double max_bound_throughput;	///> Maximum bound throughput (if no one transmits)
 
 	// Frames statistics
-	int data_packets_acked;
-	int data_frames_acked;
-	int data_packets_sent;
-	int data_packets_lost;
-	int rts_cts_sent;
-	int rts_cts_lost;
-	int rts_lost_slotted_bo;
+	int data_packets_acked;			///> Number of data packets acknowledged
+	int data_frames_acked;			///> Number of frames acknowledged
+	int data_packets_sent;			///> Number of data packets sent
+	int data_packets_lost;			///> Number of data packets lost
+	int rts_cts_sent;				///> Number of RTS/CTS packets sent
+	int rts_cts_lost;				///> Number of RTS/CTS packets lost
+	int rts_lost_slotted_bo;		///> Number of RTS/CTS packets lost by slotted BO
 
 	// Buffer statistics
-	int num_packets_generated;
-	int num_packets_dropped;
-	int num_delay_measurements;
-	double sum_delays;
-	double average_delay;
-	double average_rho;
-	double average_utilization;
-	double generation_drop_ratio;
+	int num_packets_generated;		///> Number of packets generated
+	int num_packets_dropped;		///> Number of packets dropped
+	int num_delay_measurements;		///> Number of delay measurements
+	double sum_delays;				///> Sum of the delays
+	double average_delay;			///> Average delay
+	double average_rho;				///> Average rho
+	double average_utilization;		///> Average utilization
+	double generation_drop_ratio;	///> Average drop ratio
 
 	// Channel occupancy
-	double expected_backoff;
-	int num_new_backoff_computations;
-	int *num_trials_tx_per_num_channels;
-	double average_waiting_time;
-	double bandwidth_used_txing;
-	double *total_time_transmitting_per_channel;
-	double *total_time_transmitting_in_num_channels;
-	double *total_time_lost_per_channel;
-	double *total_time_lost_in_num_channels;
-	double *total_time_spectrum_per_channel;
-	double time_in_nav;
+	double expected_backoff;							///> Expected BO
+	int num_new_backoff_computations;					///> Number of times a new backoff was computed
+	int *num_trials_tx_per_num_channels;				///> Number of attempts for transmitting to each number of channels
+	double average_waiting_time;						///> Average waiting time
+	double bandwidth_used_txing;						///> Bandwidth used during transmissions
+	double *total_time_transmitting_per_channel;		///> Total time transmitting in each channel
+	double *total_time_transmitting_in_num_channels;	///> Total time transmitting per each channel width
+	double *total_time_lost_per_channel;				///> Total time lost in each channel (e.g. collisions)
+	double *total_time_lost_in_num_channels;			///> Total time lost per each channel width
+	double *total_time_spectrum_per_channel;			///>
+	double time_in_nav;									///> Time spent in NAV state
 
 	// Per-STA statistics
-	double *throughput_per_sta;
-	int *data_packets_sent_per_sta;
-	int *rts_cts_sent_per_sta;
-	int *data_packets_lost_per_sta;
-	int *rts_cts_lost_per_sta;
-	int *data_packets_acked_per_sta;
-	int *data_frames_acked_per_sta;
+	double *throughput_per_sta;			///> Array containing the throughput delivered to each STA
+	int *data_packets_sent_per_sta;		///> Array containing the number of packets sent to each STA
+	int *rts_cts_sent_per_sta;			///> Array containing the number of RTS/CTS sent to each STA
+	int *data_packets_lost_per_sta;		///> Array containing the number of packets lost when sent to each STA
+	int *rts_cts_lost_per_sta;			///> Array containing the number of RTS/CTS lost when sent to each STA
+	int *data_packets_acked_per_sta;	///> Array containing the number of acknowledged packets by each STA
+	int *data_frames_acked_per_sta;		///> Array containing the number of acknowledged frames by each STA
 
 	// Other
-	int num_tx_init_tried;
-	int num_tx_init_not_possible;
-	double prob_slotted_bo_collision;
-	double *rssi_list;
-	double *received_power_array;
+	int num_tx_init_tried;				///> Number of transmissions initiated
+	int num_tx_init_not_possible;		///> Number of initiated transmissions that were not possible
+	double prob_slotted_bo_collision;	///> Probability of suffering collisions by slotted BO
+	double *rssi_list;					///> List of RSSI
+	double *received_power_array;		///> Array containing the power received by each node
 
-//	// Function to print the node's report
-//	void PrintReport(void){
-//		printf("%s Report (last measurement in %f):\n", LOG_LVL4, last_time_measured);
-//		printf("%s throughput = %f\n", LOG_LVL5, throughput);
-//		printf("%s max_bound_throughput = %f\n", LOG_LVL5, max_bound_throughput);
-//		printf("%s data_packets_sent = %d\n", LOG_LVL5, data_packets_sent);
-//		printf("%s data_packets_lost = %d\n", LOG_LVL5, data_packets_lost);
-//		printf("%s rts_cts_packets_sent = %d\n", LOG_LVL5, rts_cts_packets_sent);
-//		printf("%s rts_cts_packets_lost = %d\n", LOG_LVL5, rts_cts_packets_lost);
-//		printf("%s num_packets_generated = %f\n", LOG_LVL5, num_packets_generated);
-//		printf("%s num_packets_dropped = %f\n", LOG_LVL5, num_packets_dropped);
-//		printf("\n");
-//	}
-
-	/*
-	 * SetSizeOfChannelLists(): sets the size of the arrays in which channel-related information is stored
+	/**
+	 * Set the size of the arrays in which channel-related information is stored
+	 * @param "total_channels_number" [type int]: total number of channels
 	 */
 	void SetSizeOfChannelLists(int total_channels_number){
 		num_trials_tx_per_num_channels = new int[total_channels_number];
@@ -142,8 +130,9 @@ struct Performance
 		}
 	}
 
-	/*
-	 * SetSizeOfStaList(): sets the size of the arrays in which STA-related information is stored
+	/**
+	 * Set the size of the arrays in which STA-related information is stored
+	 * @param "num_stas" [type int]: total number of STAs in a WLAN
 	 */
 	void SetSizeOfStaList(int num_stas){
 		throughput_per_sta = new double[num_stas];
@@ -164,8 +153,9 @@ struct Performance
 		}
 	}
 
-	/*
-	 * SetSizeOfRssiList(): sets the size of the array list_id_aggregated
+	/**
+	 * Set the size of the array RSSI list
+	 * @param "total_wlans_number" [type int]: total number of WLANs
 	 */
 	void SetSizeOfRssiList(int total_wlans_number){
 		rssi_list = new double[total_wlans_number];
@@ -174,8 +164,9 @@ struct Performance
 		}
 	}
 
-	/*
-	 * SetSizeOfRxPowerList(): sets the size of the array list_id_aggregated
+	/**
+	 * Set the size of the array containing the received power from each node
+	 * @param "total_nodes_number" [type int]: total number of nodes
 	 */
 	void SetSizeOfRxPowerList(int total_nodes_number){
 		received_power_array = new double[total_nodes_number];

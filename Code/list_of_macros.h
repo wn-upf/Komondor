@@ -49,16 +49,16 @@
 
 
 // Code parameters
-#define FALSE 				0			// Boolean: false
-#define TRUE 				1			// Boolean: true
-#define INTEGER_SIZE		8			// Size of an integer
-#define CHAR_BUFFER_SIZE	1024		// Size of system buffer
+#define FALSE 				0			///> Boolean: false
+#define TRUE 				1			///> Boolean: true
+#define INTEGER_SIZE		8			///> Size of an integer
+#define CHAR_BUFFER_SIZE	1024		///> Size of system buffer
 
 // System parameters
-#define SLOT_TIME 			0.000009	// Slot time unit [s]
+#define SLOT_TIME 			0.000009	///> Slot time unit [s]
 
 // Physical parameters
-#define SPEED_LIGHT			3*pow(10,8)	// Speed of light [m/s]
+#define SPEED_LIGHT			3*pow(10,8)	///> Speed of light [m/s]
 
 // Log hierarchy level to make output log file more readable
 #define LOG_LVL1	""
@@ -68,172 +68,172 @@
 #define LOG_LVL5	"          *"
 
 // Node states
-#define STATE_UNKNOWN	-1	// Unknown state (e.g. at the beginning of the simulation)
-#define STATE_SENSING	0	// Sensing the channel and decreasing backoff counter when possible according PD requirements
-#define STATE_TX_DATA	1	// Transmitting. Transmission are finished after the transmission duration established.
-#define STATE_RX_DATA	2	// Receiving a packet from other node.
-#define STATE_WAIT_ACK	3	// Waiting ACK
-#define STATE_TX_ACK	4	// Transmitting ACK
-#define STATE_RX_ACK	5	// Receiving ACK
-#define STATE_TX_RTS	6	// Transmitting RTS
-#define STATE_TX_CTS	7	// Transmitting CTS
-#define STATE_RX_RTS	8	// Receiving RTS
-#define STATE_RX_CTS	9	// Receiving CTS
-#define STATE_WAIT_CTS	10	// Waiting CTS packet
-#define STATE_WAIT_DATA	11	// Waiting Data after CTS
-#define STATE_NAV		12	// Virtual Carrier Sense (process only RTS and CTS)
-#define STATE_SLEEP		13	// Virtual Carrier Sense (process only RTS and CTS)
+#define STATE_UNKNOWN	-1	///> Unknown state (e.g. at the beginning of the simulation)
+#define STATE_SENSING	0	///> Sensing the channel and decreasing backoff counter when possible according PD requirements
+#define STATE_TX_DATA	1	///> Transmitting. Transmission are finished after the transmission duration established.
+#define STATE_RX_DATA	2	///> Receiving a packet from other node.
+#define STATE_WAIT_ACK	3	///> Waiting ACK
+#define STATE_TX_ACK	4	///> Transmitting ACK
+#define STATE_RX_ACK	5	///> Receiving ACK
+#define STATE_TX_RTS	6	///> Transmitting RTS
+#define STATE_TX_CTS	7	///> Transmitting CTS
+#define STATE_RX_RTS	8	///> Receiving RTS
+#define STATE_RX_CTS	9	///> Receiving CTS
+#define STATE_WAIT_CTS	10	///> Waiting CTS packet
+#define STATE_WAIT_DATA	11	///> Waiting Data after CTS
+#define STATE_NAV		12	///> Virtual Carrier Sense (process only RTS and CTS)
+#define STATE_SLEEP		13	///> Virtual Carrier Sense (process only RTS and CTS)
 
 // Logs
-#define PRINT_LOG				0	// Print logs per console
-#define WRITE_LOG				1	// Write log in file
-#define SAVE_LOG_NONE			0	// Don't save logs
-#define SAVE_LOG				1	// Save logs
-#define LOG_HEADER_NODE_SIZE	30	// Node log header size
+#define PRINT_LOG				0	///> Print logs per console
+#define WRITE_LOG				1	///> Write log in file
+#define SAVE_LOG_NONE			0	///> Don't save logs
+#define SAVE_LOG				1	///> Save logs
+#define LOG_HEADER_NODE_SIZE	30	///> Node log header size
 
 // Transmission initiated or finished
-#define TX_INITIATED		0	// Transmission is initiated ('inportSomeNodeStartTX()')
-#define TX_FINISHED			1	// Transmission is finished ('inportSomeNodeFinishTX()')
-#define TX_NOT_POSSIBLE 	-1	// Transmission is not possible
-#define TX_DURATION_NONE	0 	// No transmission duration for logical notifications
+#define TX_INITIATED		0	///> Transmission is initiated ('inportSomeNodeStartTX()')
+#define TX_FINISHED			1	///> Transmission is finished ('inportSomeNodeFinishTX()')
+#define TX_NOT_POSSIBLE 	-1	///> Transmission is not possible
+#define TX_DURATION_NONE	0 	///> No transmission duration for logical notifications
 
 // Logical Nack reasons
-#define PACKET_NOT_LOST					-1	// Packet is not lost
-#define PACKET_LOST_DESTINATION_TX		0	// Destination was already transmitting when the transmission was attempted
-#define PACKET_LOST_LOW_SIGNAL			1	// Signal strength is not enough (< PD) to be decoded
-#define PACKET_LOST_INTERFERENCE		2	// There are interference signals greater than PD (collision)
-#define PACKET_LOST_PURE_COLLISION		3	// Two nodes transmitting to same destination with signal strengths enough to be decoded
-#define PACKET_LOST_LOW_SIGNAL_AND_RX	4	// Destination already receiving and new signal strength was not enough to be decoded
-#define PACKET_LOST_SINR_PROB			5	// Packet lost due to SINR probability
-#define PACKET_ACK_LOST					6	// ACK lost
-#define PACKET_LOST_RX_IN_NAV			7	// Received a packet when being in NAV state
-#define PACKET_LOST_BO_COLLISION		8	// Collision by simultaneous backoff
-#define PACKET_LOST_OUTSIDE_CH_RANGE	9	// Packet was transmitted outside the primary channel of the receiver
-#define PACKET_LOST_CAPTURE_EFFECT		10	// A new transmission made that the CE was not longer accomplished
-#define PACKET_IGNORED_SPATIAL_REUSE	11	// The transmission was ignored due to the spatial reuse operation
+#define PACKET_NOT_LOST					-1	///> Packet is not lost
+#define PACKET_LOST_DESTINATION_TX		0	///> Destination was already transmitting when the transmission was attempted
+#define PACKET_LOST_LOW_SIGNAL			1	///> Signal strength is not enough (< PD) to be decoded
+#define PACKET_LOST_INTERFERENCE		2	///> There are interference signals greater than PD (collision)
+#define PACKET_LOST_PURE_COLLISION		3	///> Two nodes transmitting to same destination with signal strengths enough to be decoded
+#define PACKET_LOST_LOW_SIGNAL_AND_RX	4	///> Destination already receiving and new signal strength was not enough to be decoded
+#define PACKET_LOST_SINR_PROB			5	///> Packet lost due to SINR probability
+#define PACKET_ACK_LOST					6	///> ACK lost
+#define PACKET_LOST_RX_IN_NAV			7	///> Received a packet when being in NAV state
+#define PACKET_LOST_BO_COLLISION		8	///> Collision by simultaneous backoff
+#define PACKET_LOST_OUTSIDE_CH_RANGE	9	///> Packet was transmitted outside the primary channel of the receiver
+#define PACKET_LOST_CAPTURE_EFFECT		10	///> A new transmission made that the CE was not longer accomplished
+#define PACKET_IGNORED_SPATIAL_REUSE	11	///> The transmission was ignored due to the spatial reuse operation
 
-#define NUM_PACKET_LOST_REASONS			12	// Number of reasons whereby a packet can be lost
+#define NUM_PACKET_LOST_REASONS			12	///> Number of reasons whereby a packet can be lost
 
 // Destination and source node IDs
 #define NODE_ID_NONE	-1
 #define WLAN_ID_NONE	-1
 
 // Packets
-#define NO_PACKET_ID				-1		// Packet without ID
-#define MAX_PACKET_ID				645210	// Maybe some day it is needed :D
-#define PACKET_TYPE_DATA			0		// Data packet type
-#define PACKET_TYPE_ACK				1		// ACK packet type
-#define PACKET_TYPE_MCS_REQUEST		2		// MCS request type
-#define PACKET_TYPE_MCS_RESPONSE 	3 		// MCS response type
-#define PACKET_TYPE_RTS				4		// RTS type
-#define PACKET_TYPE_CTS				5		// CTS type
+#define NO_PACKET_ID				-1		///> Packet without ID
+#define MAX_PACKET_ID				645210	///> Maybe some day it is needed :D
+#define PACKET_TYPE_DATA			0		///> Data packet type
+#define PACKET_TYPE_ACK				1		///> ACK packet type
+#define PACKET_TYPE_MCS_REQUEST		2		///> MCS request type
+#define PACKET_TYPE_MCS_RESPONSE 	3 		///> MCS response type
+#define PACKET_TYPE_RTS				4		///> RTS type
+#define PACKET_TYPE_CTS				5		///> CTS type
 
 // Backoff types
 #define BACKOFF_SLOTTED		0
 #define BACKOFF_CONTINUOUS	1
 
 // PD
-#define PD_NOT_EXCEEDED	0	// PD is not exceeded (primary channel is free)
-#define PD_EXCEEDED		1	// PD is exceeded
+#define PD_NOT_EXCEEDED	0	///> PD is not exceeded (primary channel is free)
+#define PD_EXCEEDED		1	///> PD is exceeded
 
 // Power units conversion
-#define PW_TO_DBM		0	// Convert pW to dBm
-#define DBM_TO_PW		1	// Convert dBm to pW
-#define MW_TO_DBM		2	// Convert mW to dBm
-#define DBM_TO_MW		3	// Convert dBm to mW
-#define W_TO_DBW		4	// Convert W to dBW
-#define DBW_TO_W		5	// Convert dBW to W
-#define LINEAR_TO_DB	6	// Convert Linear to dB
-#define DB_TO_LINEAR	7	// Convert dB to Linear
+#define PW_TO_DBM		0	///> Convert pW to dBm
+#define DBM_TO_PW		1	///> Convert dBm to pW
+#define MW_TO_DBM		2	///> Convert mW to dBm
+#define DBM_TO_MW		3	///> Convert dBm to mW
+#define W_TO_DBW		4	///> Convert W to dBW
+#define DBW_TO_W		5	///> Convert dBW to W
+#define LINEAR_TO_DB	6	///> Convert Linear to dB
+#define DB_TO_LINEAR	7	///> Convert dB to Linear
 
 // Boundary channels
-#define FIRST_TRUE_IN_ARRAY 			0	// Search first element '1' in an array
-#define LAST_TRUE_IN_ARRAY			1	// Search last element '1' in an array
-#define NUM_OPTIONS_CHANNEL_LENGTH	4	// Number of options of channel lengths (1, 2, 4, 8)
+#define FIRST_TRUE_IN_ARRAY 		0	///> Search first element '1' in an array
+#define LAST_TRUE_IN_ARRAY			1	///> Search last element '1' in an array
+#define NUM_OPTIONS_CHANNEL_LENGTH	4	///> Number of options of channel lengths (1, 2, 4, 8)
 
 // Channel free - occupied
 #define CHANNEL_OCCUPIED	0
 #define CHANNEL_FREE		1
 
 // Progress bar
-#define PROGRESS_BAR_DELTA		5	// Amount of percentage between two progress bar indicators
-#define PROGRESS_BAR_DISPLAY 	1	// Activate progress bar
+#define PROGRESS_BAR_DELTA		5	///> Amount of percentage between two progress bar indicators
+#define PROGRESS_BAR_DISPLAY 	1	///> Activate progress bar
 
 // C++ macros
-#define MIN_VALUE_C_LANGUAGE		0.000001				// Minimum float value printable for default by C++ language
-#define MIN_DOUBLE_VALUE_KOMONDOR	0.000000000000001		// Minimum value accepted by Komondor
-#define MILLI_VALUE					0.001					// Milli value (10^-3)
-#define MICRO_VALUE					0.000001				// Micro value (10^-6)
-#define NANO_VALUE					0.000000001				// Nano value (10^-9)
-#define PICO_VALUE					0.000000000001			// Pico value (10^-12)
-#define FEMTO_VALUE					0.000000000000001		// Femto value (10^-15)
-#define ATTO_VALUE					0.000000000000000001	// Atto value (10^-18)
+#define MIN_VALUE_C_LANGUAGE		0.000001				///> Minimum float value printable for default by C++ language
+#define MIN_DOUBLE_VALUE_KOMONDOR	0.000000000000001		///> Minimum value accepted by Komondor
+#define MILLI_VALUE					0.001					///> Milli value (10^-3)
+#define MICRO_VALUE					0.000001				///> Micro value (10^-6)
+#define NANO_VALUE					0.000000001				///> Nano value (10^-9)
+#define PICO_VALUE					0.000000000001			///> Pico value (10^-12)
+#define FEMTO_VALUE					0.000000000000001		///> Femto value (10^-15)
+#define ATTO_VALUE					0.000000000000000001	///> Atto value (10^-18)
 
 // Timers
-#define PAUSE_TIMER					0					// Try to pause a timer (e.g. backoff)
-#define RESUME_TIMER				1					// Try to resume timer
-#define MAX_NUM_RAND_TIME			1000				// Max. number of time rand values
-#define MAX_DIFFERENCE_SAME_TIME	MAX_NUM_RAND_TIME * PICO_VALUE	// Max. difference for considering that two events occur at the same time
-#define TIME_OUT_EXTRA_TIME			PICO_VALUE	// TO is triggered when exceeded TIME_OUT_EXTRA_TIME
+#define PAUSE_TIMER					0					///> Try to pause a timer (e.g. backoff)
+#define RESUME_TIMER				1					///> Try to resume timer
+#define MAX_NUM_RAND_TIME			1000				///> Max. number of time rand values
+#define MAX_DIFFERENCE_SAME_TIME	MAX_NUM_RAND_TIME * PICO_VALUE	///> Max. difference for considering that two events occur at the same time
+#define TIME_OUT_EXTRA_TIME			PICO_VALUE	///> TO is triggered when exceeded TIME_OUT_EXTRA_TIME
 
 // Path-loss models
-#define PATH_LOSS_LFS 				0		// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
-#define PATH_LOSS_OKUMURA_HATA 		1		// Okumura-Hata model - Urban areas
-#define PATH_LOSS_INDOOR 			2   	// Indoor model (could suite an apartments building scenario)
-#define PATH_LOSS_INDOOR_2 			3		// Indoor model without variability
-#define PATH_LOSS_SCENARIO_1_TGax	4		// IEEE 802.11ax Scenario 1 (residential)
-#define PATH_LOSS_SCENARIO_2_TGax	5		// IEEE 802.11ax Scenario 2 (enterprise)
-#define PATH_LOSS_SCENARIO_3_TGax	6		// IEEE 802.11ax Scenario 3 (indoor BSS)
-#define PATH_LOSS_SCENARIO_4_TGax	7		// IEEE 802.11ax Scenario 4 (outdoor BSS)
-#define PATH_LOSS_SCENARIO_4a_TGax	8		// IEEE 802.11ax Scenario 4a (outdoor BSS + residential)
-#define PATHLOSS_5GHZ_OFFICE_BUILDING	9	// Office building indoor pathloss for 5 GHz
-#define PATHLOSS_INROOM_LOSS_5250KHZ	10	// In-room LoS for 5.25 GHz
-#define PATHLOSS_ROOM_CORRIDOR_5250KHZ	11	// Room-corridor for 5.25 GHz
-#define PATHLOSS_TMB	12					// 11ax for 5 GHz
+#define PATH_LOSS_LFS 				0		///> Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
+#define PATH_LOSS_OKUMURA_HATA 		1		///> Okumura-Hata model - Urban areas
+#define PATH_LOSS_INDOOR 			2   	///> Indoor model (could suite an apartments building scenario)
+#define PATH_LOSS_INDOOR_2 			3		///> Indoor model without variability
+#define PATH_LOSS_SCENARIO_1_TGax	4		///> IEEE 802.11ax Scenario 1 (residential)
+#define PATH_LOSS_SCENARIO_2_TGax	5		///> IEEE 802.11ax Scenario 2 (enterprise)
+#define PATH_LOSS_SCENARIO_3_TGax	6		///> IEEE 802.11ax Scenario 3 (indoor BSS)
+#define PATH_LOSS_SCENARIO_4_TGax	7		///> IEEE 802.11ax Scenario 4 (outdoor BSS)
+#define PATH_LOSS_SCENARIO_4a_TGax	8		///> IEEE 802.11ax Scenario 4a (outdoor BSS + residential)
+#define PATHLOSS_5GHZ_OFFICE_BUILDING	9	///> Office building indoor pathloss for 5 GHz
+#define PATHLOSS_INROOM_LOSS_5250KHZ	10	///> In-room LoS for 5.25 GHz
+#define PATHLOSS_ROOM_CORRIDOR_5250KHZ	11	///> Room-corridor for 5.25 GHz
+#define PATHLOSS_TMB	12					///> 11ax for 5 GHz
 
-#define PATH_LOSS_DISTANCE_BREAKPOINT_CHANNEL_B	5	// Breakpoint distance for channel model B [m]
+#define PATH_LOSS_DISTANCE_BREAKPOINT_CHANNEL_B	5	///> Breakpoint distance for channel model B [m]
 
 // Channel bonding model
-#define CB_ONLY_PRIMARY				0	// Only Primary Channel used if FREE
-#define CB_SCB						1	// SCB: if all channels are FREE, transmit. If not, generate a new backoff.
-#define CB_SCB_LOG2					2	// Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
-#define CB_ALWAYS_MAX				3	// Always-max (DCB): TX in all the free channels contiguous to the primary channel
-#define CB_ALWAYS_MAX_LOG2			4	// Log2 Always-max (DCB): TX in the larger channel range allowed by the log2 mapping
-#define CB_ALWAYS_MAX_LOG2_MCS		5	// Log2 Always-max (DCB) with optimal MCS: picks the channel range + MCS providing max throughput
-#define CB_PROB_UNIFORM_LOG2		6	// Log2 probabilistic uniform: pick with same probabilty any available channel range
+#define CB_ONLY_PRIMARY				0	///> Only Primary Channel used if FREE
+#define CB_SCB						1	///> SCB: if all channels are FREE, transmit. If not, generate a new backoff.
+#define CB_SCB_LOG2					2	///> Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
+#define CB_ALWAYS_MAX				3	///> Always-max (DCB): TX in all the free channels contiguous to the primary channel
+#define CB_ALWAYS_MAX_LOG2			4	///> Log2 Always-max (DCB): TX in the larger channel range allowed by the log2 mapping
+#define CB_ALWAYS_MAX_LOG2_MCS		5	///> Log2 Always-max (DCB) with optimal MCS: picks the channel range + MCS providing max throughput
+#define CB_PROB_UNIFORM_LOG2		6	///> Log2 probabilistic uniform: pick with same probabilty any available channel range
 
 // Adjacent channel interference model
-#define ADJACENT_CHANNEL_NONE		0	// No adjacent channel interference
-#define ADJACENT_CHANNEL_BOUNDARY	1	// (RECOMMENDED) Boundary adjacent channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
-#define ADJACENT_CHANNEL_EXTREME	2	// Extreme adjacent channel interference: ALL channels used in the TX affect the rest of channels
+#define ADJACENT_CHANNEL_NONE		0	///> No adjacent channel interference
+#define ADJACENT_CHANNEL_BOUNDARY	1	///> (RECOMMENDED) Boundary adjacent channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
+#define ADJACENT_CHANNEL_EXTREME	2	///> Extreme adjacent channel interference: ALL channels used in the TX affect the rest of channels
 
 // Traffic model
-#define TRAFFIC_FULL_BUFFER						0	// Transmitters always have packets to transmit
-#define TRAFFIC_POISSON							1	// Traffic is generated randomly according to a Poisson distribution
-#define TRAFFIC_DETERMINISTIC					2	// Traffic is generated at fixed intervals
-#define TRAFFIC_POISSON_BURST					3	// Traffic is generated in bursts following a Poisson distribution
-#define TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION	99	// Transmitters always have the same packet pending to be transmitted
+#define TRAFFIC_FULL_BUFFER						0	///> Transmitters always have packets to transmit
+#define TRAFFIC_POISSON							1	///> Traffic is generated randomly according to a Poisson distribution
+#define TRAFFIC_DETERMINISTIC					2	///> Traffic is generated at fixed intervals
+#define TRAFFIC_POISSON_BURST					3	///> Traffic is generated in bursts following a Poisson distribution
+#define TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION	99	///> Transmitters always have the same packet pending to be transmitted
 
-#define PACKET_BUFFER_SIZE		100		// Size of the packets buffer
+#define PACKET_BUFFER_SIZE		100		///> Size of the packets buffer
 
 // Protocols
-#define INCREASE_CW 1		// Command to increase contention window
-#define RESET_CW 2			// Command to reset the contention window
-#define MAX_POWER 20 		// Maximum power that can be transmitted (dBm)
+#define INCREASE_CW 1		///> Command to increase contention window
+#define RESET_CW 2			///> Command to reset the contention window
+#define MAX_POWER 20 		///> Maximum power that can be transmitted (dBm)
 
 // CE Model
-#define CE_DEFAULT			0	//
-#define CE_IEEE_802_11		1	//
+#define CE_DEFAULT			0	///>
+#define CE_IEEE_802_11		1	///>
 
 // Node type
-#define NODE_TYPE_UNKWNOW	-1	// Unknown (none) node type
-#define NODE_TYPE_AP		0	// Access Point
-#define NODE_TYPE_STA		1	// Station
-#define NODE_TYPE_OTHER		2	// Other kind of devices
+#define NODE_TYPE_UNKWNOW	-1	///> Unknown (none) node type
+#define NODE_TYPE_AP		0	///> Access Point
+#define NODE_TYPE_STA		1	///> Station
+#define NODE_TYPE_OTHER		2	///> Other kind of devices
 
 // Probability distribution types
-#define PDF_DETERMINISTIC	0	// Deterministic (same value as mean)
-#define PDF_EXPONENTIAL		1	// Exponential pdf
+#define PDF_DETERMINISTIC	0	///> Deterministic (same value as mean)
+#define PDF_EXPONENTIAL		1	///> Exponential pdf
 
 // MODULATION TYPES TODO https://en.wikipedia.org/wiki/IEEE_802.11ax
 #define MODULATION_FORBIDDEN	-1
@@ -270,70 +270,70 @@
 
 #define CST_DBM		-68
 
-#define IEEE_AX_OFDM_SYMBOL_LEGACY			(4 * MICRO_VALUE)	// Duration of an OFDM symbol in legacy mode
-#define IEEE_AX_OFDM_SYMBOL_GI32_DURATION	(16 * MICRO_VALUE)	// Duration of OFDM symbol (for guard interval 3.2) [s]
-#define IEEE_AX_PHY_LEGACY_DURATION 		(20 * MICRO_VALUE)	// Duration of legacy PHY header [s]
-#define IEEE_AX_PHY_HE_SU_DURATION	 		(100 * MICRO_VALUE)	// HE single-user preamble [s]
+#define IEEE_AX_OFDM_SYMBOL_LEGACY			(4 * MICRO_VALUE)	///> Duration of an OFDM symbol in legacy mode
+#define IEEE_AX_OFDM_SYMBOL_GI32_DURATION	(16 * MICRO_VALUE)	///> Duration of OFDM symbol (for guard interval 3.2) [s]
+#define IEEE_AX_PHY_LEGACY_DURATION 		(20 * MICRO_VALUE)	///> Duration of legacy PHY header [s]
+#define IEEE_AX_PHY_HE_SU_DURATION	 		(100 * MICRO_VALUE)	///> HE single-user preamble [s]
 
-// #define IEEE_AX_PHY_HE_SU_DURATION	 		(32 * MICRO_VALUE)	// HE single-user preamble [s]
+// #define IEEE_AX_PHY_HE_SU_DURATION	 		(32 * MICRO_VALUE)	///> HE single-user preamble [s]
 
 // --- MAC parameters ---
 
-#define SIFS 		(16 * MICRO_VALUE)			// SIFS value
-#define DIFS		(SIFS + (2 * SLOT_TIME))	// DIFS value
-#define PIFS		(SIFS + SLOT_TIME)			// PIFS value
+#define SIFS 		(16 * MICRO_VALUE)			///> SIFS value
+#define DIFS		(SIFS + (2 * SLOT_TIME))	///> DIFS value
+#define PIFS		(SIFS + SLOT_TIME)			///> PIFS value
 
-#define IEEE_AX_SF_LENGTH				16					// Service field length [bits]
-#define IEEE_AX_MD_LENGTH				32					// MPDU delimiter if packet aggregation is used [bits]
+#define IEEE_AX_SF_LENGTH				16					///> Service field length [bits]
+#define IEEE_AX_MD_LENGTH				32					///> MPDU delimiter if packet aggregation is used [bits]
 
-#define IEEE_AX_MH_LENGTH				320					// MAC header including FCS [bits]
-#define IEEE_AX_TB_LENGTH				18					// Tail length [bits]
-#define IEEE_AX_RTS_LENGTH				160					// RTS length [bits]
-#define IEEE_AX_CTS_LENGTH				112					// CTS length [bits]
-#define IEEE_AX_ACK_LENGTH				112					// ACK length [bits]
-//#define IEEE_AX_DATA_LENGTH				12000				// DATA length [bits]
-//#define IEEE_AX_APP_DATA_LENGTH			11728				// DATA length [bits]
-#define IEEE_AX_BACK_LENGTH				432					// Block-ACK length [bits]
-#define IEEE_AX_SU_SPATIAL_STREAMS		1					// Number of spatial streams
-#define IEEE_AX_MAX_PPDU_DURATION		(5484 * MICRO_VALUE)// Maximum PPDU duration (limits the A-MPDU operation)
+#define IEEE_AX_MH_LENGTH				320					///> MAC header including FCS [bits]
+#define IEEE_AX_TB_LENGTH				18					///> Tail length [bits]
+#define IEEE_AX_RTS_LENGTH				160					///> RTS length [bits]
+#define IEEE_AX_CTS_LENGTH				112					///> CTS length [bits]
+#define IEEE_AX_ACK_LENGTH				112					///> ACK length [bits]
+//#define IEEE_AX_DATA_LENGTH				12000				///> DATA length [bits]
+//#define IEEE_AX_APP_DATA_LENGTH			11728				///> DATA length [bits]
+#define IEEE_AX_BACK_LENGTH				432					///> Block-ACK length [bits]
+#define IEEE_AX_SU_SPATIAL_STREAMS		1					///> Number of spatial streams
+#define IEEE_AX_MAX_PPDU_DURATION		(5484 * MICRO_VALUE)///> Maximum PPDU duration (limits the A-MPDU operation)
 
-#define MAC_HEADER						320 				// Size of the MAC header (for data packets)
+#define MAC_HEADER						320 				///> Size of the MAC header (for data packets)
 
-#define IEEE_BITS_OFDM_SYM_LEGACY 		24					// Number of bits per symbol in the legacy OFDM operation
+#define IEEE_BITS_OFDM_SYM_LEGACY 		24					///> Number of bits per symbol in the legacy OFDM operation
 
 /* *****************************************
  * * SPATIAL REUSE OPERATION IEEE 802.11ax *
  * *****************************************
  */
 
-#define INTRA_BSS_FRAME		0		// Frame type = Intra-BSS or legacy
-#define NON_SRG_FRAME		1		// Frame type = Inter-BSS with different SRG
-#define SRG_FRAME			2		// Frame type = Inter-BSS with same SRG
-#define OBSS_PD_MIN			-82 	// Minimum OBSS_PD (dBm)
-#define OBSS_PD_MAX			-62 	// Maximum OBSS_PD (dBm)
-#define MAX_TX_PWR_SR		20		// Maximum transmit power to be used during the SR operation (dBm)
-#define TX_PWR_REF			21		// TX PWR REF (dBm)
+#define INTRA_BSS_FRAME		0		///> Frame type = Intra-BSS or legacy
+#define NON_SRG_FRAME		1		///> Frame type = Inter-BSS with different SRG
+#define SRG_FRAME			2		///> Frame type = Inter-BSS with same SRG
+#define OBSS_PD_MIN			-82 	///> Minimum OBSS_PD (dBm)
+#define OBSS_PD_MAX			-62 	///> Maximum OBSS_PD (dBm)
+#define MAX_TX_PWR_SR		20		///> Maximum transmit power to be used during the SR operation (dBm)
+#define TX_PWR_REF			21		///> TX PWR REF (dBm)
 
 /* *****************************************
  * * AGENTS OPERATION AND MACHINE LERANING *
  * *****************************************
  */
 
-#define ORIGIN_AGENT	0		// To determine the source of a received configuration (agent)
-#define ORIGIN_AP		1		// To determine the source of a received configuration (AP)
+#define ORIGIN_AGENT	0		///> To determine the source of a received configuration (agent)
+#define ORIGIN_AP		1		///> To determine the source of a received configuration (AP)
 
-#define NUM_FEATURES_ACTIONS			4	// Number of features considered (e.g., primary, PD, P_tx, DCB policy)
+#define NUM_FEATURES_ACTIONS			4	///> Number of features considered (e.g., primary, PD, P_tx, DCB policy)
 
 // Types of rewards
-#define REWARD_TYPE_PACKETS_SENT 		0	// To determine the reward according to the type of performance indicator
-#define REWARD_TYPE_THROUGHPUT 			1	// To determine the reward according to the type of performance indicator
+#define REWARD_TYPE_PACKETS_SENT 		0	///> To determine the reward according to the type of performance indicator
+#define REWARD_TYPE_THROUGHPUT 			1	///> To determine the reward according to the type of performance indicator
 #define REWARD_TYPE_PACKETS_GENERATED 	2
 
 // Communication levels provided
-#define PURE_DECENTRALIZED 					0	// Agents learn based on their own information
-#define DISTRIBUTED		 					1	// Agents exchange information among them
-#define PURE_CENTRALIZED					2	// The learning operation is fully controlled by a central controller
-#define HYBRID_CENTRALIZED_DECENTRALIZED	3	// The learning operation is held at both controller and agents
+#define PURE_DECENTRALIZED 					0	///> Agents learn based on their own information
+#define DISTRIBUTED		 					1	///> Agents exchange information among them
+#define PURE_CENTRALIZED					2	///> The learning operation is fully controlled by a central controller
+#define HYBRID_CENTRALIZED_DECENTRALIZED	3	///> The learning operation is held at both controller and agents
 
 // Learning mechanisms allowed
 #define MULTI_ARMED_BANDITS 			1
@@ -349,6 +349,9 @@
 #define CONFIGURATION_RECOMMENDED 		1
 #define CONFIGURATION_REQUIRED			2
 
+// Modes of the Central Controller (CC)
+#define MODE_PASSIVE	0
+#define MODE_ACTIVE		1
 
 /* ********************************************
  * * INPUT/OUTPUT FILES AND CONSOLE ARGUMENTS *
@@ -356,10 +359,10 @@
  */
 
 // CONSOLE ARGUMENTS
-#define NUM_FULL_ARGUMENTS_CONSOLE				14		// Number of arguments entered per console corresponding to full config
-#define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	11		// Number of arguments entered per console corresponding to full config (NO AGENTS)
-#define NUM_PARTIAL_ARGUMENTS_CONSOLE			5		// Number of arguments entered per console corresponding to partial config
-#define NUM_PARTIAL_ARGUMENTS_SCRIPT			6		// Number of arguments entered per script corresponding to partial config
+#define NUM_FULL_ARGUMENTS_CONSOLE				14		///> Number of arguments entered per console corresponding to full config
+#define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	11		///> Number of arguments entered per console corresponding to full config (NO AGENTS)
+#define NUM_PARTIAL_ARGUMENTS_CONSOLE			5		///> Number of arguments entered per console corresponding to partial config
+#define NUM_PARTIAL_ARGUMENTS_SCRIPT			6		///> Number of arguments entered per script corresponding to partial config
 
 #define IX_SYSTEM_INPUT_FILE		1
 #define IX_NODES_INPUT_FILE			2
@@ -458,8 +461,8 @@
 // Setup() - A
 
 // Start() - B
-#define LOG_B00 "B00" 	// other option: #define LOG_B00 "B00: Start() starts"
-#define LOG_B01 "B01"	// Start() ends
+#define LOG_B00 "B00" 	///> other option: #define LOG_B00 "B00: Start() starts"
+#define LOG_B01 "B01"	///> Start() ends
 #define LOG_B02 "B02"
 #define LOG_B03 "B03"
 #define LOG_B04 "B04"
@@ -477,9 +480,9 @@
 #define LOG_B16 "B16"
 
 // Stop() - C
-#define LOG_C00 "C00"	// Stop() starts
-#define LOG_C01 "C01"	// Stop() ends
-#define LOG_C02 "C02"	// Statistics: Time...
+#define LOG_C00 "C00"	///> Stop() starts
+#define LOG_C01 "C01"	///> Stop() ends
+#define LOG_C02 "C02"	///> Statistics: Time...
 #define LOG_C03 "C03"
 #define LOG_C04 "C04"
 #define LOG_C05 "C05"

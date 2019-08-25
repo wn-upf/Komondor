@@ -1,0 +1,179 @@
+\hypertarget{classMultiArmedBandit}{}\section{Multi\+Armed\+Bandit Class Reference}
+\label{classMultiArmedBandit}\index{Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}}
+
+
+{\ttfamily \#include $<$multi\+\_\+armed\+\_\+bandits.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a88a82de9923f34c3baaa1c861a6b6e0d}\label{classMultiArmedBandit_a88a82de9923f34c3baaa1c861a6b6e0d}} 
+void {\bfseries Update\+Arm\+Statistics} (int action\+\_\+ix, double reward)
+\item 
+\mbox{\Hypertarget{classMultiArmedBandit_aedb817a8d802c8430a16faae3ef4589f}\label{classMultiArmedBandit_aedb817a8d802c8430a16faae3ef4589f}} 
+int {\bfseries Select\+New\+Action} ()
+\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a67fa6b49c9a05bfc2b4878c662620629}\label{classMultiArmedBandit_a67fa6b49c9a05bfc2b4878c662620629}} 
+void {\bfseries Print\+Or\+Write\+Statistics} (int write\+\_\+or\+\_\+print, \hyperlink{structLogger}{Logger} \&logger, double sim\+\_\+time)
+\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a46bc31936937db05b94710c4699ac150}\label{classMultiArmedBandit_a46bc31936937db05b94710c4699ac150}} 
+void {\bfseries Print\+Available\+Action\+Selection\+Strategies} ()
+\item 
+\mbox{\Hypertarget{classMultiArmedBandit_af12dc69340c04afff52e3e7fbf00d8d1}\label{classMultiArmedBandit_af12dc69340c04afff52e3e7fbf00d8d1}} 
+void {\bfseries Initialize\+Variables} ()
+\item 
+void \hyperlink{classMultiArmedBandit_a88a82de9923f34c3baaa1c861a6b6e0d}{Update\+Arm\+Statistics} (int action\+\_\+ix, double reward)
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Epsilon parameter (exploration coefficient) \end{quote}
+\end{DoxyCompactList}\item 
+int \hyperlink{classMultiArmedBandit_aedb817a8d802c8430a16faae3ef4589f}{Select\+New\+Action} ()
+\item 
+void \hyperlink{classMultiArmedBandit_a67fa6b49c9a05bfc2b4878c662620629}{Print\+Or\+Write\+Statistics} (int write\+\_\+or\+\_\+print, \hyperlink{structLogger}{Logger} \&logger, double sim\+\_\+time)
+\item 
+void \hyperlink{classMultiArmedBandit_a46bc31936937db05b94710c4699ac150}{Print\+Available\+Action\+Selection\+Strategies} ()
+\item 
+void \hyperlink{classMultiArmedBandit_af12dc69340c04afff52e3e7fbf00d8d1}{Initialize\+Variables} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMultiArmedBandit_ab6bcacc3a702c2ac9e06c6d8c552feb8}\label{classMultiArmedBandit_ab6bcacc3a702c2ac9e06c6d8c552feb8}} 
+int {\bfseries agent\+\_\+id}
+\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a78201d6ae72bf4f77321f3f94c7a2896}\label{classMultiArmedBandit_a78201d6ae72bf4f77321f3f94c7a2896}} 
+int \hyperlink{classMultiArmedBandit_a78201d6ae72bf4f77321f3f94c7a2896}{save\+\_\+agent\+\_\+logs}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Identified of the agent using M\+A\+Bs \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a67e7a58b5c0b66daa12bad25b7881f9c}\label{classMultiArmedBandit_a67e7a58b5c0b66daa12bad25b7881f9c}} 
+int \hyperlink{classMultiArmedBandit_a67e7a58b5c0b66daa12bad25b7881f9c}{print\+\_\+agent\+\_\+logs}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Boolean for saving logs \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a8806e1f73ec7dca2def562d31a202456}\label{classMultiArmedBandit_a8806e1f73ec7dca2def562d31a202456}} 
+int \hyperlink{classMultiArmedBandit_a8806e1f73ec7dca2def562d31a202456}{num\+\_\+actions}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Boolean for printing logs \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_ad8ba8903eb2546cb68b8b18fa017df89}\label{classMultiArmedBandit_ad8ba8903eb2546cb68b8b18fa017df89}} 
+int \hyperlink{classMultiArmedBandit_ad8ba8903eb2546cb68b8b18fa017df89}{action\+\_\+selection\+\_\+strategy}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of actions \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_abf1a430a6e9bd2899028ea3369a203ff}\label{classMultiArmedBandit_abf1a430a6e9bd2899028ea3369a203ff}} 
+int \hyperlink{classMultiArmedBandit_abf1a430a6e9bd2899028ea3369a203ff}{initial\+\_\+reward}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Index of the chosen action-\/selection strategy \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a0ddfdfc3b16fa8111c3646170b4be51e}\label{classMultiArmedBandit_a0ddfdfc3b16fa8111c3646170b4be51e}} 
+int \hyperlink{classMultiArmedBandit_a0ddfdfc3b16fa8111c3646170b4be51e}{num\+\_\+iterations}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Initial reward \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a17bda7a04e80f18180d569946a2f06a6}\label{classMultiArmedBandit_a17bda7a04e80f18180d569946a2f06a6}} 
+double $\ast$ \hyperlink{classMultiArmedBandit_a17bda7a04e80f18180d569946a2f06a6}{reward\+\_\+per\+\_\+arm}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Total number of iterations allowed \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a2ad1ef925f4642e008233ea9d9aa06a7}\label{classMultiArmedBandit_a2ad1ef925f4642e008233ea9d9aa06a7}} 
+double $\ast$ \hyperlink{classMultiArmedBandit_a2ad1ef925f4642e008233ea9d9aa06a7}{cumulative\+\_\+reward\+\_\+per\+\_\+arm}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the reward obtained per each arm \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_acfce3afffc178e1a82e306e874e2a119}\label{classMultiArmedBandit_acfce3afffc178e1a82e306e874e2a119}} 
+double $\ast$ \hyperlink{classMultiArmedBandit_acfce3afffc178e1a82e306e874e2a119}{average\+\_\+reward\+\_\+per\+\_\+arm}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the cumulative reward obtained per each arm \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a4237de145039c0431f03df6605209811}\label{classMultiArmedBandit_a4237de145039c0431f03df6605209811}} 
+double $\ast$ \hyperlink{classMultiArmedBandit_a4237de145039c0431f03df6605209811}{estimated\+\_\+reward\+\_\+per\+\_\+arm}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the average reward obtained per each arm \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_abf99e54933617eb26b8e6f379fa40df4}\label{classMultiArmedBandit_abf99e54933617eb26b8e6f379fa40df4}} 
+int $\ast$ \hyperlink{classMultiArmedBandit_abf99e54933617eb26b8e6f379fa40df4}{times\+\_\+arm\+\_\+has\+\_\+been\+\_\+selected}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the estimated reward obtained per each arm \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a88abf95b165c3dd62e3ca5b73a42d3d5}\label{classMultiArmedBandit_a88abf95b165c3dd62e3ca5b73a42d3d5}} 
+double \hyperlink{classMultiArmedBandit_a88abf95b165c3dd62e3ca5b73a42d3d5}{initial\+\_\+epsilon}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the times each arm is selected \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMultiArmedBandit_a309a6be7aabef7960add7222d9e5da4d}\label{classMultiArmedBandit_a309a6be7aabef7960add7222d9e5da4d}} 
+double \hyperlink{classMultiArmedBandit_a309a6be7aabef7960add7222d9e5da4d}{epsilon}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Initial epsilon parameter (exploration coefficient) \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{multi__armed__bandits_8h_source}{multi\+\_\+armed\+\_\+bandits.\+h}\+: this file contains functions related to the agents\textquotesingle{} operation
+
+
+\begin{DoxyItemize}
+\item This file contains the methods used by the multi-\/armed bandits (M\+AB) framework 
+\end{DoxyItemize}
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classMultiArmedBandit_af12dc69340c04afff52e3e7fbf00d8d1}\label{classMultiArmedBandit_af12dc69340c04afff52e3e7fbf00d8d1}} 
+\index{Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}!Initialize\+Variables@{Initialize\+Variables}}
+\index{Initialize\+Variables@{Initialize\+Variables}!Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}}
+\subsubsection{\texorpdfstring{Initialize\+Variables()}{InitializeVariables()}}
+{\footnotesize\ttfamily void Multi\+Armed\+Bandit\+::\+Initialize\+Variables (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Initialize the variables used by the Bandits framework \mbox{\Hypertarget{classMultiArmedBandit_a46bc31936937db05b94710c4699ac150}\label{classMultiArmedBandit_a46bc31936937db05b94710c4699ac150}} 
+\index{Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}!Print\+Available\+Action\+Selection\+Strategies@{Print\+Available\+Action\+Selection\+Strategies}}
+\index{Print\+Available\+Action\+Selection\+Strategies@{Print\+Available\+Action\+Selection\+Strategies}!Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}}
+\subsubsection{\texorpdfstring{Print\+Available\+Action\+Selection\+Strategies()}{PrintAvailableActionSelectionStrategies()}}
+{\footnotesize\ttfamily void Multi\+Armed\+Bandit\+::\+Print\+Available\+Action\+Selection\+Strategies (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print the available ML mechanisms types \mbox{\Hypertarget{classMultiArmedBandit_a67fa6b49c9a05bfc2b4878c662620629}\label{classMultiArmedBandit_a67fa6b49c9a05bfc2b4878c662620629}} 
+\index{Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}!Print\+Or\+Write\+Statistics@{Print\+Or\+Write\+Statistics}}
+\index{Print\+Or\+Write\+Statistics@{Print\+Or\+Write\+Statistics}!Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}}
+\subsubsection{\texorpdfstring{Print\+Or\+Write\+Statistics()}{PrintOrWriteStatistics()}}
+{\footnotesize\ttfamily void Multi\+Armed\+Bandit\+::\+Print\+Or\+Write\+Statistics (\begin{DoxyParamCaption}\item[{int}]{write\+\_\+or\+\_\+print,  }\item[{\hyperlink{structLogger}{Logger} \&}]{logger,  }\item[{double}]{sim\+\_\+time }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print or write the statistics of each arm 
+\begin{DoxyParams}{Parameters}
+{\em write\+\_\+or\+\_\+print} & \mbox{[}type int\mbox{]}\+: variable to indicate whether to print on the console or to write on the the output logs file \\
+\hline
+{\em logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger object to write on the output file \\
+\hline
+{\em sim\+\_\+time} & \mbox{[}type double\mbox{]}\+: simulation time \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMultiArmedBandit_aedb817a8d802c8430a16faae3ef4589f}\label{classMultiArmedBandit_aedb817a8d802c8430a16faae3ef4589f}} 
+\index{Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}!Select\+New\+Action@{Select\+New\+Action}}
+\index{Select\+New\+Action@{Select\+New\+Action}!Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}}
+\subsubsection{\texorpdfstring{Select\+New\+Action()}{SelectNewAction()}}
+{\footnotesize\ttfamily int Multi\+Armed\+Bandit\+::\+Select\+New\+Action (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Select a new action according to the chosen action selection strategy \begin{DoxyReturn}{Returns}
+\char`\"{}action\+\_\+ix\char`\"{} \mbox{[}type int\mbox{]}\+: index of the selected action 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMultiArmedBandit_a88a82de9923f34c3baaa1c861a6b6e0d}\label{classMultiArmedBandit_a88a82de9923f34c3baaa1c861a6b6e0d}} 
+\index{Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}!Update\+Arm\+Statistics@{Update\+Arm\+Statistics}}
+\index{Update\+Arm\+Statistics@{Update\+Arm\+Statistics}!Multi\+Armed\+Bandit@{Multi\+Armed\+Bandit}}
+\subsubsection{\texorpdfstring{Update\+Arm\+Statistics()}{UpdateArmStatistics()}}
+{\footnotesize\ttfamily void Multi\+Armed\+Bandit\+::\+Update\+Arm\+Statistics (\begin{DoxyParamCaption}\item[{int}]{action\+\_\+ix,  }\item[{double}]{reward }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Epsilon parameter (exploration coefficient) \end{quote}
+
+
+Update the statistics maintained for each arm 
+\begin{DoxyParams}{Parameters}
+{\em action\+\_\+ix} & \mbox{[}type int\mbox{]}\+: index of the action to be updated \\
+\hline
+{\em reward} & \mbox{[}type double\mbox{]}\+: last reward observed from the action of interest \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/network\+\_\+optimization/learning\+\_\+modules/multi\+\_\+armed\+\_\+bandits/multi\+\_\+armed\+\_\+bandits.\+h\end{DoxyCompactItemize}

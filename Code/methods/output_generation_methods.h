@@ -41,9 +41,12 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
+ */
+
+ /**
+ * output_generation_methods.h: this file contains functions related to the main Komondor's operation
  *
- * - This file contains the auxiliary methods to carry out the rest of operations
+ * - This file contains the methods for generating the output of a given simulation (process simulation results and provide statistics)
  */
 
 #include <math.h>
@@ -59,30 +62,33 @@
 #ifndef _OUT_METHODS_
 #define _OUT_METHODS_
 
-// Process simulation results and provide statistics
-int total_data_packets_sent (0);
-double total_num_packets_generated (0);
-double total_throughput (0);
-double min_throughput (999999999999999999);
-double max_throughput (0);
-double proportional_fairness(0);
-double jains_fairness (0);
-double jains_fairness_aux (0);
-int total_rts_lost_slotted_bo (0);
-int total_rts_cts_sent (0);
-double total_prob_slotted_bo_collision (0);
-int total_num_tx_init_not_possible (0);
-double total_delay (0);
-double max_delay (0);
-double min_delay (9999999999);	// Index of the WLAN experiencing less throughput
-int ix_wlan_min_throughput (99999);	// Index of the WLAN experiencing less throughput
-double total_bandiwdth_tx (0);
-double av_expected_backoff (0);
-double av_expected_waiting_time (0);
+int total_data_packets_sent (0);				///< Total number of data packets sent
+double total_num_packets_generated (0);			///< Total number of packets generated
+double total_throughput (0);					///< Sum of the throughput obtained by each WLAN
+int ix_wlan_min_throughput (99999);				///< Index of the WLAN experiencing the minimum throughput
+double min_throughput (999999999999999999);		///< Minimum throughput across all the WLANs
+double max_throughput (0);						///< Maximum throughput across all the WLANs
+double proportional_fairness(0);				///< Proportional fairness across all the network
+double jains_fairness (0);						///< Jain's fairness across all the network
+double jains_fairness_aux (0);					///< Auxiliary value to compute the Jain's fairness
+int total_rts_lost_slotted_bo (0);				///< Total number of RTS frames lost by slotted BO collisions
+int total_rts_cts_sent (0);						///< Total number of RTS/CTS frames sent
+double total_prob_slotted_bo_collision (0);		///< Total probability of noticing collisions by slotted BO
+int total_num_tx_init_not_possible (0);			///< Total number transmissions that could not be initiated
+double total_delay (0);							///< Total delay in the network
+double max_delay (0);							///< Maximum delay across all the WLANs
+double min_delay (9999999999);					///< Minimum delay across all the WLANs
+double total_bandiwdth_tx (0);					///< Total bandwidth used for transmitting
+double av_expected_backoff (0);					///< Average expected backoff across all the WLANs
+double av_expected_waiting_time (0);			///< Average expected waiting time across all the WLANs
 
-/*
- * ComputeSimulationStatistics(): computes the global statistics after finishing the simulation
- */
+/**
+* Compute the global statistics after finishing the simulation
+* @param "performance_report" [type Performance*]: array containing the performance report of each WLAN
+* @param "configuration_per_node" [type Configuration*]: array containing the final configuration of each WLAN
+* @param "total_nodes_number" [type int]: total number of nodes
+* @param "total_wlans_number" [type int]: total number of WLANs
+*/
 void ComputeSimulationStatistics(Performance *performance_report, Configuration *configuration_per_node,
 		int total_nodes_number, int total_wlans_number){
 
@@ -133,9 +139,19 @@ void ComputeSimulationStatistics(Performance *performance_report, Configuration 
 	jains_fairness = pow(total_throughput, 2) / (total_nodes_number/2 * jains_fairness_aux); // Supposing that number_aps = number_nodes/2
 }
 
-/*
- * PrintAndWriteSimulationStatistics(): prints and writes logs regarding global statistics
- */
+/**
+* Prints and write logs regarding global statistics
+* @param "print_system_logs" [type int]: boolean indicating whether to print logs or not
+* @param "save_system_logs" [type int]: boolean indicating whether to write logs or not
+* @param "logger_simulation" [type Logger]: pointer to the logger that writes logs into a file
+* @param "performance_report" [type Performance*]: array containing the performance report of each WLAN
+* @param "configuration_per_node" [type Configuration*]: array containing the final configuration of each WLAN
+* @param "total_nodes_number" [type int]: total number of nodes
+* @param "total_wlans_number" [type int]: total number of WLANs
+* @param "frame_length" [type double]: length of a frame in bits
+* @param "max_num_packets_aggregated" [type int]: maximum number of packets to be aggregated
+* @param "simulation_time_komondor" [type double]: total simulation time
+*/
 void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_logs, Logger &logger_simulation,
 		Performance *performance_report, Configuration *configuration_per_node, int total_nodes_number,
 		int total_wlans_number, double frame_length, int max_num_packets_aggregated, double simulation_time_komondor) {
@@ -197,9 +213,19 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 
 }
 
-/*
- * GenerateScriptOutput(): generates the script's output (.txt) according to the introduced simulation index
- */
+/**
+* Generates the script's output (.txt) according to the introduced simulation index
+* @param "simulation_index" [type int]: simulation index that indicates which type of logs will be written
+* @param "performance_report" [type Performance*]: array containing the performance report of each WLAN
+* @param "configuration_per_node" [type Configuration*]: array containing the final configuration of each WLAN
+* @param "logger_script" [type Logger]: pointer to the logger that writes logs into a file
+* @param "total_wlans_number" [type int]: total number of WLANs
+* @param "total_nodes_number" [type int]: total number of nodes
+* @param "frame_length" [type double]: length of a frame in bits
+* @param "max_num_packets_aggregated" [type int]: maximum number of packets to be aggregated
+* @param "wlan_container" [type Wlan*]: array containing each WLAN in the network
+* @param "simulation_time_komondor" [type double]: total simulation time
+*/
 void GenerateScriptOutput(int simulation_index, Performance *performance_report, Configuration *configuration_per_node,
 	Logger &logger_script, int total_wlans_number, int	total_nodes_number, int frame_length,
 	int max_num_packets_aggregated, Wlan *wlan_container, double simulation_time_komondor) {

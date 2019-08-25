@@ -1,0 +1,184 @@
+\hypertarget{classGraphColoring}{}\section{Graph\+Coloring Class Reference}
+\label{classGraphColoring}\index{Graph\+Coloring@{Graph\+Coloring}}
+
+
+{\ttfamily \#include $<$graph\+\_\+coloring.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classGraphColoring_a8f0762e3222dac3389e315dbf6fac75e}\label{classGraphColoring_a8f0762e3222dac3389e315dbf6fac75e}} 
+void {\bfseries Update\+Configuration} (\hyperlink{structConfiguration}{Configuration} $\ast$configuration\+\_\+array, \hyperlink{structPerformance}{Performance} $\ast$performance\+\_\+array, \hyperlink{structLogger}{Logger} \&central\+\_\+controller\+\_\+logger, double sim\+\_\+time)
+\item 
+\mbox{\Hypertarget{classGraphColoring_a59aa0d25ab43d5e0a1333737e90a07d6}\label{classGraphColoring_a59aa0d25ab43d5e0a1333737e90a07d6}} 
+void {\bfseries Update\+Weights\+Wlans} (\hyperlink{structPerformance}{Performance} $\ast$performance\+\_\+array)
+\item 
+\mbox{\Hypertarget{classGraphColoring_ab15cb08c098dbc3edb271b38de730b9f}\label{classGraphColoring_ab15cb08c098dbc3edb271b38de730b9f}} 
+int {\bfseries Find\+Best\+Channel} (int wlan\+\_\+ix, int current\+\_\+channel)
+\item 
+\mbox{\Hypertarget{classGraphColoring_a45f12d87a4c2a4f7a1d0b5ca299aacfb}\label{classGraphColoring_a45f12d87a4c2a4f7a1d0b5ca299aacfb}} 
+void {\bfseries Graph\+Coloring\+Optimization} (\hyperlink{structConfiguration}{Configuration} $\ast$configuration\+\_\+array)
+\item 
+\mbox{\Hypertarget{classGraphColoring_af254562a02df4b73c63aa7c1539cfbb2}\label{classGraphColoring_af254562a02df4b73c63aa7c1539cfbb2}} 
+void {\bfseries Graph\+Coloring\+Initialization} (\hyperlink{structConfiguration}{Configuration} $\ast$configuration\+\_\+array)
+\item 
+\mbox{\Hypertarget{classGraphColoring_ae67e3e5361b5d85a815bd4c4445392fb}\label{classGraphColoring_ae67e3e5361b5d85a815bd4c4445392fb}} 
+void {\bfseries Initialize\+Variables} ()
+\item 
+\mbox{\Hypertarget{classGraphColoring_a6c3b2f0e1cc3529604030302bbccd487}\label{classGraphColoring_a6c3b2f0e1cc3529604030302bbccd487}} 
+void {\bfseries Print\+Or\+Write\+Statistics} (int write\+\_\+or\+\_\+print, \hyperlink{structLogger}{Logger} \&logger)
+\item 
+void \hyperlink{classGraphColoring_a8f0762e3222dac3389e315dbf6fac75e}{Update\+Configuration} (\hyperlink{structConfiguration}{Configuration} $\ast$configuration\+\_\+array, \hyperlink{structPerformance}{Performance} $\ast$performance\+\_\+array, \hyperlink{structLogger}{Logger} \&central\+\_\+controller\+\_\+logger, double sim\+\_\+time)
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Matrix to store weight edges \end{quote}
+\end{DoxyCompactList}\item 
+void \hyperlink{classGraphColoring_a59aa0d25ab43d5e0a1333737e90a07d6}{Update\+Weights\+Wlans} (\hyperlink{structPerformance}{Performance} $\ast$performance\+\_\+array)
+\item 
+int \hyperlink{classGraphColoring_ab15cb08c098dbc3edb271b38de730b9f}{Find\+Best\+Channel} (int wlan\+\_\+ix, int current\+\_\+channel)
+\item 
+void \hyperlink{classGraphColoring_a45f12d87a4c2a4f7a1d0b5ca299aacfb}{Graph\+Coloring\+Optimization} (\hyperlink{structConfiguration}{Configuration} $\ast$configuration\+\_\+array)
+\item 
+void \hyperlink{classGraphColoring_af254562a02df4b73c63aa7c1539cfbb2}{Graph\+Coloring\+Initialization} (\hyperlink{structConfiguration}{Configuration} $\ast$configuration\+\_\+array)
+\item 
+void \hyperlink{classGraphColoring_ae67e3e5361b5d85a815bd4c4445392fb}{Initialize\+Variables} ()
+\item 
+void \hyperlink{classGraphColoring_a6c3b2f0e1cc3529604030302bbccd487}{Print\+Or\+Write\+Statistics} (int write\+\_\+or\+\_\+print, \hyperlink{structLogger}{Logger} \&logger)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classGraphColoring_a05e7948859fafc32a97d89913793d974}\label{classGraphColoring_a05e7948859fafc32a97d89913793d974}} 
+int {\bfseries save\+\_\+controller\+\_\+logs}
+\item 
+\mbox{\Hypertarget{classGraphColoring_ad17c13e7566b6b2b46609fb31a0b05f9}\label{classGraphColoring_ad17c13e7566b6b2b46609fb31a0b05f9}} 
+int \hyperlink{classGraphColoring_ad17c13e7566b6b2b46609fb31a0b05f9}{print\+\_\+controller\+\_\+logs}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Boolean for saving logs \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classGraphColoring_a97fed0fb8d0f5f5f388d6efc3356a1f1}\label{classGraphColoring_a97fed0fb8d0f5f5f388d6efc3356a1f1}} 
+int \hyperlink{classGraphColoring_a97fed0fb8d0f5f5f388d6efc3356a1f1}{agents\+\_\+number}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Boolean for printing logs \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classGraphColoring_a44c8656b719b76dae15ca1c5f7766ef3}\label{classGraphColoring_a44c8656b719b76dae15ca1c5f7766ef3}} 
+int \hyperlink{classGraphColoring_a44c8656b719b76dae15ca1c5f7766ef3}{wlans\+\_\+number}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of agents \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classGraphColoring_a032754b6cbb82cdedf5fdfb92e79ea68}\label{classGraphColoring_a032754b6cbb82cdedf5fdfb92e79ea68}} 
+int \hyperlink{classGraphColoring_a032754b6cbb82cdedf5fdfb92e79ea68}{num\+\_\+channels}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of W\+L\+A\+Ns \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classGraphColoring_a4f0dc20fe58533aacf89d1aebc469884}\label{classGraphColoring_a4f0dc20fe58533aacf89d1aebc469884}} 
+int \hyperlink{classGraphColoring_a4f0dc20fe58533aacf89d1aebc469884}{total\+\_\+nodes\+\_\+number}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of channels \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{graph__coloring_8h_source}{graph\+\_\+coloring.\+h}\+: this file contains functions related to the agents\textquotesingle{} operation
+
+
+\begin{DoxyItemize}
+\item This file contains the methods used to provide centralized graph coloring (\href{https://dl.acm.org/citation.cfm?id=997130}{\tt https\+://dl.\+acm.\+org/citation.\+cfm?id=997130}) 
+\end{DoxyItemize}
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classGraphColoring_ab15cb08c098dbc3edb271b38de730b9f}\label{classGraphColoring_ab15cb08c098dbc3edb271b38de730b9f}} 
+\index{Graph\+Coloring@{Graph\+Coloring}!Find\+Best\+Channel@{Find\+Best\+Channel}}
+\index{Find\+Best\+Channel@{Find\+Best\+Channel}!Graph\+Coloring@{Graph\+Coloring}}
+\subsubsection{\texorpdfstring{Find\+Best\+Channel()}{FindBestChannel()}}
+{\footnotesize\ttfamily int Graph\+Coloring\+::\+Find\+Best\+Channel (\begin{DoxyParamCaption}\item[{int}]{wlan\+\_\+ix,  }\item[{int}]{current\+\_\+channel }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Find the best channel, according to the selected policy 
+\begin{DoxyParams}{Parameters}
+{\em wlan\+\_\+ix} & \mbox{[}type int\mbox{]}\+: W\+L\+AN index \\
+\hline
+{\em current\+\_\+channel} & \mbox{[}type int\mbox{]}\+: current primary channel \\
+\hline
+{\em new\+\_\+channel} & \mbox{[}type int\mbox{]}\+: new primary channel \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classGraphColoring_af254562a02df4b73c63aa7c1539cfbb2}\label{classGraphColoring_af254562a02df4b73c63aa7c1539cfbb2}} 
+\index{Graph\+Coloring@{Graph\+Coloring}!Graph\+Coloring\+Initialization@{Graph\+Coloring\+Initialization}}
+\index{Graph\+Coloring\+Initialization@{Graph\+Coloring\+Initialization}!Graph\+Coloring@{Graph\+Coloring}}
+\subsubsection{\texorpdfstring{Graph\+Coloring\+Initialization()}{GraphColoringInitialization()}}
+{\footnotesize\ttfamily void Graph\+Coloring\+::\+Graph\+Coloring\+Initialization (\begin{DoxyParamCaption}\item[{\hyperlink{structConfiguration}{Configuration} $\ast$}]{configuration\+\_\+array }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Provides the initial configuration to be used by each W\+L\+AN, according to the centralized graph coloring method 
+\begin{DoxyParams}{Parameters}
+{\em configuration\+\_\+array} & \mbox{[}type Configuration$\ast$\mbox{]}\+: array of configurations of each AP (to be updated by this method) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classGraphColoring_a45f12d87a4c2a4f7a1d0b5ca299aacfb}\label{classGraphColoring_a45f12d87a4c2a4f7a1d0b5ca299aacfb}} 
+\index{Graph\+Coloring@{Graph\+Coloring}!Graph\+Coloring\+Optimization@{Graph\+Coloring\+Optimization}}
+\index{Graph\+Coloring\+Optimization@{Graph\+Coloring\+Optimization}!Graph\+Coloring@{Graph\+Coloring}}
+\subsubsection{\texorpdfstring{Graph\+Coloring\+Optimization()}{GraphColoringOptimization()}}
+{\footnotesize\ttfamily void Graph\+Coloring\+::\+Graph\+Coloring\+Optimization (\begin{DoxyParamCaption}\item[{\hyperlink{structConfiguration}{Configuration} $\ast$}]{configuration\+\_\+array }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Updates the configuration to be used by each W\+L\+AN 
+\begin{DoxyParams}{Parameters}
+{\em configuration\+\_\+array} & \mbox{[}type Configuration$\ast$\mbox{]}\+: array of configurations of each AP (to be updated by this method) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classGraphColoring_ae67e3e5361b5d85a815bd4c4445392fb}\label{classGraphColoring_ae67e3e5361b5d85a815bd4c4445392fb}} 
+\index{Graph\+Coloring@{Graph\+Coloring}!Initialize\+Variables@{Initialize\+Variables}}
+\index{Initialize\+Variables@{Initialize\+Variables}!Graph\+Coloring@{Graph\+Coloring}}
+\subsubsection{\texorpdfstring{Initialize\+Variables()}{InitializeVariables()}}
+{\footnotesize\ttfamily void Graph\+Coloring\+::\+Initialize\+Variables (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Initialize the variables used by the Graph Coloring instance \mbox{\Hypertarget{classGraphColoring_a6c3b2f0e1cc3529604030302bbccd487}\label{classGraphColoring_a6c3b2f0e1cc3529604030302bbccd487}} 
+\index{Graph\+Coloring@{Graph\+Coloring}!Print\+Or\+Write\+Statistics@{Print\+Or\+Write\+Statistics}}
+\index{Print\+Or\+Write\+Statistics@{Print\+Or\+Write\+Statistics}!Graph\+Coloring@{Graph\+Coloring}}
+\subsubsection{\texorpdfstring{Print\+Or\+Write\+Statistics()}{PrintOrWriteStatistics()}}
+{\footnotesize\ttfamily void Graph\+Coloring\+::\+Print\+Or\+Write\+Statistics (\begin{DoxyParamCaption}\item[{int}]{write\+\_\+or\+\_\+print,  }\item[{\hyperlink{structLogger}{Logger} \&}]{logger }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print or write the statistics of Graph Coloring 
+\begin{DoxyParams}{Parameters}
+{\em write\+\_\+or\+\_\+print} & \mbox{[}type int\mbox{]}\+: variable to indicate whether to print on the console or to write on the the output logs file \\
+\hline
+{\em logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger object to write on the output file \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classGraphColoring_a8f0762e3222dac3389e315dbf6fac75e}\label{classGraphColoring_a8f0762e3222dac3389e315dbf6fac75e}} 
+\index{Graph\+Coloring@{Graph\+Coloring}!Update\+Configuration@{Update\+Configuration}}
+\index{Update\+Configuration@{Update\+Configuration}!Graph\+Coloring@{Graph\+Coloring}}
+\subsubsection{\texorpdfstring{Update\+Configuration()}{UpdateConfiguration()}}
+{\footnotesize\ttfamily void Graph\+Coloring\+::\+Update\+Configuration (\begin{DoxyParamCaption}\item[{\hyperlink{structConfiguration}{Configuration} $\ast$}]{configuration\+\_\+array,  }\item[{\hyperlink{structPerformance}{Performance} $\ast$}]{performance\+\_\+array,  }\item[{\hyperlink{structLogger}{Logger} \&}]{central\+\_\+controller\+\_\+logger,  }\item[{double}]{sim\+\_\+time }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Matrix to store weight edges \end{quote}
+
+
+Main method for updating the configuration according to past experience 
+\begin{DoxyParams}{Parameters}
+{\em configuration\+\_\+array} & \mbox{[}type Configuration$\ast$\mbox{]}\+: array of configurations of each AP (to be updated by this method) \\
+\hline
+{\em performance\+\_\+array} & \mbox{[}type Performance$\ast$\mbox{]}\+: array of performances of each AP \\
+\hline
+{\em central\+\_\+controller\+\_\+logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger object to write logs \\
+\hline
+{\em sim\+\_\+time} & \mbox{[}type double\mbox{]}\+: simulation time at the moment of calling the function (for logging purposes) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classGraphColoring_a59aa0d25ab43d5e0a1333737e90a07d6}\label{classGraphColoring_a59aa0d25ab43d5e0a1333737e90a07d6}} 
+\index{Graph\+Coloring@{Graph\+Coloring}!Update\+Weights\+Wlans@{Update\+Weights\+Wlans}}
+\index{Update\+Weights\+Wlans@{Update\+Weights\+Wlans}!Graph\+Coloring@{Graph\+Coloring}}
+\subsubsection{\texorpdfstring{Update\+Weights\+Wlans()}{UpdateWeightsWlans()}}
+{\footnotesize\ttfamily void Graph\+Coloring\+::\+Update\+Weights\+Wlans (\begin{DoxyParamCaption}\item[{\hyperlink{structPerformance}{Performance} $\ast$}]{performance\+\_\+array }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Update both the R\+S\+SI Table and the Weight edges 
+\begin{DoxyParams}{Parameters}
+{\em performance\+\_\+array} & \mbox{[}type Performance$\ast$\mbox{]}\+: array of performances of each AP \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/network\+\_\+optimization/graph\+\_\+coloring/graph\+\_\+coloring.\+h\end{DoxyCompactItemize}

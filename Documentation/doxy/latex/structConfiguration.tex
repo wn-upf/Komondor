@@ -1,0 +1,111 @@
+\hypertarget{structConfiguration}{}\section{Configuration Struct Reference}
+\label{structConfiguration}\index{Configuration@{Configuration}}
+
+
+Collaboration diagram for Configuration\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=169pt]{structConfiguration__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structConfiguration_ab77ba6f9704fe0ac90f92f8944268845}\label{structConfiguration_ab77ba6f9704fe0ac90f92f8944268845}} 
+void {\bfseries Print\+Configuration} (int origin)
+\item 
+\mbox{\Hypertarget{structConfiguration_acdb9f693e0b773ee8ffb7cf18dad69d7}\label{structConfiguration_acdb9f693e0b773ee8ffb7cf18dad69d7}} 
+void {\bfseries Write\+Configuration} (\hyperlink{structLogger}{Logger} logger, double sim\+\_\+time)
+\item 
+void \hyperlink{structConfiguration_ab77ba6f9704fe0ac90f92f8944268845}{Print\+Configuration} (int origin)
+\item 
+void \hyperlink{structConfiguration_acdb9f693e0b773ee8ffb7cf18dad69d7}{Write\+Configuration} (\hyperlink{structLogger}{Logger} logger, double sim\+\_\+time)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structConfiguration_a9b2068dd7fbb1e0e5479a6195d949bc9}\label{structConfiguration_a9b2068dd7fbb1e0e5479a6195d949bc9}} 
+double {\bfseries timestamp}
+\item 
+\mbox{\Hypertarget{structConfiguration_a99cdf4a80e3f62cdd50d59651dac3369}\label{structConfiguration_a99cdf4a80e3f62cdd50d59651dac3369}} 
+int {\bfseries selected\+\_\+primary\+\_\+channel}
+\item 
+\mbox{\Hypertarget{structConfiguration_a87b3f53c024abf5840b961175c1a619b}\label{structConfiguration_a87b3f53c024abf5840b961175c1a619b}} 
+double \hyperlink{structConfiguration_a87b3f53c024abf5840b961175c1a619b}{selected\+\_\+pd}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Selected primary channel \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structConfiguration_a62528e39661726648fe211d3ad617b9d}\label{structConfiguration_a62528e39661726648fe211d3ad617b9d}} 
+double \hyperlink{structConfiguration_a62528e39661726648fe211d3ad617b9d}{selected\+\_\+tx\+\_\+power}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Selected pd (\char`\"{}sensitivity\char`\"{} threshold) \mbox{[}pW\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structConfiguration_ae44aafc37d6913050db940e5f4d2b74e}\label{structConfiguration_ae44aafc37d6913050db940e5f4d2b74e}} 
+int \hyperlink{structConfiguration_ae44aafc37d6913050db940e5f4d2b74e}{selected\+\_\+dcb\+\_\+policy}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Selected Tx Power \mbox{[}pW\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structConfiguration_a662755287ac7f9ab73d7cde91a4b5b97}\label{structConfiguration_a662755287ac7f9ab73d7cde91a4b5b97}} 
+int \hyperlink{structConfiguration_a662755287ac7f9ab73d7cde91a4b5b97}{spatial\+\_\+reuse\+\_\+enabled}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Selected D\+CB policy \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structConfiguration_a9c1c3540d5ba4adc060d907eb7f03a0e}\label{structConfiguration_a9c1c3540d5ba4adc060d907eb7f03a0e}} 
+int \hyperlink{structConfiguration_a9c1c3540d5ba4adc060d907eb7f03a0e}{bss\+\_\+color}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Indicates whether the SR operation is enabled or not \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structConfiguration_a1f79d1e2260dfb2b597da33a05e9d7ca}\label{structConfiguration_a1f79d1e2260dfb2b597da33a05e9d7ca}} 
+int \hyperlink{structConfiguration_a1f79d1e2260dfb2b597da33a05e9d7ca}{srg}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+B\+SS color identifier \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structConfiguration_ad626957d7ff75b7a49f6b8f99242c249}\label{structConfiguration_ad626957d7ff75b7a49f6b8f99242c249}} 
+double \hyperlink{structConfiguration_ad626957d7ff75b7a49f6b8f99242c249}{non\+\_\+srg\+\_\+obss\+\_\+pd}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Spatial Reuse Group (S\+RG) identifier \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structConfiguration_a3f4333c7b63a3e5bfb57967ed25c6ad6}\label{structConfiguration_a3f4333c7b63a3e5bfb57967ed25c6ad6}} 
+double \hyperlink{structConfiguration_a3f4333c7b63a3e5bfb57967ed25c6ad6}{srg\+\_\+obss\+\_\+pd}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Threshold to be used for non-\/\+S\+RG transmissions \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structConfiguration_af23b3d2295e2948d6924abca9de961f6}\label{structConfiguration_af23b3d2295e2948d6924abca9de961f6}} 
+\hyperlink{structCapabilities}{Capabilities} \hyperlink{structConfiguration_af23b3d2295e2948d6924abca9de961f6}{capabilities}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Threshold to be used for S\+RG transmissions \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{structConfiguration_ab77ba6f9704fe0ac90f92f8944268845}\label{structConfiguration_ab77ba6f9704fe0ac90f92f8944268845}} 
+\index{Configuration@{Configuration}!Print\+Configuration@{Print\+Configuration}}
+\index{Print\+Configuration@{Print\+Configuration}!Configuration@{Configuration}}
+\subsubsection{\texorpdfstring{Print\+Configuration()}{PrintConfiguration()}}
+{\footnotesize\ttfamily void Configuration\+::\+Print\+Configuration (\begin{DoxyParamCaption}\item[{int}]{origin }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Function to print the node\textquotesingle{}s configuration 
+\begin{DoxyParams}{Parameters}
+{\em origin} & \mbox{[}type int\mbox{]}\+: type of node printing the configuration \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{structConfiguration_acdb9f693e0b773ee8ffb7cf18dad69d7}\label{structConfiguration_acdb9f693e0b773ee8ffb7cf18dad69d7}} 
+\index{Configuration@{Configuration}!Write\+Configuration@{Write\+Configuration}}
+\index{Write\+Configuration@{Write\+Configuration}!Configuration@{Configuration}}
+\subsubsection{\texorpdfstring{Write\+Configuration()}{WriteConfiguration()}}
+{\footnotesize\ttfamily void Configuration\+::\+Write\+Configuration (\begin{DoxyParamCaption}\item[{\hyperlink{structLogger}{Logger}}]{logger,  }\item[{double}]{sim\+\_\+time }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Function to write the node\textquotesingle{}s configuration 
+\begin{DoxyParams}{Parameters}
+{\em logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger object for printing logs into a file \\
+\hline
+{\em sim\+\_\+time} & \mbox{[}type double\mbox{]}\+: current simulation time \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/structures/node\+\_\+configuration.\+h\end{DoxyCompactItemize}

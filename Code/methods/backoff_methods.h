@@ -41,9 +41,12 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
+ */
+
+ /**
+ * backoff_methods.h: this file contains functions related to the main Komondor's operation
  *
- * - This file contains the methods related to "backoff" operations
+ * - This file contains the backoff methods used to simulated the CSMA/CA operation in WLANs
  */
 
 #include <math.h>
@@ -56,9 +59,13 @@ double	Random2( double v=1.0)	{ return v*drand48();}
 int		Random2( int v)		{ return (int)(v*drand48()); }
 double	Exponential2(double mean)	{ return -mean*log(Random2());}
 
-/*
- * ComputeBackoff(): computes a new backoff
- * */
+/**
+* Compute a new backoff value
+* @param "pdf_backoff" [type int]: type of backoff distribution (PDF_DETERMINISTIC or PDF_EXPONENTIAL)
+* @param "cw" [type int]: current contention window
+* @param "backoff_type" [type int]: type of backoff used (BACKOFF_SLOTTED or BACKOFF_CONTINUOUS) ---> BACKOFF_SLOTTED is highly recommended
+* @return "backoff_time" [type double]: new generated backoff
+*/
 double ComputeBackoff(int pdf_backoff, int cw, int backoff_type){
 
 	double backoff_time;
@@ -94,14 +101,16 @@ double ComputeBackoff(int pdf_backoff, int cw, int backoff_type){
 	}
 
 	return backoff_time;
+
 }
 
-/*
- * computeRemainingBackoff(): computes the remaining backoff after some even happens
- * */
+/**
+* Compute the remaining backoff after some even happens. Particularly useful to compute the closest slot in the BACKOFF_SLOTTED type.
+* @param "backoff_type" [type int]: type of backoff used (BACKOFF_SLOTTED or BACKOFF_CONTINUOUS) ---> BACKOFF_SLOTTED is highly recommended
+* @param "remaining_backoff" [type double]: remaining backoff
+* @return "updated_remaining_backoff" [type double]: updated value of the remaining backoff
+*/
 double ComputeRemainingBackoff(int backoff_type, double remaining_backoff){
-
-//	printf("remaining_backoff = %f\n", remaining_backoff);
 
 	double updated_remaining_backoff;
 
@@ -135,9 +144,15 @@ double ComputeRemainingBackoff(int backoff_type, double remaining_backoff){
 
 }
 
-/*
- * HandleBackoff(): handles the backoff. It is called when backoff may be paused or resumed.
- * */
+/**
+* Handle the backoff. It is called when backoff may be paused or resumed.
+* @param "pause_or_resume" [type int]: boolean indicating whether to pause or resume the backoff counter
+* @param "channel_power" [type double**]: array containing the power sensed in each channel
+* @param "primary_channel" [type int]: primary channel used by the node attempting to pause or resume the backoff
+* @param "pd" [type double]: packet detect (PD) threshold in pW
+* @param "packets_in_buffer" [type int]: number of packets in the buffer
+* @return "backoff_action" [type int]: boolean indicating whether to accept or not to pause/resume the backoff counter
+*/
 int HandleBackoff(int pause_or_resume, double **channel_power, int primary_channel, double pd,
 	int packets_in_buffer){
 
@@ -167,18 +182,19 @@ int HandleBackoff(int pause_or_resume, double **channel_power, int primary_chann
 
 }
 
-/*
- * HandleCongestionWindow(): increase or decrease the contention window.
- **/
+/**
+* Increase or decrease the contention window. CW adaptation: http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
+* @param "cw_adaptation" [type int]: boolean indicating whether CW adaptation is enabled or not
+* @param "pause_or_resume" [type int]: boolean indicating whether to increase or reset the CW
+* @param "cw_current" [type int*]: pointer to the current CW (to be modified by this method)
+* @param "cw_min" [type int]: minimum CW
+* @param "cw_stage_current" [type int]: pointer to the current CW stage (to be modified by this method)
+* @param "cw_stage_max" [type int]: maximum CW stage
+*/
 void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int* cw_current, int cw_min,
 		int *cw_stage_current, int cw_stage_max) {
-
-	// CW adaptation: http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
-
 	if(cw_adaptation == TRUE){
-
 		switch(increase_or_reset) {
-
 			case INCREASE_CW:{
 				if(*cw_stage_current < cw_stage_max){
 					*cw_stage_current = *cw_stage_current + 1;
@@ -186,26 +202,18 @@ void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int* cw_cu
 				}
 				break;
 			}
-
 			case RESET_CW:{
 				*cw_stage_current = 0;
 				*cw_current = cw_min;
 				break;
 			}
-
 			default:{
 				printf("Unknown operation on contention window!");
 				exit(EXIT_FAILURE);
 				break;
 			}
-
 		}
-
 	} else {
-
-		// Constant CW
-		// - do nothing: keep cw
-
+		// Constant CW - do nothing: keep cw
 	}
-
 }

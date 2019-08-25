@@ -41,11 +41,11 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
- *
- * - This file defines a WLAN and provides basic displaying methods
  */
 
+ /**
+ * performance_metrics.h: this file defines a WLAN and provides basic displaying methods
+ */
 
 #ifndef _AUX_WLAN_
 #define _AUX_WLAN_
@@ -60,17 +60,17 @@
 // WLAN info
 struct Wlan
 {
-	int wlan_id;			// WLAN ID
-	std::string wlan_code;	// Code of the WLAN (string)
-	int num_stas;			// Number of STAs in the WLAN (AP not included)
-	int ap_id;				// Id of the Access Point
-	int *list_sta_id;		// List of STAs IDs belonging to the WLAN
+	int wlan_id;			///> WLAN ID
+	std::string wlan_code;	///> Code of the WLAN (string)
+	int num_stas;			///> Number of STAs in the WLAN (AP not included)
+	int ap_id;				///> Id of the Access Point
+	int *list_sta_id;		///> List of STAs IDs belonging to the WLAN
 
-	// Information about Spatial Reuse
-	int spatial_reuse_enabled;	// Indicates whether the SR operation is enabled or not
+	int spatial_reuse_enabled;	///> Indicates whether the SR operation is enabled or not
 
-	/*
-	 * SetSizeOfSTAsArray(): sets the size of the array list_sta_id
+	/**
+	 * Set the size of the array list_sta_id
+	 * @param "num_stas" [type int]: total number of STAs
 	 */
 	void SetSizeOfSTAsArray(int num_stas){
 		list_sta_id = new int[num_stas];
@@ -79,8 +79,8 @@ struct Wlan
 		}
 	}
 
-	/*
-	 * PrintStaIds(): prints the list of STAs IDs belonging to the WLAN
+	/**
+	 * Print the list of STAs IDs belonging to the WLAN
 	 */
 	void PrintStaIds(){
 		for(int s = 0; s < num_stas; s++){
@@ -89,10 +89,9 @@ struct Wlan
 		printf("\n");
 	}
 
-	/*
-	 * WriteStaIds(): writes STAs list of IDs in a given file
-	 * Input arguments:
-	 * - logger: logger containing the file to write on
+	/**
+	 * Write STAs list of IDs in a given file
+	 * @param "logger" [type Logger]: logger containing the file to write on
 	 */
 	void WriteStaIds(Logger logger){
 		if (logger.save_logs){
@@ -102,8 +101,8 @@ struct Wlan
 		}
 	}
 
-	/*
-	 * PrintWlanInfo(): prints general WLAN info
+	/**
+	 * Print general WLAN's information
 	 */
 	void PrintWlanInfo(){
 		printf("%s WLAN %s:\n", LOG_LVL3, wlan_code.c_str());
@@ -114,11 +113,10 @@ struct Wlan
 		PrintStaIds();
 	}
 
-	/*
-	 * WriteWlanInfo(): writes general WLAN info in a given file
-	 * Input arguments:
-	 * - logger: logger containing the file to write on
-	 * - header_string: header string
+	/**
+	 * Write general WLAN info in a given file
+	 * @param "logger" [type Logger]: logger containing the file to write on
+	 * @param "header_string" [type std::string]: header string
 	 */
 	void WriteWlanInfo(Logger logger, std::string header_str){
 		if (logger.save_logs){

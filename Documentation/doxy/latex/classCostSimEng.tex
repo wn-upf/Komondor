@@ -1,0 +1,145 @@
+\hypertarget{classCostSimEng}{}\section{Cost\+Sim\+Eng Class Reference}
+\label{classCostSimEng}\index{Cost\+Sim\+Eng@{Cost\+Sim\+Eng}}
+
+
+Inheritance diagram for Cost\+Sim\+Eng\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=202pt]{classCostSimEng__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Cost\+Sim\+Eng\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=187pt]{classCostSimEng__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{classCostSimEng_1_1seed__t}{seed\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCostSimEng_a6d42fb3dbbc7df03c8459a35ecfee169}\label{classCostSimEng_a6d42fb3dbbc7df03c8459a35ecfee169}} 
+\hyperlink{classCorsaAllocator}{Corsa\+Allocator} $\ast$ {\bfseries Get\+Allocator} (unsigned int datasize)
+\item 
+\mbox{\Hypertarget{classCostSimEng_ac288e315c9b81c4df432980ff44bd866}\label{classCostSimEng_ac288e315c9b81c4df432980ff44bd866}} 
+void {\bfseries Add\+Component} (\hyperlink{classTypeII}{Type\+II} $\ast$c)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a38c4aabf44e65ddfdd959729ebcb4dcf}\label{classCostSimEng_a38c4aabf44e65ddfdd959729ebcb4dcf}} 
+void {\bfseries Schedule\+Event} (\hyperlink{structCostEvent}{Cost\+Event} $\ast$e)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a455377f81802c06e04e4dc391791b56e}\label{classCostSimEng_a455377f81802c06e04e4dc391791b56e}} 
+void {\bfseries Cancel\+Event} (\hyperlink{structCostEvent}{Cost\+Event} $\ast$e)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a6048a0a1cff49a4e2f7bfeca381e6723}\label{classCostSimEng_a6048a0a1cff49a4e2f7bfeca381e6723}} 
+double {\bfseries Random} (double v=1.\+0)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a127601c325d19488fdf0c581b768f7f2}\label{classCostSimEng_a127601c325d19488fdf0c581b768f7f2}} 
+int {\bfseries Random} (int v)
+\item 
+\mbox{\Hypertarget{classCostSimEng_acc1720c9cdb5febb82759e3548626f0c}\label{classCostSimEng_acc1720c9cdb5febb82759e3548626f0c}} 
+double {\bfseries Exponential} (double mean)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a99c79de92c4bd410b243c6e9245ebbdf}\label{classCostSimEng_a99c79de92c4bd410b243c6e9245ebbdf}} 
+virtual void {\bfseries Start} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_af799df40b1a3bd7de06b31e4927d5b26}\label{classCostSimEng_af799df40b1a3bd7de06b31e4927d5b26}} 
+virtual void {\bfseries Stop} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_ae79fd3ec1d850a585d832ef41a0471e5}\label{classCostSimEng_ae79fd3ec1d850a585d832ef41a0471e5}} 
+void {\bfseries Run} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_a874b89eda70f909bd008b9fb4b8847ea}\label{classCostSimEng_a874b89eda70f909bd008b9fb4b8847ea}} 
+double {\bfseries Sim\+Time} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_a942ec6fc1324614d65f8e18231230990}\label{classCostSimEng_a942ec6fc1324614d65f8e18231230990}} 
+void {\bfseries Stop\+Time} (double t)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a79440b2e2468c8996e24b4a60099d33b}\label{classCostSimEng_a79440b2e2468c8996e24b4a60099d33b}} 
+double {\bfseries Stop\+Time} () const
+\item 
+\mbox{\Hypertarget{classCostSimEng_a80691746a7c7edb5d12de3d879e3266c}\label{classCostSimEng_a80691746a7c7edb5d12de3d879e3266c}} 
+void {\bfseries Clear\+Stats\+Time} (double t)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a58be6ebd56f080abf5607c09f99a0f30}\label{classCostSimEng_a58be6ebd56f080abf5607c09f99a0f30}} 
+double {\bfseries Clear\+Stats\+Time} () const
+\item 
+\mbox{\Hypertarget{classCostSimEng_a431e85fcd9c3b40aa8cfc53c01afb6ae}\label{classCostSimEng_a431e85fcd9c3b40aa8cfc53c01afb6ae}} 
+virtual void {\bfseries Clear\+Stats} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_a6d42fb3dbbc7df03c8459a35ecfee169}\label{classCostSimEng_a6d42fb3dbbc7df03c8459a35ecfee169}} 
+\hyperlink{classCorsaAllocator}{Corsa\+Allocator} $\ast$ {\bfseries Get\+Allocator} (unsigned int datasize)
+\item 
+\mbox{\Hypertarget{classCostSimEng_ac288e315c9b81c4df432980ff44bd866}\label{classCostSimEng_ac288e315c9b81c4df432980ff44bd866}} 
+void {\bfseries Add\+Component} (\hyperlink{classTypeII}{Type\+II} $\ast$c)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a38c4aabf44e65ddfdd959729ebcb4dcf}\label{classCostSimEng_a38c4aabf44e65ddfdd959729ebcb4dcf}} 
+void {\bfseries Schedule\+Event} (\hyperlink{structCostEvent}{Cost\+Event} $\ast$e)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a455377f81802c06e04e4dc391791b56e}\label{classCostSimEng_a455377f81802c06e04e4dc391791b56e}} 
+void {\bfseries Cancel\+Event} (\hyperlink{structCostEvent}{Cost\+Event} $\ast$e)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a6048a0a1cff49a4e2f7bfeca381e6723}\label{classCostSimEng_a6048a0a1cff49a4e2f7bfeca381e6723}} 
+double {\bfseries Random} (double v=1.\+0)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a127601c325d19488fdf0c581b768f7f2}\label{classCostSimEng_a127601c325d19488fdf0c581b768f7f2}} 
+int {\bfseries Random} (int v)
+\item 
+\mbox{\Hypertarget{classCostSimEng_acc1720c9cdb5febb82759e3548626f0c}\label{classCostSimEng_acc1720c9cdb5febb82759e3548626f0c}} 
+double {\bfseries Exponential} (double mean)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a99c79de92c4bd410b243c6e9245ebbdf}\label{classCostSimEng_a99c79de92c4bd410b243c6e9245ebbdf}} 
+virtual void {\bfseries Start} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_af799df40b1a3bd7de06b31e4927d5b26}\label{classCostSimEng_af799df40b1a3bd7de06b31e4927d5b26}} 
+virtual void {\bfseries Stop} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_ae79fd3ec1d850a585d832ef41a0471e5}\label{classCostSimEng_ae79fd3ec1d850a585d832ef41a0471e5}} 
+void {\bfseries Run} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_a874b89eda70f909bd008b9fb4b8847ea}\label{classCostSimEng_a874b89eda70f909bd008b9fb4b8847ea}} 
+double {\bfseries Sim\+Time} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_a942ec6fc1324614d65f8e18231230990}\label{classCostSimEng_a942ec6fc1324614d65f8e18231230990}} 
+void {\bfseries Stop\+Time} (double t)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a79440b2e2468c8996e24b4a60099d33b}\label{classCostSimEng_a79440b2e2468c8996e24b4a60099d33b}} 
+double {\bfseries Stop\+Time} () const
+\item 
+\mbox{\Hypertarget{classCostSimEng_a80691746a7c7edb5d12de3d879e3266c}\label{classCostSimEng_a80691746a7c7edb5d12de3d879e3266c}} 
+void {\bfseries Clear\+Stats\+Time} (double t)
+\item 
+\mbox{\Hypertarget{classCostSimEng_a58be6ebd56f080abf5607c09f99a0f30}\label{classCostSimEng_a58be6ebd56f080abf5607c09f99a0f30}} 
+double {\bfseries Clear\+Stats\+Time} () const
+\item 
+\mbox{\Hypertarget{classCostSimEng_a431e85fcd9c3b40aa8cfc53c01afb6ae}\label{classCostSimEng_a431e85fcd9c3b40aa8cfc53c01afb6ae}} 
+virtual void {\bfseries Clear\+Stats} ()
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCostSimEng_a363989773ba7379ed5039c938520e3d5}\label{classCostSimEng_a363989773ba7379ed5039c938520e3d5}} 
+static \hyperlink{classCostSimEng}{Cost\+Sim\+Eng} $\ast$ {\bfseries Instance} ()
+\item 
+\mbox{\Hypertarget{classCostSimEng_a363989773ba7379ed5039c938520e3d5}\label{classCostSimEng_a363989773ba7379ed5039c938520e3d5}} 
+static \hyperlink{classCostSimEng}{Cost\+Sim\+Eng} $\ast$ {\bfseries Instance} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCostSimEng_aeec0087ded10eba570880f8ab34306f1}\label{classCostSimEng_aeec0087ded10eba570880f8ab34306f1}} 
+\hyperlink{classCostSimEng_1_1seed__t}{seed\+\_\+t} {\bfseries Seed}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/\+C\+O\+S\+T/cost.\+h\item 
+Code/main/komondor\+\_\+main.\+cxx\end{DoxyCompactItemize}

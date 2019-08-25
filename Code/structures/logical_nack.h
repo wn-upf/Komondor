@@ -41,9 +41,10 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
- *
- * - This file defines a LOGICAL NACK and provides basic displaying methods
+ */
+
+/**
+ * logical_nack.h: this file defines a LOGICAL NACK and provides basic displaying methods
  */
 
 #ifndef _AUX_LOGICAL_NACK_
@@ -51,16 +52,18 @@
 
 struct LogicalNack
 {
-	int source_id;		// Node sending the NACK
-	int packet_type;	// Type of packet
-	int packet_id;		// Packet_id
-	int loss_reason;	// Loss reason. Why the packet has been lost? (Look for possible reasons in file ListOfDefines.h)
-	int node_id_a;		// TODO: update definition - Old comment: "(other uses may be) Hidden node that started the transmission"
-	int node_id_b;		// TODO: update definition - Old comment: "Hidden node causing the collision"
+	int source_id;		///> Node sending the NACK
+	int packet_type;	///> Type of packet
+	int packet_id;		///> Packet_id
+	int loss_reason;	///> Loss reason. Why the packet has been lost? (Look for possible reasons in file ListOfDefines.h)
+	int node_id_a;		///> TODO: update definition - Old comment: "(other uses may be) Hidden node that started the transmission"
+	int node_id_b;		///> TODO: update definition - Old comment: "Hidden node causing the collision"
+	double ber;			///> Bit error rate
+	double sinr;		///> Signal to noise plus interference ratio
 
-	double ber;			// Bit error rate
-	double sinr;		// Signal to noise plus interference ratio
-
+	/**
+	 * Print information in the NACK
+	 */
 	void PrintNackInfo(void){
 		printf("source_id = %d - packet_id = %d - loss_reason = %d - node_id_a = %d - node_id_b = %d\n",
 			source_id, packet_id, loss_reason, node_id_a, node_id_b);

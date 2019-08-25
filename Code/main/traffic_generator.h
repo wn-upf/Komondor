@@ -41,10 +41,10 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: defines the agent component
- *
- * - This file contains the instructions to be followed by an agent, as well
- * as the communication with the APs of the controlled networks
+ */
+
+ /**
+ * traffic_generator.h: this file contains the traffic generator component
  */
 
 #include <math.h>
@@ -73,14 +73,14 @@ component TrafficGenerator : public TypeII{
 	// Public items (entered by agents constructor in komondor_main)
 	public:
 
-		int node_type;			// Type of node associated to the traffic generator
-		int node_id; 			// Node identifier associated to the traffic generator
-		int traffic_model;		// Traffic model
-		double traffic_load;	// Average traffic load of the AP [packets/s]
-		double lambda;			// Average notification generation rate (related to exponential BO) [notification/s]
+		int node_type;			///> Type of node associated to the traffic generator
+		int node_id; 			///> Node identifier associated to the traffic generator
+		int traffic_model;		///> Traffic model
+		double traffic_load;	///> Average traffic load of the AP [packets/s]
+		double lambda;			///> Average notification generation rate (related to exponential BO) [notification/s]
 		// Burst traffic
-		double burst_rate;				// Average time between two packet generation bursts [bursts/s]
-		int num_bursts;					// Total number of bursts occurred in the simulation
+		double burst_rate;		///> Average time between two packet generation bursts [bursts/s]
+		int num_bursts;			///> Total number of bursts occurred in the simulation
 
 	// Private items (just for node operation)
 	private:
@@ -101,14 +101,14 @@ component TrafficGenerator : public TypeII{
 
 };
 
-/*
+/**
  * Setup()
  */
 void TrafficGenerator :: Setup(){
 	// Do nothing
 };
 
-/*
+/**
  * Start()
  */
 void TrafficGenerator :: Start(){
@@ -119,13 +119,16 @@ void TrafficGenerator :: Start(){
 
 };
 
-/*
+/**
  * Stop()
  */
 void TrafficGenerator :: Stop(){
 
 };
 
+/**
+ * Main method for generating traffic
+ */
 void TrafficGenerator :: GenerateTraffic() {
 
 	double time_for_next_packet (0);
@@ -153,7 +156,7 @@ void TrafficGenerator :: GenerateTraffic() {
 			// --- Poisson ---
 			time_for_next_packet = Exponential(1/traffic_load);
 			time_to_trigger = SimTime() + time_for_next_packet;
-			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
+			trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));
 			break;
 		}
 
@@ -166,7 +169,7 @@ void TrafficGenerator :: GenerateTraffic() {
 			// Generates new packet when the trigger expires
 			time_for_next_packet = Exponential(1/traffic_load);
 			time_to_trigger = SimTime() + time_for_next_packet;
-			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
+			trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));
 			break;
 		}
 
@@ -174,7 +177,7 @@ void TrafficGenerator :: GenerateTraffic() {
 		case TRAFFIC_DETERMINISTIC:{
 			time_for_next_packet = 1/lambda;
 			time_to_trigger = SimTime() + time_for_next_packet;
-			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
+			trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));
 			break;
 		}
 
@@ -187,7 +190,7 @@ void TrafficGenerator :: GenerateTraffic() {
 //			if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s New generation burst will be triggered in %f ms\n",
 //				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 //				time_for_next_packet * 1000);
-			trigger_new_packet_generated.Set(fix_time_offset(time_to_trigger,13,12));
+			trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));
 			break;
 		}
 
@@ -199,14 +202,17 @@ void TrafficGenerator :: GenerateTraffic() {
 	}
 }
 
+/**
+ * Generate a new packet upon trigger-based activation
+ */
 void TrafficGenerator :: NewPacketGenerated(trigger_t &){
 //	printf("TG%d NewPacketGenerated!\n", node_id);
 	outportNewPacketGenerated();
 	GenerateTraffic();
 }
 
-/*
- * InitializeLearningAlgorithm(): initializes all the necessary variables of the chosen learning alg.
+/**
+ * Initialize all the variables of the traffic generator and starts generating traffic
  */
 void TrafficGenerator :: InitializeTrafficGenerator() {
 	/*

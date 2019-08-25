@@ -41,9 +41,10 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
- *
- * - This file defines modulations and MCS parameters
+ */
+
+ /**
+ * modulations.h: this file defines modulations and MCS parameters
  */
 
 #ifndef _MCS_CONFIGURATION_
@@ -57,57 +58,59 @@ struct Mcs_array {
    static const double coding_rates[12];
 };
 
-
 // THIS IS DEPRECATED
 const double Mcs_array::mcs_array[4][12] = {	// rows: modulation type, colums: number of channels (1, 2, 4, 8)
-		{4* pow(10,6),16* pow(10,6),24* pow(10,6),33* pow(10,6),49* pow(10,6),65* pow(10,6),73* pow(10,6),81* pow(10,6),
-				98* pow(10,6),108* pow(10,6),122* pow(10,6),135* pow(10,6)},
-		{8* pow(10,6),33* pow(10,6),49* pow(10,6),65* pow(10,6),98* pow(10,6),130* pow(10,6),146* pow(10,6),163* pow(10,6),
-				195* pow(10,6),217* pow(10,6),244* pow(10,6),271* pow(10,6)},
-		{17* pow(10,6),68* pow(10,6),102* pow(10,6),136* pow(10,6),204* pow(10,6),272* pow(10,6),306* pow(10,6),
-				340*pow(10,6),408* pow(10,6),453* pow(10,6),510 * pow(10,6),567 * pow(10,6)},
-		{34 * pow(10,6),136 * pow(10,6),204 * pow(10,6),272 * pow(10,6),408 * pow(10,6),544 * pow(10,6),613 * pow(10,6),
-				681 * pow(10,6),817 * pow(10,6),907 * pow(10,6),1021 * pow(10,6),1134 * pow(10,6)}};
-
+	{4* pow(10,6),16* pow(10,6),24* pow(10,6),33* pow(10,6),49* pow(10,6),65* pow(10,6),73* pow(10,6),81* pow(10,6),
+			98* pow(10,6),108* pow(10,6),122* pow(10,6),135* pow(10,6)},
+	{8* pow(10,6),33* pow(10,6),49* pow(10,6),65* pow(10,6),98* pow(10,6),130* pow(10,6),146* pow(10,6),163* pow(10,6),
+			195* pow(10,6),217* pow(10,6),244* pow(10,6),271* pow(10,6)},
+	{17* pow(10,6),68* pow(10,6),102* pow(10,6),136* pow(10,6),204* pow(10,6),272* pow(10,6),306* pow(10,6),
+			340*pow(10,6),408* pow(10,6),453* pow(10,6),510 * pow(10,6),567 * pow(10,6)},
+	{34 * pow(10,6),136 * pow(10,6),204 * pow(10,6),272 * pow(10,6),408 * pow(10,6),544 * pow(10,6),613 * pow(10,6),
+			681 * pow(10,6),817 * pow(10,6),907 * pow(10,6),1021 * pow(10,6),1134 * pow(10,6)}};
 
 const double Mcs_array::coding_rate_array[12] = {1/double(2), 1/double(2), 3/double(4), 1/double(2),
-		3/double(4), 2/double(3), 3/double(4), 5/double(6), 3/double(4), 5/double(6), 3/double(4), 5/double(6)};
+	3/double(4), 2/double(3), 3/double(4), 5/double(6), 3/double(4), 5/double(6), 3/double(4), 5/double(6)};
 
 const int Mcs_array::bits_per_symbol_modulation_array[12] = {2, 4, 4, 16, 16, 64, 64, 64, 256, 256, 1024, 1024};
 
 // Sergio on 5 Oct 2017
 // - Include MCS indeces corresponding to IEEE 802.11ax
 const int Mcs_array::modulation_bits[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-		1,	// MCS 0
-		2,	// MCS 1
-		2,	// MCS 2
-		4,	// MCS 3
-		4,	// MCS 4
-		6,	// MCS 5
-		6,	// MCS 6
-		6,	// MCS 7
-		8,	// MCS 8
-		8,	// MCS 9
-		10,	// MCS 10
-		10	// MCS 11
+	1,	// MCS 0
+	2,	// MCS 1
+	2,	// MCS 2
+	4,	// MCS 3
+	4,	// MCS 4
+	6,	// MCS 5
+	6,	// MCS 6
+	6,	// MCS 7
+	8,	// MCS 8
+	8,	// MCS 9
+	10,	// MCS 10
+	10	// MCS 11
 };
 
 const double Mcs_array::coding_rates[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-		1/double(2),	// MCS 0
-		1/double(2),	// MCS 1
-		3/double(4),	// MCS 2
-		1/double(2),	// MCS 3
-		3/double(4),	// MCS 4
-		1/double(2),	// MCS 5
-		2/double(3),	// MCS 6
-		3/double(4),	// MCS 7
-		3/double(4),	// MCS 8
-		5/double(6),	// MCS 9
-		3/double(4),	// MCS 10
-		5/double(6)		// MCS 11
+	1/double(2),	// MCS 0
+	1/double(2),	// MCS 1
+	3/double(4),	// MCS 2
+	1/double(2),	// MCS 3
+	3/double(4),	// MCS 4
+	1/double(2),	// MCS 5
+	2/double(3),	// MCS 6
+	3/double(4),	// MCS 7
+	3/double(4),	// MCS 8
+	5/double(6),	// MCS 9
+	3/double(4),	// MCS 10
+	5/double(6)		// MCS 11
 };
 
-// Sergio on 5 Oct 2017: include number of subcarriers in the IEEE 802.11ax
+/**
+ *  Provide the number of subcarriers used for each number of channels in the IEEE 802.11ax
+ *  @param "num_channels" [type int]: number of channels used for transmission
+ *  @return "num_subcarriers" [type int]: number of subcarriers to be used
+ */
 int getNumberSubcarriers(int num_channels){
 
 	int num_subcarriers;

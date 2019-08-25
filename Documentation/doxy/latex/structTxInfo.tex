@@ -1,0 +1,206 @@
+\hypertarget{structTxInfo}{}\section{Tx\+Info Struct Reference}
+\label{structTxInfo}\index{Tx\+Info@{Tx\+Info}}
+
+
+{\ttfamily \#include $<$notification.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structTxInfo_a5766aada8a87f763cfdfcaee1016bbe4}\label{structTxInfo_a5766aada8a87f763cfdfcaee1016bbe4}} 
+void {\bfseries Print\+Tx\+Info} (int packet\+\_\+id, int destination\+\_\+id, double tx\+\_\+duration)
+\item 
+\mbox{\Hypertarget{structTxInfo_a147ec7bc11bf5b573fd1da082337e44f}\label{structTxInfo_a147ec7bc11bf5b573fd1da082337e44f}} 
+void {\bfseries Set\+Size\+Of\+Ids\+Aggregated\+Array} (int num\+\_\+packets\+\_\+aggregated)
+\item 
+\mbox{\Hypertarget{structTxInfo_afe5b38350ba2e0b39526eee01cf0294b}\label{structTxInfo_afe5b38350ba2e0b39526eee01cf0294b}} 
+void {\bfseries Set\+Size\+Of\+Timestamp\+Aggregated\+Array} (int num\+\_\+packets\+\_\+aggregated)
+\item 
+\mbox{\Hypertarget{structTxInfo_a169074644cac33d0c8c547ef99dded16}\label{structTxInfo_a169074644cac33d0c8c547ef99dded16}} 
+void {\bfseries Set\+Size\+Of\+M\+CS} (int channels\+\_\+groups)
+\item 
+void \hyperlink{structTxInfo_a5766aada8a87f763cfdfcaee1016bbe4}{Print\+Tx\+Info} (int packet\+\_\+id, int destination\+\_\+id, double tx\+\_\+duration)
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Boolean indicating whether an S\+R-\/based T\+X\+OP has been detected or not \end{quote}
+\end{DoxyCompactList}\item 
+void \hyperlink{structTxInfo_a147ec7bc11bf5b573fd1da082337e44f}{Set\+Size\+Of\+Ids\+Aggregated\+Array} (int num\+\_\+packets\+\_\+aggregated)
+\item 
+void \hyperlink{structTxInfo_afe5b38350ba2e0b39526eee01cf0294b}{Set\+Size\+Of\+Timestamp\+Aggregated\+Array} (int num\+\_\+packets\+\_\+aggregated)
+\item 
+void \hyperlink{structTxInfo_a169074644cac33d0c8c547ef99dded16}{Set\+Size\+Of\+M\+CS} (int channels\+\_\+groups)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structTxInfo_ad9330c0b3beeb838cd546e16a5d7f573}\label{structTxInfo_ad9330c0b3beeb838cd546e16a5d7f573}} 
+int {\bfseries num\+\_\+packets\+\_\+aggregated}
+\item 
+\mbox{\Hypertarget{structTxInfo_a46856167d9637218385e9ddfa7034984}\label{structTxInfo_a46856167d9637218385e9ddfa7034984}} 
+int $\ast$ \hyperlink{structTxInfo_a46856167d9637218385e9ddfa7034984}{list\+\_\+id\+\_\+aggregated}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of frames aggregated \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a580141793f2337ee6d96f9134ddf1b3d}\label{structTxInfo_a580141793f2337ee6d96f9134ddf1b3d}} 
+double $\ast$ \hyperlink{structTxInfo_a580141793f2337ee6d96f9134ddf1b3d}{timestamp\+\_\+frames\+\_\+aggregated}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+List of frame I\+Ds aggregated \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_afce12cf3642f5e1b325aa58e57c3448b}\label{structTxInfo_afce12cf3642f5e1b325aa58e57c3448b}} 
+double \hyperlink{structTxInfo_afce12cf3642f5e1b325aa58e57c3448b}{data\+\_\+duration}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+List of timestamps of the frames aggregated \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a4261165f0eaaf2f1edffdafd0910e9d6}\label{structTxInfo_a4261165f0eaaf2f1edffdafd0910e9d6}} 
+double \hyperlink{structTxInfo_a4261165f0eaaf2f1edffdafd0910e9d6}{ack\+\_\+duration}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Duration of the data packet \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a6733e8c71e7d9aa337220404eb77aa22}\label{structTxInfo_a6733e8c71e7d9aa337220404eb77aa22}} 
+double \hyperlink{structTxInfo_a6733e8c71e7d9aa337220404eb77aa22}{rts\+\_\+duration}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Duration of the A\+CK packet \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a5a9a58d5607d5f23b01fb5217a917ce5}\label{structTxInfo_a5a9a58d5607d5f23b01fb5217a917ce5}} 
+double \hyperlink{structTxInfo_a5a9a58d5607d5f23b01fb5217a917ce5}{cts\+\_\+duration}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Duration of the R\+TS packet \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a7f1bae08dd516aa0c65cfc9af8c2fc27}\label{structTxInfo_a7f1bae08dd516aa0c65cfc9af8c2fc27}} 
+double \hyperlink{structTxInfo_a7f1bae08dd516aa0c65cfc9af8c2fc27}{preoccupancy\+\_\+duration}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Duration of the C\+TS packet \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a36f5f10efa8517c4d9607dc7cfef91cb}\label{structTxInfo_a36f5f10efa8517c4d9607dc7cfef91cb}} 
+double \hyperlink{structTxInfo_a36f5f10efa8517c4d9607dc7cfef91cb}{tx\+\_\+power}
+\begin{DoxyCompactList}\small\item\em $>$ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a5eff56c5c9784384c483baa654083e09}\label{structTxInfo_a5eff56c5c9784384c483baa654083e09}} 
+double \hyperlink{structTxInfo_a5eff56c5c9784384c483baa654083e09}{tx\+\_\+gain}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Transmission power in \mbox{[}pW\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a09dccaedd762a1596e58e488627da08d}\label{structTxInfo_a09dccaedd762a1596e58e488627da08d}} 
+double \hyperlink{structTxInfo_a09dccaedd762a1596e58e488627da08d}{pd}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Transmission gain \mbox{[}linear ratio\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a6d2703daa80a27ff6357659965da60cb}\label{structTxInfo_a6d2703daa80a27ff6357659965da60cb}} 
+double \hyperlink{structTxInfo_a6d2703daa80a27ff6357659965da60cb}{bits\+\_\+ofdm\+\_\+sym}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+PD threshold in \mbox{[}pW\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_acb8b302a81b008eba26c6fe5107f1884}\label{structTxInfo_acb8b302a81b008eba26c6fe5107f1884}} 
+double \hyperlink{structTxInfo_acb8b302a81b008eba26c6fe5107f1884}{data\+\_\+rate}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Bits per O\+F\+DM symbol \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a521fea6991c383e0db4cdfbbd11c4840}\label{structTxInfo_a521fea6991c383e0db4cdfbbd11c4840}} 
+int \hyperlink{structTxInfo_a521fea6991c383e0db4cdfbbd11c4840}{modulation\+\_\+schemes} \mbox{[}4\mbox{]}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Rate at which data is transmitted \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_af0f56f95bff10a32b0fc678520a2e0df}\label{structTxInfo_af0f56f95bff10a32b0fc678520a2e0df}} 
+double \hyperlink{structTxInfo_af0f56f95bff10a32b0fc678520a2e0df}{x}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Modulation scheme used \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_ac56f565d8bc02ee0949f15d5791aaf23}\label{structTxInfo_ac56f565d8bc02ee0949f15d5791aaf23}} 
+double \hyperlink{structTxInfo_ac56f565d8bc02ee0949f15d5791aaf23}{y}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+X position of source node \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a1de98ce633ce8d5f9aa90f5bec4f2707}\label{structTxInfo_a1de98ce633ce8d5f9aa90f5bec4f2707}} 
+double \hyperlink{structTxInfo_a1de98ce633ce8d5f9aa90f5bec4f2707}{z}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Y position of source node \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a30db59d14a4f0033b2bab525a07236fa}\label{structTxInfo_a30db59d14a4f0033b2bab525a07236fa}} 
+double \hyperlink{structTxInfo_a30db59d14a4f0033b2bab525a07236fa}{nav\+\_\+time}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Z position of source node \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a29239137d57b9f60c83a0d187f8864a4}\label{structTxInfo_a29239137d57b9f60c83a0d187f8864a4}} 
+bool \hyperlink{structTxInfo_a29239137d57b9f60c83a0d187f8864a4}{flag\+\_\+change\+\_\+in\+\_\+tx\+\_\+power}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+R\+T\+S/\+C\+TS N\+AV time \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_ab5131a1d020a34250eee17e96167bbca}\label{structTxInfo_ab5131a1d020a34250eee17e96167bbca}} 
+int \hyperlink{structTxInfo_ab5131a1d020a34250eee17e96167bbca}{bss\+\_\+color}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Flag to indicate whether the transmission power was changed (in order to recompute arrays) \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_ae0acd2612febbe77a6e8392ddfdfb558}\label{structTxInfo_ae0acd2612febbe77a6e8392ddfdfb558}} 
+int \hyperlink{structTxInfo_ae0acd2612febbe77a6e8392ddfdfb558}{srg}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+B\+SS color \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structTxInfo_a3c6d78fa5ceb025d442e1cccaac1c0ba}\label{structTxInfo_a3c6d78fa5ceb025d442e1cccaac1c0ba}} 
+bool \hyperlink{structTxInfo_a3c6d78fa5ceb025d442e1cccaac1c0ba}{txop\+\_\+sr\+\_\+identified}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Spatial Reuse Group \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{notification_8h_source}{notification.\+h}\+: this file defines a N\+O\+T\+I\+F\+I\+C\+A\+T\+I\+ON and provides basic displaying methods 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{structTxInfo_a5766aada8a87f763cfdfcaee1016bbe4}\label{structTxInfo_a5766aada8a87f763cfdfcaee1016bbe4}} 
+\index{Tx\+Info@{Tx\+Info}!Print\+Tx\+Info@{Print\+Tx\+Info}}
+\index{Print\+Tx\+Info@{Print\+Tx\+Info}!Tx\+Info@{Tx\+Info}}
+\subsubsection{\texorpdfstring{Print\+Tx\+Info()}{PrintTxInfo()}}
+{\footnotesize\ttfamily void Tx\+Info\+::\+Print\+Tx\+Info (\begin{DoxyParamCaption}\item[{int}]{packet\+\_\+id,  }\item[{int}]{destination\+\_\+id,  }\item[{double}]{tx\+\_\+duration }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Boolean indicating whether an S\+R-\/based T\+X\+OP has been detected or not \end{quote}
+
+
+Function to print the transmission information 
+\begin{DoxyParams}{Parameters}
+{\em packet\+\_\+id} & \mbox{[}type int\mbox{]}\+: identifier of the packet \\
+\hline
+{\em destination\+\_\+id} & \mbox{[}type int\mbox{]}\+: identifier of the destination node \\
+\hline
+{\em tx\+\_\+duration} & \mbox{[}type double\mbox{]}\+: transmission duration \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{structTxInfo_a147ec7bc11bf5b573fd1da082337e44f}\label{structTxInfo_a147ec7bc11bf5b573fd1da082337e44f}} 
+\index{Tx\+Info@{Tx\+Info}!Set\+Size\+Of\+Ids\+Aggregated\+Array@{Set\+Size\+Of\+Ids\+Aggregated\+Array}}
+\index{Set\+Size\+Of\+Ids\+Aggregated\+Array@{Set\+Size\+Of\+Ids\+Aggregated\+Array}!Tx\+Info@{Tx\+Info}}
+\subsubsection{\texorpdfstring{Set\+Size\+Of\+Ids\+Aggregated\+Array()}{SetSizeOfIdsAggregatedArray()}}
+{\footnotesize\ttfamily void Tx\+Info\+::\+Set\+Size\+Of\+Ids\+Aggregated\+Array (\begin{DoxyParamCaption}\item[{int}]{num\+\_\+packets\+\_\+aggregated }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Set the size of the array list\+\_\+id\+\_\+aggregated 
+\begin{DoxyParams}{Parameters}
+{\em num\+\_\+packets\+\_\+aggregated} & \mbox{[}type int\mbox{]}\+: number of packets aggregated \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{structTxInfo_a169074644cac33d0c8c547ef99dded16}\label{structTxInfo_a169074644cac33d0c8c547ef99dded16}} 
+\index{Tx\+Info@{Tx\+Info}!Set\+Size\+Of\+M\+CS@{Set\+Size\+Of\+M\+CS}}
+\index{Set\+Size\+Of\+M\+CS@{Set\+Size\+Of\+M\+CS}!Tx\+Info@{Tx\+Info}}
+\subsubsection{\texorpdfstring{Set\+Size\+Of\+M\+C\+S()}{SetSizeOfMCS()}}
+{\footnotesize\ttfamily void Tx\+Info\+::\+Set\+Size\+Of\+M\+CS (\begin{DoxyParamCaption}\item[{int}]{channels\+\_\+groups }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Set the size of the array modulation\+\_\+schemes 
+\begin{DoxyParams}{Parameters}
+{\em channels\+\_\+groups} & \mbox{[}type int\mbox{]}\+: groups of channels that can be used \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{structTxInfo_afe5b38350ba2e0b39526eee01cf0294b}\label{structTxInfo_afe5b38350ba2e0b39526eee01cf0294b}} 
+\index{Tx\+Info@{Tx\+Info}!Set\+Size\+Of\+Timestamp\+Aggregated\+Array@{Set\+Size\+Of\+Timestamp\+Aggregated\+Array}}
+\index{Set\+Size\+Of\+Timestamp\+Aggregated\+Array@{Set\+Size\+Of\+Timestamp\+Aggregated\+Array}!Tx\+Info@{Tx\+Info}}
+\subsubsection{\texorpdfstring{Set\+Size\+Of\+Timestamp\+Aggregated\+Array()}{SetSizeOfTimestampAggregatedArray()}}
+{\footnotesize\ttfamily void Tx\+Info\+::\+Set\+Size\+Of\+Timestamp\+Aggregated\+Array (\begin{DoxyParamCaption}\item[{int}]{num\+\_\+packets\+\_\+aggregated }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Set the size of the array timestamp\+\_\+frames\+\_\+aggregated 
+\begin{DoxyParams}{Parameters}
+{\em num\+\_\+packets\+\_\+aggregated} & \mbox{[}type int\mbox{]}\+: number of packets aggregated \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/structures/notification.\+h\end{DoxyCompactItemize}

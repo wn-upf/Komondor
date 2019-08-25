@@ -1,0 +1,81 @@
+\hypertarget{structLogicalNack}{}\section{Logical\+Nack Struct Reference}
+\label{structLogicalNack}\index{Logical\+Nack@{Logical\+Nack}}
+
+
+{\ttfamily \#include $<$logical\+\_\+nack.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structLogicalNack_ada12234fce5b9a4fb0e519336c460fb5}\label{structLogicalNack_ada12234fce5b9a4fb0e519336c460fb5}} 
+void {\bfseries Print\+Nack\+Info} (void)
+\item 
+void \hyperlink{structLogicalNack_ada12234fce5b9a4fb0e519336c460fb5}{Print\+Nack\+Info} (void)
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Signal to noise plus interference ratio \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structLogicalNack_a82ae9f6d2d0a815b0d217bd9b2971afc}\label{structLogicalNack_a82ae9f6d2d0a815b0d217bd9b2971afc}} 
+int {\bfseries source\+\_\+id}
+\item 
+\mbox{\Hypertarget{structLogicalNack_ad5603e43c726060a14e4e0ce02fd81f3}\label{structLogicalNack_ad5603e43c726060a14e4e0ce02fd81f3}} 
+int \hyperlink{structLogicalNack_ad5603e43c726060a14e4e0ce02fd81f3}{packet\+\_\+type}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Node sending the N\+A\+CK \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structLogicalNack_ab4ff0d002f39b6af47bdfe474c71884f}\label{structLogicalNack_ab4ff0d002f39b6af47bdfe474c71884f}} 
+int \hyperlink{structLogicalNack_ab4ff0d002f39b6af47bdfe474c71884f}{packet\+\_\+id}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Type of packet \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structLogicalNack_aa882b29ecb881ea2326946fcd03f81cc}\label{structLogicalNack_aa882b29ecb881ea2326946fcd03f81cc}} 
+int \hyperlink{structLogicalNack_aa882b29ecb881ea2326946fcd03f81cc}{loss\+\_\+reason}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Packet\+\_\+id \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structLogicalNack_ab15730eaefd1ab0a6771af3859473eda}\label{structLogicalNack_ab15730eaefd1ab0a6771af3859473eda}} 
+int \hyperlink{structLogicalNack_ab15730eaefd1ab0a6771af3859473eda}{node\+\_\+id\+\_\+a}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Loss reason. Why the packet has been lost? (Look for possible reasons in file List\+Of\+Defines.\+h) \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structLogicalNack_ac83ef69cd2771c11bfaeb63eaf3462ef}\label{structLogicalNack_ac83ef69cd2771c11bfaeb63eaf3462ef}} 
+int \hyperlink{structLogicalNack_ac83ef69cd2771c11bfaeb63eaf3462ef}{node\+\_\+id\+\_\+b}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+T\+O\+DO\+: update definition -\/ Old comment\+: \char`\"{}(other uses may be) Hidden node that started the transmission\char`\"{} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structLogicalNack_a29eabdbc1a240a005b2bac23a862fc05}\label{structLogicalNack_a29eabdbc1a240a005b2bac23a862fc05}} 
+double \hyperlink{structLogicalNack_a29eabdbc1a240a005b2bac23a862fc05}{ber}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+T\+O\+DO\+: update definition -\/ Old comment\+: \char`\"{}\+Hidden node causing the collision\char`\"{} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structLogicalNack_a3c74c359e65bdd8ee0cc6cac3c6da200}\label{structLogicalNack_a3c74c359e65bdd8ee0cc6cac3c6da200}} 
+double \hyperlink{structLogicalNack_a3c74c359e65bdd8ee0cc6cac3c6da200}{sinr}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Bit error rate \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{logical__nack_8h_source}{logical\+\_\+nack.\+h}\+: this file defines a L\+O\+G\+I\+C\+AL N\+A\+CK and provides basic displaying methods 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{structLogicalNack_ada12234fce5b9a4fb0e519336c460fb5}\label{structLogicalNack_ada12234fce5b9a4fb0e519336c460fb5}} 
+\index{Logical\+Nack@{Logical\+Nack}!Print\+Nack\+Info@{Print\+Nack\+Info}}
+\index{Print\+Nack\+Info@{Print\+Nack\+Info}!Logical\+Nack@{Logical\+Nack}}
+\subsubsection{\texorpdfstring{Print\+Nack\+Info()}{PrintNackInfo()}}
+{\footnotesize\ttfamily void Logical\+Nack\+::\+Print\+Nack\+Info (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Signal to noise plus interference ratio \end{quote}
+
+
+Print information in the N\+A\+CK 
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/structures/logical\+\_\+nack.\+h\end{DoxyCompactItemize}

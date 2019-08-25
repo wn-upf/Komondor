@@ -41,11 +41,11 @@
  *           $Revision: 1.0 $
  *
  * -----------------------------------------------------------------
- * File description: this is the main Komondor file
- *
- * - This file defines a NOTIFICATION and provides basic displaying methods
  */
 
+ /**
+ * notification.h: this file defines a NOTIFICATION and provides basic displaying methods
+ */
 
 #ifndef _AUX_NOTIFICATION_
 #define _AUX_NOTIFICATION_
@@ -54,43 +54,50 @@
 struct TxInfo
 {
 
-	int num_packets_aggregated;				// Number of frames aggregated
-	int *list_id_aggregated;				// List of frame IDs aggregated
-	double *timestamp_frames_aggregated;	// List of timestamps of the frames aggregated
+	int num_packets_aggregated;				///> Number of frames aggregated
+	int *list_id_aggregated;				///> List of frame IDs aggregated
+	double *timestamp_frames_aggregated;	///> List of timestamps of the frames aggregated
 
 	// For RTS/CTS management
-	double data_duration;
-	double ack_duration;
-	double rts_duration;
-	double cts_duration;
+	double data_duration;		///> Duration of the data packet
+	double ack_duration;		///> Duration of the ACK packet
+	double rts_duration;		///> Duration of the RTS packet
+	double cts_duration;		///> Duration of the CTS packet
 
-	double preoccupancy_duration;
-	double tx_power;				// Transmission power in [pW]
-	double tx_gain;					// Transmission gain [linear ratio]
-	double pd;						// PD threshold in [pW]
-	double bits_ofdm_sym; 			// Bits per OFDM symbol
-	double data_rate; 				// Rate at which data is transmitted
-	int modulation_schemes[4];		// Modulation scheme used
-	double x;						// X position of source node
-	double y;						// Y position of source node
-	double z;						// Z position of source node
-	double nav_time;				// RTS/CTS NAV time
+	double preoccupancy_duration;	///>
+	double tx_power;				///> Transmission power in [pW]
+	double tx_gain;					///> Transmission gain [linear ratio]
+	double pd;						///> PD threshold in [pW]
+	double bits_ofdm_sym; 			///> Bits per OFDM symbol
+	double data_rate; 				///> Rate at which data is transmitted
+	int modulation_schemes[4];		///> Modulation scheme used
+	double x;						///> X position of source node
+	double y;						///> Y position of source node
+	double z;						///> Z position of source node
+	double nav_time;				///> RTS/CTS NAV time
 
-	bool flag_change_in_tx_power;	// Flag to indicate whether the transmission power was changed (in order to recompute arrays)
+	bool flag_change_in_tx_power;	///> Flag to indicate whether the transmission power was changed (in order to recompute arrays)
 
 	// Spatial Reuse
-	int bss_color;
-	int srg;
-	bool txop_sr_identified;
+	int bss_color;				///> BSS color
+	int srg;					///> Spatial Reuse Group
+	bool txop_sr_identified;	///> Boolean indicating whether an SR-based TXOP has been detected or not
 
+	/**
+	 * Function to print the transmission information
+	 * @param "packet_id" [type int]: identifier of the packet
+	 * @param "destination_id" [type int]: identifier of the destination node
+	 * @param "tx_duration" [type double]: transmission duration
+	 */
 	void PrintTxInfo(int packet_id, int destination_id, double tx_duration){
 		printf("packet_id = %d - destination_id = %d - tx_duration = %f - tx_power = %f pw"
 			" - position = (%.2f, %.2f, %.2f)\n",
 			packet_id, destination_id, tx_duration, tx_power, x, y, z);
 	}
 
-	/*
-	 * SetSizeOfIdsArray(): sets the size of the array list_id_aggregated
+	/**
+	 * Set the size of the array list_id_aggregated
+	 * @param "num_packets_aggregated" [type int]: number of packets aggregated
 	 */
 	void SetSizeOfIdsAggregatedArray(int num_packets_aggregated){
 		list_id_aggregated = new int[num_packets_aggregated];
@@ -99,9 +106,9 @@ struct TxInfo
 		}
 	}
 
-
-	/*
-	 * SetSizeOfTimestampAggregatedArray(): sets the size of the array timestamp_frames_aggregated
+	/**
+	 * Set the size of the array timestamp_frames_aggregated
+	 * @param "num_packets_aggregated" [type int]: number of packets aggregated
 	 */
 	void SetSizeOfTimestampAggregatedArray(int num_packets_aggregated){
 		timestamp_frames_aggregated = new double[num_packets_aggregated];
@@ -110,8 +117,9 @@ struct TxInfo
 		}
 	}
 
-	/*
-	 * SetSizeOfMCS(): sets the size of the array modulation_schemes
+	/**
+	 * Set the size of the array modulation_schemes
+	 * @param "channels_groups" [type int]: groups of channels that can be used
 	 */
 	void SetSizeOfMCS(int channels_groups){
 		//modulation_schemes = new int[channels_groups];
@@ -126,21 +134,22 @@ struct TxInfo
 struct Notification
 {
 	// Always read in destination
-	int packet_id;				// Packet identifier of the first frame
-	int packet_type;			// Type of packet: Data, ACK, etc.
-	int source_id;				// Node id of the source
-	int destination_id;			// Destination node of the transmission
-	double tx_duration;			// Duration of the transmission
-	int left_channel;			// Left channel used in the transmission
-	int right_channel;			// Right channel used in the transmission
-	int frame_length;			// Size of the packet to transmit
-	int modulation_id;			// Modulation being used during the transmission
-	double timestamp;			// Timestamp when notification is sent
-	double timestamp_generated;	// Timestamp when notification was generated
+	int packet_id;				///> Packet identifier of the first frame
+	int packet_type;			///> Type of packet: Data, ACK, etc.
+	int source_id;				///> Node id of the source
+	int destination_id;			///> Destination node of the transmission
+	double tx_duration;			///> Duration of the transmission
+	int left_channel;			///> Left channel used in the transmission
+	int right_channel;			///> Right channel used in the transmission
+	int frame_length;			///> Size of the packet to transmit
+	int modulation_id;			///> Modulation being used during the transmission
+	double timestamp;			///> Timestamp when notification is sent
+	double timestamp_generated;	///> Timestamp when notification was generated
+	TxInfo tx_info; 			///> Specific transmission info (may not be checked by the others nodes)
 
-	// Specific transmission info (may not be checked by the others nodes)
-	TxInfo tx_info;
-
+	/**
+	 * Function to print the parameters of a notification
+	 */
 	void PrintNotification(void){
 		printf("source_id = %d - packet_type = %d - left_channel = %d - right_channel = %d - pkt_length = %d -",
 			source_id, packet_type, left_channel, right_channel, frame_length);
