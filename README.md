@@ -19,7 +19,7 @@ The project is structured as follows:
 * ```Code```: contains the core files to compile and run Komondor, including input and output folders. 
 * ```Documentation```: contains Documentation related to Komondor, such as a Manual, a user's guide, presentations, etc.
 
-Doxygen documentation available [here](https://github.com/wn-upf/Komondor/tree/master/Documentation/doxy/html/index.html)
+Doxygen documentation available [here](http://htmlpreview.github.io/?https://github.com/wn-upf/Komondor/blob/master/Documentation/doxy/html/index.html).
 
 ### Code organization
 
