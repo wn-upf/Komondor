@@ -105,6 +105,7 @@ component Agent : public TypeII{
 		int agent_id; 				///> Node identifier
 		int communication_level;	///> Indicates whether the node is controlled by a central entity or not
 		std::string wlan_code;		///> WLAN code to which the agent belongs
+		int num_stas;				///> Number of STAs associated to the WLAN
 
 		// Learning mechanism
 		int learning_mechanism;			///> Index of the chosen learning mechanism
@@ -129,6 +130,9 @@ component Agent : public TypeII{
 		int save_agent_logs;			///> Boolean that indicates whether to write agent's logs or not
 		int print_agent_logs;			///> Boolean that indicates whether to print agent's logs or not
 		std::string simulation_code;	///> Simulation code
+
+		// RTOT
+		double margin;
 
 	// Private items (just for node operation)
 	private:
@@ -163,7 +167,7 @@ component Agent : public TypeII{
 		int processed_configuration;		///> Processed configuration
 		double processed_performance;		///> Processed performance
 
-		int ML_output;	///> Output of the ML model
+		double ML_output;	///> Output of the ML model
 
 	// Connections and timers
 	public:
@@ -219,7 +223,7 @@ void Agent :: Start(){
 	if(communication_level == PURE_CENTRALIZED) {
 		// --- Do nothing ---
 		// In case of being centralized, wait for a request from the controller
-		printf("%s Agent %d: Learning operation managed by the CC\n", LOG_LVL3, agent_id);
+		printf("%s Agent %d: Network optimization is currently managed by the CC\n", LOG_LVL3, agent_id);
 	} else {
 		// Initialize the PP and the ML Method
 		InitializePreProcessor();
@@ -423,7 +427,7 @@ void Agent :: ComputeNewConfiguration(){
 
 	// Process the configuration and performance reports obtained from the WLAN
 	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
-	processed_performance = pre_processor.ProcessWlanPerformance(MULTI_ARMED_BANDITS, performance, type_of_reward);
+	processed_performance = pre_processor.ProcessWlanPerformance(learning_mechanism, performance, type_of_reward);
 
 	// Update the configuration according to the selected learning method
 	switch(learning_mechanism) {
@@ -431,6 +435,11 @@ void Agent :: ComputeNewConfiguration(){
 		/* Multi-Armed Bandits */
 		case MULTI_ARMED_BANDITS:{
 			// Update the configuration according to the MABs operation
+			ML_output = ml_model.ComputeIndividualConfiguration
+				(processed_configuration, processed_performance, agent_logger, SimTime());
+			break;
+		}
+		case RTOT_ALGORITHM:{
 			ML_output = ml_model.ComputeIndividualConfiguration
 				(processed_configuration, processed_performance, agent_logger, SimTime());
 			break;
@@ -508,16 +517,27 @@ void Agent :: InitializePreProcessor() {
  */
 void Agent :: InitializeMlModel() {
 
+	// WLAN-agent information
 	ml_model.agent_id = agent_id;
-	ml_model.learning_mechanism = learning_mechanism;
-	ml_model.num_channels = num_actions_channel;
+	ml_model.num_stas = num_stas;
 
+	// ML model information
+	ml_model.learning_mechanism = learning_mechanism;
+	ml_model.action_selection_strategy = action_selection_strategy;
+
+	// MABs information
+	ml_model.num_channels = num_actions_channel;
+	ml_model.num_actions = num_actions;
+
+	// Logs
 	ml_model.save_agent_logs = save_agent_logs;
 	ml_model.print_agent_logs = print_agent_logs;
 
-	ml_model.action_selection_strategy = action_selection_strategy;
-	ml_model.num_actions = num_actions;
+	if (learning_mechanism == RTOT_ALGORITHM) {
+		ml_model.margin = margin;
+	}
 
+	// Initialize variables
 	ml_model.InitializeVariables();
 
 }

@@ -328,6 +328,7 @@
 #define REWARD_TYPE_PACKETS_SENT 		0	///> To determine the reward according to the type of performance indicator
 #define REWARD_TYPE_THROUGHPUT 			1	///> To determine the reward according to the type of performance indicator
 #define REWARD_TYPE_PACKETS_GENERATED 	2
+#define REWARD_TYPE_MIN_RSSI			3
 
 // Communication levels provided
 #define PURE_DECENTRALIZED 					0	///> Agents learn based on their own information
@@ -339,6 +340,7 @@
 #define MULTI_ARMED_BANDITS 			1
 #define GRAPH_COLORING					2
 #define ACTION_BANNING					3
+#define RTOT_ALGORITHM					4
 
 // Action-selection strategies (MABs)
 #define STRATEGY_EGREEDY				1

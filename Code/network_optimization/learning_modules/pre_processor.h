@@ -137,6 +137,11 @@ class PreProcessor {
 					processed_performance = GenerateReward(type_of_reward, performance);
 					break;
 				}
+				case RTOT_ALGORITHM:{
+					// Generate the reward for the last selected action
+					processed_performance = GenerateReward(type_of_reward, performance);
+					break;
+				}
 				/* Default */
 				default:{
 					printf("[Pre-Processor] ERROR: '%d' is not a correct learning mechanism\n", learning_mechanism);
@@ -188,6 +193,16 @@ class PreProcessor {
 						performance.num_packets_generated;
 					break;
 				}
+				/* REWARD_TYPE_MIN_RSSI:
+				 * -
+				 */
+				case REWARD_TYPE_MIN_RSSI:{
+					reward = performance.rssi_list_per_sta[0];
+					for (int i = 0; i < performance.num_stas; ++i) {
+						if(reward > performance.rssi_list_per_sta[i]) reward = performance.rssi_list_per_sta[i];
+					}
+					break;
+				}
 				/* Default */
 				default:{
 					printf("[Pre-Processor] ERROR: '%d' is not a correct type of performance indicator\n", type_of_reward);
@@ -206,12 +221,16 @@ class PreProcessor {
 		* @param "ml_output" [type int]: output of the ML method
 		* @return "suggested_configuration" [type Configuration]: new configuration to be sent to the WLAN
 		*/
-		Configuration ProcessMLOutput(int learning_mechanism, Configuration configuration, int ml_output) {
+		Configuration ProcessMLOutput(int learning_mechanism, Configuration configuration, double ml_output) {
 			Configuration suggested_configuration;
 			// Switch to select the reward according to the metric used (rewards must be normalized)
 			switch(learning_mechanism){
 				case MULTI_ARMED_BANDITS:{
 					suggested_configuration = GenerateNewConfigurationBandits(configuration, ml_output);
+					break;
+				}
+				case RTOT_ALGORITHM:{
+					suggested_configuration = GenerateNewConfigurationRtotAlg(configuration, ml_output);
 					break;
 				}
 				/* Default */
@@ -236,9 +255,9 @@ class PreProcessor {
 		* @param "action_ix" [type int]: index of the action that corresponds to the new configuration
 		* @return "new_configuration" [type Configuration]: configuration report, corresponding to the new action
 		*/
-		Configuration GenerateNewConfigurationBandits(Configuration configuration, int ml_output){
+		Configuration GenerateNewConfigurationBandits(Configuration configuration, double ml_output){
 			// Find which parameters correspond to the selected arm
-			index2values(indexes_selected_arm, ml_output, num_actions_channel,
+			index2values(indexes_selected_arm, (int) ml_output, num_actions_channel,
 				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
 			// Update each parameter according to the configuration provided by the MAB
 			int new_primary = list_of_channels[indexes_selected_arm[0]];
@@ -254,6 +273,22 @@ class PreProcessor {
 			new_configuration.selected_pd = new_pd;					// pd
 			new_configuration.selected_tx_power = new_tx_power;			// TX Power
 			new_configuration.selected_dcb_policy = new_dcb_policy;		// DCB policy
+			return new_configuration;
+		}
+
+		/**
+		* Encapsulate the configuration of a node to be sent
+		* @param "configuration" [type Configuration]: current configuration report from the AP
+		* @param "action_ix" [type int]: index of the action that corresponds to the new configuration
+		* @return "new_configuration" [type Configuration]: configuration report, corresponding to the new action
+		*/
+		Configuration GenerateNewConfigurationRtotAlg(Configuration configuration, double ml_output){
+			// Generate the configuration object
+			Configuration new_configuration;
+			// Set configuration to the received one, and then change specific parameters
+			new_configuration = configuration;
+			new_configuration.non_srg_obss_pd = ml_output;
+
 			return new_configuration;
 		}
 

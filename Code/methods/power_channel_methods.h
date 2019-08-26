@@ -489,6 +489,19 @@ void UpdatePowerSensedPerNode(int primary_channel, std::map<int,double> &power_r
 
 }
 
+void UpdateRssiPerSta(Wlan wlan, double *rssi_per_sta,
+		double *received_power_array, int total_nodes_number){
+
+	int id(0);
+	for (int i = 0; i < total_nodes_number; ++i) {
+		if (wlan.FindStaInList(i)){
+			rssi_per_sta[id] = received_power_array[i];
+			++id;
+		}
+	}
+
+}
+
 /**
 * Apply a co-channel interference model
 * @param "adjacent_channel_model" [type int]: adjacent channel model

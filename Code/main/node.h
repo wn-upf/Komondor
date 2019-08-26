@@ -225,6 +225,8 @@ component Node : public TypeII{
 		double *received_power_array;				///> Power received from the other nodes
 		double *max_received_power_in_ap_per_wlan;	///> Maximum power received from each WLAN
 
+		double *rssi_per_sta;	///> RSSI per STA in the WLAN
+
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
 
@@ -3990,6 +3992,13 @@ void Node :: UpdatePerformanceMeasurements(){
 	for (int i = 0 ; i < total_wlans_number; ++ i) {
 		performance_report.rssi_list[i] = max_received_power_in_ap_per_wlan[i];
 	}
+
+	// RSSI received from each STA
+	if(node_type == NODE_TYPE_AP) UpdateRssiPerSta(wlan, rssi_per_sta, received_power_array, total_nodes_number);
+	performance_report.rssi_list_per_sta = rssi_per_sta;
+
+	performance_report.num_stas = wlan.num_stas;
+
 }
 
 /**
@@ -4066,6 +4075,9 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 	current_pd = new_configuration.selected_pd;
 	current_tx_power = new_configuration.selected_tx_power;
 	current_dcb_policy = new_configuration.selected_dcb_policy;
+
+	non_srg_obss_pd = new_configuration.non_srg_obss_pd;
+
 	// Re-compute MCS according to the new configuration
 	if (node_type == NODE_TYPE_AP) {
 		for(int n = 0; n < wlan.num_stas; ++n) {
@@ -4809,6 +4821,8 @@ void Node :: SaveSimulationPerformance() {
 
 	if(node_id == 0) simulation_performance.sum_time_channel_idle = sum_time_channel_idle;
 
+	simulation_performance.num_stas = wlan.num_stas;
+
 	// Throughput
 	simulation_performance.throughput = throughput;
 	simulation_performance.throughput_loss = throughput_loss;
@@ -4854,6 +4868,7 @@ void Node :: SaveSimulationPerformance() {
 		simulation_performance.rts_cts_lost_per_sta = rts_cts_lost_per_sta;
 		simulation_performance.data_packets_acked_per_sta = data_packets_acked_per_sta;
 		simulation_performance.data_frames_acked_per_sta = data_frames_acked_per_sta;
+		simulation_performance.rssi_list_per_sta = rssi_per_sta;
 	}
 	simulation_performance.received_power_array = received_power_array;
 
@@ -5096,7 +5111,9 @@ void Node :: InitializeVariables() {
 	}
 
 	performance_report.SetSizeOfChannelLists(num_channels_komondor);
-	performance_report.SetSizeOfRssiList(wlan.num_stas);
+	performance_report.SetSizeOfRssiList(total_wlans_number);
+
+	performance_report.SetSizeOfRssiPerStaList(wlan.num_stas);
 
 	// Measurements to be sent to agents
 	RestartPerformanceMetrics(&performance_report, 0);
@@ -5146,5 +5163,12 @@ void Node :: InitializeVariables() {
 	}
 	next_pd_spatial_reuse = current_pd;
 	/*****************************/
+
+	if(node_type == NODE_TYPE_AP) {
+		rssi_per_sta = new double[wlan.num_stas];
+		for (int i = 0; i < wlan.num_stas; ++i) {
+			rssi_per_sta[i] = 0;
+		}
+	}
 
 }

@@ -119,7 +119,7 @@ component Komondor : public CostSimEng {
 
 		int total_wlans_number;						///> Total number of WLANs
 		int total_agents_number;					///> Total number of agents
-		int total_controlled_agents_number = 0;		///> Total number of agents attached to the central controller
+		int total_controlled_agents_number;			///> Total number of agents attached to the central controller
 
 		// Parameters entered per console
 		int save_node_logs;					///> Flag for activating the log writting of nodes
@@ -1069,6 +1069,11 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			// System
 			agent_container[agent_ix].save_agent_logs = save_agent_logs;
 			agent_container[agent_ix].print_agent_logs = print_agent_logs;
+
+			// TRICKY - USE THE FIRST ELEMENT INT HE LIST OF PD VALUES AS THE MARGIN
+			if(agent_container[agent_ix].learning_mechanism == RTOT_ALGORITHM) {
+				agent_container[agent_ix].margin = agent_container[agent_ix].list_of_pd_values[0];
+			}
 
 			++agent_ix;
 			free(tmp_agents);

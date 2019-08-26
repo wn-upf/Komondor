@@ -52,6 +52,9 @@
 
 struct Performance
 {
+	//
+	int num_stas;
+
 	// Time of the last measurement
 	double last_time_measured;		///> Timestampt of the last measurement
 	double sum_time_channel_idle;	///> Sum time the channel has been idle
@@ -106,8 +109,9 @@ struct Performance
 	int num_tx_init_tried;				///> Number of transmissions initiated
 	int num_tx_init_not_possible;		///> Number of initiated transmissions that were not possible
 	double prob_slotted_bo_collision;	///> Probability of suffering collisions by slotted BO
-	double *rssi_list;					///> List of RSSI
+	double *rssi_list;					///> List of RSSI received from each other WLAN
 	double *received_power_array;		///> Array containing the power received by each node
+	double *rssi_list_per_sta;			///> List of RSSI perceived by each STA in the WLAN
 
 	/**
 	 * Set the size of the arrays in which channel-related information is stored
@@ -172,6 +176,17 @@ struct Performance
 		received_power_array = new double[total_nodes_number];
 		for(int i = 0; i < total_nodes_number; ++i){
 			received_power_array[i] = 0;
+		}
+	}
+
+	/**
+	 * Set the size of the array containing the RSSI in each STA from the same WLAN
+	 * @param "num_stas" [type int]: number of STAs in the WLAN
+	 */
+	void SetSizeOfRssiPerStaList(int num_stas){
+		rssi_list_per_sta = new double[num_stas];
+		for(int i = 0; i < num_stas; ++i){
+			rssi_list_per_sta[i] = 0;
 		}
 	}
 

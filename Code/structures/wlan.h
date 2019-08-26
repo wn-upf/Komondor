@@ -80,6 +80,18 @@ struct Wlan
 	}
 
 	/**
+	 * Finds an STA in the list
+	 * @param "sta_id" [type int]: identifier of the STA to be found
+	 */
+	int FindStaInList(int sta_id){
+		int found(0);
+		for(int s = 0; s < num_stas; ++s){
+			if(list_sta_id[s] == sta_id) found = 1;
+		}
+		return found;
+	}
+
+	/**
 	 * Print the list of STAs IDs belonging to the WLAN
 	 */
 	void PrintStaIds(){

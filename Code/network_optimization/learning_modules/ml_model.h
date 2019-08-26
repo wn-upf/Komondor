@@ -55,6 +55,7 @@
 #include "../../structures/performance_metrics.h"
 #include "../graph_coloring/graph_coloring.h"
 #include "/multi_armed_bandits/multi_armed_bandits.h"
+#include "../spatial_reuse/rtot_algorithm.h"
 
 #ifndef _AUX_ML_MODEL_
 #define _AUX_ML_MODEL_
@@ -89,6 +90,10 @@ class MlModel {
 		int action_selection_strategy;	///> Index of the chosen action-selection strategy
 		int num_actions;				///> Number of actions (Bandits)
 
+		// RTOT algorithm
+		RtotAlgorithm rtot_alg;
+		int num_stas;
+		double margin;
 
 	// Private items
 	private:
@@ -120,6 +125,13 @@ class MlModel {
 						performance_array, central_controller_logger, sim_time);
 					break;
 				}
+				case RTOT_ALGORITHM: {
+					break;
+				}
+				default: {
+					printf("[ML MODEL] ERROR, UNKOWN LEARNING MECHANISM ('%d')\n", learning_mechanism);
+					exit(-1);
+				}
 			}
 
 		}
@@ -132,16 +144,24 @@ class MlModel {
 		* @param "sim_time" [type double]: simulation time at the moment of calling the function (for logging purposes)
 		* @return "new_action" [type int]: index of the new selected action
 		*/
-		int ComputeIndividualConfiguration(int arm_ix, double reward, Logger &agent_logger, double sim_time) {
-			int new_action(0);
+		double ComputeIndividualConfiguration(int arm_ix, double reward, Logger &agent_logger, double sim_time) {
+			double new_action(0);
 			switch(learning_mechanism) {
 				/* MULTI_ARMED_BANDITS */
 				case MULTI_ARMED_BANDITS: {
 					// Update the reward of the last played configuration
 					mab_agent.UpdateArmStatistics(arm_ix, reward);
 					// Select a new action according to the updated information
-					new_action = mab_agent.SelectNewAction();
+					new_action = (double) mab_agent.SelectNewAction();
 					break;
+				}
+				case RTOT_ALGORITHM: {
+					new_action = rtot_alg.UpdateObssPd(reward);
+					break;
+				}
+				default: {
+					printf("[ML MODEL] ERROR, UNKOWN LEARNING MECHANISM ('%d')\n", learning_mechanism);
+					exit(-1);
 				}
 			}
 			return new_action;
@@ -187,7 +207,12 @@ class MlModel {
 					mab_agent.InitializeVariables();
 					break;
 				}
-
+				case RTOT_ALGORITHM: {
+					rtot_alg.num_stas = num_stas;
+					rtot_alg.margin = margin;
+					rtot_alg.InitializeVariables();
+					break;
+				}
 				//  TODO: provide more learning mechanisms
 				// case Q_LEARNING:
 				// ...
@@ -221,6 +246,10 @@ class MlModel {
 					mab_agent.PrintOrWriteStatistics(write_or_print, logger, sim_time);
 					break;
 				}
+				case RTOT_ALGORITHM: {
+					rtot_alg.PrintOrWriteStatistics(write_or_print, logger);
+					break;
+				}
 				/* UNKNOWN */
 				default: {
 					printf("[ML MODEL] ERROR: '%d' is not a correct learning mechanism\n", learning_mechanism);
@@ -239,6 +268,7 @@ class MlModel {
 			printf("%s MULTI_ARMED_BANDITS (%d)\n", LOG_LVL3, MULTI_ARMED_BANDITS);
 			printf("%s GRAPH_COLORING (%d)\n", LOG_LVL3, GRAPH_COLORING);
 			printf("%s ACTION_BANNING (%d)\n", LOG_LVL3, ACTION_BANNING);
+			printf("%s RTOT_ALGORITHM (%d)\n", LOG_LVL3, RTOT_ALGORITHM);
 		}
 
 };
