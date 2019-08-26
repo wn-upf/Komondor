@@ -399,7 +399,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 					performance_report[2].throughput * pow(10,-6),
 					performance_report[4].throughput * pow(10,-6));
 			} else {
-				printf("Error in 'Komondor :: Stop()': be careful of the desired generated logs (script)\n");
+				printf("Error in 'Komondor :: Stop()' ---> be careful of the desired generated logs (script)\n");
 			}
 			break;
 		}

@@ -152,10 +152,12 @@ class RtotAlgorithm {
 				// Print logs in console
 				case PRINT_LOG:{
 					printf("RTOT algorithm statistics...\n");
+					break;
 				}
 				// Write logs in agent's output file
 				case WRITE_LOG:{
 					fprintf(logger.file, "RTOT algorithm statistics...\n");
+					break;
 				}
 			}
 		}

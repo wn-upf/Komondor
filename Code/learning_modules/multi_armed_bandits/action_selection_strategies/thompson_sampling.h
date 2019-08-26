@@ -49,7 +49,7 @@
  *  - This file contains the methods used by the Thompson sampling action-selection strategy (MABs)
  */
 
-#include "../../../../list_of_macros.h"
+#include "../../../list_of_macros.h"
 
 #include <math.h>
 

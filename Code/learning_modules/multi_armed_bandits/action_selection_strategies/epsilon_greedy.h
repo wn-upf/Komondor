@@ -49,7 +49,7 @@
  *  - This file contains the methods used by the e-greedy action-selection strategy (MABs)
  */
 
-#include "../../../../list_of_macros.h"
+#include "../../../list_of_macros.h"
 
 #ifndef _AUX_EGREEDY_
 #define _AUX_EGREEDY_

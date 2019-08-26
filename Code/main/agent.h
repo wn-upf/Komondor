@@ -64,8 +64,8 @@
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
 
-#include "../network_optimization/learning_modules/pre_processor.h"
-#include "../network_optimization/learning_modules/ml_model.h"
+#include "../learning_modules/pre_processor.h"
+#include "../learning_modules/ml_model.h"
 
 // Agent component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Agent : public TypeII{
@@ -244,6 +244,7 @@ void Agent :: Stop(){
 	LOGS(save_agent_logs, agent_logger.file,
 		"%.15f;A%d;%s;%s Agent Stop()\n", SimTime(), agent_id, LOG_C00, LOG_LVL1);
 
+	// Print statistics
 	PrintOrWriteAgentStatistics();
 
 	// Close node logs file
@@ -427,7 +428,7 @@ void Agent :: ComputeNewConfiguration(){
 
 	// Process the configuration and performance reports obtained from the WLAN
 	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
-	processed_performance = pre_processor.ProcessWlanPerformance(learning_mechanism, performance, type_of_reward);
+	processed_performance = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
 
 	// Update the configuration according to the selected learning method
 	switch(learning_mechanism) {

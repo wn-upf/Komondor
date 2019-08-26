@@ -50,10 +50,10 @@
  * 	 In particular, this module prepares data extracted from the network simulation for applying a given ML method
  */
 
+#include "../list_of_macros.h"
 
-#include "../../list_of_macros.h"
-#include "../../structures/node_configuration.h"
-#include "../../structures/performance_metrics.h"
+#include "../structures/node_configuration.h"
+#include "../structures/performance_metrics.h"
 
 #ifndef _AUX_PP_
 #define _AUX_PP_
@@ -127,30 +127,8 @@ class PreProcessor {
 		* @param "type_of_reward" [type int]: type of performance metric to be used as a reward
 		* @return "processed_performance" [type double]: performance indicator to be passed to the ML method
 		*/
-		double ProcessWlanPerformance(int learning_mechanism, Performance performance, int type_of_reward) {
-			double processed_performance(0);
-			// Update the current configuration according to the selected learning method
-			switch(learning_mechanism) {
-				/* Multi-Armed Bandits */
-				case MULTI_ARMED_BANDITS:{
-					// Generate the reward for the last selected action
-					processed_performance = GenerateReward(type_of_reward, performance);
-					break;
-				}
-				case RTOT_ALGORITHM:{
-					// Generate the reward for the last selected action
-					processed_performance = GenerateReward(type_of_reward, performance);
-					break;
-				}
-				/* Default */
-				default:{
-					printf("[Pre-Processor] ERROR: '%d' is not a correct learning mechanism\n", learning_mechanism);
-					PrintAvailableLearningMechanisms();
-					exit(EXIT_FAILURE);
-					break;
-				}
-			}
-			return processed_performance;
+		double ProcessWlanPerformance(Performance performance, int type_of_reward) {
+			return GenerateReward(type_of_reward, performance);
 		};
 
 		/**

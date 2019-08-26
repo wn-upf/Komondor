@@ -49,7 +49,7 @@
  *  - This file contains the methods used by the multi-armed bandits (MAB) framework
  */
 
-#include "../../../list_of_macros.h"
+#include "../../list_of_macros.h"
 #include "action_selection_strategies/epsilon_greedy.h"
 #include "action_selection_strategies/thompson_sampling.h"
 

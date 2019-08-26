@@ -50,12 +50,16 @@
  * 	 In particular, this module manages the ML operation
  */
 
-#include "../../list_of_macros.h"
-#include "../../structures/node_configuration.h"
-#include "../../structures/performance_metrics.h"
-#include "../graph_coloring/graph_coloring.h"
+#include "../list_of_macros.h"
+
+#include "../structures/node_configuration.h"
+#include "../structures/performance_metrics.h"
+
+#include "../network_optimization/channel_assignment/centralized_graph_coloring.h"
+#include "../network_optimization/spatial_reuse/rtot_algorithm.h"
+
 #include "/multi_armed_bandits/multi_armed_bandits.h"
-#include "../spatial_reuse/rtot_algorithm.h"
+
 
 #ifndef _AUX_ML_MODEL_
 #define _AUX_ML_MODEL_
@@ -258,6 +262,7 @@ class MlModel {
 					break;
 				}
 			}
+
 		}
 
 		/**

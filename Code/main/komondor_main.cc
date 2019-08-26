@@ -59,7 +59,9 @@
 #include <string>     // std::string, std::to_string
 
 #include ".././COST/cost.h"
+
 #include "../list_of_macros.h"
+
 #include "../structures/logical_nack.h"
 #include "../structures/notification.h"
 #include "../structures/wlan.h"
