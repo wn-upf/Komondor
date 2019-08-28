@@ -99,11 +99,8 @@ class RtotAlgorithm {
 		* @param "configuration_array" [type Configuration*]: array of configurations of each AP (to be updated by this method)
 		*/
 		double UpdateObssPd(double rssi) {
-
 			return ComputeObssPdRtotAlgorithm(rssi, margin);
-
 		}
-
 
 		/**
 		* Updates the configuration to be used by each WLAN
@@ -117,7 +114,7 @@ class RtotAlgorithm {
 			if (obss_pd_dbm > OBSS_PD_MAX) obss_pd_dbm = OBSS_PD_MAX;
 			else if (obss_pd_dbm < OBSS_PD_MIN) obss_pd_dbm = OBSS_PD_MIN;
 
-//			printf("[RTOT] New OBSS/PD computed = %f dBm\n", floor(obss_pd_dbm));
+			printf("[RTOT] New OBSS/PD computed = %f dBm\n", floor(obss_pd_dbm));
 
 			return ConvertPower(DBM_TO_PW, obss_pd_dbm);
 
@@ -146,12 +143,45 @@ class RtotAlgorithm {
 		* @param "write_or_print" [type int]: variable to indicate whether to print on the  console or to write on the the output logs file
 		* @param "logger" [type Logger]: logger object to write on the output file
 		*/
+		void PrintOrWriteInformation(int write_or_print, Logger &logger) {
+			// Write or print according the input parameter "write_or_print"
+			switch(write_or_print){
+				// Print logs in console
+				case PRINT_LOG:{
+					printf("%s RTOT algorithm information...\n", LOG_LVL1);
+					printf("%s num_stas = %d\n", LOG_LVL2, num_stas);
+					printf("%s margin = %f\n", LOG_LVL2, ConvertPower(PW_TO_DBM, margin));
+					break;
+				}
+				// Write logs in agent's output file
+				case WRITE_LOG:{
+					fprintf(logger.file, "RTOT algorithm statistics...\n");
+					break;
+				}
+			}
+		}
+
+		/**
+		* Print or write the statistics of the RTOT algorithm
+		* @param "write_or_print" [type int]: variable to indicate whether to print on the  console or to write on the the output logs file
+		* @param "logger" [type Logger]: logger object to write on the output file
+		*/
 		void PrintOrWriteStatistics(int write_or_print, Logger &logger) {
 			// Write or print according the input parameter "write_or_print"
 			switch(write_or_print){
 				// Print logs in console
 				case PRINT_LOG:{
-					printf("RTOT algorithm statistics...\n");
+					printf("%s RTOT algorithm statistics...\n", LOG_LVL1);
+					printf("%s rssi_per_sta: ", LOG_LVL2);
+					for (int i = 0 ; i < num_stas; ++i) {
+						printf("%f dBm ", ConvertPower(PW_TO_DBM, rssi_per_sta[i]));
+					}
+					printf("\n");
+					printf("%s obss_pd_per_sta: ", LOG_LVL2);
+					for (int i = 0 ; i < num_stas; ++i) {
+						printf("%f dBm ", ConvertPower(PW_TO_DBM, obss_pd_per_sta[i]));
+					}
+					printf("\n");
 					break;
 				}
 				// Write logs in agent's output file

@@ -631,6 +631,24 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			break;
 		}
 
+		// RTOT algorithm for 11ax SR enhancement
+		case 14: {
+
+			//  - Throughput experienced/allocated for each device (AP and STAs)
+			char tpt_array[250] = "";
+			char aux_tpt[50];
+
+			for(int i = 0; i < total_nodes_number; i ++) {
+				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+					// Throughput allocated to the STA
+					sprintf(aux_tpt, "%.2f", performance_report[i].throughput * pow(10,-6));
+					strcat(tpt_array, aux_tpt);
+					strcat(tpt_array, ";");
+				}
+			}
+			fprintf(logger_script.file, ";%s\n", tpt_array);
+		}
+
 		default:{
 		  printf("No simulation type found\n");
 		  break;

@@ -427,7 +427,7 @@ void Komondor :: Stop(){
 		frame_length, max_num_packets_aggregated, simulation_time_komondor);
 
 	// Generate the output for scripts
-	int simulation_index (10);	// Choose the simulation index (TODO: change the way the simulation index is introduced by the user)
+	int simulation_index (14);	// Choose the simulation index (TODO: change the way the simulation index is introduced by the user)
 	GenerateScriptOutput(simulation_index, performance_per_node, configuration_per_node, logger_script,
 		total_wlans_number, total_nodes_number, frame_length, max_num_packets_aggregated,
 		wlan_container, simulation_time_komondor);
@@ -983,6 +983,12 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			std::string wlan_code;
 			wlan_code.append(ToString(wlan_code_aux));
 			agent_container[agent_ix].wlan_code = wlan_code.c_str();
+			// WLAN Id
+			for(int w=0; w < total_wlans_number; ++w){
+				if(strcmp(wlan_container[w].wlan_code.c_str(), agent_container[agent_ix].wlan_code.c_str()) == 0	) {
+					agent_container[agent_ix].wlan_id = w;
+				}
+			}
 			//  Communication level
 			tmp_agents = strdup(line_agents);
 			int communication_level (atoi(GetField(tmp_agents, IX_COMMUNICATION_LEVEL)));
@@ -1068,9 +1074,11 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			tmp_agents = strdup(line_agents);
 			int action_selection_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
 			agent_container[agent_ix].action_selection_strategy = action_selection_strategy;
-			// System
+
+			// Other information
 			agent_container[agent_ix].save_agent_logs = save_agent_logs;
 			agent_container[agent_ix].print_agent_logs = print_agent_logs;
+			agent_container[agent_ix].num_stas = wlan_container[agent_container[agent_ix].wlan_id].num_stas;
 
 			// TRICKY - USE THE FIRST ELEMENT INT HE LIST OF PD VALUES AS THE MARGIN
 			if(agent_container[agent_ix].learning_mechanism == RTOT_ALGORITHM) {

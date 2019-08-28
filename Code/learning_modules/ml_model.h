@@ -251,7 +251,8 @@ class MlModel {
 					break;
 				}
 				case RTOT_ALGORITHM: {
-					rtot_alg.PrintOrWriteStatistics(write_or_print, logger);
+//					rtot_alg.PrintOrWriteInformation(write_or_print, logger);
+//					rtot_alg.PrintOrWriteStatistics(write_or_print, logger);
 					break;
 				}
 				/* UNKNOWN */

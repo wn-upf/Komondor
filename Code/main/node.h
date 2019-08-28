@@ -586,7 +586,6 @@ void Node :: Start(){
 	// ----------------------------------------
 
 	LOGS(save_node_logs, node_logger.file,"\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-
 	// LOGS(save_node_logs, node_logger.file, "%f;N%d;S%d;%s;%s Start() END\n", SimTime(), node_id, node_state, LOG_B01, LOG_LVL1);
 };
 
@@ -3269,9 +3268,7 @@ void Node :: EndBackoff(trigger_t &){
 		trigger_start_backoff.Cancel();	// Safety instruction
 
 	} else {	// Transmission IS NOT POSSIBLE, compute a new backoff.
-
 		AbortRtsTransmission();
-
 	}
 	// LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s EndBackoff() END\n", SimTime(), node_id, node_state, LOG_F01, LOG_LVL1);
 };
@@ -4411,12 +4408,12 @@ void Node :: PrintNodeInfo(int info_detail_level){
 		printf("%s srg_obss_pd = %f dBm\n", LOG_LVL5, ConvertPower(PW_TO_DBM,srg_obss_pd));
 	}
 
-	if(info_detail_level > INFO_DETAIL_LEVEL_0){
+	if(info_detail_level > INFO_DETAIL_LEVEL_0 && node_type == NODE_TYPE_AP){
 		printf("%s wlan:\n", LOG_LVL4);
 		printf("%s wlan code = %s\n", LOG_LVL5, wlan.wlan_code.c_str());
 		printf("%s wlan id = %d\n", LOG_LVL5, wlan.wlan_id);
 		printf("%s wlan AP id = %d\n", LOG_LVL5, wlan.ap_id);
-		printf("%s STAs in WLAN (%d): ", LOG_LVL5, wlan.num_stas);
+		printf("%s Identifiers of STAs in WLAN (total number of STAs = %d): ", LOG_LVL5, wlan.num_stas);
 		wlan.PrintStaIds();
 	}
 

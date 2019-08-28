@@ -105,6 +105,7 @@ component Agent : public TypeII{
 		int agent_id; 				///> Node identifier
 		int communication_level;	///> Indicates whether the node is controlled by a central entity or not
 		std::string wlan_code;		///> WLAN code to which the agent belongs
+		int wlan_id;
 		int num_stas;				///> Number of STAs associated to the WLAN
 
 		// Learning mechanism
@@ -555,6 +556,7 @@ void Agent :: InitializeMlModel() {
 void Agent :: PrintAgentInfo(){
 	printf("%s Agent %d info:\n", LOG_LVL3, agent_id);
 	printf("%s wlan_code = %s\n", LOG_LVL4, wlan_code.c_str());
+	printf("%s num_stas = %d\n", LOG_LVL4, num_stas);
 	printf("%s communication_level = %d\n", LOG_LVL4, communication_level);
 	printf("%s time_between_requests = %f\n", LOG_LVL4, time_between_requests);
 	printf("%s type_of_reward = %d\n", LOG_LVL4, type_of_reward);
@@ -594,6 +596,7 @@ void Agent :: PrintAgentInfo(){
 void Agent :: WriteAgentInfo(Logger logger, std::string header_str){
 	fprintf(logger.file, "%s Agent %d info:\n", header_str.c_str(), agent_id);
 	fprintf(logger.file, "%s - wlan_code = %s\n", header_str.c_str(), wlan_code.c_str());
+	fprintf(logger.file, "%s - num_stas = %d\n", header_str.c_str(), num_stas);
 	fprintf(logger.file, "%s - communication_level = %d\n", header_str.c_str(), communication_level);
 	fprintf(logger.file, "%s - time_between_requests = %f\n", header_str.c_str(), time_between_requests);
 	fprintf(logger.file, "%s - type_of_reward = %d\n", header_str.c_str(), type_of_reward);

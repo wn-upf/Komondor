@@ -154,52 +154,50 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	switch(path_loss_model){
 	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx (UNITS ARE NOT IN SI!)
 	case PATH_LOSS_LFS:{
-
 		pw_received = tx_power * tx_gain * rx_gain * pow(((double) SPEED_LIGHT/(4*M_PI*distance*central_frequency)),2);
-
 		break;
 	}
 	// Okumura-Hata model - Urban areas
 	case PATH_LOSS_OKUMURA_HATA:{
-	  double tx_heigth (10);    // Transmitter height [m]
-	  double rx_heigth (10);    // Receiver height [m]
-	  double path_loss_A (69.55 + 26.16 * log10(3*pow(10,8)/wavelength) - 13.82 * log10(tx_heigth));
-	  double path_loss_B (44.9 - 6.55 * log10(tx_heigth));
-	  double path_loss_E (3.2 * pow(log10(11.7554 * rx_heigth),2) - 4.97);
-	  double path_loss (path_loss_A + path_loss_B * log10(distance/1000) - path_loss_E);
-	  pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - path_loss;
-	  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-	  break;
+		double tx_heigth (10);    // Transmitter height [m]
+		double rx_heigth (10);    // Receiver height [m]
+		double path_loss_A (69.55 + 26.16 * log10(3*pow(10,8)/wavelength) - 13.82 * log10(tx_heigth));
+		double path_loss_B (44.9 - 6.55 * log10(tx_heigth));
+		double path_loss_E (3.2 * pow(log10(11.7554 * rx_heigth),2) - 4.97);
+		double path_loss (path_loss_A + path_loss_B * log10(distance/1000) - path_loss_E);
+		pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - path_loss;
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+		break;
 	}
 	// Indoor model (could suite an apartments building scenario)
 	case PATH_LOSS_INDOOR: {
-	  double path_loss_factor (5);
-	  double shadowing (9.5);
-	  double obstacles (30);
-	  double walls_frequency (5); //  One wall each 5 meters on average
-	  double shadowing_at_wlan ((((double) rand())/RAND_MAX)*shadowing);
-	  double obstacles_at_wlan ((((double) rand())/RAND_MAX)*obstacles);
-	  double alpha (4.4); // Propagation model
-	  double path_loss (path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
+		double path_loss_factor (5);
+		double shadowing (9.5);
+		double obstacles (30);
+		double walls_frequency (5); //  One wall each 5 meters on average
+		double shadowing_at_wlan ((((double) rand())/RAND_MAX)*shadowing);
+		double obstacles_at_wlan ((((double) rand())/RAND_MAX)*obstacles);
+		double alpha (4.4); // Propagation model
+		double path_loss (path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
 		  (distance/walls_frequency)*obstacles_at_wlan);
-	  pw_received_dbm = tx_power_dbm + tx_gain_db - path_loss; // Power in dBm
-	  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-	  break;
+		pw_received_dbm = tx_power_dbm + tx_gain_db - path_loss; // Power in dBm
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+		break;
 	}
 	// Indoor model without variability
 	case PATH_LOSS_INDOOR_2: {
-	  double path_loss_factor (5);
-	  double shadowing (9.5);
-	  double obstacles (30);
-	  double walls_frequency (5); //  One wall each 5 meters on average
-	  double shadowing_at_wlan (1/2*shadowing);
-	  double obstacles_at_wlan (1/2*obstacles);
-	  double alpha (4.4); // Propagation model
-	  double path_loss (path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
+		double path_loss_factor (5);
+		double shadowing (9.5);
+		double obstacles (30);
+		double walls_frequency (5); //  One wall each 5 meters on average
+		double shadowing_at_wlan (1/2*shadowing);
+		double obstacles_at_wlan (1/2*obstacles);
+		double alpha (4.4); // Propagation model
+		double path_loss (path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
 		  (distance/walls_frequency)*obstacles_at_wlan);
-	  pw_received_dbm = tx_power_dbm + tx_gain_db - path_loss; // Power in dBm
-	  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-	  break;
+		pw_received_dbm = tx_power_dbm + tx_gain_db - path_loss; // Power in dBm
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+		break;
 	}
 
 	// Residential - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
@@ -207,24 +205,24 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	// IEEE 802.11ax uses the TGn channel B path loss model for performance evaluation of simulation scenario #1
 	// with extra indoor wall and floor penetration loss.
 	case PATH_LOSS_SCENARIO_1_TGax: {
-	  int n_walls(10);   // Wall frequency (n_walls walls each m)
-	  int n_floors(3);   // Floor frequency (n_floors floors each m)
-	  int L_iw(5);     // Penetration for a single wall (dB)
-	  double min_d(distance);
-	  if (distance > 5) { min_d = 5; }
-	  double central_frequency_ghz(central_frequency / pow(10,9));
-	  double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
-			  18.3*pow((distance/n_floors),(((distance/n_floors)+2)/((distance/n_floors)+1))
-					  - 0.46) + L_iw*(distance/n_walls));
-	  double d_BP (5);    // Break-point distance (m)
-	  if (distance >= d_BP) {
+		int n_walls(1/10);  // Wall frequency (n_walls walls each m)
+		int n_floors(1/3);  // Floor frequency (n_floors floors each m)
+		int L_iw(5);       	// Penetration for a single wall (dB)
+		double min_d(distance);
+		if (distance > 5) { min_d = 5; }
+		double central_frequency_ghz(central_frequency / pow(10,9));
+		double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
+			  18.3*pow((distance*n_floors),(((distance*n_floors)+2)/((distance*n_floors)+1))
+					  - 0.46) + L_iw*(distance*n_walls));
+		double d_BP (5);    // Break-point distance (m)
+		if (distance >= d_BP) {
 		loss = LFS + 35*log10(distance/double(5));
-	  } else {
+		} else {
 		loss = LFS;
-	  }
-	  pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - loss;
-	  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-	  break;
+		}
+		pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - loss;
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+		break;
 	}
 
 	// Enterprise - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
@@ -232,19 +230,28 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	// IEEE 802.11ax uses the TGn channel D path loss model for performance evaluation of simulation scenario #2
 	// with extra indoor wall and floor penetration loss.
 	case PATH_LOSS_SCENARIO_2_TGax: {
-	  int n_walls (2);   // Wall frequency (n_walls walls each m)
-	  int n_floors (3);     // Floor frequency (n_floors floors each m)
-	  int L_iw (7);   // Penetration for a single wall (dB)
-	  double LFS (32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000));
-	  int d_BP (10);    // Break-point distance (m)
-	  if (distance >= d_BP) {
-		loss = LFS + 35*log10(distance/d_BP) + 18.3*pow(n_floors,((n_floors+2)/(n_floors+1)) - 0.46) + L_iw*n_walls;
-	  } else {
-		loss = LFS;
-	  }
-	  pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - loss;
-	  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-	  break;
+		int n_walls(12/20);   // Wall frequency (n_walls walls each m)
+		double min_d(distance);
+		if (distance > 10) { min_d = 1; }
+		double central_frequency_ghz(central_frequency / pow(10,9));
+		double shadowing (5);
+		double shadowing_at_wlan ((((double) rand())/RAND_MAX)*shadowing);
+		double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d)
+			+ 7*(distance*n_walls) + shadowing_at_wlan);
+		int d_BP (1);    // Break-point distance (m)
+		if (distance >= d_BP) {
+			loss = LFS + 35*log10(distance/10);
+		} else {
+			loss = LFS;
+		}
+		pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - loss;
+		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+		//	  Shadowing: Log-normal with 5 dB standard deviation, iid across all links
+		break;
+//	  PL(d) = 40.05 + 20*log10(fc/2.4) + 20*log10(min(d,10)) + (d>10) * 35*log10(d/10) + 7*W
+//	  W = number of office walls traversed in x-direction plus number of office walls traversed in y-direction
+//	  use MCS0 or MCS7 for all transmissions
+//	  APs have 4 rx and tx antennas
 	}
 
 	// Indoor small BSSs
