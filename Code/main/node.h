@@ -3983,7 +3983,7 @@ void Node :: UpdatePerformanceMeasurements(){
 	performance_report.throughput =
 		(((double)(performance_report.data_packets_sent -
 		performance_report.data_packets_lost) * frame_length
-		* limited_num_packets_aggregated)) / (SimTime()-performance_report.last_time_measured);
+		* limited_num_packets_aggregated)) / (SimTime()-performance_report.timestamp);
 
 	// - Max RSSI received per WLAN
 	for (int i = 0 ; i < total_wlans_number; ++ i) {

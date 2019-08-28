@@ -330,11 +330,10 @@
 #define REWARD_TYPE_PACKETS_GENERATED 	2
 #define REWARD_TYPE_MIN_RSSI			3
 
-// Communication levels provided
-#define PURE_DECENTRALIZED 					0	///> Agents learn based on their own information
-#define DISTRIBUTED		 					1	///> Agents exchange information among them
-#define PURE_CENTRALIZED					2	///> The learning operation is fully controlled by a central controller
-#define HYBRID_CENTRALIZED_DECENTRALIZED	3	///> The learning operation is held at both controller and agents
+// Agent modes
+#define AGENT_MODE_DECENTRALIZED 	0	///> Agents are independent entities that follow their own learning procedure
+#define AGENT_MODE_COOPERATIVE		1	///> Agents combine local and distributed/centralized learning approaches
+#define AGENT_MODE_CENTRALIZED		2	///> The learning operation is fully managed by a central controller
 
 // Learning mechanisms allowed
 #define MULTI_ARMED_BANDITS 			1

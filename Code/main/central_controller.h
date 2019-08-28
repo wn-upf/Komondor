@@ -160,7 +160,7 @@ component CentralController : public TypeII{
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAgent(int destination_agent_id);
 		outport void outportSendConfigurationToAgent(int destination_agent_id,
-			Configuration &new_configuration, int controller_mode);
+			Configuration &new_configuration);
 
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_agents; // Timer for requesting information to the AP
@@ -373,7 +373,7 @@ void CentralController :: SendConfigurationToSingleAgent(int destination_agent_i
 		"%.15f;CC;%s;%s Sending a new configuration to Agent %d\n",
 		SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
-	outportSendConfigurationToAgent(destination_agent_id, new_conf,controller_mode);
+	outportSendConfigurationToAgent(destination_agent_id, new_conf);
 };
 
 /******************************/

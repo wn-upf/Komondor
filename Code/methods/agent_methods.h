@@ -61,7 +61,7 @@
 */
 void RestartPerformanceMetrics(Performance *current_performance, double sim_time) {
 
-	current_performance->last_time_measured = sim_time;
+	current_performance->timestamp = sim_time;
 	current_performance->throughput = 0;
 	current_performance->max_bound_throughput = 0;
 	current_performance->data_packets_sent = 0;
@@ -71,6 +71,22 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 	current_performance->num_packets_generated = 0;
 	current_performance->num_packets_dropped = 0;
 
+}
+
+/**
+ * Check the validity of the current information held by the agent, based on the timestamp and the maximum expiration time
+ * @return "data_still_valid" [type int]: boolean indicating whether data is still valid or not
+ */
+bool CheckValidityOfData(Configuration configuration, Performance performance,
+		double sim_time, double max_time_validity_information) {
+	bool data_still_valid(false);
+	if ( (sim_time - performance.timestamp > max_time_validity_information)
+			|| (sim_time - configuration.timestamp > max_time_validity_information) ) {
+		data_still_valid = false;
+	} else {
+		data_still_valid = true;
+	}
+	return data_still_valid;
 }
 
 #endif

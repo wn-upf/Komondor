@@ -388,8 +388,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	// Connect the agents to the central controller, if applicable
 	if (agents_enabled) {
 		for(int w = 0; w < total_agents_number; ++w){
-			if(agent_container[w].communication_level ==  PURE_CENTRALIZED ||
-				agent_container[w].communication_level == HYBRID_CENTRALIZED_DECENTRALIZED) {
+			if(agent_container[w].agent_mode != AGENT_MODE_DECENTRALIZED) {
 				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
 				connect agent_container[w].outportAnswerToController,central_controller[0].InportReceivingInformationFromAgent;
 				connect central_controller[0].outportSendConfigurationToAgent,agent_container[w].InportReceiveConfigurationFromController;
@@ -991,10 +990,10 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			}
 			//  Communication level
 			tmp_agents = strdup(line_agents);
-			int communication_level (atoi(GetField(tmp_agents, IX_COMMUNICATION_LEVEL)));
-			agent_container[agent_ix].communication_level = communication_level;
+			int agent_mode (atoi(GetField(tmp_agents, IX_COMMUNICATION_LEVEL)));
+			agent_container[agent_ix].agent_mode = agent_mode;
 			// Check if the central controller has to be created or not
-			if(communication_level ==  PURE_CENTRALIZED || communication_level == HYBRID_CENTRALIZED_DECENTRALIZED) {
+			if(agent_mode != AGENT_MODE_DECENTRALIZED) {
 				++total_controlled_agents_number;
 				central_controller_flag = 1;
 			}
@@ -1110,8 +1109,7 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 		double max_time_between_requests (0);	// To determine the maximum time between requests for agents
 		// Check which agents are attached to the central controller
 		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
-			if(agent_container[agent_ix].communication_level ==  PURE_CENTRALIZED ||
-				agent_container[agent_ix].communication_level == HYBRID_CENTRALIZED_DECENTRALIZED) {
+			if(agent_container[agent_ix].agent_mode !=  AGENT_MODE_DECENTRALIZED) {
 				// Add agent id to list of agents attached to the controller
 				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
 				double agent_time_between_requests (agent_container[agent_list_ix].time_between_requests);
