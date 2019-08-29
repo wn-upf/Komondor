@@ -4,11 +4,20 @@
 
 # Komondor: An IEEE 802.11ax Simulator
 
+## Table of Contents
+- [Authors](#authors)
+- [Introduction](#introduction)
+- [Overview](#overview)
+- [Usage](#usage)
+- [Validation](#validation)
+- [Contribute](#contribute)
+- [Acknowledgements](#acknowledgements)
+
 ### Authors
 * [Sergio Barrachina-Muñoz](https://github.com/sergiobarra)
 * [Francesc Wilhelmi](https://github.com/fwilhelmi)
 
-### Introduction and Project description
+### Introduction
 
 Komondor is a wireless network simulator that includes novel mechanisms for next-generation WLANs, such as dynamic channel bonding or enhanced spatial reuse. One of the main purposes of Komondor is to simulate the behavior of IEEE 802.11ax-2019 networks, an amendment designed to boost spectral efficiency in dense deployments.
 		
@@ -21,7 +30,7 @@ The project is structured as follows:
 
 Doxygen documentation available [here](http://htmlpreview.github.io/?https://github.com/wn-upf/Komondor/blob/master/Documentation/doxy/html/index.html).
 
-### Code organization
+### Overview
 
 The code to run simulations is organized as follows:
 
@@ -40,7 +49,7 @@ An overview of the current modules available in Komondor is next shown:
 <img src="https://github.com/wn-upf/Komondor/blob/master/Documentation/Other/Images and resources/modules_overview.png">
 </p>
 
-### Installation & Execution instructions
+### Usage
 
 Detailed installation and execution instructions can be found in the [Komondor User's Guide](https://github.com/wn-upf/Komondor/blob/master/Documentation/User%20guide/LaTeX%20files/komondor_user_guide.pdf).
 
@@ -90,7 +99,7 @@ The new inputs are described next:
 * ```FLAG_SAVE_AGENT_LOGS``` :flag to indicate whether to save the agent logs into separate files (1) or not (0). If this flag is activated, one file per agent will be created.
 * ```FLAG_PRINT_AGENT_LOGS```: flag to indicate whether to print the agent logs (1) or not (0). 
 
-### Input files
+## Input files
 
 There are two types of input files that are required for basic Komondor's execution. These files are located at the "input" folder, and which allow to configure system and nodes parameters, respectively:
 * ```input_system_conf.csv```: define parameters such as the number of total available channels, the CW...
@@ -103,6 +112,14 @@ Additionally, the agents operation is ruled by the agents input file. The most i
 
 Regarding the output ("output" folder), some logs and statistics are created at the end of the execution.
 
+## Other installations
+
+Debugging: 
+
+```
+$ apt-get install gdb valgrind 
+```
+
 ### Validation
 Komondor v.2.0 has been validated by means of ns-3 and SF-CTMN and Bianchi analytical models. The presentation of the validation can be found at "S. Barrachina-Muñoz, F. Wilhelmi, I. Selinis & B. Bellalta. Komondor: a Wireless Network Simulator for Next-Generation High-Density WLANs. 2018". Additional resources are available in this repository, in folder /Documentation/Validation. Files used for each simulation tool can be found:
 1) ns-3: execution script and instructions, together with the simulation environment used for validation.
@@ -110,7 +127,7 @@ Komondor v.2.0 has been validated by means of ns-3 and SF-CTMN and Bianchi analy
 3) SF-CTMN: simulation environment, to be executed through the SF-CTMN framework, available at https://github.com/sergiobarra/SFCTMN
 4) Bianchi: Matlab files emulating the Bianchi model ("Bianchi, G., Fratta, L., & Oliveri, M. (1996, October). Performance evaluation and enhancement of the CSMA/CA MAC protocol for 802.11 wireless LANs. In Personal, Indoor and Mobile Radio Communications, 1996. PIMRC'96., Seventh IEEE International Symposium on (Vol. 2, pp. 392-396). IEEE.") can be found, which simulate the throughput achieved by each WLAN in each of the proposed scenarios.
 
-### Regression test
+## Regression test
 An automated regression test is available to ensure that the development of new features does not affect to the previous implementation, which was validated in Barrachina-Muñoz, S., Wilhelmi, F., Selinis, I., & Bellalta, B. (2019, April). Komondor: a Wireless Network Simulator for Next-Generation High-Density WLANs. In 2019 Wireless Days (WD) (pp. 1-8). IEEE.
 
 In order to execute the regression test, go to ./Komondor/Code/input and run the script named "script_regression_validation_scenarios.sh". This script will take the inputs from the "validation" folder, execute the corresponding simulations, and compare the output with the expected results (i.e., the results obtained for the aforementioned paper).
@@ -122,13 +139,6 @@ The output of the regression test will be displayed by console. In case of succe
 
 Before executing the regression test, it is important to ensure that "simulation_index" in komondor_main.cc is set to 10.
 
-### Other installations
-
-Debugging: 
-
-```
-$ apt-get install gdb valgrind 
-```
 
 ### Contribute
 
