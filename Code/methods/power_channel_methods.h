@@ -205,15 +205,15 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	// IEEE 802.11ax uses the TGn channel B path loss model for performance evaluation of simulation scenario #1
 	// with extra indoor wall and floor penetration loss.
 	case PATH_LOSS_SCENARIO_1_TGax: {
-		int n_walls(1/10);  // Wall frequency (n_walls walls each m)
-		int n_floors(1/3);  // Floor frequency (n_floors floors each m)
-		int L_iw(5);       	// Penetration for a single wall (dB)
+		int n_walls(10);   // Wall frequency (n_walls walls each m)
+		int n_floors(3);   // Floor frequency (n_floors floors each m)
+		int L_iw(5);     // Penetration for a single wall (dB)
 		double min_d(distance);
 		if (distance > 5) { min_d = 5; }
 		double central_frequency_ghz(central_frequency / pow(10,9));
 		double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
-			  18.3*pow((distance*n_floors),(((distance*n_floors)+2)/((distance*n_floors)+1))
-					  - 0.46) + L_iw*(distance*n_walls));
+			  18.3*pow((distance/n_floors),(((distance/n_floors)+2)/((distance/n_floors)+1))
+					  - 0.46) + L_iw*(distance/n_walls));
 		double d_BP (5);    // Break-point distance (m)
 		if (distance >= d_BP) {
 		loss = LFS + 35*log10(distance/double(5));
@@ -230,14 +230,14 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	// IEEE 802.11ax uses the TGn channel D path loss model for performance evaluation of simulation scenario #2
 	// with extra indoor wall and floor penetration loss.
 	case PATH_LOSS_SCENARIO_2_TGax: {
-		int n_walls(12/20);   // Wall frequency (n_walls walls each m)
+		int f_walls(12/20);   // Wall frequency (n_walls walls each m)
 		double min_d(distance);
 		if (distance > 10) { min_d = 1; }
 		double central_frequency_ghz(central_frequency / pow(10,9));
 		double shadowing (5);
 		double shadowing_at_wlan ((((double) rand())/RAND_MAX)*shadowing);
 		double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d)
-			+ 7*(distance*n_walls) + shadowing_at_wlan);
+			+ 7*(distance*f_walls) + shadowing_at_wlan);
 		int d_BP (1);    // Break-point distance (m)
 		if (distance >= d_BP) {
 			loss = LFS + 35*log10(distance/10);

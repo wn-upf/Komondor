@@ -28,7 +28,7 @@ Analysis, Challenges and Opportunities"
  *  - Adapted by Francesc Wilhelmi (francisco.wilhelmi@upf.edu)
  */
 
-public class toy_scenario_1 {
+public class toy_scenario_1_free_tuning {
 
     static Wlan[] wlan_container = null;
 
@@ -161,7 +161,7 @@ public class toy_scenario_1 {
         }
     }
 
-    public static void generate_wlans(int non_srg_obss_pd_input) {
+    public static void generate_wlans(int[] sensitivity, int[] tx_power) {
 
         int wlan_counter = 0;
 
@@ -214,14 +214,14 @@ public class toy_scenario_1 {
             while (true) {
                 // If WLAN A
                 if (w == 0) {
-                    x = 0;
+                    x = 2;
                 } else {
                     x = 6;
                 }
                 break;
             }
             
-            y = 4;
+            y = 0;
             z = 0;
             
             channel_bonding_aux = 0;
@@ -232,11 +232,11 @@ public class toy_scenario_1 {
                 channel_bonding_model, traffic_load);                   
             
             // Default sensitivity & transmit power
-            wlan_aux.cca_default = cca_default_input;
-            wlan_aux.tpc_default = tpc_default_input;
+            wlan_aux.cca_default = sensitivity[w];
+            wlan_aux.tpc_default = tx_power[w];
             // Spatial Reuse Operation
-            wlan_aux.bss_color = wlan_id + 1;
-            wlan_aux.spatial_reuse_group = wlan_id + 1;
+            wlan_aux.bss_color = -1;
+            wlan_aux.spatial_reuse_group = -1;
             wlan_aux.non_srg_obss_pd = non_srg_obss_pd_input;
             wlan_aux.srg_obss_pd = srg_obss_pd_input;
                         
@@ -248,7 +248,7 @@ public class toy_scenario_1 {
             if (w == 0) {
                 point.setLocation(0, 0);
             } else if (w == 1) {
-                point.setLocation(6, 8);
+                point.setLocation(8, 0);
             }                
 
             stas_position_list[0] = point;
@@ -381,12 +381,12 @@ public class toy_scenario_1 {
                 + max_channel_allowed + CSV_SEPARATOR
                 + cont_wind + CSV_SEPARATOR // CW
                 + cont_wind_stage + CSV_SEPARATOR // CW's max stage
-                + tpc_min + CSV_SEPARATOR
                 + tpc_default + CSV_SEPARATOR
-                + tpc_max + CSV_SEPARATOR
-                + cca_min + CSV_SEPARATOR
+                + tpc_default + CSV_SEPARATOR
+                + tpc_default + CSV_SEPARATOR
                 + cca_default + CSV_SEPARATOR
-                + cca_max + CSV_SEPARATOR
+                + cca_default + CSV_SEPARATOR
+                + cca_default + CSV_SEPARATOR
                 + tx_antenna_gain + CSV_SEPARATOR
                 + rx_antenna_gain + CSV_SEPARATOR
                 + channel_bonding_model + CSV_SEPARATOR
@@ -431,29 +431,42 @@ public class toy_scenario_1 {
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";
 
-        // DEFINE THE CCA VALUES TO BE USED
-        int[] non_srg_obss_pd_list = new int[-62 + 82 + 1];  
-        for (int i = 0; i < -62 + 82 + 1; i ++) {
-            non_srg_obss_pd_list[i] = -82 + i;
-        }
+//        // DEFINE THE CCA VALUES TO BE USED
+//        int[] non_srg_obss_pd_list = new int[-62 + 82 + 1];  
+//        for (int i = 0; i < -62 + 82 + 1; i ++) {
+//            non_srg_obss_pd_list[i] = -82 + i;
+//        }
+        
+        int[] sensitvity_list = new int[2];  
+        sensitvity_list[0] = -90;
+        sensitvity_list[1] = -68;
+        
+        int[] tx_power_list = new int[2];  
+        tx_power_list[0] = 5;
+        tx_power_list[1] = 20;
+        
+        input_attributes(input_path);
+                               
+        for (int i = 0; i < sensitvity_list.length; i++) {                        
+            for (int j = 0; j < tx_power_list.length; j++) {                         
+                // Fix WLAN 
+//                System.out.println("WLAN1" + "; " + sensitvity_list[i] + "; " + tx_power_list[j]);
+               for (int i2 = 0; i2 < sensitvity_list.length; i2++) {                        
+                    for (int j2 = 0; j2 < tx_power_list.length; j2++) {  
+//                        System.out.println("WLAN2" + "; " + sensitvity_list[i2] + "; " + tx_power_list[j2]);
+                        generate_wlans(new int[] {sensitvity_list[i], sensitvity_list[i2]}, 
+                            new int[] {tx_power_list[j], tx_power_list[j2]});
+                        output_path = "./output/input_nodes_n" + num_wlans + "_s" +
+                            "_sens1_" + String.format("%03d", (int) sensitvity_list[i]) + 
+                            "_sens2_" + String.format("%03d", (int) sensitvity_list[i2]) +
+                            "_txp1_" + String.format("%2d", (int) tx_power_list[j]) +
+                            "_txp2_" + String.format("%2d", (int) tx_power_list[j2]) + ".csv";
+                        System.out.println("output_path: " + output_path);
+                        generate_file(output_path);                          
+                    }
+                }
+            }                    
+        }            
+    }        
 
-        int num_outputs = 1;
-
-        Random r = new Random();
-
-        for (int out_ix = 1; out_ix <= num_outputs; out_ix++) {
-            
-            input_attributes(input_path);
-           
-            for (int e = 0; e < non_srg_obss_pd_list.length; e++) {                               
-
-                generate_wlans(non_srg_obss_pd_list[e]);
-                output_path = "./output/input_nodes_n" + num_wlans + "_s" + String.format("%03d", out_ix) + 
-                    "_cca" + String.format("%03d", (int) non_srg_obss_pd_list[e]) + ".csv";
-                System.out.println("output_path: " + output_path);
-                generate_file(output_path);  
-                    
-            }
-        }
-    }
 }
