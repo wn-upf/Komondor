@@ -344,7 +344,7 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double pd,
 	int packet_lost;
 	double per (0);
 
-	// Try to decode when power received is greater than pd
+	// Try to decode when power received is greater than the packet detect (pd) threshold
 	if(sinr < capture_effect || power_rx_interest < pd) {
 		per = 1;
 	} else {

@@ -1087,6 +1087,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								ConvertPower(PW_TO_DBM, max_pw_interference));
 
 							// Check if notification has been lost due to interferences or weak signal strength
+							// TODO: method for checking whether the detected transmission can be decoded or not
 							loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, current_pd,
 								power_rx_interest, constant_per, node_id, capture_effect_model);
@@ -1212,6 +1213,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(PW_TO_DBM, power_rx_interest),
 							ConvertPower(PW_TO_DBM, max_pw_interference));
 						// Check if notification can be decoded
+						// TODO: method for checking whether the detected transmission can be decoded or not
 						int loss_reason (IsPacketLost(current_primary_channel, notification, notification,
 							current_sinr, capture_effect, current_pd, power_rx_interest, constant_per,
 							node_id, capture_effect_model));
@@ -1304,6 +1306,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								ConvertPower(PW_TO_DBM, max_pw_interference),
 								ConvertPower(LINEAR_TO_DB,current_sinr));
 
+							// TODO: method for checking whether the detected transmission can be decoded or not
 							loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, current_pd, power_rx_interest, constant_per,
 								node_id, capture_effect_model);
@@ -1321,6 +1324,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								int power_condition_sr (1);
 								if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME && node_is_transmitter) { 	// Check for TXOP
 									double power_interference (power_received_per_node[notification.source_id]);
+									// TODO: method for checking whether the detected transmission can be decoded or not
 									loss_reason_sr = IsPacketLost(current_primary_channel, notification, notification,
 										current_sinr, capture_effect, potential_obss_pd_threshold, power_interference, constant_per,
 										node_id, capture_effect_model);
@@ -1437,10 +1441,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						double sinr_interference (UpdateSINR(power_interference, noise_level, max_pw_interference));
 
 						// Is packet lost with the default pd?
+						// TODO: method for checking whether the detected transmission can be decoded or not
 						int loss_reason_legacy (IsPacketLost(current_primary_channel, notification, notification,
 							sinr_interference, capture_effect, sensitivity_default, power_interference, constant_per,
 							node_id, capture_effect_model));
 						// Is packet lost with the SR pd?
+						// TODO: method for checking whether the detected transmission can be decoded or not
 						int loss_reason_sr (IsPacketLost(current_primary_channel, notification, notification,
 							sinr_interference, capture_effect, potential_obss_pd_threshold, power_interference, constant_per,
 							node_id, capture_effect_model));
@@ -1500,12 +1506,16 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d)\n",
 //							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.destination_id);
 
-					// Check if ongoing notification has been lost due to interferences caused by new transmission
+					// Update the SINR
 					current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
+					// Check if ongoing notification has been lost due to interferences caused by new transmission
 					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 						current_sinr, capture_effect, current_pd,
 						power_rx_interest, constant_per, node_id, capture_effect_model);
+
+					// TODO: method for checking whether the detected transmission can be decoded or not
+					// ...
 
 					switch(capture_effect_model){
 
@@ -1649,6 +1659,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							power_rx_interest, constant_per, node_id, capture_effect_model);
 					}
 
+					// TODO: method for checking whether the detected transmission can be decoded or not
+					// ...
+
 					LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s loss_reason = %d\n",
 						SimTime(), node_id, node_state, LOG_D19, LOG_LVL4, loss_reason);
 
@@ -1768,6 +1781,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, noise_level, max_pw_interference);
 
+						// TODO: method for checking whether the detected transmission can be decoded or not
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 								current_sinr, capture_effect, current_pd,
 								power_rx_interest, constant_per, node_id, capture_effect_model);
@@ -1892,6 +1906,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							ConvertPower(PW_TO_DBM, power_rx_interest), power_rx_interest, ConvertPower(PW_TO_DBM, max_pw_interference),
 //							max_pw_interference);
 
+						// TODO: method for checking whether the detected transmission can be decoded or not
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 							current_sinr, capture_effect, current_pd,
 							power_rx_interest, constant_per, node_id, capture_effect_model);
@@ -2021,6 +2036,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							ConvertPower(PW_TO_DBM, max_pw_interference),
 							ConvertPower(LINEAR_TO_DB, current_sinr));
 
+						// TODO: method for checking whether the detected transmission can be decoded or not
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 							current_sinr, capture_effect, current_pd,
 							power_rx_interest, constant_per, node_id, capture_effect_model);
@@ -4360,6 +4376,7 @@ void Node:: CallSensing(trigger_t &){
 		int loss_reason_sr = 1;	// lost by default
 		// Check if the packet can be decoded with the CST indicated by the SR operation
 		if (loss_reason == PACKET_NOT_LOST && spatial_reuse_enabled) {
+			// TODO: method for checking whether the detected transmission can be decoded or not
 			loss_reason_sr = IsPacketLost(current_primary_channel, nav_notification, nav_notification,
 				current_sinr, capture_effect, potential_obss_pd_threshold, power_rx_interest, constant_per, node_id, capture_effect_model);
 			if (loss_reason_sr != PACKET_NOT_LOST && node_is_transmitter) {

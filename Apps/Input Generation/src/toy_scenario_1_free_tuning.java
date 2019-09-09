@@ -214,9 +214,9 @@ public class toy_scenario_1_free_tuning {
             while (true) {
                 // If WLAN A
                 if (w == 0) {
-                    x = 2;
+                    x = 1;
                 } else {
-                    x = 6;
+                    x = 4;
                 }
                 break;
             }
@@ -248,7 +248,7 @@ public class toy_scenario_1_free_tuning {
             if (w == 0) {
                 point.setLocation(0, 0);
             } else if (w == 1) {
-                point.setLocation(8, 0);
+                point.setLocation(5, 0);
             }                
 
             stas_position_list[0] = point;
@@ -449,7 +449,6 @@ public class toy_scenario_1_free_tuning {
                                
         for (int i = 0; i < sensitvity_list.length; i++) {                        
             for (int j = 0; j < tx_power_list.length; j++) {                         
-                // Fix WLAN 
 //                System.out.println("WLAN1" + "; " + sensitvity_list[i] + "; " + tx_power_list[j]);
                for (int i2 = 0; i2 < sensitvity_list.length; i2++) {                        
                     for (int j2 = 0; j2 < tx_power_list.length; j2++) {  
@@ -459,8 +458,8 @@ public class toy_scenario_1_free_tuning {
                         output_path = "./output/input_nodes_n" + num_wlans + "_s" +
                             "_sens1_" + String.format("%03d", (int) sensitvity_list[i]) + 
                             "_sens2_" + String.format("%03d", (int) sensitvity_list[i2]) +
-                            "_txp1_" + String.format("%2d", (int) tx_power_list[j]) +
-                            "_txp2_" + String.format("%2d", (int) tx_power_list[j2]) + ".csv";
+                            "_txp1_" + String.format("%02d", (int) tx_power_list[j]) +
+                            "_txp2_" + String.format("%02d", (int) tx_power_list[j2]) + ".csv";
                         System.out.println("output_path: " + output_path);
                         generate_file(output_path);                          
                     }

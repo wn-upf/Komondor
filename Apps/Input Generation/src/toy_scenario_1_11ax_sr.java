@@ -232,12 +232,12 @@ public class toy_scenario_1_11ax_sr {
                 channel_bonding_model, traffic_load);                   
             
             // Default sensitivity & transmit power
-            wlan_aux.cca_default = sensitivity[w];
+            wlan_aux.cca_default = -82;
             wlan_aux.tpc_default = 20;
             // Spatial Reuse Operation
-            wlan_aux.bss_color = -1;
-            wlan_aux.spatial_reuse_group = -1;
-            wlan_aux.non_srg_obss_pd = non_srg_obss_pd_input;
+            wlan_aux.bss_color = wlan_id + 1;
+            wlan_aux.spatial_reuse_group = wlan_id + 1;
+            wlan_aux.non_srg_obss_pd = sensitivity[w];
             wlan_aux.srg_obss_pd = srg_obss_pd_input;
                         
             Point2D.Double[] stas_position_list = new Point2D.Double[wlan_aux.num_stas];
@@ -440,8 +440,8 @@ public class toy_scenario_1_11ax_sr {
         int[] sensitvity_list = new int[4];  
         sensitvity_list[0] = -82;
         sensitvity_list[1] = -76;
-        sensitvity_list[1] = -70;
-        sensitvity_list[1] = -64;
+        sensitvity_list[2] = -70;
+        sensitvity_list[3] = -64;
                 
         input_attributes(input_path);
                                
@@ -454,7 +454,8 @@ public class toy_scenario_1_11ax_sr {
                 System.out.println("output_path: " + output_path);
                 generate_file(output_path);    
              }                   
-        }            
+        }   
+        
     }        
 
 }
