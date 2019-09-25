@@ -637,6 +637,9 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			//  - Throughput experienced/allocated for each device (AP and STAs)
 			char tpt_array[250] = "";
 			char aux_tpt[50];
+			// OBSS/PD value used within the SR operation
+			char obsspd_array[250] = "";
+			char aux_obsspd[50];
 
 			for(int i = 0; i < total_nodes_number; i ++) {
 				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
@@ -644,9 +647,13 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 					sprintf(aux_tpt, "%.2f", performance_report[i].throughput * pow(10,-6));
 					strcat(tpt_array, aux_tpt);
 					strcat(tpt_array, ";");
+					// OBSS/PD value used
+					sprintf(aux_obsspd, "%.2f", ConvertPower(PW_TO_DBM, configuration_per_node[i].non_srg_obss_pd));
+					strcat(obsspd_array, aux_obsspd);
+					strcat(obsspd_array, ";");
 				}
 			}
-			fprintf(logger_script.file, ";%s\n", tpt_array);
+			fprintf(logger_script.file, ";%s%s\n", tpt_array, obsspd_array);
 		}
 
 		default:{

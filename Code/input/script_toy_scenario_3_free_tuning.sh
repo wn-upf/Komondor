@@ -1,6 +1,6 @@
 # define execution parameters
-SIM_TIME=100
-SEED=1992
+SIM_TIME=10
+SEED=1991
 # compile KOMONDOR
 pwd
 cd ..

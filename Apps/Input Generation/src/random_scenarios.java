@@ -410,7 +410,7 @@ public class random_scenarios {
     public static void main(String args[]) throws IOException {
 
         // Parameters to be changed, according to the desired scenario type
-        String type_of_scenario = "sparse";
+        String type_of_scenario = "dense";
         String traffic_type = "medium";
         
         // Complete path building

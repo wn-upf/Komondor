@@ -214,7 +214,7 @@ public class toy_scenario_2_free_tuning {
             while (true) {
                 // If WLAN A
                 if (w == 0) {
-                    x = 7;
+                    x = 6;
                 } else {
                     x = 0;
                 }
@@ -438,15 +438,17 @@ public class toy_scenario_2_free_tuning {
 //        }
         
         int[] sensitvity_list = new int[2];  
-        sensitvity_list[0] = -90;
-        sensitvity_list[1] = -68;
+        sensitvity_list[0] = -72;
+        sensitvity_list[1] = -82;
         
         int[] tx_power_list = new int[2];  
         tx_power_list[0] = 5;
         tx_power_list[1] = 20;
         
         input_attributes(input_path);
-                               
+                   
+        int sce_id = 0;
+        
         for (int i = 0; i < sensitvity_list.length; i++) {                        
             for (int j = 0; j < tx_power_list.length; j++) {                         
 //                System.out.println("WLAN1" + "; " + sensitvity_list[i] + "; " + tx_power_list[j]);
@@ -455,17 +457,19 @@ public class toy_scenario_2_free_tuning {
 //                        System.out.println("WLAN2" + "; " + sensitvity_list[i2] + "; " + tx_power_list[j2]);
                         generate_wlans(new int[] {sensitvity_list[i], sensitvity_list[i2]}, 
                             new int[] {tx_power_list[j], tx_power_list[j2]});
-                        output_path = "./output/input_nodes_n" + num_wlans + "_s" +
+                        output_path = "./output/input_nodes_n" + num_wlans + "_s" + String.format("%02d", sce_id) +
                             "_sens1_" + String.format("%03d", (int) sensitvity_list[i]) + 
-                            "_sens2_" + String.format("%03d", (int) sensitvity_list[i2]) +
                             "_txp1_" + String.format("%02d", (int) tx_power_list[j]) +
+                            "_sens2_" + String.format("%03d", (int) sensitvity_list[i2]) +
                             "_txp2_" + String.format("%02d", (int) tx_power_list[j2]) + ".csv";
                         System.out.println("output_path: " + output_path);
                         generate_file(output_path);                          
+                        sce_id ++;
                     }
                 }
             }                    
-        }            
+        }          
+        
     }        
 
 }

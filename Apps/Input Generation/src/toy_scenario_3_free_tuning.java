@@ -223,7 +223,7 @@ public class toy_scenario_3_free_tuning {
                 break;
             }
             
-            y = 4;
+            y = 0;
             z = 0;
             
             channel_bonding_aux = 0;
@@ -248,11 +248,11 @@ public class toy_scenario_3_free_tuning {
             //  - STAs are at the same x and z axis than their AP
             Point2D.Double point = new Point2D.Double();
             if (w == 0) {
-                point.setLocation(0, 0);
+                point.setLocation(0, 2);
             } else if (w == 1) {
-                point.setLocation(4, 8);
+                point.setLocation(4, 2);
             } else if (w == 2) {
-                point.setLocation(8, 0);
+                point.setLocation(8, 2);
             }                 
 
             stas_position_list[0] = point;
@@ -443,7 +443,9 @@ public class toy_scenario_3_free_tuning {
         tx_power_list[1] = 20;
         
         input_attributes(input_path);
-                               
+        
+        int sce_id = 0;
+        
         for (int i = 0; i < sensitvity_list.length; i++) {                        
             for (int j = 0; j < tx_power_list.length; j++) {                         
 //                System.out.println("WLAN1" + "; " + sensitvity_list[i] + "; " + tx_power_list[j]);
@@ -455,15 +457,13 @@ public class toy_scenario_3_free_tuning {
 //                        System.out.println("WLAN3" + "; " + sensitvity_list[i3] + "; " + tx_power_list[j3]);
                                 generate_wlans(new int[] {sensitvity_list[i], sensitvity_list[i2], sensitvity_list[i3]}, 
                                     new int[] {tx_power_list[j], tx_power_list[j2], tx_power_list[j3]});
-                                output_path = "./output/input_nodes_n" + num_wlans + "_s" +
-                                    "_sens1_" + String.format("%03d", (int) sensitvity_list[i]) + 
-                                    "_sens2_" + String.format("%03d", (int) sensitvity_list[i2]) +
-                                    "_sens3_" + String.format("%03d", (int) sensitvity_list[i3]) +
+                                output_path = "./output/input_nodes_n" + num_wlans + "_s" + String.format("%02d", sce_id) + 
                                     "_txp1_" + String.format("%02d", (int) tx_power_list[j]) +
                                     "_txp2_" + String.format("%02d", (int) tx_power_list[j2]) +
                                     "_txp3_" + String.format("%02d", (int) tx_power_list[j3]) +".csv";
                                 System.out.println("output_path: " + output_path);
                                 generate_file(output_path);  
+                                sce_id ++;
                             }
                         }
                     }

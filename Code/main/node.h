@@ -4891,6 +4891,8 @@ void Node :: SaveSimulationPerformance() {
 	simulation_performance.num_tx_init_not_possible = num_tx_init_not_possible;
 	simulation_performance.prob_slotted_bo_collision = prob_slotted_bo_collision;
 
+	configuration.non_srg_obss_pd = non_srg_obss_pd;
+
 }
 
 /*****************************/
