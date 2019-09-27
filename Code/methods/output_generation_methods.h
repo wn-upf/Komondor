@@ -633,13 +633,15 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		// RTOT algorithm for 11ax SR enhancement
 		case 14: {
-
 			//  - Throughput experienced/allocated for each device (AP and STAs)
 			char tpt_array[250] = "";
 			char aux_tpt[50];
-			// OBSS/PD value used within the SR operation
-			char obsspd_array[250] = "";
-			char aux_obsspd[50];
+			// Total airtime
+			char airtime_array[250] = "";
+			char aux_airtime[50];
+			// Successful airtime
+			char sairtime_array[250] = "";
+			char aux_sairtime[50];
 
 			for(int i = 0; i < total_nodes_number; i ++) {
 				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
@@ -647,13 +649,18 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 					sprintf(aux_tpt, "%.2f", performance_report[i].throughput * pow(10,-6));
 					strcat(tpt_array, aux_tpt);
 					strcat(tpt_array, ";");
-					// OBSS/PD value used
-					sprintf(aux_obsspd, "%.2f", ConvertPower(PW_TO_DBM, configuration_per_node[i].non_srg_obss_pd));
-					strcat(obsspd_array, aux_obsspd);
-					strcat(obsspd_array, ";");
+					// Total airtime
+					sprintf(aux_airtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
+					 - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
+					strcat(airtime_array, aux_airtime);
+					strcat(airtime_array, ";");
+					// Successful airtime
+					sprintf(aux_sairtime, "%.2f", (performance_report[i].total_time_transmitting_in_num_channels[0]*100/simulation_time_komondor));
+					strcat(sairtime_array, aux_sairtime);
+					strcat(sairtime_array, ";");
 				}
 			}
-			fprintf(logger_script.file, ";%s%s\n", tpt_array, obsspd_array);
+			fprintf(logger_script.file, ";%s%s%s\n", tpt_array, airtime_array, sairtime_array);
 		}
 
 		default:{

@@ -15,7 +15,7 @@ pwd
 rm output/*
 
 # get input files path in folder 'script_input_files'
-cd input/agents/test_centralized_action_banning/toy_scenario_1/11ax_sr
+cd input/agents/test_centralized_action_banning/toy_scenario_2/11ax_sr
 pwd
 
 echo 'DETECTED KOMONDOR INPUT FILES: '
@@ -43,7 +43,7 @@ do
 	echo ""
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./komondor_main ../input/agents/test_centralized_action_banning/input_system_conf.csv ../input/agents/test_centralized_action_banning/toy_scenario_1/11ax_sr/${array[executing_ix]} ../output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
+	./komondor_main ../input/agents/test_centralized_action_banning/input_system_conf.csv ../input/agents/test_centralized_action_banning/toy_scenario_2/11ax_sr/${array[executing_ix]} ../output/script_output.txt sim_${array[executing_ix]} 0 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo ""
 done

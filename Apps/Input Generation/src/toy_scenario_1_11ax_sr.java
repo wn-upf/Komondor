@@ -439,20 +439,23 @@ public class toy_scenario_1_11ax_sr {
         
         int[] sensitvity_list = new int[4];  
         sensitvity_list[0] = -82;
-        sensitvity_list[1] = -76;
-        sensitvity_list[2] = -70;
-        sensitvity_list[3] = -64;
+        sensitvity_list[1] = -74;
+        sensitvity_list[2] = -68;
+        sensitvity_list[3] = -62;
                 
         input_attributes(input_path);
+        
+        int sce_id = 0;
                                
         for (int i = 0; i < sensitvity_list.length; i++) {                        
             for (int i2 = 0; i2 < sensitvity_list.length; i2++) {   
                 generate_wlans(new int[] {sensitvity_list[i], sensitvity_list[i2]});
-                output_path = "./output/input_nodes_n" + num_wlans + "_s" +
+                output_path = "./output/input_nodes_n" + num_wlans + "_s" + String.format("%02d", sce_id) +
                     "_sens1_" + String.format("%03d", (int) sensitvity_list[i]) + 
                     "_sens2_" + String.format("%03d", (int) sensitvity_list[i2]) + ".csv";
                 System.out.println("output_path: " + output_path);
-                generate_file(output_path);    
+                generate_file(output_path);   
+                sce_id++;
              }                   
         }   
         
