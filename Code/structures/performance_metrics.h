@@ -83,6 +83,9 @@ struct Performance
 	double average_utilization;		///> Average utilization
 	double generation_drop_ratio;	///> Average drop ratio
 
+	// Environment statistics
+	double *max_received_power_in_ap_per_wlan;
+
 	// Channel occupancy
 	double expected_backoff;							///> Expected BO
 	int num_new_backoff_computations;					///> Number of times a new backoff was computed
@@ -163,8 +166,10 @@ struct Performance
 	 */
 	void SetSizeOfRssiList(int total_wlans_number){
 		rssi_list = new double[total_wlans_number];
+		max_received_power_in_ap_per_wlan = new double[total_wlans_number];
 		for(int i = 0; i < total_wlans_number; ++i){
 			rssi_list[i] = 0;
+			max_received_power_in_ap_per_wlan[i] = 0;
 		}
 	}
 

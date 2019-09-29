@@ -642,6 +642,9 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			// Successful airtime
 			char sairtime_array[250] = "";
 			char aux_sairtime[50];
+			// - RSSI in STAs from the associated AP
+			char max_power_in_ap_per_wlan[1000] = "";
+			char aux_power_in_ap[250];
 
 			for(int i = 0; i < total_nodes_number; i ++) {
 				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
@@ -658,9 +661,25 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 					sprintf(aux_sairtime, "%.2f", (performance_report[i].total_time_transmitting_in_num_channels[0]*100/simulation_time_komondor));
 					strcat(sairtime_array, aux_sairtime);
 					strcat(sairtime_array, ";");
+					// RSSI received from the AP (dBm)
+					// Increase the number of visited nodes
+					strcat(max_power_in_ap_per_wlan, "{");
+					for(int w = 0; w < total_wlans_number; w ++) {
+						// Array to store all details of STA
+						// RSSI received from the AP
+						sprintf(aux_power_in_ap, "%.2f", ConvertPower(PW_TO_DBM,
+							performance_report[i].max_received_power_in_ap_per_wlan[w]));
+						strcat(max_power_in_ap_per_wlan, aux_power_in_ap);
+						// Increase the number of visited nodes
+						if (w < total_wlans_number-1) strcat(max_power_in_ap_per_wlan, ",");
+					}
+					strcat(max_power_in_ap_per_wlan, "};");
 				}
 			}
-			fprintf(logger_script.file, ";%s%s%s\n", tpt_array, airtime_array, sairtime_array);
+
+			fprintf(logger_script.file, ";%s%s%s%s\n", tpt_array, airtime_array, sairtime_array,max_power_in_ap_per_wlan);
+			break;
+
 		}
 
 		default:{

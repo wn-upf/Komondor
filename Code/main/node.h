@@ -4883,6 +4883,11 @@ void Node :: SaveSimulationPerformance() {
 		simulation_performance.data_packets_acked_per_sta = data_packets_acked_per_sta;
 		simulation_performance.data_frames_acked_per_sta = data_frames_acked_per_sta;
 		simulation_performance.rssi_list_per_sta = rssi_per_sta;
+		UpdatePerformanceMeasurements();
+		simulation_performance.max_received_power_in_ap_per_wlan = max_received_power_in_ap_per_wlan;
+//		for (int i = 0; i < total_wlans_number; i++) {
+//			printf("simulation_performance.rssi_list[%d] = %f dBm\n",i,ConvertPower(PW_TO_DBM,simulation_performance.rssi_list[i]));
+//		}
 	}
 	simulation_performance.received_power_array = received_power_array;
 

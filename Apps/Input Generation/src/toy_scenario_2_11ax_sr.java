@@ -431,12 +431,6 @@ public class toy_scenario_2_11ax_sr {
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";
 
-//        // DEFINE THE CCA VALUES TO BE USED
-//        int[] non_srg_obss_pd_list = new int[-62 + 82 + 1];  
-//        for (int i = 0; i < -62 + 82 + 1; i ++) {
-//            non_srg_obss_pd_list[i] = -82 + i;
-//        }
-        
         int[] sensitvity_list = new int[4];  
         sensitvity_list[0] = -82;
         sensitvity_list[1] = -74;
@@ -456,8 +450,8 @@ public class toy_scenario_2_11ax_sr {
                 System.out.println("output_path: " + output_path);
                 generate_file(output_path);   
                 sce_id++;
-             }                   
-        }   
+            }
+        }
         
     }        
 

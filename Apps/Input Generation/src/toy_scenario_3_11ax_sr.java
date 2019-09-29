@@ -240,6 +240,12 @@ public class toy_scenario_3_11ax_sr {
             wlan_aux.bss_color = -1;
             wlan_aux.spatial_reuse_group = -1;
             wlan_aux.non_srg_obss_pd = non_srg_obss_pd_input;
+            wlan_aux.cca_default = -82;
+            wlan_aux.tpc_default = 20;
+            // Spatial Reuse Operation
+            wlan_aux.bss_color = wlan_id + 1;
+            wlan_aux.spatial_reuse_group = wlan_id + 1;
+            wlan_aux.non_srg_obss_pd = sensitivity[w];
             wlan_aux.srg_obss_pd = srg_obss_pd_input;
                         
             Point2D.Double[] stas_position_list = new Point2D.Double[wlan_aux.num_stas];
@@ -252,8 +258,8 @@ public class toy_scenario_3_11ax_sr {
             } else if (w == 1) {
                 point.setLocation(4, 2);
             } else if (w == 2) {
-                point.setLocation(8, 2);
-            }                 
+                point.setLocation(8, 2);               
+            }                        
 
             stas_position_list[0] = point;
             wlan_aux.set_stas_positions(stas_position_list);
@@ -470,6 +476,7 @@ public class toy_scenario_3_11ax_sr {
                 }
             }                    
         }            
+
     }        
 
 }

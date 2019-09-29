@@ -159,7 +159,7 @@ public class random_scenarios_ap_fixed {
         }
     }
 
-    public static void generate_wlans(int[] non_srg_obss_pd, Point2D.Double[] aps_position_list, 
+    public static void generate_wlans(int non_srg_obss_pd, Point2D.Double[] aps_position_list, 
             Point2D.Double[] stas_position_list) {
         
         int wlan_counter = 0;
@@ -179,7 +179,7 @@ public class random_scenarios_ap_fixed {
 
         for (int w = 0; w < num_wlans; w++) {
 
-            System.out.println("Setting WLAN " + w + "/" + num_wlans + 1);
+            //System.out.println("Setting WLAN " + w + "/" + num_wlans + 1);
 
             wlan_id = wlan_counter;
             wlan_code = DICTIONARY[wlan_counter];
@@ -222,9 +222,8 @@ public class random_scenarios_ap_fixed {
             
             // Spatial Reuse parameters
             wlan_aux.bss_color = wlan_id + 1;
-            wlan_aux.spatial_reuse_group = wlan_id + 1;
-            int rnd = new Random().nextInt(non_srg_obss_pd.length);
-            wlan_aux.non_srg_obss_pd = non_srg_obss_pd[rnd];
+            wlan_aux.spatial_reuse_group = wlan_id + 1;           
+            wlan_aux.non_srg_obss_pd = non_srg_obss_pd;
             wlan_aux.srg_obss_pd = srg_obss_pd_input;
                         
             wlan_container[w] = wlan_aux;
@@ -426,8 +425,6 @@ public class random_scenarios_ap_fixed {
             non_srg_obss_pd_list[i] = -82 + i;
         }
 
-        int num_outputs = 100;
-
         Random r = new Random();
         
         int num_wlans = 9;
@@ -489,12 +486,12 @@ public class random_scenarios_ap_fixed {
             }
 
             // GENERATE EACH .CSV FILE
-            for (int out_ix = 1; out_ix <= num_outputs; out_ix++) {
-                generate_wlans(non_srg_obss_pd_list, aps_position_list, stas_position_list);
-                output_path = "./output/input_nodes_" + type_of_scenario + "_sce" + n + 
-                   "_output_" + String.format("%03d", out_ix) + ".csv";
+            for (int out_ix = 0; out_ix < non_srg_obss_pd_list.length; out_ix++) {
+                generate_wlans(non_srg_obss_pd_list[out_ix], aps_position_list, stas_position_list);
+                output_path = "./output/input_nodes_" + type_of_scenario + "_sce" + String.format("%02d",n) + 
+                   "_sens_" + String.format("%03d", non_srg_obss_pd_list[out_ix]) + ".csv";
                 System.out.println("output_path: " + output_path);
-                generate_file(output_path);  
+                generate_file(output_path); 
             }
         
         }
