@@ -17,6 +17,8 @@
 * [Sergio Barrachina-Muñoz](https://github.com/sergiobarra)
 * [Francesc Wilhelmi](https://github.com/fwilhelmi)
 
+Both authors have the same contribution in this project.
+
 ## Introduction
 
 Komondor is a wireless network simulator that includes novel mechanisms for next-generation WLANs, such as dynamic channel bonding or enhanced spatial reuse. One of the main purposes of Komondor is to simulate the behavior of IEEE 802.11ax-2019 networks, an amendment designed to boost spectral efficiency in dense deployments.
