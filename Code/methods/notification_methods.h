@@ -451,9 +451,10 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 * @param "z" [type double]: z position of the node sending the notification
 * @return "tx_info" [type TxInfo]: transmission information to be included in a notification
 */
+
 TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double ack_duration,
 		double rts_duration, double cts_duration, double current_tx_power, int num_channels_tx,
-		double tx_gain,	int bits_ofdm_sym, double x, double y, double z) {
+		int bits_ofdm_sym, double x, double y, double z) {
 
 	TxInfo tx_info;
 	tx_info.SetSizeOfMCS(4);	// TODO: make size dynamic
@@ -465,7 +466,6 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	tx_info.rts_duration = rts_duration;
 	tx_info.cts_duration = cts_duration;
 	tx_info.tx_power = ComputeTxPowerPerChannel(current_tx_power, num_channels_tx);
-	tx_info.tx_gain = tx_gain;
 	tx_info.bits_ofdm_sym = bits_ofdm_sym;
 	tx_info.x = x;
 	tx_info.y = y;

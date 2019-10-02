@@ -126,25 +126,20 @@ double ComputeDistance(double x1, double y1, double z1, double x2, double y2, do
 * Compute the power received in a given distance from the transmitter depending on the path loss model
 * @param "distance" [type double]: distance in meters
 * @param "tx_power" [type double]: transmission power used
-* @param "tx_gain" [type double]: transmission gain at the antenna output
-* @param "rx_gain" [type double]: received gain at the antenna input
 * @param "central_frequency" [type double]: central frequency
 * @param "path_loss_model" [type int]: path-loss model used
 * @return "pw_received" [type double]: power received in pW
 */
-double ComputePowerReceived(double distance, double tx_power, double tx_gain, double rx_gain,
-	double central_frequency, int path_loss_model) {
+double ComputePowerReceived(double distance, double tx_power, double central_frequency, int path_loss_model) {
 
 //	printf("    - distance = %f\n", distance);
 //	printf("    - tx_power = %f\n", ConvertPower(PW_TO_DBM,tx_power));
-//	printf("    - tx_gain = %f\n", tx_gain);
-//	printf("    - rx_gain = %f\n", rx_gain);
 //	printf("    - central_frequency = %f\n", central_frequency);
 //	printf("    - path_loss_model = %d\n", path_loss_model);
 
 	double tx_power_dbm (ConvertPower(PW_TO_DBM, tx_power));
-	double tx_gain_db (ConvertPower(LINEAR_TO_DB, tx_gain));
-	double rx_gain_db (ConvertPower(LINEAR_TO_DB, rx_gain));
+	double tx_gain (ConvertPower(DB_TO_LINEAR, ANTENNA_TX_GAIN_DB));
+	double rx_gain (ConvertPower(DB_TO_LINEAR, ANTENNA_RX_GAIN_DB));
 	double pw_received_dbm;
 	double wavelength ((double) SPEED_LIGHT/central_frequency);
 	double loss;
@@ -152,228 +147,221 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 	double pw_received;	// Power received [pW]
 
 	switch(path_loss_model){
-	// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx (UNITS ARE NOT IN SI!)
-	case PATH_LOSS_LFS:{
-		pw_received = tx_power * tx_gain * rx_gain * pow(((double) SPEED_LIGHT/(4*M_PI*distance*central_frequency)),2);
-		break;
-	}
-	// Okumura-Hata model - Urban areas
-	case PATH_LOSS_OKUMURA_HATA:{
-		double tx_heigth (10);    // Transmitter height [m]
-		double rx_heigth (10);    // Receiver height [m]
-		double path_loss_A (69.55 + 26.16 * log10(3*pow(10,8)/wavelength) - 13.82 * log10(tx_heigth));
-		double path_loss_B (44.9 - 6.55 * log10(tx_heigth));
-		double path_loss_E (3.2 * pow(log10(11.7554 * rx_heigth),2) - 4.97);
-		double path_loss (path_loss_A + path_loss_B * log10(distance/1000) - path_loss_E);
-		pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - path_loss;
-		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-		break;
-	}
-	// Indoor model (could suite an apartments building scenario)
-	case PATH_LOSS_INDOOR: {
-		double path_loss_factor (5);
-		double shadowing (9.5);
-		double obstacles (30);
-		double walls_frequency (5); //  One wall each 5 meters on average
-		double shadowing_at_wlan ((((double) rand())/RAND_MAX)*shadowing);
-		double obstacles_at_wlan ((((double) rand())/RAND_MAX)*obstacles);
-		double alpha (4.4); // Propagation model
-		double path_loss (path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
-		  (distance/walls_frequency)*obstacles_at_wlan);
-		pw_received_dbm = tx_power_dbm + tx_gain_db - path_loss; // Power in dBm
-		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-		break;
-	}
-	// Indoor model without variability
-	case PATH_LOSS_INDOOR_2: {
-		double path_loss_factor (5);
-		double shadowing (9.5);
-		double obstacles (30);
-		double walls_frequency (5); //  One wall each 5 meters on average
-		double shadowing_at_wlan (1/2*shadowing);
-		double obstacles_at_wlan (1/2*obstacles);
-		double alpha (4.4); // Propagation model
-		double path_loss (path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
-		  (distance/walls_frequency)*obstacles_at_wlan);
-		pw_received_dbm = tx_power_dbm + tx_gain_db - path_loss; // Power in dBm
-		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-		break;
-	}
-
-	// Residential - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
-	// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-	// IEEE 802.11ax uses the TGn channel B path loss model for performance evaluation of simulation scenario #1
-	// with extra indoor wall and floor penetration loss.
-	case PATH_LOSS_SCENARIO_1_TGax: {
-		int n_walls(10);   // Wall frequency (n_walls walls each m)
-		int n_floors(3);   // Floor frequency (n_floors floors each m)
-		int L_iw(5);     // Penetration for a single wall (dB)
-		double min_d(distance);
-		if (distance > 5) { min_d = 5; }
-		double central_frequency_ghz(central_frequency / pow(10,9));
-		double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
-			  18.3*pow((distance/n_floors),(((distance/n_floors)+2)/((distance/n_floors)+1))
-					  - 0.46) + L_iw*(distance/n_walls));
-		double d_BP (5);    // Break-point distance (m)
-		if (distance >= d_BP) {
-		loss = LFS + 35*log10(distance/double(5));
-		} else {
-		loss = LFS;
+		// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx (UNITS ARE NOT IN SI!)
+		case PATH_LOSS_LFS:{
+			pw_received = tx_power * tx_gain * rx_gain * pow(((double) SPEED_LIGHT/(4*M_PI*distance*central_frequency)),2);
+			break;
 		}
-		pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - loss;
-		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-		break;
-	}
+		// Okumura-Hata model - Urban areas
+		case PATH_LOSS_OKUMURA_HATA:{
+			double tx_heigth (10);    // Transmitter height [m]
+			double rx_heigth (10);    // Receiver height [m]
+			double path_loss_A (69.55 + 26.16 * log10(3*pow(10,8)/wavelength) - 13.82 * log10(tx_heigth));
+			double path_loss_B (44.9 - 6.55 * log10(tx_heigth));
+			double path_loss_E (3.2 * pow(log10(11.7554 * rx_heigth),2) - 4.97);
+			double path_loss (path_loss_A + path_loss_B * log10(distance/1000) - path_loss_E);
+			pw_received_dbm = tx_power_dbm + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - path_loss;
+			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+			break;
+		}
+		// Indoor model (could suite an apartments building scenario)
+		case PATH_LOSS_INDOOR: {
+			double path_loss_factor (5);
+			double shadowing (9.5);
+			double obstacles (30);
+			double walls_frequency (5); //  One wall each 5 meters on average
+			double shadowing_at_wlan ((((double) rand())/RAND_MAX)*shadowing);
+			double obstacles_at_wlan ((((double) rand())/RAND_MAX)*obstacles);
+			double alpha (4.4); // Propagation model
+			double path_loss (path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
+			  (distance/walls_frequency)*obstacles_at_wlan);
+			pw_received_dbm = tx_power_dbm + ANTENNA_TX_GAIN_DB - path_loss; // Power in dBm
+			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+			break;
+		}
+		// Indoor model without variability
+		case PATH_LOSS_INDOOR_2: {
+			double path_loss_factor (5);
+			double shadowing (9.5);
+			double obstacles (30);
+			double walls_frequency (5); //  One wall each 5 meters on average
+			double shadowing_at_wlan (1/2*shadowing);
+			double obstacles_at_wlan (1/2*obstacles);
+			double alpha (4.4); // Propagation model
+			double path_loss (path_loss_factor + 10*alpha*log10(distance) + shadowing_at_wlan +
+			  (distance/walls_frequency)*obstacles_at_wlan);
+			pw_received_dbm = tx_power_dbm + ANTENNA_TX_GAIN_DB - path_loss; // Power in dBm
+			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+			break;
+		}
 
-	// Enterprise - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
-	// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-	// IEEE 802.11ax uses the TGn channel D path loss model for performance evaluation of simulation scenario #2
-	// with extra indoor wall and floor penetration loss.
-	case PATH_LOSS_SCENARIO_2_TGax: {
-		int f_walls(12/20);   // Wall frequency (n_walls walls each m)
-		double min_d(distance);
-		if (distance > 10) { min_d = 1; }
-		double central_frequency_ghz(central_frequency / pow(10,9));
-		double shadowing (5);
-		double shadowing_at_wlan ((((double) rand())/RAND_MAX)*shadowing);
-		double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d)
-			+ 7*(distance*f_walls) + shadowing_at_wlan);
-		int d_BP (1);    // Break-point distance (m)
-		if (distance >= d_BP) {
-			loss = LFS + 35*log10(distance/10);
-		} else {
+		// Residential - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
+		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
+		// IEEE 802.11ax uses the TGn channel B path loss model for performance evaluation of simulation scenario #1
+		// with extra indoor wall and floor penetration loss.
+		case PATH_LOSS_SCENARIO_1_TGax: {
+			int n_walls(10);   // Wall frequency (n_walls walls each m)
+			int n_floors(3);   // Floor frequency (n_floors floors each m)
+			int L_iw(5);     // Penetration for a single wall (dB)
+			double min_d(distance);
+			if (distance > 5) { min_d = 5; }
+			double central_frequency_ghz(central_frequency / pow(10,9));
+			double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d) +
+				  18.3*pow((distance/n_floors),(((distance/n_floors)+2)/((distance/n_floors)+1))
+						  - 0.46) + L_iw*(distance/n_walls));
+			double d_BP (5);    // Break-point distance (m)
+			if (distance >= d_BP) {
+			loss = LFS + 35*log10(distance/double(5));
+			} else {
 			loss = LFS;
+			}
+			pw_received_dbm = tx_power_dbm + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - loss;
+			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+			break;
 		}
-		pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - loss;
-		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-		//	  Shadowing: Log-normal with 5 dB standard deviation, iid across all links
-		break;
-//	  PL(d) = 40.05 + 20*log10(fc/2.4) + 20*log10(min(d,10)) + (d>10) * 35*log10(d/10) + 7*W
-//	  W = number of office walls traversed in x-direction plus number of office walls traversed in y-direction
-//	  use MCS0 or MCS7 for all transmissions
-//	  APs have 4 rx and tx antennas
-	}
 
-	// Indoor small BSSs
-	// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-	// IEEE 802.11ax uses the TGn channel D path loss model for performance evaluation
-	// of simulation scenario #3.
-	case PATH_LOSS_SCENARIO_3_TGax: {
-	  double LFS (32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000));
-	  int d_BP (10);    // Break-point distance (m)
-	  if (distance >= d_BP) {
-		loss = LFS + 35*log10(distance/d_BP);
-	  } else {
-		loss = LFS;
-	  }
-	  pw_received_dbm = tx_power_dbm + tx_gain_db + rx_gain_db - loss;
-	  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-	  break;
-	}
-
-	// Outdoor large BSS scenario
-	// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-	case PATH_LOSS_SCENARIO_4_TGax: {
-	  double h_AP (10);    // Height of the AP in m
-	  double h_STA (1.5);   // Height of the STA in m
-	  double d_BP ((4 * (h_AP - 1) * (h_STA - 1) * central_frequency) / SPEED_LIGHT);
-	  if (distance < d_BP && distance >= 10) {
-		loss = 22 * log10(distance) + 28 + 20  *log10(central_frequency * pow(10,-9));
-	  } else if (distance >= d_BP && distance < 5000) {
-		loss = 40 * log10(distance) + 7.8 + 18 * log10(h_AP - 1) -
-			18 * log10(h_STA - 1)  + 20 * log10(central_frequency * pow(10,-9));
-	  }
-	  pw_received_dbm = tx_power_dbm + tx_gain_db - loss; // Power in dBm
-	  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-	  break;
-	}
-
-	// Outdoor large BSS scenario + Residential
-	// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
-	case PATH_LOSS_SCENARIO_4a_TGax: {
-	//      double h_AP = 10;    // Height of the AP in m
-	//      double h_STA = 1.5;   // Height of the STA in m
-	  if (distance < 2000 && distance >= 10) {
-		loss = 36.7 * log10(distance) + 22.7 + 26  * log10(central_frequency * pow(10,-9));
-	  }
-	  // Outdoor-to-Indoor building penetration loss
-	  // TODO: important to consider specifying d_outdoor and d_indoor
-	  double d_outdoor (0);
-	  double d_indoor (0);
-	  loss = loss * (d_outdoor + d_indoor) + 20 + 0.5 * d_indoor;
-	  pw_received_dbm = tx_power_dbm + tx_gain_db - loss; // Power in dBm
-	  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-	  break;
-	}
-
-	/*
-	 * Medbo, J., & Berg, J. E. (2000). Simple and accurate path loss modeling at 5 GHz in indoor environments
-	 * with corridors. In Vehicular Technology Conference, 2000. IEEE-VTS Fall VTC 2000. 52nd (Vol. 1, pp. 30-36). IEEE.
-	 */
-	case PATHLOSS_5GHZ_OFFICE_BUILDING:{
-		// pl_overall = pl_free_space(d) + alpha * d
-		double pl_overall_db;		// Overall path loss
-		double pl_free_space_db;	// Pathloss free space
-		double alpha (0.44);		// Constant attenuation per unit of path length [dB/m]
-		pl_free_space_db = 20 * log10(distance) + 20 * log10(central_frequency) +
-				20 * log10((4*M_PI)/((double) SPEED_LIGHT)) - ConvertPower(LINEAR_TO_DB, rx_gain) -
-				ConvertPower(LINEAR_TO_DB, tx_gain);
-		pl_overall_db = pl_free_space_db + alpha * distance;
-		double pw_received_dbm (ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db);
-		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-		break;
-	}
-
-	/*
-	 * Xu et al. Indoor Office Propagation Measurements and Path Loss Models at 5.25 GHz“, IEEE VTC 2007.
-	 * one-slope log-distance model in in-room LoS condition
-	 */
-	case PATHLOSS_INROOM_LOSS_5250KHZ:{
-		double pl_overall_db (47.8 + 14.8 * log10(distance));		// Overall path loss
-		double pw_received_dbm (ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db);
-		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-		break;
-	}
-
-	/*
-	 * Xu et al. Indoor Office Propagation Measurements and Path Loss Models at 5.25 GHz“, IEEE VTC 2007.
-	 * dual-slope log-distance model in room-corridor condition
-	 */
-	case PATHLOSS_ROOM_CORRIDOR_5250KHZ:{
-		double pl_overall_db;
-		if(distance <=  9){
-			pl_overall_db = 53.2 + 25.8 * log10(distance);		// Overall path loss
-		} else {
-			pl_overall_db = 56.4 + 29.1 * log10(distance);		// Overall path loss
+		// Enterprise - 5 dB/wall and 18.3 dB per floor, and 4 dB shadow
+		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
+		// IEEE 802.11ax uses the TGn channel D path loss model for performance evaluation of simulation scenario #2
+		// with extra indoor wall and floor penetration loss.
+		case PATH_LOSS_SCENARIO_2_TGax: {
+			int f_walls(12/20);   // Wall frequency (n_walls walls each m)
+			double min_d(distance);
+			if (distance > 10) { min_d = 1; }
+			double central_frequency_ghz(central_frequency / pow(10,9));
+			double shadowing (5);
+			double shadowing_at_wlan ((((double) rand())/RAND_MAX)*shadowing);
+			double LFS (40.05 + 20*log10(central_frequency_ghz/2.4) + 20*log10(min_d)
+				+ 7*(distance*f_walls) + shadowing_at_wlan);
+			int d_BP (1);    // Break-point distance (m)
+			if (distance >= d_BP) {
+				loss = LFS + 35*log10(distance/10);
+			} else {
+				loss = LFS;
+			}
+			pw_received_dbm = tx_power_dbm + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - loss;
+			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+			//	  Shadowing: Log-normal with 5 dB standard deviation, iid across all links
+			break;
+	//	  PL(d) = 40.05 + 20*log10(fc/2.4) + 20*log10(min(d,10)) + (d>10) * 35*log10(d/10) + 7*W
+	//	  W = number of office walls traversed in x-direction plus number of office walls traversed in y-direction
+	//	  use MCS0 or MCS7 for all transmissions
+	//	  APs have 4 rx and tx antennas
 		}
-		double pw_received_dbm (ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db);
-		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
-		break;
-	}
 
-	default:{
-	  printf("Path loss model not found!\n");
-	  break;
-	}
+		// Indoor small BSSs
+		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
+		// IEEE 802.11ax uses the TGn channel D path loss model for performance evaluation
+		// of simulation scenario #3.
+		case PATH_LOSS_SCENARIO_3_TGax: {
+		  double LFS (32.4 + 20*log10(2.4*pow(10,3))+ 20*log10(distance/1000));
+		  int d_BP (10);    // Break-point distance (m)
+		  if (distance >= d_BP) {
+			loss = LFS + 35*log10(distance/d_BP);
+		  } else {
+			loss = LFS;
+		  }
+		  pw_received_dbm = tx_power_dbm + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - loss;
+		  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+		  break;
+		}
 
-	case PATHLOSS_TMB:{
+		// Outdoor large BSS scenario
+		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
+		case PATH_LOSS_SCENARIO_4_TGax: {
+		  double h_AP (10);    // Height of the AP in m
+		  double h_STA (1.5);   // Height of the STA in m
+		  double d_BP ((4 * (h_AP - 1) * (h_STA - 1) * central_frequency) / SPEED_LIGHT);
+		  if (distance < d_BP && distance >= 10) {
+			loss = 22 * log10(distance) + 28 + 20  *log10(central_frequency * pow(10,-9));
+		  } else if (distance >= d_BP && distance < 5000) {
+			loss = 40 * log10(distance) + 7.8 + 18 * log10(h_AP - 1) -
+				18 * log10(h_STA - 1)  + 20 * log10(central_frequency * pow(10,-9));
+		  }
+		  pw_received_dbm = tx_power_dbm + ANTENNA_TX_GAIN_DB - loss; // Power in dBm
+		  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+		  break;
+		}
 
-//		L0 = 54.12;
-//		gamma = 2.06067;
-//		k = 5.25;
-//		W = 0.1467;
-//		loss = L0 + 10*gamma*log10(distance)+k*W*distance;
+		// Outdoor large BSS scenario + Residential
+		// Retrieved from: https://mentor.ieee.org/802.11/dcn/14/11-14-0882-04-00ax-tgax-channel-model-document.docx
+		case PATH_LOSS_SCENARIO_4a_TGax: {
+		//      double h_AP = 10;    // Height of the AP in m
+		//      double h_STA = 1.5;   // Height of the STA in m
+		  if (distance < 2000 && distance >= 10) {
+			loss = 36.7 * log10(distance) + 22.7 + 26  * log10(central_frequency * pow(10,-9));
+		  }
+		  // Outdoor-to-Indoor building penetration loss
+		  // TODO: important to consider specifying d_outdoor and d_indoor
+		  double d_outdoor (0);
+		  double d_indoor (0);
+		  loss = loss * (d_outdoor + d_indoor) + 20 + 0.5 * d_indoor;
+		  pw_received_dbm = tx_power_dbm + ANTENNA_TX_GAIN_DB - loss; // Power in dBm
+		  pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+		  break;
+		}
 
-		double pl_overall_db;
+		/*
+		 * Medbo, J., & Berg, J. E. (2000). Simple and accurate path loss modeling at 5 GHz in indoor environments
+		 * with corridors. In Vehicular Technology Conference, 2000. IEEE-VTS Fall VTC 2000. 52nd (Vol. 1, pp. 30-36). IEEE.
+		 */
+		case PATHLOSS_5GHZ_OFFICE_BUILDING:{
+			// pl_overall = pl_free_space(d) + alpha * d
+			double pl_overall_db;		// Overall path loss
+			double pl_free_space_db;	// Pathloss free space
+			double alpha (0.44);		// Constant attenuation per unit of path length [dB/m]
+			pl_free_space_db = 20 * log10(distance) + 20 * log10(central_frequency) +
+					20 * log10((4*M_PI)/((double) SPEED_LIGHT)) -
+					ANTENNA_RX_GAIN_DB - ANTENNA_TX_GAIN_DB;
+			pl_overall_db = pl_free_space_db + alpha * distance;
+			double pw_received_dbm (ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db);
+			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+			break;
+		}
 
-		pl_overall_db = 54.12 + 10 * 2.06067 * log10(distance) + 5.25 * 0.1467 * distance;
+		/*
+		 * Xu et al. Indoor Office Propagation Measurements and Path Loss Models at 5.25 GHz“, IEEE VTC 2007.
+		 * one-slope log-distance model in in-room LoS condition
+		 */
+		case PATHLOSS_INROOM_LOSS_5250KHZ:{
+			double pl_overall_db (47.8 + 14.8 * log10(distance));		// Overall path loss
+			double pw_received_dbm (ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db);
+			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+			break;
+		}
 
-		double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+		/*
+		 * Xu et al. Indoor Office Propagation Measurements and Path Loss Models at 5.25 GHz“, IEEE VTC 2007.
+		 * dual-slope log-distance model in room-corridor condition
+		 */
+		case PATHLOSS_ROOM_CORRIDOR_5250KHZ:{
+			double pl_overall_db;
+			if(distance <=  9){
+				pl_overall_db = 53.2 + 25.8 * log10(distance);		// Overall path loss
+			} else {
+				pl_overall_db = 56.4 + 29.1 * log10(distance);		// Overall path loss
+			}
+			double pw_received_dbm (ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db);
+			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+			break;
+		}
 
-		pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+		/*
+		 * Adame, T., Carrascosa, M., & Bellalta, B. (2019, April). The TMB path loss model for 5 GHz indoor WiFi scenarios:
+		 * On the empirical relationship between RSSI, MCS, and spatial streams. In 2019 Wireless Days (WD) (pp. 1-8). IEEE.
+		 */
+		case PATHLOSS_TMB:{
+			double pl_overall_db;
+			pl_overall_db = 54.12 + 10 * 2.06067 * log10(distance) + 5.25 * 0.1467 * distance;
+			double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
+			break;
+		}
 
-		break;
-	}
+		default:{
+		  printf("Path loss model not found!\n");
+		  break;
+		}
 
 	}
 
@@ -388,7 +376,6 @@ double ComputePowerReceived(double distance, double tx_power, double tx_gain, do
 * @return "tx_power_per_channel" [type double]: transmission power per channel
 */
 double ComputeTxPowerPerChannel(double current_tx_power, int num_channels_tx){
-
 	double tx_power_per_channel (current_tx_power);
 	int num_channels_tx_ix (log2(num_channels_tx));
 	for (int num_ch_ix = 0; num_ch_ix < num_channels_tx_ix; ++num_ch_ix){
@@ -457,14 +444,13 @@ void GetChannelOccupancyByCCA(int primary_channel, int pifs_activated, int *chan
 * @param "primary_channel" [type int]: primary channel
 * @param "power_received_per_node" [type std::map<int,double>]: dynamic map providing the power received by each active node (to be updated by this method)
 * @param "notification" [type Notification]: last detected notification
-* @param "rx_gain" [type double]: receiver gain at the input of the antenna
 * @param "central_frequency" [type double]: central frequency
 * @param "path_loss_model" [type int]: path-loss model used
 * @param "pw_received" [type double]: power received in pW
 * @param "start_or_finish" [type int]: indicated whether the transmission has started or finishes
 */
 void UpdatePowerSensedPerNode(int primary_channel, std::map<int,double> &power_received_per_node,
-	Notification notification, double rx_gain, double central_frequency, int path_loss_model,
+	Notification notification, double central_frequency, int path_loss_model,
 	double pw_received, int start_or_finish) {
 
 	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
@@ -514,15 +500,12 @@ void UpdateRssiPerSta(Wlan wlan, double *rssi_per_sta,
 * @param "adjacent_channel_model" [type int]: adjacent channel model
 * @param "total_power" [type double]: total power in each channel (to be updated by this method)
 * @param "notification" [type Notification]: last detected notification
-* @param "num_channels_komondor" [type int]: number of channels in the system
-* @param "rx_gain" [type double]: receiver gain at the input of the antenna
 * @param "central_frequency" [type double]: central frequency
 * @param "pw_received" [type double]: power received in pW
 * @param "path_loss_model" [type int]: path-loss model used
 */
 void ApplyAdjacentChannelInterferenceModel(int adjacent_channel_model, double total_power[],
-	Notification notification, int num_channels_komondor, double rx_gain,
-	double central_frequency, double pw_received, int path_loss_model){
+	Notification notification, double central_frequency, double pw_received, int path_loss_model){
 
 	// Direct power (power of the channels used for transmitting)
 	for(int i = notification.left_channel; i <= notification.right_channel; ++i){
@@ -542,7 +525,7 @@ void ApplyAdjacentChannelInterferenceModel(int adjacent_channel_model, double to
 
 		// (RECOMMENDED) Boundary co-channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
 		case ADJACENT_CHANNEL_BOUNDARY:{
-			for(int c = 0; c < num_channels_komondor; ++c) {
+			for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c) {
 
 				if(c < notification.left_channel || c > notification.right_channel){
 
@@ -575,7 +558,7 @@ void ApplyAdjacentChannelInterferenceModel(int adjacent_channel_model, double to
 
 		case ADJACENT_CHANNEL_EXTREME:{
 
-			for(int c = 0; c < num_channels_komondor; ++c) {
+			for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c) {
 
 				for(int j = notification.left_channel; j <= notification.right_channel; ++j){
 
@@ -607,26 +590,24 @@ void ApplyAdjacentChannelInterferenceModel(int adjacent_channel_model, double to
 * @param "notification" [type Notification]: last detected notification
 * @param "update_type" [type int]: type of update (TX_INITIATED or TX_FINISHED)
 * @param "central_frequency" [type double]: central frequency
-* @param "num_channels_komondor" [type int]: number of channels in the system
 * @param "path_loss_model" [type int]: path-loss model used
-* @param "rx_gain" [type double]: receiver gain at the input of the antenna
 * @param "adjacent_channel_model" [type int]: adjacent channel model
 * @param "pw_received" [type double]: power received in pW
 * @param "node_id" [type int]: identifier of the node
 */
 void UpdateChannelsPower(double **channel_power, Notification notification,
-    int update_type, double central_frequency, int num_channels_komondor, int path_loss_model,
-	double rx_gain, int adjacent_channel_model, double pw_received, int node_id){
+    int update_type, double central_frequency, int path_loss_model,
+	int adjacent_channel_model, double pw_received, int node_id){
 
-	double total_power[num_channels_komondor];
-	memset(total_power, 0, num_channels_komondor * sizeof(double));
+	double total_power[NUM_CHANNELS_KOMONDOR];
+	memset(total_power, 0, NUM_CHANNELS_KOMONDOR * sizeof(double));
 
 	// Updates total_power array
 	ApplyAdjacentChannelInterferenceModel(adjacent_channel_model, total_power,
-		notification, num_channels_komondor, rx_gain, central_frequency, pw_received, path_loss_model);
+		notification, central_frequency, pw_received, path_loss_model);
 
 	// Increase/decrease power sensed if TX started/finished
-	for(int c = 0; c < num_channels_komondor; ++c){
+	for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 
 		switch(update_type){
 
@@ -657,8 +638,8 @@ void UpdateChannelsPower(double **channel_power, Notification notification,
 * @param "max_pw_interference" [type double]: maximum interference power
 * @return "sinr" [type double]: SINR in dB
 */
-double UpdateSINR(double pw_received_interest, double noise_level, double max_pw_interference){
-	double sinr (pw_received_interest / (max_pw_interference + noise_level));
+double UpdateSINR(double pw_received_interest, double max_pw_interference){
+	double sinr (pw_received_interest / (max_pw_interference + ConvertPower(DBM_TO_PW, NOISE_LEVEL_DBM)));
 	return sinr;
 }
 
@@ -707,8 +688,7 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intere
 * @param "num_channels_system" [type int]: total number of channels in the system
 */
 void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_model, int *channels_free,
-    int min_channel_allowed, int max_channel_allowed, int primary_channel, int **mcs_per_node,
-	int ix_mcs_per_node, int num_channels_system){
+    int min_channel_allowed, int max_channel_allowed, int primary_channel, int **mcs_per_node, int ix_mcs_per_node){
 
 	// Reset channels for transmitting
 	for(int c = min_channel_allowed; c <= max_channel_allowed; ++c){
@@ -749,7 +729,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 	if(channels_free[primary_channel]) possible_channel_ranges_ixs[0] = TRUE;
 
 	// Check primary and 1 secondary
-	if(num_channels_system > 1){
+	if(NUM_CHANNELS_KOMONDOR > 1){
 		if(primary_channel % 2 == 1){	// If primary is odd
 			if(channels_free[primary_channel - 1]) possible_channel_ranges_ixs[1] = TRUE;
 		} else{
@@ -758,7 +738,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 	}
 
 	// Check primary and 3 secondaries
-	if(num_channels_system > 3){
+	if(NUM_CHANNELS_KOMONDOR > 3){
 		if(primary_channel > 3){	// primary in channel range 4-7
 			for(int c = 0; c < 4; ++c){
 				if(!channels_free[4 + c]) all_channels_free_in_range = FALSE;
@@ -775,7 +755,7 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 
 
 	// Check primary and 7 secondaries (full system range)
-	if(num_channels_system > 7){
+	if(NUM_CHANNELS_KOMONDOR > 7){
 		for(int c = 0; c < 8; ++c){
 			if(!channels_free[c]) all_channels_free_in_range = FALSE;
 		}
@@ -1106,9 +1086,9 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
  * UpdateTimestamptChannelFreeAgain: updates the timestamp at which channels became free again
  **/
 void UpdateTimestamptChannelFreeAgain(double *timestampt_channel_becomes_free, double **channel_power,
-		double current_pd, int num_channels_komondor, double sim_time) {
+		double current_pd, double sim_time) {
 
-	for(int i = 0; i < num_channels_komondor; ++i){
+	for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
 
 		if((*channel_power)[i] > current_pd) {
 
@@ -1129,16 +1109,15 @@ void UpdateTimestamptChannelFreeAgain(double *timestampt_channel_becomes_free, d
 * @param "node_logger" [type Logger]: logger object to print logs into a file
 * @param "print_node_logs" [type int]:  flag indicating whether to print node logs or not
 * @param "channel_power" [type double*]: power sensed per channel
-* @param "num_channels_system" [type int]: total number of channels in the system
 */
 void PrintOrWriteChannelPower(int write_or_print, int save_node_logs, Logger node_logger,
-	int print_node_logs, double **channel_power, int num_channels_komondor){
+	int print_node_logs, double **channel_power){
 
 	switch(write_or_print){
 		case PRINT_LOG:{
 			if(print_node_logs){
 				printf("channel_power [dBm]: ");
-				for(int c = 0; c < num_channels_komondor; ++c){
+				for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 					printf("%f  ", ConvertPower(PW_TO_DBM, (*channel_power)[c]));
 				}
 				printf("\n");
@@ -1146,7 +1125,7 @@ void PrintOrWriteChannelPower(int write_or_print, int save_node_logs, Logger nod
 			break;
 		}
 		case WRITE_LOG:{
-			for(int c = 0; c < num_channels_komondor; ++c){
+			for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 				if(save_node_logs) fprintf(node_logger.file, "%f  ", ConvertPower(PW_TO_DBM, (*channel_power)[c]));
 			}
 			if(save_node_logs)  fprintf(node_logger.file, "\n");
@@ -1161,18 +1140,16 @@ void PrintOrWriteChannelPower(int write_or_print, int save_node_logs, Logger nod
 * @param "save_node_logs" [type int]: flag indicating whether to save node logs or not
 * @param "print_node_logs" [type int]:  flag indicating whether to print node logs or not
 * @param "node_logger" [type Logger]: logger object to print logs into a file
-* @param "num_channels_system" [type int]: total number of channels in the system
 * @param "channels_free" [type int*]: list of channels free
 */
 void PrintOrWriteChannelsFree(int write_or_print,
-		int save_node_logs, int print_node_logs, Logger node_logger,
-		int num_channels_komondor, int *channels_free){
+		int save_node_logs, int print_node_logs, Logger node_logger, int *channels_free){
 
 	switch(write_or_print){
 		case PRINT_LOG:{
 			if(print_node_logs){
 				printf("channels_free: ");
-				for(int c = 0; c < num_channels_komondor; ++c){
+				for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 					printf("%d  ", channels_free[c]);
 				}
 				printf("\n");
@@ -1180,7 +1157,7 @@ void PrintOrWriteChannelsFree(int write_or_print,
 			break;
 		}
 		case WRITE_LOG:{
-			for(int c = 0; c < num_channels_komondor; ++c){
+			for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 				 if(save_node_logs) fprintf(node_logger.file, "%d ", channels_free[c]);
 			}
 			if(save_node_logs)  fprintf(node_logger.file, "\n");
@@ -1230,17 +1207,16 @@ void PrintOrWriteNodesTransmitting(int write_or_print, int save_node_logs, int p
 * @param "save_node_logs" [type int]: flag indicating whether to save node logs or not
 * @param "print_node_logs" [type int]:  flag indicating whether to print node logs or not
 * @param "node_logger" [type Logger]: logger object to print logs into a file
-* @param "num_channels_komondor" [type int]: total number of channels
 * @param "channels_for_tx" [type int*]: list of channels for transmitting
 */
 void PrintOrWriteChannelForTx(int write_or_print, int save_node_logs, int print_node_logs,
-	Logger node_logger, int num_channels_komondor, int *channels_for_tx){
+	Logger node_logger, int *channels_for_tx){
 
 	switch(write_or_print){
 		case PRINT_LOG:{
 			if(print_node_logs){
 				printf("channels_for_tx: ");
-				for(int c = 0; c < num_channels_komondor; ++c){
+				for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 					printf("%d  ", channels_for_tx[c]);
 				}
 				printf("\n");
@@ -1248,7 +1224,7 @@ void PrintOrWriteChannelForTx(int write_or_print, int save_node_logs, int print_
 			break;
 		}
 		case WRITE_LOG:{
-			for(int c = 0; c < num_channels_komondor; ++c){
+			for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 				 if(save_node_logs)  fprintf(node_logger.file, "%d  ", channels_for_tx[c]);
 			}
 			if(save_node_logs)  fprintf(node_logger.file, "\n");

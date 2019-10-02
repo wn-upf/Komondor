@@ -77,7 +77,6 @@ component TrafficGenerator : public TypeII{
 		int node_id; 			///> Node identifier associated to the traffic generator
 		int traffic_model;		///> Traffic model
 		double traffic_load;	///> Average traffic load of the AP [packets/s]
-		double lambda;			///> Average notification generation rate (related to exponential BO) [notification/s]
 		// Burst traffic
 		double burst_rate;		///> Average time between two packet generation bursts [bursts/s]
 		int num_bursts;			///> Total number of bursts occurred in the simulation
@@ -175,6 +174,7 @@ void TrafficGenerator :: GenerateTraffic() {
 
 		// 2
 		case TRAFFIC_DETERMINISTIC:{
+			int lambda = 10000;
 			time_for_next_packet = 1/lambda;
 			time_to_trigger = SimTime() + time_for_next_packet;
 			trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));

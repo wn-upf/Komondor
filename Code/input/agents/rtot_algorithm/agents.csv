@@ -1,3 +1,0 @@
-wlan_code;centralized;time between requests (seconds);actions channels;actions cca (dBm);actions tx power (dBm);actions dcb policy;reward_type;learning_mechanism;selected_strategy
-A;0;1;0;30;20;4;3;4;0
-B;0;1;0;30;20;4;3;4;0

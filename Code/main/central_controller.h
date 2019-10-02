@@ -66,7 +66,7 @@
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
 
-#include "../network_optimization/channel_assignment/centralized_graph_coloring.h"
+#include "../methods/network_optimization/channel_assignment/centralized_graph_coloring.h"
 
 #include "../learning_modules/pre_processor.h"
 #include "../learning_modules/ml_model.h"

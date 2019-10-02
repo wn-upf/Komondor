@@ -295,37 +295,14 @@ double ComputeNavTime(int node_state, double rts_duration, double cts_duration,
 * @param "bits_ofdm_sym" [type int]: number of bits of an OFDM symbol
 */
 void ComputeFramesDuration(double *rts_duration, double *cts_duration,
-		double *data_duration, double *ack_duration, int ieee_protocol,
-		int num_channels_tx, int current_modulation, int num_packets_aggregated,
-		int data_packet_length, int bits_ofdm_sym){
+	double *data_duration, double *ack_duration, int num_channels_tx, int current_modulation,
+	int num_packets_aggregated, int data_packet_length, int bits_ofdm_sym){
 
-	switch(ieee_protocol){
-
-		case IEEE_NOT_SPECIFIED:{ // DEPRECATED
-
-//			double data_rate =  Mcs_array::mcs_array[ix_num_channels_used][current_modulation-1];
-//			rts_duration = ComputeTxTime(rts_length, data_rate, pdf_tx_time);
-//			cts_duration = ComputeTxTime(cts_length, data_rate, pdf_tx_time);
-//			data_duration = ComputeTxTime(frame_length * num_packets_aggregated, data_rate, pdf_tx_time);
-//			ack_duration = ComputeTxTime(ack_length, data_rate, pdf_tx_time);
-//
-//			break;
-
-		}
-
-		// - Allow computing time in the IEEE 802.11ax
-		case IEEE_802_11_AX:{
-
-			// Compute the duration of each frame
-			*rts_duration = computeRtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
-			*cts_duration = computeCtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
-			*data_duration = computeDataTxTime80211ax(num_packets_aggregated,
-					data_packet_length, bits_ofdm_sym);
-			*ack_duration = computeAckTxTime80211ax(num_packets_aggregated, IEEE_BITS_OFDM_SYM_LEGACY);
-
-			break;
-		}
-
-	}
+	// Compute the duration of each frame
+	*rts_duration = computeRtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
+	*cts_duration = computeCtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
+	*data_duration = computeDataTxTime80211ax(num_packets_aggregated,
+			data_packet_length, bits_ofdm_sym);
+	*ack_duration = computeAckTxTime80211ax(num_packets_aggregated, IEEE_BITS_OFDM_SYM_LEGACY);
 
 }
