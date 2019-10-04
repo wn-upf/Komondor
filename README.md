@@ -141,6 +141,11 @@ The output of the regression test will be displayed by console. In case of succe
 
 Before executing the regression test, it is important to ensure that "simulation_index" in komondor_main.cc is set to 10.
 
+## Academic/Education projects
+One of the main purposes of Komondor is to serve as an academic/educational tool. In what follows, we list the projects in which Komondor has been used as a simulation tool:
+* Wilhelmi, Francesc, et al. "Potential and pitfalls of multi-armed bandits for decentralized spatial reuse in wlans." [Journal of Network and Computer Applications 127 (2019)](https://www.sciencedirect.com/science/article/pii/S1084804518303655): 26-42. 
+* Wilhelmi, Francesc, Sergio Barrachina-Muñoz, and Boris Bellalta. "Spatial Reuse in IEEE 802.11ax WLANs." [arXiv preprint arXiv:1907.04141](https://arxiv.org/abs/1907.04141) (2019). 
+* Wilhelmi, Francesc, Sergio Barrachina-Muñoz, and Boris Bellalta. "On the Performance of the Spatial Reuse Operation in IEEE 802.11 ax WLANs." [arXiv preprint arXiv:1906.08063](https://arxiv.org/pdf/1906.08063.pdf) (2019).
 
 ## Contribute
 
