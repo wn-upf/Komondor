@@ -637,11 +637,10 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			notification.left_channel, notification.right_channel);
 
 		LOGS(save_node_logs,node_logger.file,
-				"%.15f;N%d;S%d;%s;%s START Channel before updating: ",
-				SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
+			"%.15f;N%d;S%d;%s;%s START Channel before updating: ",
+			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
-		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-				&channel_power);
+		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs, &channel_power);
 
 		// Update 'power received' array in case a new tx power is used
 		if (notification.tx_info.flag_change_in_tx_power) {
@@ -3941,6 +3940,13 @@ void Node :: GenerateConfiguration(){
 	configuration.selected_pd = current_pd;
 	configuration.selected_tx_power = current_tx_power;
 	configuration.selected_dcb_policy = current_dcb_policy;
+
+	// 11ax SR
+	configuration.spatial_reuse_enabled = spatial_reuse_enabled;
+	configuration.bss_color = bss_color;
+	configuration.srg = srg;
+	configuration.non_srg_obss_pd = non_srg_obss_pd;
+	configuration.srg_obss_pd = srg_obss_pd;
 
 }
 

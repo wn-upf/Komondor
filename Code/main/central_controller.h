@@ -66,7 +66,7 @@
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
 
-#include "../methods/network_optimization/channel_assignment/centralized_graph_coloring.h"
+#include "../network_optimization/channel_assignment/centralized_graph_coloring.h"
 
 #include "../learning_modules/pre_processor.h"
 #include "../learning_modules/ml_model.h"
@@ -123,6 +123,8 @@ component CentralController : public TypeII{
 
 		int num_channels;				///> Number of channels
 		int total_nodes_number;			///> Number of nodes
+
+		int controller_on;				///> Flag indicating whether the CC is active or not
 
 	// Private items (just for node operation)
 	private:
@@ -190,49 +192,49 @@ void CentralController :: Setup(){
  */
 void CentralController :: Start(){
 
-	// Create CC logs file (if required)
-	if(save_controller_logs) {
-		sprintf(own_file_path,"%s_CENTRAL_CONTROLLER.txt","../output/logs_output");
-		remove(own_file_path);
-		output_log_file = fopen(own_file_path, "at");
-		central_controller_logger.save_logs = save_controller_logs;
-		central_controller_logger.file = output_log_file;
-		central_controller_logger.SetVoidHeadString();
-	}
-
-	LOGS(save_controller_logs,central_controller_logger.file,
-		"%.18f;CC;%s;%s Start()\n", SimTime(), LOG_B00, LOG_LVL1);
-
-	// Initialize the PP and the ML Method
-	InitializePreProcessor();
-	InitializeMlModel();
-
-	// Hardcoded [TODO: introduce this parameter from the input]
-	controller_mode = MODE_ACTIVE;
-
-	// According to the defined mode, start the learning operation by activating triggers
-	switch(controller_mode) {
-		// Passive mode: the agents send information to the CC
-		case MODE_PASSIVE: {
-			break;
+	if (controller_on) {
+		// Create CC logs file (if required)
+		if(save_controller_logs) {
+			sprintf(own_file_path,"%s_CENTRAL_CONTROLLER.txt","../output/logs_output");
+			remove(own_file_path);
+			output_log_file = fopen(own_file_path, "at");
+			central_controller_logger.save_logs = save_controller_logs;
+			central_controller_logger.file = output_log_file;
+			central_controller_logger.SetVoidHeadString();
 		}
-		// Active mode: the CC requests information to agents
-		case MODE_ACTIVE: {
-			if(learning_mechanism == GRAPH_COLORING) {
-				// Generate the request for initialization at the beginning (no need to collect performance data)
-				trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + 0.001,13,12));
-			} else {
-				// Generate the first request, to be triggered after "time_between_requests"
-				trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
+		LOGS(save_controller_logs,central_controller_logger.file,
+			"%.18f;CC;%s;%s Start()\n", SimTime(), LOG_B00, LOG_LVL1);
+		// Initialize the PP and the ML Method
+		InitializePreProcessor();
+		InitializeMlModel();
+		// Hardcoded [TODO: introduce this parameter from the input]
+		controller_mode = MODE_ACTIVE;
+		// According to the defined mode, start the learning operation by activating triggers
+		switch(controller_mode) {
+			// Passive mode: the agents send information to the CC
+			case MODE_PASSIVE: {
+				break;
 			}
-			break;
+			// Active mode: the CC requests information to agents
+			case MODE_ACTIVE: {
+				if(learning_mechanism == GRAPH_COLORING) {
+					// Generate the request for initialization at the beginning (no need to collect performance data)
+					trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + 0.001,13,12));
+				} else {
+					// Generate the first request, to be triggered after "time_between_requests"
+					trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
+				}
+				break;
+			}
+			// Unknown controller mode
+			default:{
+				printf("[CC] ERROR: Undefined controller mode %d\n"
+					"	- Use MODE_PASSIVE (%d) or MODE_ACTIVE (%d)\n",
+					controller_mode, MODE_PASSIVE, MODE_ACTIVE);
+			}
 		}
-		// Unknown controller mode
-		default:{
-			printf("[CC] ERROR: Undefined controller mode %d\n"
-				"	- Use MODE_PASSIVE (%d) or MODE_ACTIVE (%d)\n",
-				controller_mode, MODE_PASSIVE, MODE_ACTIVE);
-		}
+	} else {
+//		printf("The central controller is NOT active\n");
 	}
 
 };
@@ -242,15 +244,15 @@ void CentralController :: Start(){
  */
 void CentralController :: Stop() {
 
-	LOGS(save_controller_logs,central_controller_logger.file,
-		"%.15f;CC;%s;%s Central Controller Stop()\n", SimTime(), LOG_C00, LOG_LVL1);
-
-	// Print and write node statistics
-	PrintOrWriteControllerStatistics(PRINT_LOG);
-	PrintOrWriteControllerStatistics(WRITE_LOG);
-
-	// Close node logs file
-	if(save_controller_logs) fclose(central_controller_logger.file);
+	if (controller_on) {
+		LOGS(save_controller_logs,central_controller_logger.file,
+			"%.15f;CC;%s;%s Central Controller Stop()\n", SimTime(), LOG_C00, LOG_LVL1);
+		// Print and write node statistics
+		PrintOrWriteControllerStatistics(PRINT_LOG);
+		PrintOrWriteControllerStatistics(WRITE_LOG);
+		// Close node logs file
+		if(save_controller_logs) fclose(central_controller_logger.file);
+	}
 
 };
 
@@ -264,6 +266,7 @@ void CentralController :: Stop() {
  * Request information (configuration and performance) to agents upon trigger-based activation
  */
 void CentralController :: RequestInformationToAgents(trigger_t &){
+
 	LOGS(save_controller_logs,central_controller_logger.file,
 		"%.15f;CC;%s;%s Requesting information to Agents\n", SimTime(), LOG_C00, LOG_LVL1);
 	// Request information to every agent associated to the CC
@@ -273,6 +276,7 @@ void CentralController :: RequestInformationToAgents(trigger_t &){
 		outportRequestInformationToAgent(ix);
 		++ num_requests[ix] ;
 	}
+
 };
 
 /**
@@ -434,6 +438,7 @@ void CentralController :: InitializeCentralController() {
  */
 void CentralController :: PrintControllerInfo() {
 	printf("%s Central Controller info:\n", LOG_LVL3);
+	printf("%s controller_on = %d\n", LOG_LVL4, controller_on);
 	printf("%s agents_number = %d\n", LOG_LVL4, agents_number);
 	printf("%s time_between_requests = %f\n", LOG_LVL4, time_between_requests);
 	printf("%s learning_mechanism = %d\n", LOG_LVL4, learning_mechanism);
@@ -452,6 +457,8 @@ void CentralController :: PrintControllerInfo() {
 void CentralController :: WriteControllerInfo(Logger logger) {
 	LOGS(save_controller_logs, logger.file,
 		"%.15f;CC;%s;%s Central Controller info\n", SimTime(), LOG_C00, LOG_LVL3);
+	LOGS(save_controller_logs, logger.file,
+		"%.15f;CC;%s;%s controller_on = %d\n", SimTime(), LOG_C00, LOG_LVL4, controller_on);
 	LOGS(save_controller_logs, logger.file,
 		"%.15f;CC;%s;%s agents_number = %d\n", SimTime(), LOG_C00, LOG_LVL4, agents_number);
 	LOGS(save_controller_logs, logger.file,

@@ -365,6 +365,8 @@
 #define STRATEGY_EGREEDY				1
 #define STRATEGY_THOMPSON_SAMPLING		2
 
+#define MAX_TIME_INFORMATION_VALID		10 ///> Maximum amount of time (in seconds) the information of the network is considered to be valid
+
 // Levels of applicability for configurations computed by agents / central controller
 #define CONFIGURATION_SUGGESTED 		0
 #define CONFIGURATION_RECOMMENDED 		1

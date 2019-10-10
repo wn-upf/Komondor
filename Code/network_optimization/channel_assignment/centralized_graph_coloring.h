@@ -49,7 +49,7 @@
  * - This file contains the methods used to provide centralized graph coloring (https://dl.acm.org/citation.cfm?id=997130)
  */
 
-#include "../../../list_of_macros.h"
+#include "../../list_of_macros.h"
 
 #ifndef _AUX_GRAPH_COLORING_
 #define _AUX_GRAPH_COLORING_

@@ -115,6 +115,9 @@ component Agent : public TypeII{
 		int learning_mechanism;			///> Index of the chosen learning mechanism
 		int action_selection_strategy;	///> Index of the chosen action-selection strategy
 
+		// Central Controller parameters
+		int controller_on;				///> Flag to determine whether the CC is on or not
+
 		// Actions management (tunable parameters)
 		int *list_of_channels; 				///> List of channels
 		double *list_of_pd_values;			///> List of PD values
@@ -129,7 +132,6 @@ component Agent : public TypeII{
 		// Other input parameters
 		int type_of_reward;						///> Type of reward
 		double time_between_requests; 			///> Time between two information requests to the AP (for a given measurement)
-		double max_time_validity_information;	///> Maximum time information remains valid from the ML point of view
 
 		// Print/write variables
 		int save_agent_logs;			///> Boolean that indicates whether to write agent's logs or not
@@ -281,7 +283,6 @@ void Agent :: RequestInformationToAp(trigger_t &){
  */
 void Agent :: InportReceivingInformationFromAp(Configuration &received_configuration, Performance &received_performance){
 
-//	printf("%s Agent #%d: Message received from the AP\n", LOG_LVL1, agent_id);
 	LOGS(save_agent_logs, agent_logger.file,
 		"%.15f;A%d;%s;%s InportReceivingInformationFromAp()\n",
 		SimTime(), agent_id, LOG_F00, LOG_LVL1);
@@ -304,10 +305,11 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	}
 
 	// Compute a new configuration (if necessary)
-	if (flag_compute_new_configuration) {
+//	printf("flag_compute_new_configuration = %d\n",flag_compute_new_configuration);
+//	if (flag_compute_new_configuration) {
 		ComputeNewConfiguration();
-		flag_compute_new_configuration = false;
-	}
+//		flag_compute_new_configuration = false;
+//	}
 
 };
 
@@ -338,6 +340,7 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
 			"%.15f;A%d;%s;%s Next request to be sent at %f\n",
 			SimTime(), agent_id, LOG_C00, LOG_LVL2, FixTimeOffset(SimTime() + time_between_requests,13,12));
 		trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+		flag_compute_new_configuration = true;
 	} else {
 		LOGS(save_agent_logs, agent_logger.file,
 			"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
@@ -356,7 +359,7 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
  * @param "destination_agent_id" [type int]: identifier of the agent to which the request is delivered
  */
 void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
-	if(agent_id == destination_agent_id) {
+	if(controller_on && agent_id == destination_agent_id) {
 //		printf("%s Agent #%d: New request received from the Controller\n", LOG_LVL1, agent_id);
 		LOGS(save_agent_logs, agent_logger.file,
 			"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
@@ -364,7 +367,7 @@ void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
 			"%.15f;A%d;%s;%s New request received from the Controller for Agent %d\n",
 			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
 		// Return information if it is up to date. Otherwise, request it to the AP and the forward it.
-		if ( CheckValidityOfData(configuration, performance, SimTime(), max_time_validity_information)
+		if ( CheckValidityOfData(configuration, performance, SimTime(), MAX_TIME_INFORMATION_VALID)
 				&& flag_information_available) {
 			ForwardInformationToController();
 		} else {
@@ -384,11 +387,12 @@ void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
  */
 void Agent :: ForwardInformationToController(){
 
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.15f;A%d;%s;%s Forwarding information to the controller...\n",
-		SimTime(), agent_id, LOG_F02, LOG_LVL2);
-
-	outportAnswerToController(configuration, performance, agent_id);
+	if (controller_on) {
+		LOGS(save_agent_logs, agent_logger.file,
+			"%.15f;A%d;%s;%s Forwarding information to the controller...\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL2);
+		outportAnswerToController(configuration, performance, agent_id);
+	}
 
 }
 
@@ -401,11 +405,11 @@ void Agent :: ForwardInformationToController(){
 void Agent :: InportReceiveConfigurationFromController(int destination_agent_id,
 		Configuration &received_configuration) {
 
-	if(agent_id == destination_agent_id) {
+	if(controller_on && agent_id == destination_agent_id ) {
 
 		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s New configuration received from the Controller to Agent %d\n",
-			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
+			"%.15f;A%d;%s;%s New configuration received from the Controller\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL2);
 
 		// Behave differently based on the agent's mode
 		if (agent_mode == AGENT_MODE_CENTRALIZED) {
@@ -414,11 +418,9 @@ void Agent :: InportReceiveConfigurationFromController(int destination_agent_id,
 			// Forward the configuration to the AP
 			SendNewConfigurationToAp(configuration_from_controller);
 		} else if (agent_mode == AGENT_MODE_COOPERATIVE){
-
 			// TODO: provide list of functionalities to be made by the controller when learning is still done in agents:
 			// - ban action, - configure other parameters, - make suggestions ...
 			// Apply suggestions made by the controller
-
 		} else {
 			printf("[UNEXPECTED] Ignoring whatever information provided by the controller...\n");
 		}
@@ -461,9 +463,8 @@ void Agent :: ComputeNewConfiguration(){
 
 	LOGS(save_agent_logs, agent_logger.file, "%.15f;A%d;%s;%s ComputeNewConfiguration()\n",
 		SimTime(), agent_id, LOG_F00, LOG_LVL1);
-
 	// Compute a new configuration if information is up to date. Otherwise, request it to the AP and use it.
-	if ( CheckValidityOfData(configuration, performance, SimTime(), max_time_validity_information)
+	if ( CheckValidityOfData(configuration, performance, SimTime(), MAX_TIME_INFORMATION_VALID)
 			&& flag_information_available) {
 		// Process the configuration and performance reports obtained from the WLAN
 		processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
@@ -499,12 +500,10 @@ void Agent :: ComputeNewConfiguration(){
 		// TODO: add an activation time, to be introduced by the user in the agent's configuration file
 		double extra_wait_test = 0.005 * (double) agent_id;
 		trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests + extra_wait_test,13,12));
-		flag_compute_new_configuration = true;
+//		flag_compute_new_configuration = true;
 	}
 
 }
-
-
 
 /*****************************/
 /*****************************/
@@ -517,7 +516,7 @@ void Agent :: ComputeNewConfiguration(){
  */
 void Agent :: InitializeAgent() {
 
-	//printf("Agent #%d says: I'm alive!\n", agent_id);
+//	printf("Agent #%d says: I'm alive!\n", agent_id);
 
 	num_requests = 0;
 
@@ -532,7 +531,7 @@ void Agent :: InitializeAgent() {
 	actions = new Action[num_actions];
 
 	flag_request_from_controller = false;
-	flag_compute_new_configuration = false;
+//	flag_compute_new_configuration = false;
 	flag_information_available = false;
 
 //	// Specify that the learning mechanism has not been initialized (to be done for the first AP-agent interaction)

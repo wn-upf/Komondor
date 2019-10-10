@@ -87,9 +87,10 @@ int PickArmThompsonSampling(int num_actions, double *estimated_reward_per_arm, i
 	//TODO: validate the behavior of this implementation
 	int action_ix;
 	double *theta = new double[num_actions];
+	double std;
 	for (int i = 0; i < num_actions; i++) {
-		theta[i] = gaussrand(estimated_reward_per_arm[i],
-			1/(1+times_arm_has_been_selected[i]));
+		std = 1.0/(1+times_arm_has_been_selected[i]);
+		theta[i] = gaussrand(estimated_reward_per_arm[i], std);
 	}
 	double max = 0;
 	for (int i = 0; i < num_actions; i ++) {

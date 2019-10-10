@@ -79,6 +79,9 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
  */
 bool CheckValidityOfData(Configuration configuration, Performance performance,
 		double sim_time, double max_time_validity_information) {
+
+//	printf("sim_time = %f / max_time_validity_information = %f\n",sim_time,max_time_validity_information);
+
 	bool data_still_valid(false);
 	if ( (sim_time - performance.timestamp > max_time_validity_information)
 			|| (sim_time - configuration.timestamp > max_time_validity_information) ) {

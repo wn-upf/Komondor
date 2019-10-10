@@ -189,6 +189,7 @@ class PreProcessor {
 					break;
 				}
 			}
+//			printf("Reward = %f\n",reward);
 			return reward;
 		}
 
@@ -248,7 +249,11 @@ class PreProcessor {
 			new_configuration = configuration;
 			//new_configuration.timestamp = sim_time;						// Timestamp
 			new_configuration.selected_primary_channel = new_primary;	// Primary
-			new_configuration.selected_pd = new_pd;					// pd
+			if (configuration.spatial_reuse_enabled) {
+				new_configuration.non_srg_obss_pd = new_pd;
+			} else {
+				new_configuration.selected_pd = new_pd;
+			}
 			new_configuration.selected_tx_power = new_tx_power;			// TX Power
 			new_configuration.selected_dcb_policy = new_dcb_policy;		// DCB policy
 			return new_configuration;
@@ -289,8 +294,14 @@ class PreProcessor {
 				}
 			}
 			// Packet Detection (PD) threshold
+			double selected_pd;
+			if(configuration.spatial_reuse_enabled) {
+				selected_pd = configuration.non_srg_obss_pd;
+			} else {
+				selected_pd = configuration.selected_pd;
+			}
 			for(int i = 0; i < num_actions_sensitivity; i++) {
-				if(configuration.selected_pd == list_of_pd_values[i]) {
+				if(selected_pd == list_of_pd_values[i]) {
 					index_pd = i;
 				}
 			}
@@ -314,6 +325,13 @@ class PreProcessor {
 			// Find the action ix and return it
 			int action_ix = values2index(indexes_selected_arm, num_actions_channel,
 				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
+//			PrintActionBandits(action_ix);
+//			printf("index_channel = %d (channel %d)\n",index_channel,list_of_channels[index_channel]);
+//			printf("index_pd = %d (CCA %f)\n",index_pd,list_of_pd_values[index_pd]);
+//			printf("index_tx_power = %d (Power %f)\n",index_tx_power,list_of_tx_power_values[index_tx_power]);
+//			printf("index_dcb_policy = %d (DCB %d)\n",index_dcb_policy,list_of_dcb_policy[index_dcb_policy]);
+//			printf("RESULT: action_ix = %d\n",action_ix);
+
 			return action_ix;
 		}
 

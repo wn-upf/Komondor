@@ -52,7 +52,7 @@
  *  (IEEE.https://ieeexplore.ieee.org/abstract/document/8319274/)
  */
 
-#include "../../../list_of_macros.h"
+#include "../../list_of_macros.h"
 
 #ifndef _AUX_RTOT_ALG_
 #define _AUX_RTOT_ALG_

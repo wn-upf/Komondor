@@ -55,8 +55,8 @@
 #include "../structures/node_configuration.h"
 #include "../structures/performance_metrics.h"
 
-#include "../methods/network_optimization/channel_assignment/centralized_graph_coloring.h"
-#include "../methods/network_optimization/spatial_reuse/rtot_algorithm.h"
+#include "../network_optimization/channel_assignment/centralized_graph_coloring.h"
+#include "../network_optimization/spatial_reuse/rtot_algorithm.h"
 
 #include "/multi_armed_bandits/multi_armed_bandits.h"
 
@@ -271,10 +271,10 @@ class MlModel {
 		*/
 		void PrintAvailableLearningMechanisms(){
 			printf("%s Available types of learning mechanisms:\n", LOG_LVL2);
-			printf("%s MULTI_ARMED_BANDITS (%d)\n", LOG_LVL3, MULTI_ARMED_BANDITS);
-			printf("%s GRAPH_COLORING (%d)\n", LOG_LVL3, GRAPH_COLORING);
-			printf("%s ACTION_BANNING (%d)\n", LOG_LVL3, ACTION_BANNING);
-			printf("%s RTOT_ALGORITHM (%d)\n", LOG_LVL3, RTOT_ALGORITHM);
+			printf("%s MULTI_ARMED_BANDITS (#%d)\n", LOG_LVL3, MULTI_ARMED_BANDITS);
+			printf("%s GRAPH_COLORING (#%d)\n", LOG_LVL3, GRAPH_COLORING);
+			printf("%s ACTION_BANNING (#%d)\n", LOG_LVL3, ACTION_BANNING);
+			printf("%s RTOT_ALGORITHM (#%d)\n", LOG_LVL3, RTOT_ALGORITHM);
 		}
 
 };
