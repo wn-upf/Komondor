@@ -376,7 +376,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			if(agent_container[w].agent_mode != AGENT_MODE_DECENTRALIZED) {
 				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
 				connect agent_container[w].outportAnswerToController,central_controller[0].InportReceivingInformationFromAgent;
-				connect central_controller[0].outportSendConfigurationToAgent,agent_container[w].InportReceiveConfigurationFromController;
+				connect central_controller[0].outportSendCommandToAgent,agent_container[w].InportReceiveCommandFromController;
 			}
 		}
 	}

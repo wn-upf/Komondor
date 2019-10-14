@@ -85,12 +85,12 @@ component CentralController : public TypeII{
 		// Generic
 		void InitializeCentralController();
 
-		// Communication with AP
+		// Communication with Agents
 		void RequestInformationToAgents();
-
 		void GenerateAndSendNewConfiguration();
 		void SendConfigurationToAllAgents();
 		void SendConfigurationToSingleAgent(int destination_agent_id, Configuration conf);
+		void SendCommandToSingleAgent(int destination_agent_id, int command_id, Configuration conf);
 
 		// Print methods
 		void PrintControllerInfo();
@@ -161,7 +161,7 @@ component CentralController : public TypeII{
 
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAgent(int destination_agent_id);
-		outport void outportSendConfigurationToAgent(int destination_agent_id,
+		outport void outportSendCommandToAgent(int destination_agent_id, int command_id,
 			Configuration &new_configuration);
 
 		// Triggers
@@ -363,21 +363,71 @@ void CentralController :: GenerateAndSendNewConfiguration(trigger_t &){
 void CentralController :: SendConfigurationToAllAgents(){
 	// Iterate for all the agents attached to the CC
 	for (int ix = 0 ; ix < agents_number ; ++ ix ) {
-		SendConfigurationToSingleAgent(ix, configuration_array[ix]);
+		SendCommandToSingleAgent(ix, UPDATE_CONFIGURATION, configuration_array[ix]);
 	}
 }
 
 /**
- * Send a new configuration to a specific agent attached to the CC
+ * Send an asynchronous command to a specific agent attached to the CC
  * @param "destination_agent_id" [type int]: identifier of the destination agent
- * @param "new_conf" [type Configuration]: new configuration to be applied by the destination agent
+ * @param "command_id" [type int]: identifier of the command to be sent
+ * @param "conf" [type Configuration]: configuration object to provide additional information to the destination agent
  */
-void CentralController :: SendConfigurationToSingleAgent(int destination_agent_id, Configuration new_conf){
-	LOGS(save_controller_logs,central_controller_logger.file,
-		"%.15f;CC;%s;%s Sending a new configuration to Agent %d\n",
-		SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int command_id, Configuration conf){
+
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
-	outportSendConfigurationToAgent(destination_agent_id, new_conf);
+
+	// According to the defined mode, behave in one way or another
+	switch(command_id) {
+		case UPDATE_CONFIGURATION:{
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Sending a new configuration to Agent %d\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case STOP_ACTING:
+		case RESUME_ACTIVITY: {
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to STOP/RESUME its learning activity (%d)\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id, command_id);
+			break;
+		}
+		case MODIFY_ITERATION_TIME: {
+			// Update the time between iterations in the configuration object
+			// ...
+			double new_iteration_time = 0.1; // Time between iterations in seconds
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to modify the time of an iteration to %f\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id, new_iteration_time);
+			break;
+		}
+		case BAN_CONFIGURATION: {
+			// Specify which configuration needs to be banned
+			// ...
+			// Indicate the time this configuration should be unavailable
+			// ...
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to BAN a configuration\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case UNBAN_CONFIGURATION: {
+			// Specify which configuration needs to be re-activated
+			// ...
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to UNBAN a configuration\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		// Unknown command id
+		default: {
+			printf("[CC] ERROR: Undefined command id %d\n", command_id);
+			exit(-1);
+		}
+	}
+
+	outportSendCommandToAgent(destination_agent_id, command_id, conf);
+
 };
 
 /******************************/

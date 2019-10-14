@@ -376,6 +376,14 @@
 #define MODE_PASSIVE	0
 #define MODE_ACTIVE		1
 
+// Types of commands that the CC can send to agents
+#define UPDATE_CONFIGURATION	0
+#define STOP_ACTING				1
+#define RESUME_ACTIVITY			2
+#define MODIFY_ITERATION_TIME	3
+#define BAN_CONFIGURATION		4
+#define UNBAN_CONFIGURATION		5
+
 /* ********************************************
  * * INPUT/OUTPUT FILES AND CONSOLE ARGUMENTS *
  * ********************************************

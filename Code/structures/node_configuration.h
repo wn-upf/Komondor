@@ -94,35 +94,59 @@ struct Capabilities
 	 * @param "sim_time" [type double]: current simulation time
 	 */
 	void WriteCapabilities(Logger logger, double sim_time){
-		fprintf(logger.file, "%.15f;CC;%s;%s WLAN capabilities:\n", sim_time, LOG_F00, LOG_LVL3);
-		fprintf(logger.file, "%.15f;CC;%s;%s node_type = %d\n",
-			sim_time, LOG_F00, LOG_LVL4, node_type);
-		fprintf(logger.file, "%.15f;CC;%s;%s position = (%.2f, %.2f, %.2f)\n",
-			sim_time, LOG_F00, LOG_LVL4, x, y, z);
-		fprintf(logger.file, "%.15f;CC;%s;%s primary_channel = %d\n",
-			sim_time, LOG_F00, LOG_LVL4, primary_channel);
-		fprintf(logger.file, "%.15f;CC;%s;%s min_channel_allowed = %d\n",
-			sim_time, LOG_F00, LOG_LVL4, min_channel_allowed);
-		fprintf(logger.file, "%.15f;CC;%s;%s max_channel_allowed = %d\n",
-			sim_time, LOG_F00, LOG_LVL4, max_channel_allowed);
-		fprintf(logger.file, "%.15f;CC;%s;%s current_dcb_policy = %d\n",
-			sim_time, LOG_F00, LOG_LVL4, current_dcb_policy);
-		fprintf(logger.file, "%.15f;CC;%s;%s traffic_load = %.2f packets/s\n",
-			sim_time, LOG_F00, LOG_LVL4, traffic_load);
-		fprintf(logger.file, "%.15f;CC;%s;%s destination_id = %d\n",
-			sim_time, LOG_F00, LOG_LVL4, destination_id);
-		fprintf(logger.file, "%.15f;CC;%s;%s tx_power_default = %f pW (%f dBm)\n",
-			sim_time, LOG_F00, LOG_LVL4, tx_power_default, ConvertPower(PW_TO_DBM, tx_power_default));
-		fprintf(logger.file, "%.15f;CC;%s;%s sensitivity_default = %f pW (%f dBm)\n",
-			sim_time, LOG_F00, LOG_LVL4, sensitivity_default, ConvertPower(PW_TO_DBM, sensitivity_default));
+		fprintf(logger.file, "%.15f;N%d;%s;%s WLAN capabilities:\n", sim_time, node_id, LOG_F00, LOG_LVL3);
+		fprintf(logger.file, "%.15f;N%d;%s;%s node_type = %d\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, node_type);
+		fprintf(logger.file, "%.15f;N%d;%s;%s position = (%.2f, %.2f, %.2f)\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, x, y, z);
+		fprintf(logger.file, "%.15f;N%d;%s;%s primary_channel = %d\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, primary_channel);
+		fprintf(logger.file, "%.15f;N%d;%s;%s min_channel_allowed = %d\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, min_channel_allowed);
+		fprintf(logger.file, "%.15f;N%d;%s;%s max_channel_allowed = %d\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, max_channel_allowed);
+		fprintf(logger.file, "%.15f;N%d;%s;%s current_dcb_policy = %d\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, current_dcb_policy);
+		fprintf(logger.file, "%.15f;N%d;%s;%s traffic_load = %.2f packets/s\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, traffic_load);
+		fprintf(logger.file, "%.15f;N%d;%s;%s destination_id = %d\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, destination_id);
+		fprintf(logger.file, "%.15f;N%d;%s;%s tx_power_default = %f pW (%f dBm)\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, tx_power_default, ConvertPower(PW_TO_DBM, tx_power_default));
+		fprintf(logger.file, "%.15f;N%d;%s;%s sensitivity_default = %f pW (%f dBm)\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, sensitivity_default, ConvertPower(PW_TO_DBM, sensitivity_default));
 	}
 
+};
+
+struct AgentCapabilities
+{
+	int agent_id;					///> Agent identifier
+	double time_between_requests;	///> Time between requests
+	/**
+	 * Function to print the agent's capabilities
+	 */
+	void PrintAgentCapabilities(){
+		printf("%s Information of agent %d:\n", LOG_LVL3, agent_id);
+		printf("%s time_between_requests = %f\n", LOG_LVL4, time_between_requests);
+		printf("\n");
+	}
+	/**
+	 * Function to write the agent's capabilities
+	 * @param "logger" [type Logger]: logger object for printing logs into a file
+	 * @param "sim_time" [type double]: current simulation time
+	 */
+	void WriteAgentCapabilities(Logger logger, double sim_time){
+		fprintf(logger.file, "%.15f;A%d;%s;%s Agent information:\n", sim_time, agent_id, LOG_F00, LOG_LVL3);
+		fprintf(logger.file, "%.15f;A%d;%s;%s time_betwee_requests = %f\n",
+			sim_time, agent_id,  LOG_F00, LOG_LVL4, time_between_requests);
+	}
 };
 
 // Node's configuration
 struct Configuration
 {
-	double timestamp;
+	double timestamp;					///> Timestampt at which the configuration was saved
 
 	int selected_primary_channel;		///> Selected primary channel
 	double selected_pd;					///> Selected pd ("sensitivity" threshold) [pW]
@@ -141,6 +165,7 @@ struct Configuration
 	double srg_obss_pd; 		///> Threshold to be used for SRG transmissions
 
 	Capabilities capabilities;
+	AgentCapabilities agent_capabilities;
 
 	/**
 	 * Function to print the node's configuration

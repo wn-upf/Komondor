@@ -180,6 +180,8 @@ component Agent : public TypeII{
 		int flag_compute_new_configuration; 	///> Flag to be activated in case of needing to compute a new configuration
 		int flag_information_available;			///> Flag to indicate that information is available at the agent
 
+		int learning_allowed;
+
 	// Connections and timers
 	public:
 
@@ -187,7 +189,7 @@ component Agent : public TypeII{
 		inport void inline InportReceivingInformationFromAp(Configuration &configuration, Performance &performance);
 		// INPORT (centralized system only)
 		inport void inline InportReceivingRequestFromController(int destination_agent_id);
-		inport void inline InportReceiveConfigurationFromController(int destination_agent_id,
+		inport void inline InportReceiveCommandFromController(int destination_agent_id, int command_id,
 			Configuration &new_configuration);
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAp();
@@ -402,27 +404,73 @@ void Agent :: ForwardInformationToController(){
  * @param "received_configuration" [type Configuration]: reference of the configuration received from the controller
  * @param "controller_mode" [type int]:
  */
-void Agent :: InportReceiveConfigurationFromController(int destination_agent_id,
+void Agent :: InportReceiveCommandFromController(int destination_agent_id, int command_id,
 		Configuration &received_configuration) {
 
 	if(controller_on && agent_id == destination_agent_id ) {
 
 		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s New configuration received from the Controller\n",
-			SimTime(), agent_id, LOG_F02, LOG_LVL2);
+			"%.15f;A%d;%s;%s New command received from the Controller (%d)\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL2, command_id);
 
-		// Behave differently based on the agent's mode
-		if (agent_mode == AGENT_MODE_CENTRALIZED) {
-			// Update the received configuration
-			configuration_from_controller = received_configuration;
-			// Forward the configuration to the AP
-			SendNewConfigurationToAp(configuration_from_controller);
-		} else if (agent_mode == AGENT_MODE_COOPERATIVE){
-			// TODO: provide list of functionalities to be made by the controller when learning is still done in agents:
-			// - ban action, - configure other parameters, - make suggestions ...
-			// Apply suggestions made by the controller
-		} else {
-			printf("[UNEXPECTED] Ignoring whatever information provided by the controller...\n");
+		switch(command_id) {
+			// Update the configuration to the one sent by the CC
+			case UPDATE_CONFIGURATION:{
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s UPDATING configuration...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2);
+				// Update the received configuration
+				configuration_from_controller = received_configuration;
+				// Forward the configuration to the AP
+				SendNewConfigurationToAp(configuration_from_controller);
+				break;
+			}
+			// Stop acting for a determined time elapse
+			case STOP_ACTING: {
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s STOPPING learning activity...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2);
+				learning_allowed = FALSE;
+			}
+			// Resume the learning activity
+			case RESUME_ACTIVITY: {
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s RESUMING learning activity...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2);
+				learning_allowed = TRUE;
+				break;
+			}
+			// Modify the time between learning iterations
+			case MODIFY_ITERATION_TIME: {
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s Modifying the iteration time to %f...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2, received_configuration.agent_capabilities.time_between_request);
+				time_between_requests = received_configuration.agent_capabilities.time_between_requests;
+				break;
+			}
+			// Ban a certain configuration/action
+			case BAN_CONFIGURATION: {
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s BANNING configuration...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2);
+				// TODO: Ban configuration
+				// ...
+				break;
+			}
+			// Restore a certain configuration/action
+			case UNBAN_CONFIGURATION: {
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s UNBANNING configuration...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2);
+				// TODO: Restore configuration
+				// ...
+				break;
+			}
+			// Unknown command id
+			default: {
+				printf("[A%d] ERROR: Undefined command id %d\n", agent_id, command_id);
+				exit(-1);
+			}
 		}
 
 	}
@@ -461,46 +509,55 @@ void Agent :: InportReceiveConfigurationFromController(int destination_agent_id,
  */
 void Agent :: ComputeNewConfiguration(){
 
-	LOGS(save_agent_logs, agent_logger.file, "%.15f;A%d;%s;%s ComputeNewConfiguration()\n",
-		SimTime(), agent_id, LOG_F00, LOG_LVL1);
-	// Compute a new configuration if information is up to date. Otherwise, request it to the AP and use it.
-	if ( CheckValidityOfData(configuration, performance, SimTime(), MAX_TIME_INFORMATION_VALID)
-			&& flag_information_available) {
-		// Process the configuration and performance reports obtained from the WLAN
-		processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
-		processed_performance = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
-		// Update the configuration according to the selected learning method
-		switch(learning_mechanism) {
-			/* Multi-Armed Bandits */
-			case MULTI_ARMED_BANDITS:{
-				// Update the configuration according to the MABs operation
-				ML_output = ml_model.ComputeIndividualConfiguration
-					(processed_configuration, processed_performance, agent_logger, SimTime());
-				break;
+	// Act only if the learning procedure is allowed (to be determined by the CC, if necessary)
+	if (learning_allowed) {
+
+		LOGS(save_agent_logs, agent_logger.file, "%.15f;A%d;%s;%s ComputeNewConfiguration()\n",
+			SimTime(), agent_id, LOG_F00, LOG_LVL1);
+		// Compute a new configuration if information is up to date. Otherwise, request it to the AP and use it.
+		if ( CheckValidityOfData(configuration, performance, SimTime(), MAX_TIME_INFORMATION_VALID)
+				&& flag_information_available) {
+			// Process the configuration and performance reports obtained from the WLAN
+			processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
+			processed_performance = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
+			// Update the configuration according to the selected learning method
+			switch(learning_mechanism) {
+				/* Multi-Armed Bandits */
+				case MULTI_ARMED_BANDITS:{
+					// Update the configuration according to the MABs operation
+					ML_output = ml_model.ComputeIndividualConfiguration
+						(processed_configuration, processed_performance, agent_logger, SimTime());
+					break;
+				}
+				case RTOT_ALGORITHM:{
+					ML_output = ml_model.ComputeIndividualConfiguration
+						(processed_configuration, processed_performance, agent_logger, SimTime());
+					break;
+				}
+				default:{
+					printf("[AGENT] ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
+					ml_model.PrintAvailableLearningMechanisms();
+					exit(EXIT_FAILURE);
+					break;
+				}
 			}
-			case RTOT_ALGORITHM:{
-				ML_output = ml_model.ComputeIndividualConfiguration
-					(processed_configuration, processed_performance, agent_logger, SimTime());
-				break;
-			}
-			default:{
-				printf("[AGENT] ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
-				ml_model.PrintAvailableLearningMechanisms();
-				exit(EXIT_FAILURE);
-				break;
-			}
+			// Process the configuration from the output of the ML method
+			new_configuration = pre_processor.ProcessMLOutput(learning_mechanism, configuration, ML_output);
+			// Send the configuration to the AP
+			SendNewConfigurationToAp(new_configuration);
+		} else {
+			// Generate the first request to be triggered after "time_between_requests"
+			// *** We generate here the first request in order to obtain the AP's configuration
+			// TODO: add an activation time, to be introduced by the user in the agent's configuration file
+			double extra_wait_test = 0.005 * (double) agent_id;
+			trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests + extra_wait_test,13,12));
+	//		flag_compute_new_configuration = true;
 		}
-		// Process the configuration from the output of the ML method
-		new_configuration = pre_processor.ProcessMLOutput(learning_mechanism, configuration, ML_output);
-		// Send the configuration to the AP
-		SendNewConfigurationToAp(new_configuration);
+
 	} else {
-		// Generate the first request to be triggered after "time_between_requests"
-		// *** We generate here the first request in order to obtain the AP's configuration
-		// TODO: add an activation time, to be introduced by the user in the agent's configuration file
-		double extra_wait_test = 0.005 * (double) agent_id;
-		trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests + extra_wait_test,13,12));
-//		flag_compute_new_configuration = true;
+
+		printf("The learning operation is not allowed at this moment.\n");
+
 	}
 
 }
@@ -517,6 +574,8 @@ void Agent :: ComputeNewConfiguration(){
 void Agent :: InitializeAgent() {
 
 //	printf("Agent #%d says: I'm alive!\n", agent_id);
+
+	learning_allowed = 1;
 
 	num_requests = 0;
 
