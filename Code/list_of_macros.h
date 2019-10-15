@@ -360,6 +360,7 @@
 #define GRAPH_COLORING					2
 #define ACTION_BANNING					3
 #define RTOT_ALGORITHM					4
+#define CENTRALIZED_ACTION_BANNING		5
 
 // Action-selection strategies (MABs)
 #define STRATEGY_EGREEDY				1
@@ -373,8 +374,8 @@
 #define CONFIGURATION_REQUIRED			2
 
 // Modes of the Central Controller (CC)
-#define MODE_PASSIVE	0
-#define MODE_ACTIVE		1
+#define MODE_MONITORING		0
+#define MODE_CENTRALIZED	1
 
 // Types of commands that the CC can send to agents
 #define UPDATE_CONFIGURATION	0

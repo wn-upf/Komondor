@@ -301,7 +301,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	}
 
 	// Forward the received information to the controller (if necessary)
-	if (flag_request_from_controller) {
+	if (controller_on) {
 		ForwardInformationToController();
 		flag_request_from_controller = false;
 	}
@@ -361,6 +361,9 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
  * @param "destination_agent_id" [type int]: identifier of the agent to which the request is delivered
  */
 void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
+
+	printf("%s Agent #%d: New request received from the Controller (status %d)\n", LOG_LVL1, agent_id, controller_on);
+
 	if(controller_on && agent_id == destination_agent_id) {
 //		printf("%s Agent #%d: New request received from the Controller\n", LOG_LVL1, agent_id);
 		LOGS(save_agent_logs, agent_logger.file,
@@ -444,7 +447,7 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 			case MODIFY_ITERATION_TIME: {
 				LOGS(save_agent_logs,agent_logger.file,
 					"%.15f;A%d;%s;%s Modifying the iteration time to %f...\n",
-					SimTime(), agent_id, LOG_C00, LOG_LVL2, received_configuration.agent_capabilities.time_between_request);
+					SimTime(), agent_id, LOG_C00, LOG_LVL2, received_configuration.agent_capabilities.time_between_requests);
 				time_between_requests = received_configuration.agent_capabilities.time_between_requests;
 				break;
 			}
@@ -578,6 +581,8 @@ void Agent :: InitializeAgent() {
 	learning_allowed = 1;
 
 	num_requests = 0;
+
+	controller_on = FALSE;
 
 	list_of_channels = new int[num_actions_channel];
 	list_of_pd_values = new double[num_actions_sensitivity];

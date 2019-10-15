@@ -222,6 +222,13 @@ class PreProcessor {
 			return suggested_configuration;
 		};
 
+		/** Update the array in the CC that keeps track of the performance achieved by each agent
+		* @param "performance_per_agent" [type double*]: array containing the performance achieved per agent
+		*/
+		void UpdateAgentPerformanceCC(Performance performance) {
+			printf("Updating the performance of agent...\n");
+		}
+
 		/***********************/
 		/***********************/
 		/*  BANDITS METHODS  */

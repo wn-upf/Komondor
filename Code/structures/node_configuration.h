@@ -60,8 +60,8 @@ struct Capabilities
 	double y;					///> Y position coordinate
 	double z;					///> Z position coordinate
 	int node_type;				///> Node type (e.g., AP, STA, ...)
-	int destination_id;			///> Destination node id (for nodes not belonging to any WLAN)
-	double traffic_load;		///> Average traffic load of the AP [packets/s]
+//	int destination_id;			///> Destination node id (for nodes not belonging to any WLAN)
+//	double traffic_load;		///> Average traffic load of the AP [packets/s]
 	int primary_channel;		///> Primary channel
 	int min_channel_allowed;	///> Min. allowed channel
 	int max_channel_allowed;	///> Max. allowed channel
@@ -81,8 +81,8 @@ struct Capabilities
 		printf("%s min_channel_allowed = %d\n", LOG_LVL4, min_channel_allowed);
 		printf("%s max_channel_allowed = %d\n", LOG_LVL4, max_channel_allowed);
 		printf("%s current_dcb_policy = %d\n", LOG_LVL4, current_dcb_policy);
-		printf("%s traffic_load = %.2f packets/s\n", LOG_LVL4, traffic_load);
-		printf("%s destination_id = %d\n", LOG_LVL4, destination_id);
+//		printf("%s traffic_load = %.2f packets/s\n", LOG_LVL4, traffic_load);
+//		printf("%s destination_id = %d\n", LOG_LVL4, destination_id);
 		printf("%s tx_power_default = %f pW (%f dBm)\n", LOG_LVL4, tx_power_default, ConvertPower(PW_TO_DBM, tx_power_default));
 		printf("%s sensitivity_default = %f pW (%f dBm)\n", LOG_LVL4, sensitivity_default, ConvertPower(PW_TO_DBM, sensitivity_default));
 		printf("\n");
@@ -107,10 +107,10 @@ struct Capabilities
 			sim_time, node_id, LOG_F00, LOG_LVL4, max_channel_allowed);
 		fprintf(logger.file, "%.15f;N%d;%s;%s current_dcb_policy = %d\n",
 			sim_time, node_id, LOG_F00, LOG_LVL4, current_dcb_policy);
-		fprintf(logger.file, "%.15f;N%d;%s;%s traffic_load = %.2f packets/s\n",
-			sim_time, node_id, LOG_F00, LOG_LVL4, traffic_load);
-		fprintf(logger.file, "%.15f;N%d;%s;%s destination_id = %d\n",
-			sim_time, node_id, LOG_F00, LOG_LVL4, destination_id);
+//		fprintf(logger.file, "%.15f;N%d;%s;%s traffic_load = %.2f packets/s\n",
+//			sim_time, node_id, LOG_F00, LOG_LVL4, traffic_load);
+//		fprintf(logger.file, "%.15f;N%d;%s;%s destination_id = %d\n",
+//			sim_time, node_id, LOG_F00, LOG_LVL4, destination_id);
 		fprintf(logger.file, "%.15f;N%d;%s;%s tx_power_default = %f pW (%f dBm)\n",
 			sim_time, node_id, LOG_F00, LOG_LVL4, tx_power_default, ConvertPower(PW_TO_DBM, tx_power_default));
 		fprintf(logger.file, "%.15f;N%d;%s;%s sensitivity_default = %f pW (%f dBm)\n",

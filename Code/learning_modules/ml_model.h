@@ -217,6 +217,9 @@ class MlModel {
 					rtot_alg.InitializeVariables();
 					break;
 				}
+				case CENTRALIZED_ACTION_BANNING: {
+					break;
+				}
 				//  TODO: provide more learning mechanisms
 				// case Q_LEARNING:
 				// ...

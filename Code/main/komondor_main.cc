@@ -1020,17 +1020,18 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 		int *agents_list;
 		agents_list = new int[total_controlled_agents_number];
 		int agent_list_ix (0);					// Index considering the agents attached to the central entity
-		double max_time_between_requests (0);	// To determine the maximum time between requests for agents
+//		double max_time_between_requests (0);	// To determine the maximum time between requests for agents
 		// Check which agents are attached to the central controller
 		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
 			if(agent_container[agent_ix].agent_mode !=  AGENT_MODE_DECENTRALIZED) {
 				// Add agent id to list of agents attached to the controller
 				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
-				double agent_time_between_requests (agent_container[agent_list_ix].time_between_requests);
-				// Store the maximum time between requests
-				if (agent_time_between_requests > max_time_between_requests) {
-					central_controller[0].time_between_requests = agent_time_between_requests;
-				}
+				agent_container[agent_ix].controller_on = central_controller[0].controller_on;
+//				double agent_time_between_requests (agent_container[agent_list_ix].time_between_requests);
+//				// Store the maximum time between requests
+//				if (agent_time_between_requests > max_time_between_requests) {
+//					central_controller[0].time_between_requests = agent_time_between_requests;
+//				}
 				++agent_list_ix;
 			}
 		}
@@ -1045,32 +1046,46 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 			if(!first_line_skiped_flag){
 				first_line_skiped_flag = 1;
 			} else{
-				// Type of reward
 				tmp_cc = strdup(line_agents);
-				int type_of_reward (atoi(GetField(tmp_cc, IX_AGENT_TYPE_OF_REWARD)));
-				central_controller[0].type_of_reward = type_of_reward;
-				// Learning mechanism
-				tmp_cc = strdup(line_agents);
-				int learning_mechanism (atoi(GetField(tmp_cc, IX_AGENT_LEARNING_MECHANISM)));
-				central_controller[0].learning_mechanism = learning_mechanism;
-				// Selected strategy
-				tmp_cc = strdup(line_agents);
-				int action_selection_strategy (atoi(GetField(tmp_cc, IX_AGENT_SELECTED_STRATEGY)));
-				central_controller[0].action_selection_strategy = action_selection_strategy;
-				// Find the length of the channel actions array
-				tmp_cc = strdup(line_agents);
-				const char *channel_values_aux (GetField(tmp_cc, IX_AGENT_CHANNEL_VALUES));
-				std::string channel_values_text;
-				channel_values_text.append(ToString(channel_values_aux));
-				const char *channels_aux;
-				channels_aux = strtok ((char*)channel_values_text.c_str(),",");
-				int num_actions_channels = 0;
-				while (channels_aux != NULL) {
-					channels_aux = strtok (NULL, ",");
-					++ num_actions_channels;
+				const char *wlan_code_aux (GetField(tmp_cc, IX_AGENT_WLAN_CODE));
+				std::string wlan_code;
+				wlan_code.append(ToString(wlan_code_aux));
+				// Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
+				if (strcmp(wlan_code.c_str(), "NULL") == 0) {
+					// Time between requests
+					tmp_cc = strdup(line_agents);
+					double time_between_requests (atoi(GetField(tmp_cc, IX_AGENT_TIME_BW_REQUESTS)));
+					central_controller[0].time_between_requests = time_between_requests;
+					// Type of reward
+					tmp_cc = strdup(line_agents);
+					int type_of_reward (atoi(GetField(tmp_cc, IX_AGENT_TYPE_OF_REWARD)));
+					central_controller[0].type_of_reward = type_of_reward;
+					// Learning mechanism
+					tmp_cc = strdup(line_agents);
+					int learning_mechanism (atoi(GetField(tmp_cc, IX_AGENT_LEARNING_MECHANISM)));
+					central_controller[0].learning_mechanism = learning_mechanism;
+					// Selected strategy
+					tmp_cc = strdup(line_agents);
+					int action_selection_strategy (atoi(GetField(tmp_cc, IX_AGENT_SELECTED_STRATEGY)));
+					central_controller[0].action_selection_strategy = action_selection_strategy;
+					// Find the length of the channel actions array
+					tmp_cc = strdup(line_agents);
+					const char *channel_values_aux (GetField(tmp_cc, IX_AGENT_CHANNEL_VALUES));
+					std::string channel_values_text;
+					channel_values_text.append(ToString(channel_values_aux));
+					const char *channels_aux;
+					channels_aux = strtok ((char*)channel_values_text.c_str(),",");
+					int num_actions_channels = 0;
+					while (channels_aux != NULL) {
+						channels_aux = strtok (NULL, ",");
+						++ num_actions_channels;
+					}
+					central_controller[0].num_channels = num_actions_channels;
+					free(tmp_cc);
+					break;	// Don't read all the other lines (entailed for agents)
+				} else {
+					continue; // Keep reading until finding "NULL", which indicated the CC line
 				}
-				central_controller[0].num_channels = num_actions_channels;
-				free(tmp_cc);
 			}
 		}
 
@@ -1082,9 +1097,9 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 	} else {
 		printf("%s WARNING: THE CENTRAL CONTROLLER DOES NOT HAVE ANY ATTACHED AGENT! CHECK YOUR AGENTS' INPUT FILE\n", LOG_LVL2);
 		central_controller[0].controller_on = FALSE;
-		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
-			agent_container[agent_ix].controller_on = FALSE;
-		}
+//		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
+//			agent_container[agent_ix].controller_on = FALSE;
+//		}
 	}
 
 	central_controller[0].PrintControllerInfo();

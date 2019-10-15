@@ -4668,18 +4668,18 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				printf("%s Throughput: {", LOG_LVL3);
 				for(int n = 0; n < wlan.num_stas; ++n){
 					throughput_per_sta[n] = (double)(data_frames_acked_per_sta[n] * frame_length) / SimTime();
-					printf("%f",  throughput_per_sta[n]);
+					printf("%.2f Mbps",  throughput_per_sta[n] * pow(10,-6));
 					if(n<wlan.num_stas-1) printf(", ");
 				}
-				printf("}\n%s RTS/CTS sent vs RTS/CTS lost: {", LOG_LVL3);
+				printf("}\n%s RTS/CTS sent /	 RTS/CTS lost: {", LOG_LVL3);
 				for(int n = 0; n < wlan.num_stas; ++n){
-					printf("%d / %d (%.2f %%)", rts_cts_sent_per_sta[n], rts_cts_lost_per_sta[n],
+					printf("%d/%d (%.2f %%)", rts_cts_sent_per_sta[n], rts_cts_lost_per_sta[n],
 						double(rts_cts_lost_per_sta[n] * 100)/double(rts_cts_sent_per_sta[n]));
 					if(n<wlan.num_stas-1) printf(", ");
 				}
-				printf("}\n%s Data packets sent vs Data packets lost: {", LOG_LVL3);
+				printf("}\n%s Data packets sent / Data packets lost: {", LOG_LVL3);
 				for(int n = 0; n < wlan.num_stas; ++n){
-					printf("%d / %d (%.2f %%)", data_packets_sent_per_sta[n], data_packets_lost_per_sta[n],
+					printf("%d/%d (%.2f %%)", data_packets_sent_per_sta[n], data_packets_lost_per_sta[n],
 							double(data_packets_lost_per_sta[n] * 100)/double(data_packets_sent_per_sta[n]));
 					if(n<wlan.num_stas-1) printf(", ");
 				}
