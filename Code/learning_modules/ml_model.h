@@ -99,6 +99,8 @@ class MlModel {
 		int num_stas;
 		double margin;
 
+		// Centralized action banning
+
 	// Private items
 	private:
 
@@ -132,6 +134,9 @@ class MlModel {
 				case RTOT_ALGORITHM: {
 					break;
 				}
+				case CENTRALIZED_ACTION_BANNING: {
+					break;
+				}
 				default: {
 					printf("[ML MODEL] ERROR, UNKOWN LEARNING MECHANISM ('%d')\n", learning_mechanism);
 					exit(-1);
@@ -161,6 +166,9 @@ class MlModel {
 				}
 				case RTOT_ALGORITHM: {
 					new_action = rtot_alg.UpdateObssPd(reward);
+					break;
+				}
+				case CENTRALIZED_ACTION_BANNING: {
 					break;
 				}
 				default: {
@@ -218,6 +226,7 @@ class MlModel {
 					break;
 				}
 				case CENTRALIZED_ACTION_BANNING: {
+					printf("[ML Model] Centralized action banning\n");
 					break;
 				}
 				//  TODO: provide more learning mechanisms
@@ -256,6 +265,18 @@ class MlModel {
 				case RTOT_ALGORITHM: {
 //					rtot_alg.PrintOrWriteInformation(write_or_print, logger);
 //					rtot_alg.PrintOrWriteStatistics(write_or_print, logger);
+					break;
+				}
+				case CENTRALIZED_ACTION_BANNING: {
+					if (write_or_print == PRINT_LOG) {
+//						printf("Available actions (%d agents with %d actions):\n", agents_number, num_actions);
+//						for (int i = 0; i < agents_number; ++i) {
+//							for (int j = 0; j < num_actions; ++j) {
+//								printf("%d ", available_actions_per_agent[i][j]);
+//							}
+//							printf("\n");
+//						}
+					}
 					break;
 				}
 				/* UNKNOWN */

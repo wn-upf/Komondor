@@ -349,6 +349,7 @@
 #define REWARD_TYPE_THROUGHPUT 			1	///> To determine the reward according to the type of performance indicator
 #define REWARD_TYPE_PACKETS_GENERATED 	2
 #define REWARD_TYPE_MIN_RSSI			3
+#define REWARD_TYPE_MAX_DELAY			4
 
 // Agent modes
 #define AGENT_MODE_DECENTRALIZED 	0	///> Agents are independent entities that follow their own learning procedure

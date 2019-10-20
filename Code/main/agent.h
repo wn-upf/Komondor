@@ -98,7 +98,7 @@ component Agent : public TypeII{
 		void PrintAgentInfo();
 		void WriteAgentInfo(Logger logger, std::string header_str);
 		void WriteConfiguration(Configuration configuration_to_write);
-		void WritePerformance(Performance performance_to_write);
+//		void WritePerformance(Performance performance_to_write);
 		void PrintOrWriteAgentStatistics();
 
 	// Public items (entered by agents constructor in komondor_main)
@@ -124,6 +124,7 @@ component Agent : public TypeII{
 		double *list_of_tx_power_values;	///> List of TX power values
 		int *list_of_dcb_policy;			///> List of DCB policies
 		Action *actions;					///> List of actions
+		int num_actions;					///> Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
 		int num_actions_channel;			///> Number of channels available
 		int num_actions_sensitivity;		///> Number of PD levels available
 		int num_actions_tx_power;			///> Number of TX power levels available
@@ -145,7 +146,7 @@ component Agent : public TypeII{
 	private:
 
 		//
-		int num_actions;					///> Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
+
 		int num_requests;					///> Number of requests made by the agent to the AP
 		int ix_selected_arm; 				///> Index of the current selected arm
 		double initial_reward;				///> Initial reward assigned to each arm
@@ -297,7 +298,10 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	if(save_agent_logs) {
 		WriteConfiguration(configuration);
-		WritePerformance(performance);
+		char device_code[10];
+		sprintf(device_code, "A%d", agent_id);
+		pre_processor.WritePerformance(agent_logger, SimTime(), device_code,
+			performance, type_of_reward);
 	}
 
 	// Forward the received information to the controller (if necessary)
@@ -589,8 +593,6 @@ void Agent :: InitializeAgent() {
 	list_of_tx_power_values = new double[num_actions_tx_power];
 	list_of_dcb_policy = new int[num_actions_dcb_policy];
 
-	num_actions = num_actions_channel * num_actions_sensitivity * num_actions_tx_power * num_actions_dcb_policy;
-
 	// Generate actions
 	actions = new Action[num_actions];
 
@@ -756,18 +758,18 @@ void Agent :: WriteConfiguration(Configuration configuration_to_write) {
 		configuration_to_write.selected_dcb_policy);
 }
 
-/**
- * Write the performance of the Agent into the agent logs file
- * @param "performance_to_write" [type Performance]: performance object to be written
- */
-void Agent :: WritePerformance(Performance performance_to_write) {
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.15f;A%d;%s;%s Performance:\n", SimTime(), agent_id, LOG_C03, LOG_LVL2);
-	// Throughput (Mbps)
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.15f;A%d;%s;%s throughput = %.2f\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
-		performance_to_write.throughput * pow(10,-6));
-}
+///**
+// * Write the performance of the Agent into the agent logs file
+// * @param "performance_to_write" [type Performance]: performance object to be written
+// */
+//void Agent :: WritePerformance(Performance performance_to_write) {
+//	LOGS(save_agent_logs, agent_logger.file,
+//		"%.15f;A%d;%s;%s Performance:\n", SimTime(), agent_id, LOG_C03, LOG_LVL2);
+//	// Throughput (Mbps)
+//	LOGS(save_agent_logs, agent_logger.file,
+//		"%.15f;A%d;%s;%s throughput = %.2f\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
+//		performance_to_write.throughput * pow(10,-6));
+//}
 
 
 /**
@@ -777,7 +779,6 @@ void Agent :: PrintOrWriteAgentStatistics(){
 	if (print_agent_logs) printf("\n------- Agent A%d ------\n", agent_id);
 	ml_model.PrintOrWriteStatistics(PRINT_LOG, agent_logger, SimTime());
 //	ml_model.PrintOrWriteStatistics(WRITE_LOG, agent_logger, SimTime());
-
 }
 
 

@@ -867,6 +867,10 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			// Set the length of DCB actions to agent's field
 			agent_container[agent_ix].num_actions_dcb_policy = num_actions_dcb_policy;
 
+			// Set the lenght of the total actions in the agent (combinations of parameters)
+			agent_container[agent_ix].num_actions = num_actions_channel * num_actions_sensitivity
+				* num_actions_tx_power * num_actions_dcb_policy;
+
 			++agent_ix;
 			free(tmp_agents);
 		}
@@ -993,7 +997,9 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 				if(agent_container[agent_ix].learning_mechanism == RTOT_ALGORITHM) {
 					agent_container[agent_ix].margin = agent_container[agent_ix].list_of_pd_values[0];
 				}
+
 				agent_container[agent_ix].PrintAgentInfo();
+
 				++agent_ix;
 
 			}
@@ -1016,10 +1022,17 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 		central_controller[0].controller_on = TRUE;
 		central_controller[0].agents_number = total_controlled_agents_number;
 		central_controller[0].wlans_number = total_wlans_number;
+		int max_number_of_actions(0);
+		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
+			if(agent_container[agent_ix].num_actions > max_number_of_actions) max_number_of_actions = agent_container[agent_ix].num_actions;
+		}
+		central_controller[0].max_number_of_actions = max_number_of_actions;
+		// Initialize the CC
 		central_controller[0].InitializeCentralController();
 		int *agents_list;
 		agents_list = new int[total_controlled_agents_number];
 		int agent_list_ix (0);					// Index considering the agents attached to the central entity
+
 //		double max_time_between_requests (0);	// To determine the maximum time between requests for agents
 		// Check which agents are attached to the central controller
 		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
@@ -1027,6 +1040,7 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 				// Add agent id to list of agents attached to the controller
 				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
 				agent_container[agent_ix].controller_on = central_controller[0].controller_on;
+				central_controller[0].num_actions_per_agent[agent_ix] = agent_container[agent_ix].num_actions;
 //				double agent_time_between_requests (agent_container[agent_list_ix].time_between_requests);
 //				// Store the maximum time between requests
 //				if (agent_time_between_requests > max_time_between_requests) {
@@ -1035,6 +1049,7 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 				++agent_list_ix;
 			}
 		}
+
 		// The overall "time between requests" is set to the maximum among all the agents
 		central_controller[0].list_of_agents = agents_list;
 		// Initialize the CC with parameters from the agents input file

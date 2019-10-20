@@ -125,6 +125,9 @@ component CentralController : public TypeII{
 
 		int num_channels;				///> Number of channels
 		int total_nodes_number;			///> Number of nodes
+		int num_actions;
+		int *num_actions_per_agent;
+		int max_number_of_actions;
 
 		int controller_on;				///> Flag indicating whether the CC is active or not
 
@@ -156,6 +159,9 @@ component CentralController : public TypeII{
 		int cc_iteration; 					///> Counter that keeps track of the number of iterations at the CC
 
 		double *performance_per_agent;
+
+		int **available_actions_per_agent;
+		int **performance_action_per_agent;
 
 	// Connections and timers
 	public:
@@ -357,7 +363,7 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
 	}
 
 	// Keep track of the performance achieved by each agent during a CC iteration
-	performance_per_agent[agent_id] = pre_processor.UpdateAgentPerformanceCC(performance_array[agent_id]);
+//	performance_per_agent[agent_id] = pre_processor.UpdateAgentPerformanceCC(performance_array[agent_id]);
 
 	// According to the defined mode, behave in one way or another
 	switch(controller_mode) {
@@ -509,7 +515,23 @@ void CentralController :: InitializeMlModel() {
 	ml_model.save_controller_logs = save_controller_logs;
 	ml_model.print_controller_logs = print_controller_logs;
 	ml_model.action_selection_strategy = action_selection_strategy;
+	ml_model.agents_number = agents_number;
+	ml_model.num_actions = num_actions;
 	ml_model.InitializeVariables();
+
+	// Fill the matrix containing the set of available actions in each agent and the matrix indicating their performance
+	for (int i = 0; i < agents_number; ++i) {
+		for (int j = 0; j < max_number_of_actions; ++j) {
+			if (num_actions_per_agent[i] >= j) {
+				available_actions_per_agent[i][j] = 1;		// The action exists and is available (set to 1 by default)
+				performance_action_per_agent[i][j] = 0;		// Set default performance to 0
+			} else {
+				available_actions_per_agent[i][j] = -1;		// The action does not exist (the index exceeds the total number of actions of that agent)
+				performance_action_per_agent[i][j] = -1;	// The actions does not exist
+			}
+		}
+	}
+
 }
 
 
@@ -520,15 +542,26 @@ void CentralController :: InitializeCentralController() {
 
 	cc_iteration = 0;
 	counter_responses_received = 0;
-	num_requests_per_agent = new int[agents_number];
+
 	configuration_array = new Configuration[agents_number];
 	performance_array  = new Performance[agents_number];
 
+	num_requests_per_agent = new int[agents_number];
+	num_actions_per_agent = new int[agents_number];
 	performance_per_agent = new double[agents_number];
+
 	for(int i = 0; i < agents_number; ++i){
 		num_requests_per_agent[i] = 0;
 		performance_per_agent[i] = 0;
 //		performance_array[i].SetSizeOfRssiList(agents_number);
+	}
+
+	// Keep track of the available actions in each agent
+	available_actions_per_agent = new int *[agents_number];
+	performance_action_per_agent = new int *[agents_number];
+	for (int i = 0; i < agents_number; ++i) {
+		available_actions_per_agent[i] = new int[max_number_of_actions];
+		performance_action_per_agent[i] = new int[max_number_of_actions];
 	}
 
 	save_controller_logs = TRUE;
@@ -591,13 +624,13 @@ void CentralController :: WriteControllerInfo(Logger logger) {
 void CentralController :: PrintOrWriteControllerStatistics(int print_or_write) {
 	switch(print_or_write){
 		case PRINT_LOG:{
-			printf("\n STATISTICS CENTRAL CONTROLLER:\n");
+			if (print_controller_logs) printf("\n------- Central Controller ------\n");
 			ml_model.PrintOrWriteStatistics(PRINT_LOG, central_controller_logger, SimTime());
 			break;
 		}
 		case WRITE_LOG:{
 			LOGS(save_controller_logs, central_controller_logger.file,
-				"\n%.15f;CC;%s;%s STATISTICS CENTRAL CONTROLLER:\n", SimTime(), LOG_C00, LOG_LVL1);
+				"\n%.15f;CC;%s;%s ------- Central Controller ------\n", SimTime(), LOG_C00, LOG_LVL1);
 			ml_model.PrintOrWriteStatistics(WRITE_LOG, central_controller_logger, SimTime());
 			break;
 		}

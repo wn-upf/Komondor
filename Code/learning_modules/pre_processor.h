@@ -383,6 +383,54 @@ class PreProcessor {
 			printf("%s MULTI_ARMED_BANDITS (%d)\n", LOG_LVL3, MULTI_ARMED_BANDITS);
 		}
 
+		/**
+		 * Write the performance of the Agent into the agent logs file
+		 * @param "performance_to_write" [type Performance]: performance object to be written
+		 */
+		void WritePerformance(Logger &logger, double sim_time, char string_device[],
+				Performance performance, int performance_selected) {
+			LOGS(TRUE, logger.file,
+				"%.15f;%s;%s;%s Performance:\n", sim_time, string_device, LOG_C03, LOG_LVL2);
+			switch(performance_selected) {
+				// Packets sent
+				case REWARD_TYPE_PACKETS_SENT:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s #pkts sent = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3,
+						performance.data_packets_sent);
+					break;
+				}
+				// Throughput (Mbps)
+				case REWARD_TYPE_THROUGHPUT:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s throughput = %.2f Mbps\n", sim_time, string_device, LOG_C03, LOG_LVL3,
+						performance.throughput * pow(10,-6));
+					break;
+				}
+				// Packets generated
+				case REWARD_TYPE_PACKETS_GENERATED:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s #pkts generated = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3,
+						performance.num_packets_generated);
+					break;
+				}
+				// Minimum RSSI
+				case REWARD_TYPE_MIN_RSSI:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s min RSSI = %.2f dBm\n", sim_time, string_device, LOG_C03, LOG_LVL3,
+						performance.rssi_list_per_sta[0]);
+					break;
+				}
+				// Maximum delay
+				case REWARD_TYPE_MAX_DELAY:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s average delay = %.2f ms\n", sim_time, string_device, LOG_C03, LOG_LVL3,
+						performance.average_delay * pow(10,-3));
+					break;
+				}
+
+			}
+		}
+
 		/***********************/
 		/***********************/
 		/*  AUXILIARY METHODS  */
