@@ -3966,6 +3966,7 @@ void Node :: UpdatePerformanceMeasurements(){
 	// - Max RSSI received per WLAN
 	for (int i = 0 ; i < total_wlans_number; ++ i) {
 		performance_report.rssi_list[i] = max_received_power_in_ap_per_wlan[i];
+		performance_report.max_received_power_in_ap_per_wlan[i] = max_received_power_in_ap_per_wlan[i];
 	}
 
 	// RSSI received from each STA

@@ -389,6 +389,7 @@ class PreProcessor {
 		 */
 		void WritePerformance(Logger &logger, double sim_time, char string_device[],
 				Performance performance, int performance_selected) {
+
 			LOGS(TRUE, logger.file,
 				"%.15f;%s;%s;%s Performance:\n", sim_time, string_device, LOG_C03, LOG_LVL2);
 			switch(performance_selected) {
@@ -427,8 +428,8 @@ class PreProcessor {
 						performance.average_delay * pow(10,-3));
 					break;
 				}
-
 			}
+
 		}
 
 		/***********************/

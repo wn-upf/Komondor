@@ -386,6 +386,10 @@
 #define BAN_CONFIGURATION		4
 #define UNBAN_CONFIGURATION		5
 
+// Clustering approaches for grouping agents / BSSs
+#define CLUSTER_BY_CCA			0
+#define CLUSTER_BY_DISTANCE		1
+
 /* ********************************************
  * * INPUT/OUTPUT FILES AND CONSOLE ARGUMENTS *
  * ********************************************

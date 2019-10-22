@@ -99,6 +99,10 @@ component CentralController : public TypeII{
 		void WriteControllerInfo(Logger logger);
 		void PrintOrWriteControllerStatistics(int print_or_write);
 
+		// Clustering methods (to group agents/BSSs)
+		void GenerateClusters(int wlan_id, Performance performance, Configuration configuration);
+		void PrintOrWriteClusters(int print_or_write);
+
 		// Initialization
 		void InitializePreProcessor();
 		void InitializeMlModel();
@@ -159,6 +163,8 @@ component CentralController : public TypeII{
 		int cc_iteration; 					///> Counter that keeps track of the number of iterations at the CC
 
 		double *performance_per_agent;
+
+		int **clusters_per_wlan;
 
 		int **available_actions_per_agent;
 		int **performance_action_per_agent;
@@ -360,6 +366,8 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
 	if(save_controller_logs) {
 		configuration_array[agent_id].WriteConfiguration(central_controller_logger, SimTime());
 		configuration_array[agent_id].capabilities.WriteCapabilities(central_controller_logger, SimTime());
+		char device_code[10]("CC");
+		pre_processor.WritePerformance(central_controller_logger, SimTime(), device_code, performance, type_of_reward);
 	}
 
 	// Keep track of the performance achieved by each agent during a CC iteration
@@ -369,6 +377,8 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
 	switch(controller_mode) {
 		// Passive mode: the agents send information to the CC
 		case MODE_MONITORING: {
+				GenerateClusters(agent_id, performance_array[agent_id], configuration_array[agent_id]);
+				PrintOrWriteClusters(PRINT_LOG);
 			break;
 		}
 		// Active mode: the CC requests information to agents
@@ -492,6 +502,83 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
 
 };
 
+/**
+ * For each agent, provides the list of other agents that belong to the same cluster (updates variable "clusters_per_wlan")
+ * @param "wlan_id" [type int]: identifier of the WLAN of interest
+ * @param "performance" [type perf]: performance object belonging to the WLAN of interest
+ * @param "conf" [type Configuration]: configuration object belonging to the WLAN of interest
+ */
+void CentralController :: GenerateClusters(int wlan_id, Performance perf, Configuration conf){
+
+	int clustering_approach(CLUSTER_BY_CCA); // HARDCODED
+
+	switch(clustering_approach) {
+
+		case CLUSTER_BY_CCA :{ // CCA + Margin
+			double margin_db(3);
+			for (int j = 0; j < wlans_number; ++j) {
+//				printf("perf.max_received_power_in_ap_per_wlan[j] = %f\n",
+//					ConvertPower(PW_TO_DBM, perf.max_received_power_in_ap_per_wlan[j]));
+//				printf("conf.capabilities.sensitivity_default - margin = %f\n",
+//					ConvertPower(PW_TO_DBM, conf.capabilities.sensitivity_default) - margin_db);
+				if (wlan_id != j && ConvertPower(PW_TO_DBM, perf.max_received_power_in_ap_per_wlan[j])
+					  > ConvertPower(PW_TO_DBM, conf.capabilities.sensitivity_default) - margin_db ) {
+					clusters_per_wlan[wlan_id][j] = 1;
+				}
+			}
+			break;
+		}
+
+		case CLUSTER_BY_DISTANCE :{ // Physical distance
+			// To be done...
+			break;
+		}
+
+		default :{
+			printf("[CC] ERROR: clustering approach '%d' does not exist\n", clustering_approach);
+			break;
+		}
+
+
+	}
+
+}
+
+/**
+ * Prints or writes the list of clusters identified for each agent
+ * @param "print_or_write" [type int]: flag indicating whether to print or write logs
+ */
+void CentralController :: PrintOrWriteClusters(int print_or_write){
+
+	switch(print_or_write){
+		case PRINT_LOG:{
+			printf("Already identified clusters\n");
+			for (int i = 0; i < wlans_number; ++i) {
+				printf("	Agent %d:", i);
+				for (int j = 0; j < wlans_number; ++j) {
+					printf(" %d ", clusters_per_wlan[i][j]);
+				}
+				printf("\n");
+			}
+			break;
+		}
+		case WRITE_LOG:{
+			LOGS(save_controller_logs, central_controller_logger.file,
+				"\n%.15f;CC;%s;%s Already identified clusters\n", SimTime(), LOG_C00, LOG_LVL1);
+			for (int i = 0; i < wlans_number; ++i) {
+				LOGS(save_controller_logs, central_controller_logger.file,
+					"\n%.15f;CC;%s;%s Agent %d\n", SimTime(), LOG_C00, LOG_LVL2, i);
+				for (int j = 0; j < wlans_number; ++j) {
+					LOGS(save_controller_logs, central_controller_logger.file,
+						" %d ", clusters_per_wlan[i][j]);
+				}
+			}
+			break;
+		}
+	}
+
+}
+
 /******************************/
 /******************************/
 /*  VARIABLES INITIALIZATION  */
@@ -519,8 +606,8 @@ void CentralController :: InitializeMlModel() {
 	ml_model.num_actions = num_actions;
 	ml_model.InitializeVariables();
 
-	// Fill the matrix containing the set of available actions in each agent and the matrix indicating their performance
 	for (int i = 0; i < agents_number; ++i) {
+		// Fill the matrix containing the set of available actions in each agent and the matrix indicating their performance
 		for (int j = 0; j < max_number_of_actions; ++j) {
 			if (num_actions_per_agent[i] >= j) {
 				available_actions_per_agent[i][j] = 1;		// The action exists and is available (set to 1 by default)
@@ -529,6 +616,11 @@ void CentralController :: InitializeMlModel() {
 				available_actions_per_agent[i][j] = -1;		// The action does not exist (the index exceeds the total number of actions of that agent)
 				performance_action_per_agent[i][j] = -1;	// The actions does not exist
 			}
+		}
+		// Initialize the matrix that indicates the potential interferring OBSSs of each BSS (only for agents connected to the CC)
+		for (int j = 0; j < agents_number; ++j) {
+			if (i == j) clusters_per_wlan[i][j] = 1;
+			else clusters_per_wlan[i][j] = 0;
 		}
 	}
 
@@ -559,9 +651,11 @@ void CentralController :: InitializeCentralController() {
 	// Keep track of the available actions in each agent
 	available_actions_per_agent = new int *[agents_number];
 	performance_action_per_agent = new int *[agents_number];
+	clusters_per_wlan = new int *[agents_number];
 	for (int i = 0; i < agents_number; ++i) {
 		available_actions_per_agent[i] = new int[max_number_of_actions];
 		performance_action_per_agent[i] = new int[max_number_of_actions];
+		clusters_per_wlan[i] = new int[agents_number];
 	}
 
 	save_controller_logs = TRUE;
