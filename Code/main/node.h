@@ -68,7 +68,7 @@
 #include "../structures/logger.h"
 #include "../structures/FIFO.h"
 #include "../structures/node_configuration.h"
-#include "../structures/performance_metrics.h"
+#include "../structures/performance.h"
 
 #define __SAVELOGS__
 

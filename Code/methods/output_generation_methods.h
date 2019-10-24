@@ -55,7 +55,7 @@
 #include <sstream>
 
 #include "../list_of_macros.h"
-#include "../structures/performance_metrics.h"
+#include "../structures/performance.h"
 #include "../structures/node_configuration.h"
 #include "../structures/wlan.h"
 

@@ -61,7 +61,7 @@
 #include "../list_of_macros.h"
 
 #include "../structures/node_configuration.h"
-#include "../structures/performance_metrics.h"
+#include "../structures/performance.h"
 
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
@@ -90,7 +90,7 @@ component CentralController : public TypeII{
 		// Communication with Agents
 		void RequestInformationToAgents();
 		void GenerateAndSendNewConfiguration();
-		void SendConfigurationToAllAgents();
+		void SendCommandToAllAgents(int command_id, Configuration *conf_array);
 		void SendConfigurationToSingleAgent(int destination_agent_id, Configuration conf);
 		void SendCommandToSingleAgent(int destination_agent_id, int command_id, Configuration conf);
 
@@ -167,14 +167,15 @@ component CentralController : public TypeII{
 		int **clusters_per_wlan;
 
 		int **available_actions_per_agent;
-		int **performance_action_per_agent;
+		double **performance_action_per_agent;
+		int **times_action_played_per_agent;
 
 	// Connections and timers
 	public:
 
 		// INPORT connections for receiving notifications
-		inport void inline InportReceivingInformationFromAgent(Configuration &configuration,
-			Performance &performance, int agent_id);
+		inport void inline InportReceivingInformationFromAgent(int agent_id, Configuration &configuration,
+			Performance &performance, double *average_performance_per_configuration);
 
 		// OUTPORT connections for sending notifications
 		outport void outportRequestInformationToAgent(int destination_agent_id);
@@ -213,6 +214,7 @@ void CentralController :: Setup(){
 void CentralController :: Start(){
 
 	if (controller_on) {
+
 		// Create CC logs file (if required)
 		if(save_controller_logs) {
 			sprintf(own_file_path,"%s_CENTRAL_CONTROLLER.txt","../output/logs_output");
@@ -224,45 +226,38 @@ void CentralController :: Start(){
 		}
 		LOGS(save_controller_logs,central_controller_logger.file,
 			"%.18f;CC;%s;%s Start()\n", SimTime(), LOG_B00, LOG_LVL1);
+
 		// Initialize the PP and the ML Method
 		InitializePreProcessor();
 		InitializeMlModel();
+
 		// Hardcoded [TODO: introduce this parameter from the input]
-		controller_mode = MODE_MONITORING; // MODE_ACTIVE, MODE_MONITORING
-		// According to the defined mode, start the learning operation by activating triggers
-		switch(controller_mode) {
-			// Monitoring mode: the CC monitors the activity held by agents
-			case MODE_MONITORING: {
-				// Do nothing - wait until the agents forward information to the controller
-				break;
-			}
-			// Centralized mode: the CC takes care of the ML operation in a centralized way
-			case MODE_CENTRALIZED: {
-				if(learning_mechanism == GRAPH_COLORING) {
-					// Generate the request for initialization at the beginning (no need to collect performance data)
-					trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + 0.001,13,12));
-				} else {
-					// ...
-				}
-				break;
-			}
-			// Unknown controller mode
-			default:{
-				printf("[CC] ERROR: Undefined controller mode %d\n"
-					"	- Use MODE_MONITORING (%d) or MODE_CENTRALIZED (%d)\n",
-					controller_mode, MODE_MONITORING, MODE_CENTRALIZED);
+		controller_mode = CC_MODE_ACTIVE; // CC_MODE_ACTIVE, CC_MODE_PASSIVE
+
+		// According to the defined mode, start making requests by activating triggers
+		if(controller_mode == CC_MODE_ACTIVE) {
+			printf("OK\n");
+			// Indicate all the agents to only send information upon receiving a trigger
+			SendCommandToAllAgents(COMMUNICATION_UPON_TRIGGER, configuration_array);
+			// Generate the time trigger for the first request
+			if (time_between_requests > 0) {
+				trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+			} else {
+				// Idea: when "time_between_requests" is negative, apply the ML method after the simulation ends (batch learning)
 			}
 		}
 
-		// Trigger the ML operation according to the time between requests
-		if (time_between_requests > 0) {
-			trigger_apply_ml_method.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
-		} else {
-			// Idea: when "time_between_requests" is negative, apply the ML method after the simulation ends (offline learning)
-		}
+//		// Trigger the ML operation according to the time between requests
+//		if (time_between_requests > 0) {
+//			trigger_apply_ml_method.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
+//		} else {
+//			// Idea: when "time_between_requests" is negative, apply the ML method after the simulation ends (batch learning)
+//		}
 
 	} else {
-//		printf("The central controller is NOT active\n");
+
+		printf("The central controller is NOT active\n");
+
 	}
 
 };
@@ -322,6 +317,9 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 //		++ num_requests_per_agent[ix] ;
 //	}
 
+	// STEP 4: Set the trigger for performing the next request
+	trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
+
 	++cc_iteration;
 
 };
@@ -350,13 +348,15 @@ void CentralController :: RequestInformationToAgents(trigger_t &){
  * @param "received_performance" [type Performance]: performance of the agent
  * @param "agent_id" [type int]: identifier of the agent
  */
-void CentralController :: InportReceivingInformationFromAgent(Configuration &received_configuration,
-	Performance &received_performance, int agent_id){
+void CentralController :: InportReceivingInformationFromAgent(int agent_id, Configuration &received_configuration,
+	Performance &received_performance, double *average_performance_per_configuration) {
 
 	LOGS(save_controller_logs,central_controller_logger.file,
 		"%.15f;CC;%s;%s InportReceivingInformationFromAgent()\n", SimTime(), LOG_F00, LOG_LVL1);
 	LOGS(save_controller_logs,central_controller_logger.file,
 		"%.15f;CC;%s;%s New information has been received from Agent %d\n", SimTime(), LOG_C00, LOG_LVL2, agent_id);
+
+	++counter_responses_received;
 
 	// Update the configuration and performance received
 	configuration_array[agent_id] = received_configuration;
@@ -376,27 +376,32 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
 	// According to the defined mode, behave in one way or another
 	switch(controller_mode) {
 		// Passive mode: the agents send information to the CC
-		case MODE_MONITORING: {
-				GenerateClusters(agent_id, performance_array[agent_id], configuration_array[agent_id]);
-				PrintOrWriteClusters(PRINT_LOG);
+		case CC_MODE_PASSIVE: {
 			break;
 		}
 		// Active mode: the CC requests information to agents
-		case MODE_CENTRALIZED: {
+		case CC_MODE_ACTIVE: {
+
+			printf("A%d average_performance_per_configuration[0] = %f\n",agent_id, average_performance_per_configuration[0]);
+			GenerateClusters(agent_id, performance_array[agent_id], configuration_array[agent_id]);
+			PrintOrWriteClusters(PRINT_LOG);
+
 			// Once all the information is available, compute a new configuration according to the updated rewards
 			if (counter_responses_received == agents_number) {
-				// Update the number of responses received
-				++ counter_responses_received ;
-				if(initialization_flag) {
-					// Initialization phase of the graph coloring method
-					graph_coloring.GraphColoringInitialization(configuration_array);
-					// Send the initial configuration to all the associated agents
-					SendConfigurationToAllAgents();
-					initialization_flag = false;
-					trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
-				} else {
-					trigger_safe_responses_collection.Set(FixTimeOffset(SimTime(),13,12));
-				}
+//				// Update the number of responses received
+//				++ counter_responses_received ;
+//				if(initialization_flag) {
+//					// Initialization phase of the graph coloring method
+//					graph_coloring.GraphColoringInitialization(configuration_array);
+//					// Send the initial configuration to all the associated agents
+////					SendCommandToAllAgents();
+//					SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
+//					initialization_flag = false;
+//					trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+//				} else {
+//					trigger_safe_responses_collection.Set(FixTimeOffset(SimTime(),13,12));
+//				}
+				trigger_apply_ml_method.Set(FixTimeOffset(SimTime(), 13, 12));
 				counter_responses_received = 0;
 			}
 			break;
@@ -404,8 +409,8 @@ void CentralController :: InportReceivingInformationFromAgent(Configuration &rec
 		// Unknown controller mode
 		default:{
 			printf("[CC] ERROR: Undefined controller mode %d\n"
-				"	- Use MODE_MONITORING (%d) or MODE_CENTRALIZED (%d)\n",
-				controller_mode, MODE_MONITORING, MODE_CENTRALIZED);
+				"	- Use CC_MODE_PASSIVE (%d) or CC_MODE_ACTIVE (%d)\n",
+				controller_mode, CC_MODE_PASSIVE, CC_MODE_ACTIVE);
 		}
 	}
 
@@ -421,7 +426,8 @@ void CentralController :: GenerateAndSendNewConfiguration(trigger_t &){
 	ml_model.ComputeGlobalConfiguration(configuration_array, performance_array,
 		central_controller_logger, SimTime());
 	// Send the configuration to the AP
-	SendConfigurationToAllAgents();
+//	SendCommandToAllAgents();
+	SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
 	// Set trigger for next request
 	trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
 	LOGS(save_controller_logs,central_controller_logger.file,
@@ -430,12 +436,14 @@ void CentralController :: GenerateAndSendNewConfiguration(trigger_t &){
 }
 
 /**
- * Send the configuration to all the agents
+ * Send a command to all the agents
+ * @param "command_id" [type int]: identifier of the command to be sent
+ * @param "conf_array" [type *Configuration]: array of configuration objects to provide additional information to the destination agents
  */
-void CentralController :: SendConfigurationToAllAgents(){
+void CentralController :: SendCommandToAllAgents(int command_id, Configuration *conf_array){
 	// Iterate for all the agents attached to the CC
 	for (int ix = 0 ; ix < agents_number ; ++ ix ) {
-		SendCommandToSingleAgent(ix, UPDATE_CONFIGURATION, configuration_array[ix]);
+		SendCommandToSingleAgent(ix, command_id, configuration_array[ix]);
 	}
 }
 
@@ -488,6 +496,18 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
 			// ...
 			LOGS(save_controller_logs,central_controller_logger.file,
 				"%.15f;CC;%s;%s Requesting Agent %d to UNBAN a configuration\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case COMMUNICATION_UPON_TRIGGER: {
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to send information only upon receiving triggers\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case COMMUNICATION_AUTOMATIC: {
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to send information automatically\n",
 				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
 			break;
 		}
@@ -612,12 +632,14 @@ void CentralController :: InitializeMlModel() {
 			if (num_actions_per_agent[i] >= j) {
 				available_actions_per_agent[i][j] = 1;		// The action exists and is available (set to 1 by default)
 				performance_action_per_agent[i][j] = 0;		// Set default performance to 0
+				times_action_played_per_agent[i][j] = 0;
 			} else {
 				available_actions_per_agent[i][j] = -1;		// The action does not exist (the index exceeds the total number of actions of that agent)
 				performance_action_per_agent[i][j] = -1;	// The actions does not exist
+				times_action_played_per_agent[i][j] = -1;
 			}
 		}
-		// Initialize the matrix that indicates the potential interferring OBSSs of each BSS (only for agents connected to the CC)
+		// Initialize the matrix that indicates the potential interfering OBSSs of each BSS (only for agents connected to the CC)
 		for (int j = 0; j < agents_number; ++j) {
 			if (i == j) clusters_per_wlan[i][j] = 1;
 			else clusters_per_wlan[i][j] = 0;
@@ -650,11 +672,13 @@ void CentralController :: InitializeCentralController() {
 
 	// Keep track of the available actions in each agent
 	available_actions_per_agent = new int *[agents_number];
-	performance_action_per_agent = new int *[agents_number];
+	performance_action_per_agent = new double *[agents_number];
+	times_action_played_per_agent = new int *[agents_number];
 	clusters_per_wlan = new int *[agents_number];
 	for (int i = 0; i < agents_number; ++i) {
 		available_actions_per_agent[i] = new int[max_number_of_actions];
-		performance_action_per_agent[i] = new int[max_number_of_actions];
+		performance_action_per_agent[i] = new double[max_number_of_actions];
+		times_action_played_per_agent[i] = new int[max_number_of_actions];
 		clusters_per_wlan[i] = new int[agents_number];
 	}
 

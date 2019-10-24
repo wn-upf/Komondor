@@ -53,16 +53,20 @@
 // Action info
 struct Action
 {
+
+	int id;				///> Action identifier
+
+	// Configuration
 	int channel;		///> Channel selected
 	double cca;			///> CCA level
 	double tx_power;	///> Tx Power
 	int dcb_policy;		///> DCB policy
 
 	/**
-	 * Print the list of STAs IDs belonging to the WLAN
+	 * Print the configuration of the action
 	 */
 	void PrintAction(){
-		printf("------------\n Action:\n");
+		printf("------------\n Action (%d):\n", id);
 		printf(" * channel = %d\n", channel);
 		printf(" * cca = %f\n", cca);
 		printf(" * tx_power = %f\n", tx_power);

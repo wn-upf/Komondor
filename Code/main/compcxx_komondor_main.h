@@ -13,7 +13,8 @@ protected: std::vector<compcxx_component*>c; std::vector<T> f; };
 class compcxx_component { public: 
 typedef void  (compcxx_component::*Agent_outportRequestInformationToAp_f_t)();
 typedef void  (compcxx_component::*Agent_outportSendConfigurationToAp_f_t)(Configuration &new_configuration);
-typedef void  (compcxx_component::*Agent_outportAnswerToController_f_t)(Configuration &configuration, Performance &performance, int agent_id);
+typedef void  (compcxx_component::*Agent_outportAnswerToController_f_t)(int agent_id, Configuration &configuration,
+			Performance &performance, double *average_performance_per_configuration);
 typedef void  (compcxx_component::*CentralController_outportRequestInformationToAgent_f_t)(int destination_agent_id);
 typedef void  (compcxx_component::*CentralController_outportSendCommandToAgent_f_t)(int destination_agent_id, int command_id,
 			Configuration &new_configuration);

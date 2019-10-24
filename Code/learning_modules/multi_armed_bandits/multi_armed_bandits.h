@@ -253,7 +253,7 @@ class MultiArmedBandit {
 			estimated_reward_per_arm = new double[num_actions];
 			// Initialize the array containing the times each arm has been played
 			times_arm_has_been_selected = new int[num_actions];
-			for(int i = 0; i < num_actions; i++){
+			for(int i = 0; i < num_actions; ++i){
 				reward_per_arm[i] = initial_reward;	// Set the initial reward
 				cumulative_reward_per_arm[i] = initial_reward;
 				average_reward_per_arm[i] = initial_reward;

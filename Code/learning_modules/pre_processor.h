@@ -53,7 +53,7 @@
 #include "../list_of_macros.h"
 
 #include "../structures/node_configuration.h"
-#include "../structures/performance_metrics.h"
+#include "../structures/performance.h"
 
 #ifndef _AUX_PP_
 #define _AUX_PP_

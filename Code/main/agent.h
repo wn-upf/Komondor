@@ -59,7 +59,7 @@
 
 #include "../list_of_macros.h"
 #include "../structures/node_configuration.h"
-#include "../structures/performance_metrics.h"
+#include "../structures/performance.h"
 #include "../structures/action.h"
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
@@ -90,6 +90,8 @@ component Agent : public TypeII{
 
 		// Communication with CC
 		void ForwardInformationToController();
+		void UpdateConfigurationStatisticsController(int selected_conf_ix, double performance);
+		void ResetControllerStatistics();
 
 		// Communication with other Agents (distributed methods)
 		// ... To be completed
@@ -106,7 +108,7 @@ component Agent : public TypeII{
 
 		// Specific to each agent
 		int agent_id; 				///> Node identifier
-		int agent_mode;				///> Indicates the mode of the agent (DECENTRALIZED; COOPERATIVE; CENTRALIZED)
+		int agent_centralized;				///> Indicates the mode of the agent (DECENTRALIZED; COOPERATIVE; CENTRALIZED)
 		std::string wlan_code;		///> WLAN code to which the agent belongs
 		int wlan_id;
 		int num_stas;				///> Number of STAs associated to the WLAN
@@ -155,6 +157,10 @@ component Agent : public TypeII{
 		double *cumulative_reward_per_arm;	///> Cumulative reward experienced for each arm
 		int *times_arm_has_been_selected; 	///> Number of times an arm has been played
 
+		double *average_reward_per_arm_since_last_request;		///> Average reward experienced for each arm since the last request from the CC
+		double *cumulative_reward_per_arm_since_last_request;	///> Cumulative reward experienced for each arm since the last request from the CC
+		int *times_arm_has_been_selected_since_last_request; 	///> Number of times an arm has been played since the last request from the CC
+
 		// Variables to store performance and configuration reports
 		Performance performance;						///> Performance object
 		Configuration configuration;					///> Configuration object
@@ -182,6 +188,7 @@ component Agent : public TypeII{
 		int flag_information_available;			///> Flag to indicate that information is available at the agent
 
 		int learning_allowed;
+		int automatic_forward_enabled;
 
 	// Connections and timers
 	public:
@@ -196,7 +203,8 @@ component Agent : public TypeII{
 		outport void outportRequestInformationToAp();
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
 		// OUTPORT (centralized system only)
-		outport void outportAnswerToController(Configuration &configuration, Performance &performance, int agent_id);
+		outport void outportAnswerToController(int agent_id, Configuration &configuration,
+			Performance &performance, double *average_performance_per_configuration);
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap; // Timer for requesting information to the AP
 		// Every time the timer expires execute this
@@ -233,18 +241,11 @@ void Agent :: Start(){
 	LOGS(save_agent_logs, agent_logger.file,
 		"%.18f;A%d;%s;%s Start()\n", SimTime(), agent_id, LOG_B00, LOG_LVL1);
 
-	// Start requesting information to the AP or wait until the CC sends a request
-	if(agent_mode == AGENT_MODE_CENTRALIZED) {
-		// --- Do nothing ---
-		// In case of being centralized, wait for a request from the controller
-		printf("%s Agent %d: Network optimization is currently managed by the CC\n", LOG_LVL3, agent_id);
-	} else {
-		// Initialize the PP and the ML Method
-		InitializePreProcessor();
-		InitializeMlModel();
-		// Compute the new configuration, based on the ML model
-		ComputeNewConfiguration();
-	}
+	// Initialize the PP and the ML Method
+	InitializePreProcessor();
+	InitializeMlModel();
+	// Compute the new configuration, based on the ML model
+	ComputeNewConfiguration();
 
 };
 
@@ -305,7 +306,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	}
 
 	// Forward the received information to the controller (if necessary)
-	if (controller_on) {
+	if (controller_on && (automatic_forward_enabled || flag_request_from_controller)) {
 		ForwardInformationToController();
 		flag_request_from_controller = false;
 	}
@@ -341,16 +342,16 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
 	outportSendConfigurationToAp(configuration_to_send);
 
 	// Set trigger for next request in case of being an independent agent (not controlled by a central entity)
-	if (agent_mode != AGENT_MODE_CENTRALIZED) {
+//	if (agent_centralized != AGENT_MODE_CENTRALIZED) {
 		LOGS(save_agent_logs, agent_logger.file,
 			"%.15f;A%d;%s;%s Next request to be sent at %f\n",
 			SimTime(), agent_id, LOG_C00, LOG_LVL2, FixTimeOffset(SimTime() + time_between_requests,13,12));
 		trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
 		flag_compute_new_configuration = true;
-	} else {
-		LOGS(save_agent_logs, agent_logger.file,
-			"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	}
+//	} else {
+//		LOGS(save_agent_logs, agent_logger.file,
+//			"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+//	}
 
 };
 
@@ -366,10 +367,8 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
  */
 void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
 
-	printf("%s Agent #%d: New request received from the Controller (status %d)\n", LOG_LVL1, agent_id, controller_on);
-
 	if(controller_on && agent_id == destination_agent_id) {
-//		printf("%s Agent #%d: New request received from the Controller\n", LOG_LVL1, agent_id);
+		printf("%s Agent #%d: New request received from the Controller\n", LOG_LVL1, agent_id);
 		LOGS(save_agent_logs, agent_logger.file,
 			"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 		LOGS(save_agent_logs, agent_logger.file,
@@ -397,12 +396,43 @@ void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
 void Agent :: ForwardInformationToController(){
 
 	if (controller_on) {
+
+		printf("A%d: Forwarding information to the controller\n", agent_id);
+
 		LOGS(save_agent_logs, agent_logger.file,
 			"%.15f;A%d;%s;%s Forwarding information to the controller...\n",
 			SimTime(), agent_id, LOG_F02, LOG_LVL2);
-		outportAnswerToController(configuration, performance, agent_id);
+
+		// Compute the average performance achieved by each arm
+		for (int i = 0; i < num_actions; ++i) {
+			if (times_arm_has_been_selected_since_last_request[i] > 0) {
+				average_reward_per_arm_since_last_request[i] =
+					cumulative_reward_per_arm_since_last_request[i] /
+					times_arm_has_been_selected_since_last_request[i];
+			} else {
+				average_reward_per_arm_since_last_request[i] = -1;
+			}
+		}
+
+		// Send the current configuration (and performance) to the CC
+		outportAnswerToController(agent_id, configuration, performance, average_reward_per_arm_since_last_request);
+
+		// Reset the CC statistics
+		ResetControllerStatistics();
+
 	}
 
+}
+
+/**
+ * Reset the statistics set during the last CC iteration
+ */
+void Agent :: ResetControllerStatistics() {
+	for (int i = 0; i < num_actions; ++i) {
+		average_reward_per_arm_since_last_request[i] = 0;
+		cumulative_reward_per_arm_since_last_request[i] = 0;
+		times_arm_has_been_selected_since_last_request[i] = 0;
+	}
 }
 
 /**
@@ -421,6 +451,15 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 			SimTime(), agent_id, LOG_F02, LOG_LVL2, command_id);
 
 		switch(command_id) {
+			// Send the current configuration to the CC
+			case SEND_CONFIGURATION_PERFORMANCE:{
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s SENDING the current configuration and performance to the CC...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2);
+				// Update the received configuration
+				ForwardInformationToController();
+				break;
+			}
 			// Update the configuration to the one sent by the CC
 			case UPDATE_CONFIGURATION:{
 				LOGS(save_agent_logs,agent_logger.file,
@@ -473,6 +512,22 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 				// ...
 				break;
 			}
+			// Do not send information unless receiving a request from the CC
+			case COMMUNICATION_UPON_TRIGGER: {
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s Stop sending automatic reports. Waiting until receiving requests from the CC...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2);
+				automatic_forward_enabled = FALSE;
+				break;
+			}
+			// Automatic information forwarding to the CC
+			case COMMUNICATION_AUTOMATIC: {
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s Start sending automatic reports...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2);
+				automatic_forward_enabled = TRUE;
+				break;
+			}
 			// Unknown command id
 			default: {
 				printf("[A%d] ERROR: Undefined command id %d\n", agent_id, command_id);
@@ -494,7 +549,7 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 //			"%.15f;A%d;%s;%s New information received from the Controller to Agent %d\n",
 //			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
 //
-//		if (agent_mode == AGENT_MODE_COOPERATIVE){
+//		if (agent_centralized == AGENT_MODE_COOPERATIVE){
 // Update the configuration based on the additional information provided by the controller (e.g., information from other agents)
 //
 //		} else {
@@ -521,12 +576,15 @@ void Agent :: ComputeNewConfiguration(){
 
 		LOGS(save_agent_logs, agent_logger.file, "%.15f;A%d;%s;%s ComputeNewConfiguration()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
+
 		// Compute a new configuration if information is up to date. Otherwise, request it to the AP and use it.
 		if ( CheckValidityOfData(configuration, performance, SimTime(), MAX_TIME_INFORMATION_VALID)
 				&& flag_information_available) {
 			// Process the configuration and performance reports obtained from the WLAN
 			processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
 			processed_performance = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
+			// Process the obtained information before sending it to the controller
+			if (controller_on) UpdateConfigurationStatisticsController(processed_configuration, processed_performance);
 			// Update the configuration according to the selected learning method
 			switch(learning_mechanism) {
 				/* Multi-Armed Bandits */
@@ -569,6 +627,12 @@ void Agent :: ComputeNewConfiguration(){
 
 }
 
+void Agent :: UpdateConfigurationStatisticsController(int selected_conf_ix, double performance) {
+	cumulative_reward_per_arm_since_last_request[selected_conf_ix] += performance;
+	++times_arm_has_been_selected_since_last_request[selected_conf_ix];
+}
+
+
 /*****************************/
 /*****************************/
 /*  VARIABLE INITIALIZATION  */
@@ -583,10 +647,9 @@ void Agent :: InitializeAgent() {
 //	printf("Agent #%d says: I'm alive!\n", agent_id);
 
 	learning_allowed = 1;
-
 	num_requests = 0;
-
 	controller_on = FALSE;
+	automatic_forward_enabled = TRUE;
 
 	list_of_channels = new int[num_actions_channel];
 	list_of_pd_values = new double[num_actions_sensitivity];
@@ -595,6 +658,25 @@ void Agent :: InitializeAgent() {
 
 	// Generate actions
 	actions = new Action[num_actions];
+	// Statistics for each action
+	reward_per_arm = new double[num_actions];
+	average_reward_per_arm = new double[num_actions];
+	cumulative_reward_per_arm = new double[num_actions];
+	times_arm_has_been_selected = new int[num_actions];
+	// Statistics for each action during a specific time elapse (based on CC requests)
+	average_reward_per_arm_since_last_request = new double[num_actions];
+	cumulative_reward_per_arm_since_last_request = new double[num_actions];
+	times_arm_has_been_selected_since_last_request = new int[num_actions];
+
+	for (int i = 0; i < num_actions; ++i) {
+		reward_per_arm[i] = 0;
+		average_reward_per_arm[i] = 0;
+		cumulative_reward_per_arm[i] = 0;
+		times_arm_has_been_selected[i] = 0;
+		average_reward_per_arm_since_last_request[i] = 0;
+		cumulative_reward_per_arm_since_last_request[i] = 0;
+		times_arm_has_been_selected_since_last_request[i] = 0;
+	}
 
 	flag_request_from_controller = false;
 //	flag_compute_new_configuration = false;
@@ -663,7 +745,7 @@ void Agent :: PrintAgentInfo(){
 	printf("%s Agent %d info:\n", LOG_LVL3, agent_id);
 	printf("%s wlan_code = %s\n", LOG_LVL4, wlan_code.c_str());
 	printf("%s num_stas = %d\n", LOG_LVL4, num_stas);
-	printf("%s agent_mode = %d\n", LOG_LVL4, agent_mode);
+	printf("%s agent_centralized = %d\n", LOG_LVL4, agent_centralized);
 	printf("%s time_between_requests = %f\n", LOG_LVL4, time_between_requests);
 	printf("%s type_of_reward = %d\n", LOG_LVL4, type_of_reward);
 	printf("%s initial_reward = %f\n", LOG_LVL4, initial_reward);
@@ -703,7 +785,7 @@ void Agent :: WriteAgentInfo(Logger logger, std::string header_str){
 	fprintf(logger.file, "%s Agent %d info:\n", header_str.c_str(), agent_id);
 	fprintf(logger.file, "%s - wlan_code = %s\n", header_str.c_str(), wlan_code.c_str());
 	fprintf(logger.file, "%s - num_stas = %d\n", header_str.c_str(), num_stas);
-	fprintf(logger.file, "%s - agent_mode = %d\n", header_str.c_str(), agent_mode);
+	fprintf(logger.file, "%s - agent_centralized = %d\n", header_str.c_str(), agent_centralized);
 	fprintf(logger.file, "%s - time_between_requests = %f\n", header_str.c_str(), time_between_requests);
 	fprintf(logger.file, "%s - type_of_reward = %d\n", header_str.c_str(), type_of_reward);
 	fprintf(logger.file, "%s - initial_reward = %f\n", header_str.c_str(), initial_reward);
@@ -758,24 +840,10 @@ void Agent :: WriteConfiguration(Configuration configuration_to_write) {
 		configuration_to_write.selected_dcb_policy);
 }
 
-///**
-// * Write the performance of the Agent into the agent logs file
-// * @param "performance_to_write" [type Performance]: performance object to be written
-// */
-//void Agent :: WritePerformance(Performance performance_to_write) {
-//	LOGS(save_agent_logs, agent_logger.file,
-//		"%.15f;A%d;%s;%s Performance:\n", SimTime(), agent_id, LOG_C03, LOG_LVL2);
-//	// Throughput (Mbps)
-//	LOGS(save_agent_logs, agent_logger.file,
-//		"%.15f;A%d;%s;%s throughput = %.2f\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
-//		performance_to_write.throughput * pow(10,-6));
-//}
-
-
 /**
  * Print Agent's statistics
  */
-void Agent :: PrintOrWriteAgentStatistics(){
+void Agent :: PrintOrWriteAgentStatistics() {
 	if (print_agent_logs) printf("\n------- Agent A%d ------\n", agent_id);
 	ml_model.PrintOrWriteStatistics(PRINT_LOG, agent_logger, SimTime());
 //	ml_model.PrintOrWriteStatistics(WRITE_LOG, agent_logger, SimTime());

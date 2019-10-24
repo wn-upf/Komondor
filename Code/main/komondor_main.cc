@@ -373,7 +373,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	// Connect the agents to the central controller, if applicable
 	if (agents_enabled && central_controller[0].controller_on) {
 		for(int w = 0; w < total_agents_number; ++w){
-			if(agent_container[w].agent_mode != AGENT_MODE_DECENTRALIZED) {
+			if(agent_container[w].agent_centralized) {
 				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
 				connect agent_container[w].outportAnswerToController,central_controller[0].InportReceivingInformationFromAgent;
 				connect central_controller[0].outportSendCommandToAgent,agent_container[w].InportReceiveCommandFromController;
@@ -883,6 +883,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 	stream_agents = fopen(agents_filename, "r");
 	first_line_skiped_flag = 0;		// Flag for skipping first informative line of input file
 	agent_ix = 0;	// Auxiliary index
+	total_controlled_agents_number = 0;
 	while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_agents)){
 		if(!first_line_skiped_flag){	// Skip the first line of the .csv file
 			first_line_skiped_flag = 1;
@@ -909,10 +910,10 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 				agent_container[agent_ix].InitializeAgent();
 				//  Agent associated to the Central Controller (CC)
 				tmp_agents = strdup(line_agents);
-				int agent_mode (atoi(GetField(tmp_agents, IX_COMMUNICATION_LEVEL)));
-				agent_container[agent_ix].agent_mode = agent_mode;
+				int agent_centralized (atoi(GetField(tmp_agents, IX_COMMUNICATION_LEVEL)));
+				agent_container[agent_ix].agent_centralized = agent_centralized;
 				// Check if the central controller has to be created or not
-				if(agent_mode != AGENT_MODE_DECENTRALIZED) ++total_controlled_agents_number;
+				if(agent_centralized) ++total_controlled_agents_number;
 				// Time between requests (in seconds)
 				tmp_agents = strdup(line_agents);
 				double time_between_requests (atof(GetField(tmp_agents, IX_AGENT_TIME_BW_REQUESTS)));
@@ -1015,6 +1016,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
  * @param "agents_filename" [type char*]: filename of the agents input CSV
  */
 void Komondor :: GenerateCentralController(const char *agents_filename) {
+
 	if (print_system_logs) printf("%s Generating the Central Controller...\n", LOG_LVL1);
 	// So far, we consider a single controller. For scalability purposes, the CC must be declared as an array
 	if (central_controller_flag) central_controller.SetSize(1);
@@ -1036,7 +1038,7 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 //		double max_time_between_requests (0);	// To determine the maximum time between requests for agents
 		// Check which agents are attached to the central controller
 		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
-			if(agent_container[agent_ix].agent_mode !=  AGENT_MODE_DECENTRALIZED) {
+			if(agent_container[agent_ix].agent_centralized) {
 				// Add agent id to list of agents attached to the controller
 				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
 				agent_container[agent_ix].controller_on = central_controller[0].controller_on;

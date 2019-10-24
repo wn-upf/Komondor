@@ -375,16 +375,19 @@
 #define CONFIGURATION_REQUIRED			2
 
 // Modes of the Central Controller (CC)
-#define MODE_MONITORING		0
-#define MODE_CENTRALIZED	1
+#define CC_MODE_PASSIVE		0
+#define CC_MODE_ACTIVE		1
 
 // Types of commands that the CC can send to agents
-#define UPDATE_CONFIGURATION	0
-#define STOP_ACTING				1
-#define RESUME_ACTIVITY			2
-#define MODIFY_ITERATION_TIME	3
-#define BAN_CONFIGURATION		4
-#define UNBAN_CONFIGURATION		5
+#define SEND_CONFIGURATION_PERFORMANCE 	0
+#define UPDATE_CONFIGURATION			1
+#define STOP_ACTING						2
+#define RESUME_ACTIVITY					3
+#define MODIFY_ITERATION_TIME			4
+#define BAN_CONFIGURATION				5
+#define UNBAN_CONFIGURATION				6
+#define COMMUNICATION_UPON_TRIGGER		7
+#define COMMUNICATION_AUTOMATIC			8
 
 // Clustering approaches for grouping agents / BSSs
 #define CLUSTER_BY_CCA			0

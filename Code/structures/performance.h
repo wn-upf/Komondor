@@ -56,7 +56,7 @@ struct Performance
 	int num_stas;
 
 	// Time of the last measurement
-	double timestamp;		///> Timestampt of the last measurement
+	double timestamp;		///> Timestamp of the last measurement
 	double sum_time_channel_idle;	///> Sum time the channel has been idle
 
 	// Throughput statistics
