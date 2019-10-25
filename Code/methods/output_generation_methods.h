@@ -162,22 +162,21 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 	// Print final statistics in console logs
 	if (print_system_logs) {
 		printf("\n%s General Statistics (NEW FUNCTION):\n", LOG_LVL1);
-		printf("%s Average throughput per WLAN = %.3f Mbps (%.2f pkt/s)\n",
-				LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number),
-				(total_throughput / (double) configuration_per_node[0].frame_length) / total_wlans_number);
+		printf("%s Average throughput per WLAN = %.3f Mbps\n",
+			LOG_LVL2, (total_throughput * pow(10,-6) / total_wlans_number));
 		printf("%s Min. throughput = %.2f Mbps (%.2f pkt/s)\n",
-				LOG_LVL3, min_throughput * pow(10,-6), min_throughput / (configuration_per_node[0].frame_length
-					* configuration_per_node[0].max_num_packets_aggregated));
+			LOG_LVL3, min_throughput * pow(10,-6), min_throughput / (configuration_per_node[0].frame_length
+			* configuration_per_node[0].max_num_packets_aggregated));
 		printf("%s Max. throughput = %.2f Mbps (%.2f pkt/s)\n",
-						LOG_LVL3, max_throughput * pow(10,-6), max_throughput / (configuration_per_node[0].frame_length
-						* configuration_per_node[0].max_num_packets_aggregated));
+			LOG_LVL3, max_throughput * pow(10,-6), max_throughput / (configuration_per_node[0].frame_length
+			* configuration_per_node[0].max_num_packets_aggregated));
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, total_throughput * pow(10,-6));
 		printf("%s Total number of packets sent = %d\n", LOG_LVL3, total_data_packets_sent);
 		printf("%s Average number of data packets successfully sent per WLAN = %.2f\n",
-				LOG_LVL4, ((double) total_data_packets_sent/ (double) total_wlans_number));
+			LOG_LVL4, ((double) total_data_packets_sent/ (double) total_wlans_number));
 		printf("%s Average number of RTS packets lost due to slotted BO = %f (%.3f %% loss)\n",
-				LOG_LVL4, (double) total_rts_lost_slotted_bo/(double) total_wlans_number,
-				((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
+			LOG_LVL4, (double) total_rts_lost_slotted_bo/(double) total_wlans_number,
+			((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
 		printf("%s Average number of packets sent per WLAN = %d\n", LOG_LVL3, (total_data_packets_sent/total_wlans_number));
 		printf("%s Proportional Fairness = %.2f\n", LOG_LVL2, proportional_fairness);
 		printf("%s Jain's Fairness = %.2f\n",  LOG_LVL2, jains_fairness);
@@ -187,8 +186,8 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 		printf("%s Av. expected waiting time = %.2f ms\n", LOG_LVL3, av_expected_waiting_time * pow(10,3));
 		printf("%s Average bandwidth used for transmitting = %.2f MHz\n",
 			LOG_LVL2, total_bandiwdth_tx / (double) total_wlans_number);
-		printf("%s Time channel was idle = %.2f s (%f%%)\n",  LOG_LVL2,
-			performance_report[0].sum_time_channel_idle, (100*performance_report[0].sum_time_channel_idle/simulation_time_komondor));
+		printf("%s Time channel was idle = %.2f s (%f%%)\n",  LOG_LVL2, performance_report[0].sum_time_channel_idle,
+			(100*performance_report[0].sum_time_channel_idle/simulation_time_komondor));
 		printf("\n\n");
 	}
 

@@ -342,6 +342,33 @@ class PreProcessor {
 			return action_ix;
 		}
 
+		/**
+		* Initialize actions
+		* @return "action_array" [type *Action]: initialized array of Action structs
+		*/
+		Action* InitializeActions(){
+			Action *action_array = new Action[num_actions];
+			int *indexes_arm = new int[NUM_FEATURES_ACTIONS];
+			for(int i = 0; i < num_actions; ++i) {
+				index2values(indexes_arm, i, num_actions_channel,num_actions_sensitivity,
+					num_actions_tx_power, num_actions_dcb_policy);
+				action_array[i].id = i;
+				// Configuration
+				action_array[i].channel = list_of_channels[indexes_arm[0]];
+				action_array[i].cca = list_of_pd_values[indexes_arm[1]];
+				action_array[i].tx_power = list_of_tx_power_values[indexes_arm[2]];
+				action_array[i].dcb_policy = list_of_dcb_policy[indexes_arm[3]];
+				// Performance
+				action_array[i].instantaneous_performance = 0;
+				action_array[i].cumulative_performance = 0;
+				action_array[i].times_played = 0;
+				action_array[i].average_performance_since_last_request = 0;
+				action_array[i].times_played_since_last_request = 0;
+//				action_array[i].PrintAction();
+			}
+			return action_array;
+		}
+
 		/*************************/
 		/*************************/
 		/*  PRINT/WRITE METHODS  */

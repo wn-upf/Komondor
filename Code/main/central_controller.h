@@ -62,6 +62,7 @@
 
 #include "../structures/node_configuration.h"
 #include "../structures/performance.h"
+#include "../structures/action.h"
 
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
@@ -85,11 +86,14 @@ component CentralController : public TypeII{
 		// Generic
 		void InitializeCentralController();
 
+		// Configuration generation methods
 		void ApplyMlMethod();
+		void GenerateGlobalConfiguration();
+		void GenerateSingleConfiguration();
 
 		// Communication with Agents
 		void RequestInformationToAgents();
-		void GenerateAndSendNewConfiguration();
+//		void GenerateAndSendNewConfiguration();
 		void SendCommandToAllAgents(int command_id, Configuration *conf_array);
 		void SendConfigurationToSingleAgent(int destination_agent_id, Configuration conf);
 		void SendCommandToSingleAgent(int destination_agent_id, int command_id, Configuration conf);
@@ -178,25 +182,24 @@ component CentralController : public TypeII{
 			Performance &performance, double *average_performance_per_configuration);
 
 		// OUTPORT connections for sending notifications
-		outport void outportRequestInformationToAgent(int destination_agent_id);
 		outport void outportSendCommandToAgent(int destination_agent_id, int command_id,
 			Configuration &new_configuration);
 
-		// Triggers
-		Timer <trigger_t> trigger_apply_ml_method;
-		Timer <trigger_t> trigger_request_information_to_agents; // Timer for requesting information to the AP
-		Timer <trigger_t> trigger_safe_responses_collection;
+		// Timers
+		Timer <trigger_t> trigger_apply_ml_method;					// Timer for applying the ML method
+		Timer <trigger_t> trigger_request_information_to_agents;	// Timer for requesting information to the AP
+//		Timer <trigger_t> trigger_safe_responses_collection;
 
 		// Every time the timer expires execute this
 		inport inline void ApplyMlMethod(trigger_t& t1);
 		inport inline void RequestInformationToAgents(trigger_t& t1);
-		inport inline void GenerateAndSendNewConfiguration(trigger_t& t1);
+//		inport inline void GenerateAndSendNewConfiguration(trigger_t& t1);
 
 		// Connect timers to methods
 		CentralController () {
 			connect trigger_apply_ml_method.to_component,ApplyMlMethod;
 			connect trigger_request_information_to_agents.to_component,RequestInformationToAgents;
-			connect trigger_safe_responses_collection.to_component,GenerateAndSendNewConfiguration;
+//			connect trigger_safe_responses_collection.to_component,GenerateAndSendNewConfiguration;
 		}
 
 };
@@ -214,7 +217,6 @@ void CentralController :: Setup(){
 void CentralController :: Start(){
 
 	if (controller_on) {
-
 		// Create CC logs file (if required)
 		if(save_controller_logs) {
 			sprintf(own_file_path,"%s_CENTRAL_CONTROLLER.txt","../output/logs_output");
@@ -226,38 +228,27 @@ void CentralController :: Start(){
 		}
 		LOGS(save_controller_logs,central_controller_logger.file,
 			"%.18f;CC;%s;%s Start()\n", SimTime(), LOG_B00, LOG_LVL1);
-
 		// Initialize the PP and the ML Method
 		InitializePreProcessor();
 		InitializeMlModel();
-
 		// Hardcoded [TODO: introduce this parameter from the input]
 		controller_mode = CC_MODE_ACTIVE; // CC_MODE_ACTIVE, CC_MODE_PASSIVE
-
 		// According to the defined mode, start making requests by activating triggers
 		if(controller_mode == CC_MODE_ACTIVE) {
-			printf("OK\n");
 			// Indicate all the agents to only send information upon receiving a trigger
-			SendCommandToAllAgents(COMMUNICATION_UPON_TRIGGER, configuration_array);
+			SendCommandToAllAgents(COMMUNICATION_UPON_TRIGGER, configuration_array);	// TODO: based on the intent for the CC, decide to use triggers or not (now it is hardcoded)
 			// Generate the time trigger for the first request
 			if (time_between_requests > 0) {
-				trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+				trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
 			} else {
 				// Idea: when "time_between_requests" is negative, apply the ML method after the simulation ends (batch learning)
 			}
+		} else if(controller_mode == CC_MODE_PASSIVE) {
+			// Wait until the agents send data to the CC
 		}
-
-//		// Trigger the ML operation according to the time between requests
-//		if (time_between_requests > 0) {
 //			trigger_apply_ml_method.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
-//		} else {
-//			// Idea: when "time_between_requests" is negative, apply the ML method after the simulation ends (batch learning)
-//		}
-
 	} else {
-
 		printf("The central controller is NOT active\n");
-
 	}
 
 };
@@ -288,57 +279,104 @@ void CentralController :: Stop() {
 /**
  * Request information (configuration and performance) to agents upon trigger-based activation
  */
-void CentralController :: ApplyMlMethod(trigger_t &){
-
-	LOGS(save_controller_logs,central_controller_logger.file,
-		"%.15f;CC;%s;%s Applying the ML method (iteration %d)\n",
-		SimTime(), LOG_C00, LOG_LVL1, cc_iteration);
-
-	// STEP 1 PROCESS INFORMATION FROM AGENTS
-	// 		STEP 1.1 IF THERE IS NOT INFORMATION, FORCE A REQUEST
-//	pre_processor.UpdatePerformancePerAgentCC(performance_per_agent, agents_number);
-	// ...
-
-	// STEP 2 APPLY THE ML METHOD
-
-	// ...
-
-	// STEP 3 FORWARD THE OUTPUT TO AGETNS
-
-	// ...
-
-
-
-//	// Request information to every agent associated to the CC
-//	for (int ix = 0 ; ix < agents_number ; ++ix ) {
-//		LOGS(save_controller_logs,central_controller_logger.file,
-//			"%.15f;CC;%s;%s Requesting information to Agent %d\n", SimTime(), LOG_C00, LOG_LVL2, ix);
-//		outportRequestInformationToAgent(ix);
-//		++ num_requests_per_agent[ix] ;
-//	}
-
-	// STEP 4: Set the trigger for performing the next request
-	trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
-
-	++cc_iteration;
-
+void CentralController :: RequestInformationToAgents(trigger_t &){
+	// Request information to every agent associated to the CC
+	SendCommandToAllAgents(SEND_CONFIGURATION_PERFORMANCE, configuration_array);
 };
 
+/**
+ * Send a command to all the agents - Unlike "RequestInformationToAgents", this method is not activated through triggers
+ * @param "command_id" [type int]: identifier of the command to be sent
+ * @param "conf_array" [type *Configuration]: array of configuration objects to provide additional information to the destination agents
+ */
+void CentralController :: SendCommandToAllAgents(int command_id, Configuration *conf_array){
+	LOGS(save_controller_logs,central_controller_logger.file,
+		"%.15f;CC;%s;%s SendCommandToAllAgents()\n", SimTime(), LOG_C00, LOG_LVL1);
+	// Iterate for all the agents attached to the CC
+	for (int ix = 0 ; ix < agents_number ; ++ ix ) {
+		SendCommandToSingleAgent(ix, command_id, configuration_array[ix]);
+	}
+}
 
 /**
- * Request information (configuration and performance) to agents upon trigger-based activation
+ * Send an asynchronous command to a specific agent attached to the CC
+ * @param "destination_agent_id" [type int]: identifier of the destination agent
+ * @param "command_id" [type int]: identifier of the command to be sent
+ * @param "conf" [type Configuration]: configuration object to provide additional information to the destination agent
  */
-void CentralController :: RequestInformationToAgents(trigger_t &){
+void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int command_id, Configuration conf){
 
-	LOGS(save_controller_logs,central_controller_logger.file,
-		"%.15f;CC;%s;%s Requesting information to Agents\n", SimTime(), LOG_C00, LOG_LVL1);
-	// Request information to every agent associated to the CC
-	for (int ix = 0 ; ix < agents_number ; ++ix ) {
-		LOGS(save_controller_logs,central_controller_logger.file,
-			"%.15f;CC;%s;%s Requesting information to Agent %d\n", SimTime(), LOG_C00, LOG_LVL2, ix);
-		outportRequestInformationToAgent(ix);
-		++ num_requests_per_agent[ix] ;
+	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
+
+	// According to the defined mode, behave in one way or another
+	switch(command_id) {
+
+		case SEND_CONFIGURATION_PERFORMANCE:{
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to send the current conf. and performance\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case UPDATE_CONFIGURATION:{
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Sending a new configuration to Agent %d\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case STOP_ACTING:
+		case RESUME_ACTIVITY: {
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to STOP/RESUME its learning activity (%d)\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id, command_id);
+			break;
+		}
+		case MODIFY_ITERATION_TIME: {
+			// Update the time between iterations in the configuration object
+			// ...
+			double new_iteration_time = 0.1; // Time between iterations in seconds
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to modify the time of an iteration to %f\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id, new_iteration_time);
+			break;
+		}
+		case BAN_CONFIGURATION: {
+			// Specify which configuration needs to be banned
+			// ...
+			// Indicate the time this configuration should be unavailable
+			// ...
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to BAN a configuration\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case UNBAN_CONFIGURATION: {
+			// Specify which configuration needs to be re-activated
+			// ...
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to UNBAN a configuration\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case COMMUNICATION_UPON_TRIGGER: {
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to send information only upon receiving triggers\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case COMMUNICATION_AUTOMATIC: {
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to send information automatically\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		// Unknown command id
+		default: {
+			printf("[CC] ERROR: Undefined command id %d\n", command_id);
+			exit(-1);
+		}
 	}
+
+	outportSendCommandToAgent(destination_agent_id, command_id, conf);
 
 };
 
@@ -416,111 +454,88 @@ void CentralController :: InportReceivingInformationFromAgent(int agent_id, Conf
 
 };
 
+
+
+/****************/
+/****************/
+/*  ML METHODS  */
+/****************/
+/****************/
+
 /**
- * Generate a new configuration and send it to agents. Activated by a trigger.
+ * Request information (configuration and performance) to agents upon trigger-based activation
  */
-void CentralController :: GenerateAndSendNewConfiguration(trigger_t &){
+void CentralController :: ApplyMlMethod(trigger_t &){
+
 	LOGS(save_controller_logs,central_controller_logger.file,
-		"%.15f;CC;%s;%s GenerateAndSendNewConfiguration()\n", SimTime(), LOG_F00, LOG_LVL1);
+		"%.15f;CC;%s;%s Applying the ML method (iteration %d)\n",
+		SimTime(), LOG_C00, LOG_LVL1, cc_iteration);
+
+	// STEP 1 PROCESS INFORMATION FROM AGENTS
+	// 		STEP 1.1 IF THERE IS NOT INFORMATION, FORCE A REQUEST
+//	pre_processor.UpdatePerformancePerAgentCC(performance_per_agent, agents_number);
+	// ...
+
+	// STEP 2 APPLY THE ML METHOD
+	GenerateGlobalConfiguration();
+	// ...
+
+	// STEP 3 FORWARD THE OUTPUT TO AGETNS
+	SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
+
+	// STEP 4: Set the trigger for performing the next request
+	trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+
+	++cc_iteration;
+
+};
+
+/**
+ * Generate a new global configuration.
+ */
+void CentralController :: GenerateGlobalConfiguration(){
+	LOGS(save_controller_logs,central_controller_logger.file,
+		"%.15f;CC;%s;%s GenerateGlobalConfiguration()\n", SimTime(), LOG_F00, LOG_LVL1);
 	// Compute the new configuration according to the ML method used
 	ml_model.ComputeGlobalConfiguration(configuration_array, performance_array,
 		central_controller_logger, SimTime());
-	// Send the configuration to the AP
-//	SendCommandToAllAgents();
-	SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
-	// Set trigger for next request
-	trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+}
+
+/**
+ * Generate a new configuration for a given agent.
+ */
+void CentralController :: GenerateSingleConfiguration(){
 	LOGS(save_controller_logs,central_controller_logger.file,
-		"%.15f;CC;%s;%s Next request to be sent at %f\n",
-		SimTime(), LOG_C00, LOG_LVL2, FixTimeOffset(SimTime() + time_between_requests,13,12));
+		"%.15f;CC;%s;%s GenerateGlobalConfiguration()\n", SimTime(), LOG_F00, LOG_LVL1);
+	// Compute the new configuration according to the ML method used
+	ml_model.ComputeGlobalConfiguration(configuration_array, performance_array,
+		central_controller_logger, SimTime());
 }
 
-/**
- * Send a command to all the agents
- * @param "command_id" [type int]: identifier of the command to be sent
- * @param "conf_array" [type *Configuration]: array of configuration objects to provide additional information to the destination agents
- */
-void CentralController :: SendCommandToAllAgents(int command_id, Configuration *conf_array){
-	// Iterate for all the agents attached to the CC
-	for (int ix = 0 ; ix < agents_number ; ++ ix ) {
-		SendCommandToSingleAgent(ix, command_id, configuration_array[ix]);
-	}
-}
+///**
+// * Generate a new configuration and send it to agents. Activated by a trigger.
+// */
+//void CentralController :: GenerateAndSendNewConfiguration(trigger_t &){
+//	LOGS(save_controller_logs,central_controller_logger.file,
+//		"%.15f;CC;%s;%s GenerateAndSendNewConfiguration()\n", SimTime(), LOG_F00, LOG_LVL1);
+//	// Compute the new configuration according to the ML method used
+//	ml_model.ComputeGlobalConfiguration(configuration_array, performance_array,
+//		central_controller_logger, SimTime());
+//	// Send the configuration to the AP
+////	SendCommandToAllAgents();
+//	SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
+//	// Set trigger for next request
+//	trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+//	LOGS(save_controller_logs,central_controller_logger.file,
+//		"%.15f;CC;%s;%s Next request to be sent at %f\n",
+//		SimTime(), LOG_C00, LOG_LVL2, FixTimeOffset(SimTime() + time_between_requests,13,12));
+//}
 
-/**
- * Send an asynchronous command to a specific agent attached to the CC
- * @param "destination_agent_id" [type int]: identifier of the destination agent
- * @param "command_id" [type int]: identifier of the command to be sent
- * @param "conf" [type Configuration]: configuration object to provide additional information to the destination agent
- */
-void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int command_id, Configuration conf){
-
-	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
-
-	// According to the defined mode, behave in one way or another
-	switch(command_id) {
-		case UPDATE_CONFIGURATION:{
-			LOGS(save_controller_logs,central_controller_logger.file,
-				"%.15f;CC;%s;%s Sending a new configuration to Agent %d\n",
-				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
-			break;
-		}
-		case STOP_ACTING:
-		case RESUME_ACTIVITY: {
-			LOGS(save_controller_logs,central_controller_logger.file,
-				"%.15f;CC;%s;%s Requesting Agent %d to STOP/RESUME its learning activity (%d)\n",
-				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id, command_id);
-			break;
-		}
-		case MODIFY_ITERATION_TIME: {
-			// Update the time between iterations in the configuration object
-			// ...
-			double new_iteration_time = 0.1; // Time between iterations in seconds
-			LOGS(save_controller_logs,central_controller_logger.file,
-				"%.15f;CC;%s;%s Requesting Agent %d to modify the time of an iteration to %f\n",
-				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id, new_iteration_time);
-			break;
-		}
-		case BAN_CONFIGURATION: {
-			// Specify which configuration needs to be banned
-			// ...
-			// Indicate the time this configuration should be unavailable
-			// ...
-			LOGS(save_controller_logs,central_controller_logger.file,
-				"%.15f;CC;%s;%s Requesting Agent %d to BAN a configuration\n",
-				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
-			break;
-		}
-		case UNBAN_CONFIGURATION: {
-			// Specify which configuration needs to be re-activated
-			// ...
-			LOGS(save_controller_logs,central_controller_logger.file,
-				"%.15f;CC;%s;%s Requesting Agent %d to UNBAN a configuration\n",
-				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
-			break;
-		}
-		case COMMUNICATION_UPON_TRIGGER: {
-			LOGS(save_controller_logs,central_controller_logger.file,
-				"%.15f;CC;%s;%s Requesting Agent %d to send information only upon receiving triggers\n",
-				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
-			break;
-		}
-		case COMMUNICATION_AUTOMATIC: {
-			LOGS(save_controller_logs,central_controller_logger.file,
-				"%.15f;CC;%s;%s Requesting Agent %d to send information automatically\n",
-				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
-			break;
-		}
-		// Unknown command id
-		default: {
-			printf("[CC] ERROR: Undefined command id %d\n", command_id);
-			exit(-1);
-		}
-	}
-
-	outportSendCommandToAgent(destination_agent_id, command_id, conf);
-
-};
+/************************/
+/************************/
+/*  CLUSTERING METHODS  */
+/************************/
+/************************/
 
 /**
  * For each agent, provides the list of other agents that belong to the same cluster (updates variable "clusters_per_wlan")
@@ -559,7 +574,6 @@ void CentralController :: GenerateClusters(int wlan_id, Performance perf, Config
 			break;
 		}
 
-
 	}
 
 }
@@ -569,7 +583,6 @@ void CentralController :: GenerateClusters(int wlan_id, Performance perf, Config
  * @param "print_or_write" [type int]: flag indicating whether to print or write logs
  */
 void CentralController :: PrintOrWriteClusters(int print_or_write){
-
 	switch(print_or_write){
 		case PRINT_LOG:{
 			printf("Already identified clusters\n");
@@ -596,7 +609,6 @@ void CentralController :: PrintOrWriteClusters(int print_or_write){
 			break;
 		}
 	}
-
 }
 
 /******************************/

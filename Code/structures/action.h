@@ -50,6 +50,9 @@
 #include "../list_of_macros.h"
 #include "logger.h"
 
+#ifndef _AUX_ACTION_
+#define _AUX_ACTION_
+
 // Action info
 struct Action
 {
@@ -62,16 +65,27 @@ struct Action
 	double tx_power;	///> Tx Power
 	int dcb_policy;		///> DCB policy
 
+	// Performance
+	double instantaneous_performance;
+	double cumulative_performance;
+	int times_played;
+
+	// Performance since last request from the controller
+	double average_performance_since_last_request;
+	int times_played_since_last_request;
+
 	/**
 	 * Print the configuration of the action
 	 */
 	void PrintAction(){
 		printf("------------\n Action (%d):\n", id);
 		printf(" * channel = %d\n", channel);
-		printf(" * cca = %f\n", cca);
-		printf(" * tx_power = %f\n", tx_power);
+		printf(" * cca = %f dBm\n", ConvertPower(PW_TO_DBM, cca));
+		printf(" * tx_power = %f dBm\n", ConvertPower(PW_TO_DBM, tx_power));
 		printf(" * dcb_policy = %d\n", dcb_policy);
 		printf("------------\n");
 	}
 
 };
+
+#endif

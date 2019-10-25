@@ -374,7 +374,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	if (agents_enabled && central_controller[0].controller_on) {
 		for(int w = 0; w < total_agents_number; ++w){
 			if(agent_container[w].agent_centralized) {
-				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
+//				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
 				connect agent_container[w].outportAnswerToController,central_controller[0].InportReceivingInformationFromAgent;
 				connect central_controller[0].outportSendCommandToAgent,agent_container[w].InportReceiveCommandFromController;
 			}

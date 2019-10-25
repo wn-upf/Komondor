@@ -3145,8 +3145,8 @@ void Node :: EndBackoff(trigger_t &){
 			IEEE_AX_SU_SPATIAL_STREAMS;
 
 		// Update the number of packets aggregate (just in case that the max PPDU is exceeded with the current MCS)
-		limited_num_packets_aggregated = findMaximumPacketsAggregated(
-			current_num_packets_aggregated, frame_length, bits_ofdm_sym);
+		limited_num_packets_aggregated = findMaximumPacketsAggregated
+			(current_num_packets_aggregated, frame_length, bits_ofdm_sym);
 
 		//printf("data transmitted: %d\n", limited_num_packets_aggregated*frame_length);
 
@@ -3940,6 +3940,8 @@ void Node :: GenerateConfiguration(){
 	configuration.selected_pd = current_pd;
 	configuration.selected_tx_power = current_tx_power;
 	configuration.selected_dcb_policy = current_dcb_policy;
+	configuration.frame_length = frame_length;
+	configuration.max_num_packets_aggregated = max_num_packets_aggregated;
 
 	// 11ax SR
 	configuration.spatial_reuse_enabled = spatial_reuse_enabled;
@@ -4556,7 +4558,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				printf("%s %d/%d\n", LOG_LVL3,
 					num_measures_buffer_with_packets, num_measures_utilization);
 				// RTS/CTS sent and lost
-				printf("%s RTS/CTS sent = %d - RTS/CTS lost = %d  (%.2f %% lost)\n",
+				printf("%s RTS/CTS sent/lost = %d/%d  (%.2f %% lost)\n",
 					LOG_LVL2, rts_cts_sent, rts_cts_lost, rts_cts_lost_percentage);
 				// RTS/CTS sent and lost
 				printf("%s RTS lost due to slotted BO = %d (%f %%)\n",
