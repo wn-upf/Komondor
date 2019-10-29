@@ -61,18 +61,21 @@
  * @param "epsilon" [type double]: current exploration coefficient
  * @return "arm_index" [type int]: index of the selected action
  */
-int PickArmEgreedy(int num_actions, double *reward_per_arm, double epsilon) {
+int PickArmEgreedy(int num_actions, double *reward_per_arm, double epsilon, int *available_arms) {
 
 	double rand_number = ((double) rand() / (RAND_MAX));
 	int arm_index;
 
 	if (rand_number < epsilon) { //EXPLORE
 		arm_index = rand() % num_actions;
+		if (!available_arms[arm_index]) {
+			PickArmEgreedy(num_actions, reward_per_arm, epsilon, available_arms);
+		}
 //		printf("EXPLORE: arm_index = %d\n", arm_index);
 	} else { //EXPLOIT
 		double max = 0;
 		for (int i = 0; i < num_actions; i ++) {
-			if(reward_per_arm[i] >= max) {
+			if(available_arms[i] && reward_per_arm[i] >= max) {
 				max = reward_per_arm[i];
 				arm_index = i;
 			}

@@ -133,6 +133,7 @@ component Agent : public TypeII{
 		int num_actions_sensitivity;		///> Number of PD levels available
 		int num_actions_tx_power;			///> Number of TX power levels available
 		int num_actions_dcb_policy;			///> Number of DCB policies available
+		int *available_actions;
 
 		// Other input parameters
 		int type_of_reward;						///> Type of reward
@@ -206,7 +207,8 @@ component Agent : public TypeII{
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
 		// OUTPORT (centralized system only)
 		outport void outportAnswerToController(int agent_id, Configuration &configuration,
-			Performance &performance, double *average_performance_per_configuration);
+			Performance &performance, double *average_performance_per_configuration,
+			int *times_arm_has_been_selected_since_last_request);
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap; // Timer for requesting information to the AP
 		// Every time the timer expires execute this
@@ -302,6 +304,10 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	// Update the information of the current selected action
 	int configuration_ix = pre_processor.FindActionIndexFromConfigurationBandits(configuration, indexes_configuration);
 	UpdateAction(configuration_ix);
+
+	// UpdateAgentCapabilities
+	configuration.agent_capabilities.num_actions = num_actions;
+	configuration.agent_capabilities.available_actions = available_actions;
 
 	flag_information_available = true;
 
@@ -462,8 +468,13 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 				LOGS(save_agent_logs,agent_logger.file,
 					"%.15f;A%d;%s;%s BANNING configuration...\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2);
-				// TODO: Ban configuration
-				// ...
+				// Update list of available actions based on the information sent by the controller
+				available_actions = received_configuration.agent_capabilities.available_actions;
+//				printf("Available actions: ");
+//				for (int i = 0; i < num_actions; ++i){
+//					printf(" %d ", available_actions[i]);
+//				}
+//				printf("\n");
 				break;
 			}
 			// Restore a certain configuration/action
@@ -512,7 +523,7 @@ void Agent :: ForwardInformationToController(){
 
 	if (controller_on) {
 
-		printf("A%d: Forwarding information to the controller\n", agent_id);
+//		printf("A%d: Forwarding information to the controller\n", agent_id);
 
 		LOGS(save_agent_logs, agent_logger.file,
 			"%.15f;A%d;%s;%s Forwarding information to the controller...\n",
@@ -527,10 +538,15 @@ void Agent :: ForwardInformationToController(){
 			} else {
 				average_reward_per_arm_since_last_request[i] = -1;
 			}
+
+//			printf("A%d average_reward_per_arm_since_last_request[%d] = %f\n",
+//					agent_id, i, average_reward_per_arm_since_last_request[i]);
+
 		}
 
 		// Send the current configuration (and performance) to the CC
-		outportAnswerToController(agent_id, configuration, performance, average_reward_per_arm_since_last_request);
+		outportAnswerToController(agent_id, configuration, performance,
+			average_reward_per_arm_since_last_request, times_arm_has_been_selected_since_last_request);
 
 		// Reset the CC statistics
 		ResetControllerStatistics();
@@ -591,12 +607,12 @@ void Agent :: ComputeNewConfiguration(){
 				case MULTI_ARMED_BANDITS:{
 					// Update the configuration according to the MABs operation
 					ML_output = ml_model.ComputeIndividualConfiguration
-						(processed_configuration, processed_performance, agent_logger, SimTime());
+						(processed_configuration, processed_performance, agent_logger, SimTime(), available_actions);
 					break;
 				}
 				case RTOT_ALGORITHM:{
 					ML_output = ml_model.ComputeIndividualConfiguration
-						(processed_configuration, processed_performance, agent_logger, SimTime());
+						(processed_configuration, processed_performance, agent_logger, SimTime(), available_actions);
 					break;
 				}
 				default:{
@@ -662,6 +678,8 @@ void Agent :: InitializeAgent() {
 	list_of_tx_power_values = new double[num_actions_tx_power];
 	list_of_dcb_policy = new int[num_actions_dcb_policy];
 
+	available_actions = new int[num_actions];
+
 	// Generate actions
 	actions = new Action[num_actions];
 	// Statistics for each action
@@ -682,6 +700,7 @@ void Agent :: InitializeAgent() {
 		average_reward_per_arm_since_last_request[i] = 0;
 		cumulative_reward_per_arm_since_last_request[i] = 0;
 		times_arm_has_been_selected_since_last_request[i] = 0;
+		available_actions[i] = 1;
 	}
 
 	flag_request_from_controller = false;

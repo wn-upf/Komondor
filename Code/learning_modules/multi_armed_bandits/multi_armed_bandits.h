@@ -122,7 +122,7 @@ class MultiArmedBandit {
 		* Select a new action according to the chosen action selection strategy
 		* @return "action_ix" [type int]: index of the selected action
 		*/
-		int SelectNewAction() {
+		int SelectNewAction(int *available_arms) {
 			int action_ix;
 			// Select an action according to the chosen strategy: TODO improve this part (now it is hardcoded)
 			//action_selection_strategy = STRATEGY_EGREEDY;
@@ -134,7 +134,7 @@ class MultiArmedBandit {
 					// Update epsilon
 					epsilon = initial_epsilon / sqrt( (double) num_iterations);
 					// Pick an action according to e-greedy
-					action_ix = PickArmEgreedy(num_actions, average_reward_per_arm, epsilon);
+					action_ix = PickArmEgreedy(num_actions, average_reward_per_arm, epsilon, available_arms);
 					// Increase the number of iterations
 					num_iterations ++;
 					break;
@@ -145,7 +145,7 @@ class MultiArmedBandit {
 				case STRATEGY_THOMPSON_SAMPLING:{
 					// Pick an action according to Thompson sampling
 					action_ix = PickArmThompsonSampling(num_actions,
-						estimated_reward_per_arm, times_arm_has_been_selected);
+						estimated_reward_per_arm, times_arm_has_been_selected, available_arms);
 					// Increase the number of iterations
 					num_iterations ++;
 					break;

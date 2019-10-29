@@ -83,14 +83,19 @@ double gaussrand(double mean, double std){
  * @param "times_arm_has_been_selected" [type int*]: array containing the times each action has been selected
  * @return "action_ix" [type int]: index of the selected action
  */
-int PickArmThompsonSampling(int num_actions, double *estimated_reward_per_arm, int *times_arm_has_been_selected) {
+int PickArmThompsonSampling(int num_actions, double *estimated_reward_per_arm, int *times_arm_has_been_selected, int *available_arms) {
 	//TODO: validate the behavior of this implementation
 	int action_ix;
 	double *theta = new double[num_actions];
 	double std;
 	for (int i = 0; i < num_actions; i++) {
-		std = 1.0/(1+times_arm_has_been_selected[i]);
-		theta[i] = gaussrand(estimated_reward_per_arm[i], std);
+		if (available_arms[i]) {
+			std = 1.0/(1+times_arm_has_been_selected[i]);
+			theta[i] = gaussrand(estimated_reward_per_arm[i], std);
+		} else {
+			std = 0;
+			theta[i] = -10000;
+		}
 	}
 	double max = 0;
 	for (int i = 0; i < num_actions; i ++) {

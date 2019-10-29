@@ -123,6 +123,17 @@ struct AgentCapabilities
 {
 	int agent_id;					///> Agent identifier
 	double time_between_requests;	///> Time between requests
+	int num_actions;
+	int *available_actions;
+
+	/**
+	 * Set the size of the arrays
+	 * @param "num_actions" [type int]: total number of actions
+	 */
+	void SetSizeOfStaList(int num_actions){
+		available_actions = new int[num_actions];
+	}
+
 	/**
 	 * Function to print the agent's capabilities
 	 */

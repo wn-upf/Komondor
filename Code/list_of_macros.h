@@ -325,7 +325,6 @@
  * * SPATIAL REUSE OPERATION IEEE 802.11ax *
  * *****************************************
  */
-
 #define INTRA_BSS_FRAME		0		///> Frame type = Intra-BSS or legacy
 #define NON_SRG_FRAME		1		///> Frame type = Inter-BSS with different SRG
 #define SRG_FRAME			2		///> Frame type = Inter-BSS with same SRG
@@ -392,6 +391,11 @@
 // Clustering approaches for grouping agents / BSSs
 #define CLUSTER_BY_CCA			0
 #define CLUSTER_BY_DISTANCE		1
+
+// Shared performance metrics
+#define MAX_MIN_PERFORMANCE			0
+#define PROP_FAIRNESS_PERFORMANCE	1
+#define AVERAGE_PERFORMANCE			2
 
 /* ********************************************
  * * INPUT/OUTPUT FILES AND CONSOLE ARGUMENTS *

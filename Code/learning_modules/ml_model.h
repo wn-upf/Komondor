@@ -153,7 +153,9 @@ class MlModel {
 		* @param "sim_time" [type double]: simulation time at the moment of calling the function (for logging purposes)
 		* @return "new_action" [type int]: index of the new selected action
 		*/
-		double ComputeIndividualConfiguration(int arm_ix, double reward, Logger &agent_logger, double sim_time) {
+		double ComputeIndividualConfiguration(int arm_ix, double reward,
+			Logger &agent_logger, double sim_time, int *available_arms) {
+
 			double new_action(0);
 			switch(learning_mechanism) {
 				/* MULTI_ARMED_BANDITS */
@@ -161,7 +163,7 @@ class MlModel {
 					// Update the reward of the last played configuration
 					mab_agent.UpdateArmStatistics(arm_ix, reward);
 					// Select a new action according to the updated information
-					new_action = (double) mab_agent.SelectNewAction();
+					new_action = (double) mab_agent.SelectNewAction(available_arms);
 					break;
 				}
 				case RTOT_ALGORITHM: {
