@@ -133,7 +133,7 @@ component Agent : public TypeII{
 		int num_actions_sensitivity;		///> Number of PD levels available
 		int num_actions_tx_power;			///> Number of TX power levels available
 		int num_actions_dcb_policy;			///> Number of DCB policies available
-		int *available_actions;
+//		int *available_actions;
 
 		// Other input parameters
 		int type_of_reward;						///> Type of reward
@@ -307,7 +307,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	// UpdateAgentCapabilities
 	configuration.agent_capabilities.num_actions = num_actions;
-	configuration.agent_capabilities.available_actions = available_actions;
+	configuration.agent_capabilities.available_actions = pre_processor.list_of_available_actions;
 
 	flag_information_available = true;
 
@@ -410,8 +410,8 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 	if(controller_on && agent_id == destination_agent_id ) {
 
 		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s New command received from the Controller (%d)\n",
-			SimTime(), agent_id, LOG_F02, LOG_LVL2, command_id);
+			"%.15f;A%d;%s;%s InportReceiveCommandFromController()\n",
+			SimTime(), agent_id, LOG_F02, LOG_LVL1);
 
 		switch(command_id) {
 			// Send the current configuration to the CC
@@ -464,26 +464,16 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 				break;
 			}
 			// Ban a certain configuration/action
-			case BAN_CONFIGURATION: {
-				LOGS(save_agent_logs,agent_logger.file,
-					"%.15f;A%d;%s;%s BANNING configuration...\n",
-					SimTime(), agent_id, LOG_C00, LOG_LVL2);
-				// Update list of available actions based on the information sent by the controller
-				available_actions = received_configuration.agent_capabilities.available_actions;
-//				printf("Available actions: ");
-//				for (int i = 0; i < num_actions; ++i){
-//					printf(" %d ", available_actions[i]);
-//				}
-//				printf("\n");
-				break;
-			}
-			// Restore a certain configuration/action
+			case BAN_CONFIGURATION:
 			case UNBAN_CONFIGURATION: {
 				LOGS(save_agent_logs,agent_logger.file,
-					"%.15f;A%d;%s;%s UNBANNING configuration...\n",
+					"%.15f;A%d;%s;%s BANNING/RESTORING configuration...\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2);
-				// TODO: Restore configuration
-				// ...
+				// Update list of available actions based on the information sent by the controller
+				pre_processor.list_of_available_actions = received_configuration.agent_capabilities.available_actions;
+				char device_code[10];
+				sprintf(device_code, "A%d", agent_id);
+				pre_processor.PrintAvailableActions(device_code, save_agent_logs, agent_logger, SimTime());
 				break;
 			}
 			// Do not send information unless receiving a request from the CC
@@ -536,12 +526,10 @@ void Agent :: ForwardInformationToController(){
 					cumulative_reward_per_arm_since_last_request[i] /
 					times_arm_has_been_selected_since_last_request[i];
 			} else {
-				average_reward_per_arm_since_last_request[i] = -1;
+				average_reward_per_arm_since_last_request[i] = 0;
 			}
-
 //			printf("A%d average_reward_per_arm_since_last_request[%d] = %f\n",
 //					agent_id, i, average_reward_per_arm_since_last_request[i]);
-
 		}
 
 		// Send the current configuration (and performance) to the CC
@@ -607,12 +595,14 @@ void Agent :: ComputeNewConfiguration(){
 				case MULTI_ARMED_BANDITS:{
 					// Update the configuration according to the MABs operation
 					ML_output = ml_model.ComputeIndividualConfiguration
-						(processed_configuration, processed_performance, agent_logger, SimTime(), available_actions);
+						(processed_configuration, processed_performance, agent_logger,
+						SimTime(), pre_processor.list_of_available_actions);
 					break;
 				}
 				case RTOT_ALGORITHM:{
 					ML_output = ml_model.ComputeIndividualConfiguration
-						(processed_configuration, processed_performance, agent_logger, SimTime(), available_actions);
+						(processed_configuration, processed_performance, agent_logger,
+						SimTime(), pre_processor.list_of_available_actions);
 					break;
 				}
 				default:{
@@ -678,7 +668,7 @@ void Agent :: InitializeAgent() {
 	list_of_tx_power_values = new double[num_actions_tx_power];
 	list_of_dcb_policy = new int[num_actions_dcb_policy];
 
-	available_actions = new int[num_actions];
+//	available_actions = new int[num_actions];
 
 	// Generate actions
 	actions = new Action[num_actions];
@@ -700,7 +690,7 @@ void Agent :: InitializeAgent() {
 		average_reward_per_arm_since_last_request[i] = 0;
 		cumulative_reward_per_arm_since_last_request[i] = 0;
 		times_arm_has_been_selected_since_last_request[i] = 0;
-		available_actions[i] = 1;
+//		available_actions[i] = 1;
 	}
 
 	flag_request_from_controller = false;

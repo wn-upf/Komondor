@@ -171,6 +171,7 @@ class MlModel {
 					break;
 				}
 				case CENTRALIZED_ACTION_BANNING: {
+					printf("[ML MODEL] ERROR, Action-Banning is not an ML method. Use 'CentralizedActionBanning()' instead.\n");
 					break;
 				}
 				default: {
@@ -181,6 +182,54 @@ class MlModel {
 			return new_action;
 		};
 
+		/**
+		* Method for banning actions (configurations) based on different criteria. Fills "available_actions_per_agent".
+		* @param "list_of_available_actions_per_agent" [type **int]: list of actions available for each agent (matrix)
+		* @param "num_actions_per_agent" [type int]: number of actions for each agent
+		* @param "agents_number" [type int]: number of agents associated to the CC
+		* @param "cluster_performance" [type *double]: performance obtained for each cluster (shared metric)
+		* @param "clusters_per_wlan" [type **int]: clusters from each agent perspective (matrix)
+		* @param "most_played_action_per_agent" [type *int]: most played action by each agent
+		* @param "configuration_array" [type *Configuration]: array of configuration objects of each agent
+		*/
+		void CentralizedActionBanning(int **list_of_available_actions_per_agent, int agents_number,
+			int *num_actions_per_agent, double *average_performance_per_agent,
+			double *cluster_performance, int **clusters_per_wlan,
+			int *most_played_action_per_agent, Configuration *configuration_array) {
+
+			// TODO: Hardcoded!
+			double THRESHOLD_BANNING_1 = 0.5;
+			double THRESHOLD_BANNING_2 = 0.5;	// Threshold for deciding whether to ban an action or not
+
+			for(int i = 0; i < agents_number; ++i) {
+				// Ban actions based on the performance of each cluster
+				// 		STEP 1 (TODO): first filter - check if the affected agent obtained the minimum amount of resources (minus a margin)
+				// 		...
+				if (average_performance_per_agent[i] < THRESHOLD_BANNING_1) {
+					printf("cluster_performance[i] = %f\n", cluster_performance[i]);
+					// 		STEP 2: second filter - check the overall performance and apply the decision
+					if (cluster_performance[i] < THRESHOLD_BANNING_2) {
+						// Ban the action most played by the others
+						for(int j = 0; j < agents_number; ++j) {
+							if(i != j && clusters_per_wlan[i][j] == 1) {
+								// Count the number of actions available in every agent (to prevent deleting all the actions)
+								int sum_available_actions(0);
+								for (int k = 0; k < num_actions_per_agent[j]; ++k) {
+									if (list_of_available_actions_per_agent[j] >= 0)
+										sum_available_actions += list_of_available_actions_per_agent[j][k];
+								}
+								if (sum_available_actions > 1) {
+									list_of_available_actions_per_agent[j][most_played_action_per_agent[j]] = 0;
+									configuration_array[j].agent_capabilities.available_actions[most_played_action_per_agent[j]] = 0;
+									printf("Banned action %d of A%d\n", most_played_action_per_agent[j], j);
+								}
+							}
+						}
+					}
+				}
+			}
+
+		};
 
 		/*******************/
 		/*******************/

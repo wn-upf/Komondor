@@ -50,8 +50,6 @@
  */
 
 #include "../../list_of_macros.h"
-#include "action_selection_strategies/epsilon_greedy.h"
-#include "action_selection_strategies/thompson_sampling.h"
 
 #ifndef _AUX_MABS_
 #define _AUX_MABS_
@@ -156,6 +154,108 @@ class MultiArmedBandit {
 					exit(EXIT_FAILURE);
 				}
 			}
+			return action_ix;
+		}
+
+		/****************************/
+		/****************************/
+		/*  EPSILON-GREEDY METHODS  */
+		/****************************/
+		/****************************/
+
+		/**
+		 * Select an action according to the epsilon-greedy strategy
+		 * @param "num_actions" [type int]: number of possible actions
+		 * @param "reward_per_arm" [type double]: array containing the last stored reward for each action
+		 * @param "epsilon" [type double]: current exploration coefficient
+		 * @return "action_ix" [type int]: index of the selected action
+		 */
+		int PickArmEgreedy(int num_actions, double *reward_per_arm, double epsilon, int *available_arms) {
+
+			double rand_number = ((double) rand() / (RAND_MAX));
+			int action_ix;
+
+			if (rand_number < epsilon) { //EXPLORE
+				action_ix = rand() % num_actions;
+				int counter(0);
+				while (!available_arms[action_ix]) {
+					action_ix = rand() % num_actions;
+					if(counter > 1000) break; // To avoid getting stuck (none of the actions is available)
+				}
+//				printf("EXPLORE: Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
+			} else { //EXPLOIT
+				double max = 0;
+				for (int i = 0; i < num_actions; i ++) {
+					if(available_arms[i] && reward_per_arm[i] >= max) {
+						max = reward_per_arm[i];
+						action_ix = i;
+					}
+				}
+//				printf("EXPLOIT: Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
+			}
+
+			return action_ix;
+
+		}
+
+		/*******************************/
+		/*******************************/
+		/*  THOMPSON SAMPLING METHODS  */
+		/*******************************/
+		/*******************************/
+
+		double gaussrand(double mean, double std){
+			static double V1, V2, S;
+			static int phase = 0;
+			double X;
+			if(phase == 0) {
+				do {
+					double U1 = (double)rand() /  RAND_MAX;
+					double U2 = (double)rand() /  RAND_MAX;
+					V1 = 2*U1 - 1;
+					V2 = 2*U2 - 1;
+					S = V1 * V1 + V2 * V2;
+				} while (S >= 1 || S == 0);
+				X = (V1 * sqrt(-2 * log(S) / S)) * std + mean;
+			} else {
+				X = (V1 * sqrt(-2 * log(S) / S)) * std + mean;
+			}
+			phase = 1 - phase;
+			return X;
+		}
+
+		/**
+		 * Select an action according to the Thompson sampling strategy
+		 * @param "num_actions" [type int]: number of possible actions
+		 * @param "estimated_reward_per_arm" [type double*]: array containing the estimated reward for each action
+		 * @param "times_arm_has_been_selected" [type int*]: array containing the times each action has been selected
+		 * @return "action_ix" [type int]: index of the selected action
+		 */
+		int PickArmThompsonSampling(int num_actions, double *estimated_reward_per_arm,
+			int *times_arm_has_been_selected, int *available_arms) {
+			//TODO: validate the behavior of this implementation
+			int action_ix;
+			double *theta = new double[num_actions];
+			double std;
+			// Compute the posterior probability of each arm
+			for (int i = 0; i < num_actions; ++i) {
+				if (available_arms[i]) {
+					std = 1.0/(1+times_arm_has_been_selected[i]);
+					theta[i] = gaussrand(estimated_reward_per_arm[i], std);
+				} else {
+					theta[i] = -10000;
+				}
+			}
+			// Find the action with the highest likelihood
+			double max = theta[0];
+			for (int i = 0; i < num_actions; ++i) {
+				if(theta[i] > max) {
+					max = theta[i];
+					action_ix = i;
+				}
+				//  TODO: elseif(theta[i] == max) --> Break ties!
+			}
+//			printf("Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
 			return action_ix;
 		}
 

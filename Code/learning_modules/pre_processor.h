@@ -79,7 +79,16 @@ class PreProcessor {
 		double *list_of_tx_power_values;	///> List of Tx Power values to be selected
 		int *list_of_dcb_policy;			///> List of DCB policies to be selected
 
+		int *list_of_available_actions;
+
 		int *indexes_selected_arm;			///> Indexes for each parameter that conform the current selected arm
+
+//		double *average_performance_per_agent;
+//		double **performance_action_per_agent;
+//
+//		int *num_actions_per_agent;
+//		int *most_played_action_per_agent;
+//		int **times_action_played_per_agent;
 
 	// Private items
 	private:
@@ -221,13 +230,6 @@ class PreProcessor {
 			}
 			return suggested_configuration;
 		};
-
-		/** Update the array in the CC that keeps track of the performance achieved by each agent
-		* @param "performance_per_agent" [type double*]: array containing the performance achieved per agent
-		*/
-		void UpdateAgentPerformanceCC(Performance performance) {
-			printf("Updating the performance of agent...\n");
-		}
 
 		/***********************/
 		/***********************/
@@ -393,6 +395,20 @@ class PreProcessor {
 		}
 
 		/**
+		* Print the list of available actions
+		* @param "action_ix" [type int]: index of the action to be printed
+		*/
+		void PrintAvailableActions(char string_device[], int save_logs, Logger &logger, double sim_time){
+			LOGS(save_logs,logger.file,
+				"%.15f;%s;%s;%s List of available actions: ",
+				sim_time, string_device, LOG_C00, LOG_LVL2);
+			for (int i = 0; i < num_actions; ++i) {
+				LOGS(save_logs, logger.file, "%d ", list_of_available_actions[i]);
+			}
+			LOGS(save_logs,logger.file, "\n");
+		}
+
+		/**
 		* Print the available reward types
 		*/
 		void PrintAvailableRewardTypes(){
@@ -508,6 +524,10 @@ class PreProcessor {
 			list_of_pd_values = new double[num_actions_sensitivity];
 			list_of_tx_power_values = new double[num_actions_tx_power];
 			list_of_dcb_policy = new int[num_actions_dcb_policy];
+			list_of_available_actions = new int[num_actions];
+			for (int i = 0 ; i < num_actions; ++i) {
+				list_of_available_actions[i] = 1;
+			}
 			// Variable to keep track of the indexes belonging to each parameter's list
 			indexes_selected_arm = new int[NUM_FEATURES_ACTIONS]; // 4 features considered
 		}
