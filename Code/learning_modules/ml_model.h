@@ -55,11 +55,9 @@
 #include "../structures/node_configuration.h"
 #include "../structures/performance.h"
 
-#include "../network_optimization/channel_assignment/centralized_graph_coloring.h"
-#include "../network_optimization/spatial_reuse/rtot_algorithm.h"
-
-#include "/multi_armed_bandits/multi_armed_bandits.h"
-
+#include "/network_optimization_methods/centralized_graph_coloring.h"
+#include "/network_optimization_methods/multi_armed_bandits.h"
+#include "/network_optimization_methods/rtot_algorithm.h"
 
 #ifndef _AUX_ML_MODEL_
 #define _AUX_ML_MODEL_
@@ -198,17 +196,17 @@ class MlModel {
 			int *most_played_action_per_agent, Configuration *configuration_array) {
 
 			// TODO: Hardcoded!
-			double THRESHOLD_BANNING_1 = 0.5;
-			double THRESHOLD_BANNING_2 = 0.5;	// Threshold for deciding whether to ban an action or not
+			double THRESHOLD_BANNING_1 = 0.1;	// Threshold 1 for deciding whether to ban an action or not
+//			double THRESHOLD_BANNING_2 = 0.6;	// Threshold 2 for deciding whether to ban an action or not
 
 			for(int i = 0; i < agents_number; ++i) {
+//				printf("average_performance_per_agent[%d] = %f\n", i, average_performance_per_agent[i]);
 				// Ban actions based on the performance of each cluster
-				// 		STEP 1 (TODO): first filter - check if the affected agent obtained the minimum amount of resources (minus a margin)
-				// 		...
+				// 		STEP 1: first filter - check if the affected agent obtained the minimum amount of resources (minus a margin)
 				if (average_performance_per_agent[i] < THRESHOLD_BANNING_1) {
-					printf("cluster_performance[i] = %f\n", cluster_performance[i]);
+//					printf("cluster_performance[i] = %f\n", cluster_performance[i]);
 					// 		STEP 2: second filter - check the overall performance and apply the decision
-					if (cluster_performance[i] < THRESHOLD_BANNING_2) {
+//					if (cluster_performance[i] < THRESHOLD_BANNING_2) {
 						// Ban the action most played by the others
 						for(int j = 0; j < agents_number; ++j) {
 							if(i != j && clusters_per_wlan[i][j] == 1) {
@@ -224,7 +222,7 @@ class MlModel {
 									printf("Banned action %d of A%d\n", most_played_action_per_agent[j], j);
 								}
 							}
-						}
+//						}
 					}
 				}
 			}
@@ -243,6 +241,11 @@ class MlModel {
 		void InitializeVariables() {
 
 			switch(learning_mechanism) {
+				/* MONITORING */
+				case MONITORING_ONLY:{
+					// DO NOTHING
+					break;
+				}
 				/* GRAPH COLORING */
 				case GRAPH_COLORING: {
 					// Initialize the graph coloring method
@@ -303,6 +306,11 @@ class MlModel {
 		void PrintOrWriteStatistics(int write_or_print, Logger &logger, double sim_time) {
 
 			switch(learning_mechanism) {
+				/* MONITORING */
+				case MONITORING_ONLY:{
+					// DO NOTHING
+					break;
+				}
 				/* GRAPH COLORING */
 				case GRAPH_COLORING: {
 					graph_coloring.PrintOrWriteStatistics(write_or_print, logger);

@@ -356,6 +356,7 @@
 #define AGENT_MODE_CENTRALIZED		2	///> The learning operation is fully managed by a central controller
 
 // Learning mechanisms allowed
+#define MONITORING_ONLY		 			0
 #define MULTI_ARMED_BANDITS 			1
 #define GRAPH_COLORING					2
 #define ACTION_BANNING					3

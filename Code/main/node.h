@@ -3005,9 +3005,9 @@ void Node :: EndBackoff(trigger_t &){
 	 *  to the SR operation (in case of having detected a TXOP).
 	 *
 	 * *****************************************/
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s txop_sr_identified = %d\n",
-		SimTime(), node_id, node_state, LOG_F00, LOG_LVL1, txop_sr_identified);
 	if (spatial_reuse_enabled) {
+		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s txop_sr_identified = %d\n",
+			SimTime(), node_id, node_state, LOG_F00, LOG_LVL1, txop_sr_identified);
 		flag_change_in_tx_power = TRUE;
 		if(txop_sr_identified) {
 		// Apply the transmission power limitation
@@ -3731,6 +3731,12 @@ void Node :: NavTimeout(trigger_t &){
 
 	if(node_is_transmitter){
 
+		// Apply new configuration (if it is the case)
+		if (flag_apply_new_configuration) {
+			ApplyNewConfiguration(new_configuration);
+		}
+		flag_apply_new_configuration = FALSE; // Turn flag off
+
 		node_state = STATE_SENSING;
 
 		int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
@@ -3987,7 +3993,7 @@ void Node :: InportReceivingRequestFromAgent() {
 //	printf("%s Node #%d: New information request received from the Agent\n", LOG_LVL1, node_id);
 
 	LOGS(save_node_logs, node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s New information request received from the Agent\n",
+	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s InportReceivingRequestFromAgent()\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	// Generate the configuration to be sent to the agent
@@ -4019,23 +4025,17 @@ void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configu
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	if(!flag_apply_new_configuration) {
-
 		new_configuration = received_configuration;
-
 		if(save_node_logs) WriteNodeConfiguration(node_logger, header_str);
-
 		if(save_node_logs) WriteReceivedConfiguration(node_logger, header_str, new_configuration);
-
 		// Set flag to true in order to apply the new configuration next time the node restarts
 		flag_apply_new_configuration = TRUE;
-
 		if(node_state == STATE_SENSING) {
 			// FORCE RESTART TO APPLY CHANGES
 			RestartNode(FALSE);
 		}
-
 	} else {
-		printf("Received a new configuration before applying the last one!\n");
+		printf("%.15f;N%d Received a new configuration before applying the last one!\n", SimTime(), node_id);
 	}
 
 }
@@ -4053,9 +4053,7 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 	current_pd = new_configuration.selected_pd;
 	current_tx_power = new_configuration.selected_tx_power;
 	current_dcb_policy = new_configuration.selected_dcb_policy;
-
 	non_srg_obss_pd = new_configuration.non_srg_obss_pd;
-
 	// Re-compute MCS according to the new configuration
 	if (node_type == NODE_TYPE_AP) {
 		for(int n = 0; n < wlan.num_stas; ++n) {
@@ -4095,12 +4093,9 @@ void Node :: InportNewWlanConfigurationReceived(Configuration &received_configur
 
 		// Set new configuration
 		new_configuration = received_configuration;
-
 		if (save_node_logs) WriteReceivedConfiguration(node_logger, header_str, new_configuration);
-
 		// Set flag to true in order to apply the new configuration next time the node restarts
 		flag_apply_new_configuration = TRUE;
-
 		LOGS(save_node_logs,node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
 //		if(node_state == STATE_SENSING) RestartNode(FALSE);

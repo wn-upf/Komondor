@@ -67,7 +67,7 @@
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
 
-#include "../network_optimization/channel_assignment/centralized_graph_coloring.h"
+#include "../learning_modules//network_optimization_methods/centralized_graph_coloring.h"
 
 #include "../learning_modules/pre_processor.h"
 #include "../learning_modules/ml_model.h"
@@ -488,6 +488,10 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 
 	// STEP 2 APPLY THE ML METHOD
 
+//	for (int i = 0; i < agents_number; ++i) {
+//		printf("[CC] average_performance_per_agent[%d] = %f\n", i, average_performance_per_agent[i]);
+//	}
+
 	ml_model.CentralizedActionBanning(list_of_available_actions_per_agent, agents_number,
 		num_actions_per_agent, average_performance_per_agent, cluster_performance,
 		clusters_per_wlan, most_played_action_per_agent, configuration_array);
@@ -570,7 +574,11 @@ void CentralController :: UpdateAgentAveragePerformance(int agent_id,
 //		printf("	 + performance_action_per_agent[%d][%d] = %f / %f\n", agent_id, i,
 //			performance_action_per_agent[agent_id][i], average_performance_per_configuration[i]);
 	}
-	average_performance_per_agent[agent_id] = cumulative_performance_per_action / visited_actions;
+	if (visited_actions > 0) {
+		average_performance_per_agent[agent_id] = cumulative_performance_per_action / visited_actions;
+	} else {
+		average_performance_per_agent[agent_id] = 0;
+	}
 //	printf("average_performance_per_agent[%d] = %f\n", agent_id, average_performance_per_agent[agent_id]);
 }
 

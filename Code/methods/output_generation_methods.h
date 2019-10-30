@@ -684,7 +684,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 				}
 			}
 
-			fprintf(logger_script.file, ";%s%s%s%s\n", tpt_array, airtime_array, sairtime_array,max_power_in_ap_per_wlan);
+			fprintf(logger_script.file, ";%s%s%s%s\n", tpt_array, airtime_array, sairtime_array, max_power_in_ap_per_wlan);
 			break;
 
 		}

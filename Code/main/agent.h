@@ -325,9 +325,12 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 		flag_request_from_controller = false;
 	}
 
-
 	// Compute a new configuration (if necessary)
-	ComputeNewConfiguration();
+	if (learning_mechanism == MONITORING_ONLY) {
+		trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+	} else {
+		ComputeNewConfiguration();
+	}
 
 };
 
