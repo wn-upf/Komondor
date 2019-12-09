@@ -493,8 +493,8 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 //	}
 
 	ml_model.CentralizedActionBanning(list_of_available_actions_per_agent, agents_number,
-		num_actions_per_agent, average_performance_per_agent, cluster_performance,
-		clusters_per_wlan, most_played_action_per_agent, configuration_array);
+		num_actions_per_agent, average_performance_per_agent, cluster_performance, clusters_per_wlan,
+		most_played_action_per_agent, times_action_played_per_agent, configuration_array);
 
 //
 //	double THRESHOLD_BANNING = 0.5;
@@ -559,6 +559,9 @@ void CentralController :: UpdateAgentAveragePerformance(int agent_id,
 	int times_action_played(0);
 
 	for (int i = 0; i < max_number_of_actions; ++i) {
+
+        times_action_played_per_agent[agent_id][i] = times_arm_has_been_selected[i];
+
 		if (num_actions_per_agent[agent_id] >= i) {
 			performance_action_per_agent[agent_id][i] = average_performance_per_configuration[i];
 			if (performance_action_per_agent[agent_id][i] > 0) {

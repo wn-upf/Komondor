@@ -191,15 +191,24 @@ class MlModel {
 		* @param "configuration_array" [type *Configuration]: array of configuration objects of each agent
 		*/
 		void CentralizedActionBanning(int **list_of_available_actions_per_agent, int agents_number,
-			int *num_actions_per_agent, double *average_performance_per_agent,
-			double *cluster_performance, int **clusters_per_wlan,
-			int *most_played_action_per_agent, Configuration *configuration_array) {
+			int *num_actions_per_agent, double *average_performance_per_agent, double *cluster_performance,
+			int **clusters_per_wlan, int *most_played_action_per_agent, int **times_action_played_per_agent,
+			Configuration *configuration_array) {
 
 			// TODO: Hardcoded!
-			double THRESHOLD_BANNING_1 = 0.1;	// Threshold 1 for deciding whether to ban an action or not
+			double THRESHOLD_BANNING_1(0.65);	// Threshold 1 for deciding whether to ban an action or not
 //			double THRESHOLD_BANNING_2 = 0.6;	// Threshold 2 for deciding whether to ban an action or not
 
+            int min_num_times_action_is_played(0);
+
 			for(int i = 0; i < agents_number; ++i) {
+
+                //printf("Num times each action is played (A%d): ", i);
+                //for (int k = 0; k < num_actions_per_agent[i]; ++k) {
+                //    printf(" %d ", times_action_played_per_agent[i][k]);
+                //}
+                //printf("\n");
+
 //				printf("average_performance_per_agent[%d] = %f\n", i, average_performance_per_agent[i]);
 				// Ban actions based on the performance of each cluster
 				// 		STEP 1: first filter - check if the affected agent obtained the minimum amount of resources (minus a margin)
@@ -216,7 +225,9 @@ class MlModel {
 									if (list_of_available_actions_per_agent[j] >= 0)
 										sum_available_actions += list_of_available_actions_per_agent[j][k];
 								}
-								if (sum_available_actions > 1) {
+                                min_num_times_action_is_played = (int)10/sum_available_actions;
+								//printf("min_num_times_action_is_played = %d (%d)\n", min_num_times_action_is_played, times_action_played_per_agent[j][most_played_action_per_agent[j]]);
+								if (sum_available_actions > 1 && times_action_played_per_agent[j][most_played_action_per_agent[j]] > min_num_times_action_is_played) {
 									list_of_available_actions_per_agent[j][most_played_action_per_agent[j]] = 0;
 									configuration_array[j].agent_capabilities.available_actions[most_played_action_per_agent[j]] = 0;
 									printf("Banned action %d of A%d\n", most_played_action_per_agent[j], j);
