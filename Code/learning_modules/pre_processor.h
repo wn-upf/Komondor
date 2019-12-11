@@ -361,10 +361,10 @@ class PreProcessor {
 				action_array[i].tx_power = list_of_tx_power_values[indexes_arm[2]];
 				action_array[i].dcb_policy = list_of_dcb_policy[indexes_arm[3]];
 				// Performance
-				action_array[i].instantaneous_performance = 0;
-				action_array[i].cumulative_performance = 0;
+				action_array[i].instantaneous_reward = 0;
+				action_array[i].instantaneous_reward = 0;
 				action_array[i].times_played = 0;
-				action_array[i].average_performance_since_last_request = 0;
+				action_array[i].average_reward_since_last_request = 0;
 				action_array[i].times_played_since_last_request = 0;
 //				action_array[i].PrintAction();
 			}

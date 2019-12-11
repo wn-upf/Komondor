@@ -90,19 +90,17 @@ component Agent : public TypeII{
 
 		// Communication with CC
 		void ForwardInformationToController();
-		void UpdateConfigurationStatisticsController(int selected_conf_ix, double performance);
+		void UpdateConfigurationStatisticsController(int selected_conf_ix);
 		void ResetControllerStatistics();
 
 		// Communication with other Agents (distributed methods)
-		// ... To be completed
+		// ... [Future feature]
 
 		void UpdateAction(int action_ix);
 
 		// Print methods
 		void PrintAgentInfo();
 		void WriteAgentInfo(Logger logger, std::string header_str);
-		void WriteConfiguration(Configuration configuration_to_write);
-//		void WritePerformance(Performance performance_to_write);
 		void PrintOrWriteAgentStatistics();
 
 	// Public items (entered by agents constructor in komondor_main)
@@ -127,13 +125,13 @@ component Agent : public TypeII{
 		double *list_of_pd_values;			///> List of PD values
 		double *list_of_tx_power_values;	///> List of TX power values
 		int *list_of_dcb_policy;			///> List of DCB policies
+
 		Action *actions;					///> List of actions
 		int num_actions;					///> Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
 		int num_actions_channel;			///> Number of channels available
 		int num_actions_sensitivity;		///> Number of PD levels available
 		int num_actions_tx_power;			///> Number of TX power levels available
 		int num_actions_dcb_policy;			///> Number of DCB policies available
-//		int *available_actions;
 
 		// Other input parameters
 		int type_of_reward;						///> Type of reward
@@ -154,14 +152,6 @@ component Agent : public TypeII{
 		int num_requests;					///> Number of requests made by the agent to the AP
 		int ix_selected_arm; 				///> Index of the current selected arm
 		double initial_reward;				///> Initial reward assigned to each arm
-		double *reward_per_arm;				///> Reward experienced after playing each arm
-		double *average_reward_per_arm;		///> Average reward experienced for each arm
-		double *cumulative_reward_per_arm;	///> Cumulative reward experienced for each arm
-		int *times_arm_has_been_selected; 	///> Number of times an arm has been played
-
-		double *average_reward_per_arm_since_last_request;		///> Average reward experienced for each arm since the last request from the CC
-		double *cumulative_reward_per_arm_since_last_request;	///> Cumulative reward experienced for each arm since the last request from the CC
-		int *times_arm_has_been_selected_since_last_request; 	///> Number of times an arm has been played since the last request from the CC
 
 		// Variables to store performance and configuration reports
 		Performance performance;						///> Performance object
@@ -178,11 +168,10 @@ component Agent : public TypeII{
 
 		PreProcessor pre_processor;
 		MlModel ml_model;
-//		bool not_initialized;				///> Boolean to determine whether the learning alg. has been initialized or not
 
 		// Configuration and performance after being processed by the Pre-processor
 		int processed_configuration;		///> Processed configuration
-		double processed_performance;		///> Processed performance
+		double processed_reward;		///> Processed performance
 
 		double ML_output;	///> Output of the ML model
 
@@ -207,8 +196,7 @@ component Agent : public TypeII{
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
 		// OUTPORT (centralized system only)
 		outport void outportAnswerToController(int agent_id, Configuration &configuration,
-			Performance &performance, double *average_performance_per_configuration,
-			int *times_arm_has_been_selected_since_last_request);
+			Performance &performance, Action *actions);
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap; // Timer for requesting information to the AP
 		// Every time the timer expires execute this
@@ -242,8 +230,7 @@ void Agent :: Start(){
 		agent_logger.file = output_log_file;
 		agent_logger.SetVoidHeadString();
 	}
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.18f;A%d;%s;%s Start()\n", SimTime(), agent_id, LOG_B00, LOG_LVL1);
+	LOGS(save_agent_logs, agent_logger.file, "%.18f;A%d;%s;%s Start()\n", SimTime(), agent_id, LOG_B00, LOG_LVL1);
 
 	// Initialize the PP and the ML Method
 	InitializePreProcessor();
@@ -297,27 +284,36 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 		"%.15f;A%d;%s;%s InportReceivingInformationFromAp()\n",
 		SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
-	// Update the Configuration and Performance reports obtained from the AP
+	// Save the Configuration and Performance reports received from the AP
 	configuration = received_configuration;
 	performance = received_performance;
 
-	// Update the information of the current selected action
+	// Process the configuration and performance reports obtained from the WLAN
+	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
+	processed_reward = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
+
+	// Find the index of the current action
 	int configuration_ix = pre_processor.FindActionIndexFromConfigurationBandits(configuration, indexes_configuration);
+
+	// Update the information of the current selected action
 	UpdateAction(configuration_ix);
 
-	// UpdateAgentCapabilities
+	// Update the agent's capabilities
 	configuration.agent_capabilities.num_actions = num_actions;
 	configuration.agent_capabilities.available_actions = pre_processor.list_of_available_actions;
 
-	flag_information_available = true;
-
+	// Write configuration & performance
 	if(save_agent_logs) {
-		WriteConfiguration(configuration);
+//		WriteConfiguration(configuration);
+		actions[configuration_ix].WriteAction(agent_logger, save_agent_logs, SimTime(), agent_id);
 		char device_code[10];
 		sprintf(device_code, "A%d", agent_id);
 		pre_processor.WritePerformance(agent_logger, SimTime(), device_code,
 			performance, type_of_reward);
 	}
+
+	// Set flag "information available" to true
+	flag_information_available = true;
 
 	// Forward the received information to the controller (if necessary)
 	if (controller_on && (automatic_forward_enabled || flag_request_from_controller)) {
@@ -350,22 +346,18 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
 		"%.15f;A%d;%s;%s Sending a new configuration to the AP\n",
 		SimTime(), agent_id, LOG_C00, LOG_LVL2);
 
-	if(save_agent_logs) WriteConfiguration(configuration_to_send);
+	// Print the configuration (action) to be sent
+	int configuration_ix = pre_processor.FindActionIndexFromConfigurationBandits(configuration_to_send, indexes_configuration);
+	if(save_agent_logs) actions[configuration_ix].WriteAction(agent_logger, save_agent_logs, SimTime(), agent_id);
 
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
 	outportSendConfigurationToAp(configuration_to_send);
 
 	// Set trigger for next request in case of being an independent agent (not controlled by a central entity)
-//	if (agent_centralized != AGENT_MODE_CENTRALIZED) {
-		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s Next request to be sent at %f\n",
-			SimTime(), agent_id, LOG_C00, LOG_LVL2, FixTimeOffset(SimTime() + time_between_requests,13,12));
-		trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
-		flag_compute_new_configuration = true;
-//	} else {
-//		LOGS(save_agent_logs, agent_logger.file,
-//			"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-//	}
+	LOGS(save_agent_logs, agent_logger.file, "%.15f;A%d;%s;%s Next request to be sent at %f\n",
+		SimTime(), agent_id, LOG_C00, LOG_LVL2, FixTimeOffset(SimTime() + time_between_requests,13,12));
+	trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+	flag_compute_new_configuration = true;
 
 };
 
@@ -374,32 +366,6 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
 /*  AGENT-CC COMMUNICATION */
 /***************************/
 /***************************/
-//
-///**
-// * Called when the agent receives a request instructions from the CC
-// * @param "destination_agent_id" [type int]: identifier of the agent to which the request is delivered
-// */
-//void Agent :: InportReceivingRequestFromController(int destination_agent_id) {
-//
-//	if(controller_on && agent_id == destination_agent_id) {
-//		printf("%s Agent #%d: New request received from the Controller\n", LOG_LVL1, agent_id);
-//		LOGS(save_agent_logs, agent_logger.file,
-//			"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-//		LOGS(save_agent_logs, agent_logger.file,
-//			"%.15f;A%d;%s;%s New request received from the Controller for Agent %d\n",
-//			SimTime(), agent_id, LOG_F02, LOG_LVL2, destination_agent_id);
-//		// Return information if it is up to date. Otherwise, request it to the AP and the forward it.
-//		if ( CheckValidityOfData(configuration, performance, SimTime(), MAX_TIME_INFORMATION_VALID)
-//				&& flag_information_available) {
-//			ForwardInformationToController();
-//		} else {
-//			// Request information to the AP (trigger = 0)
-//			trigger_request_information_to_ap.Set(FixTimeOffset(SimTime(),13,12));
-//			flag_request_from_controller = true;
-//		}
-//
-//	}
-//}
 
 /**
  * Called when the agent receives a configuration from the CC
@@ -501,7 +467,6 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 				exit(-1);
 			}
 		}
-
 	}
 
 }
@@ -514,35 +479,18 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
  */
 void Agent :: ForwardInformationToController(){
 
-	if (controller_on) {
-
-//		printf("A%d: Forwarding information to the controller\n", agent_id);
-
-		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s Forwarding information to the controller...\n",
-			SimTime(), agent_id, LOG_F02, LOG_LVL2);
-
-		// Compute the average performance achieved by each arm
-		for (int i = 0; i < num_actions; ++i) {
-			if (times_arm_has_been_selected_since_last_request[i] > 0) {
-				average_reward_per_arm_since_last_request[i] =
-					cumulative_reward_per_arm_since_last_request[i] /
-					times_arm_has_been_selected_since_last_request[i];
-			} else {
-				average_reward_per_arm_since_last_request[i] = 0;
-			}
-//			printf("A%d average_reward_per_arm_since_last_request[%d] = %f\n",
-//					agent_id, i, average_reward_per_arm_since_last_request[i]);
-		}
-
-		// Send the current configuration (and performance) to the CC
-		outportAnswerToController(agent_id, configuration, performance,
-			average_reward_per_arm_since_last_request, times_arm_has_been_selected_since_last_request);
-
-		// Reset the CC statistics
-		ResetControllerStatistics();
-
+//	printf("A%d: Forwarding information to the controller\n", agent_id);
+	LOGS(save_agent_logs, agent_logger.file,
+		"%.15f;A%d;%s;%s Forwarding information to the controller...\n",
+		SimTime(), agent_id, LOG_F02, LOG_LVL2);
+	// Compute the average performance achieved by each arm
+	for (int i = 0; i < num_actions; ++i) {
+		UpdateConfigurationStatisticsController(i);
 	}
+	// Send the current configuration (and performance) to the CC
+	outportAnswerToController(agent_id, configuration, performance, actions);
+	// Reset the CC statistics
+	ResetControllerStatistics();
 
 }
 
@@ -551,20 +499,24 @@ void Agent :: ForwardInformationToController(){
  */
 void Agent :: ResetControllerStatistics() {
 	for (int i = 0; i < num_actions; ++i) {
-		average_reward_per_arm_since_last_request[i] = 0;
-		cumulative_reward_per_arm_since_last_request[i] = 0;
-		times_arm_has_been_selected_since_last_request[i] = 0;
+		actions[i].average_reward_since_last_request = 0;
+		actions[i].cumulative_reward_since_last_request = 0;
+		actions[i].times_played_since_last_request = 0;
 	}
 }
 
 /**
  * Update the statistics to be used at the CC
- * @param "selected_conf_ix" [type int]: index of the selected configuration
- * @param "performance" [type Performance]: current performance of the WLAN
+ * @param "action_ix" [type int]: index of the selected configuration
  */
-void Agent :: UpdateConfigurationStatisticsController(int selected_conf_ix, double performance) {
-	cumulative_reward_per_arm_since_last_request[selected_conf_ix] += performance;
-	++times_arm_has_been_selected_since_last_request[selected_conf_ix];
+void Agent :: UpdateConfigurationStatisticsController(int action_ix) {
+	if (actions[action_ix].times_played_since_last_request > 0) {
+		actions[action_ix].average_reward_since_last_request =
+			actions[action_ix].cumulative_reward_since_last_request /
+			actions[action_ix].times_played_since_last_request;
+	} else {
+		actions[action_ix].average_reward_since_last_request = 0;
+	}
 }
 
 /***************************/
@@ -587,24 +539,20 @@ void Agent :: ComputeNewConfiguration(){
 		// Compute a new configuration if information is up to date. Otherwise, request it to the AP and use it.
 		if ( CheckValidityOfData(configuration, performance, SimTime(), MAX_TIME_INFORMATION_VALID)
 				&& flag_information_available) {
-			// Process the configuration and performance reports obtained from the WLAN
-			processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
-			processed_performance = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
 			// Process the obtained information before sending it to the controller
-			if (controller_on) UpdateConfigurationStatisticsController(processed_configuration, processed_performance);
 			// Update the configuration according to the selected learning method
 			switch(learning_mechanism) {
 				/* Multi-Armed Bandits */
 				case MULTI_ARMED_BANDITS:{
 					// Update the configuration according to the MABs operation
 					ML_output = ml_model.ComputeIndividualConfiguration
-						(processed_configuration, processed_performance, agent_logger,
+						(processed_configuration, processed_reward, agent_logger,
 						SimTime(), pre_processor.list_of_available_actions);
 					break;
 				}
 				case RTOT_ALGORITHM:{
 					ML_output = ml_model.ComputeIndividualConfiguration
-						(processed_configuration, processed_performance, agent_logger,
+						(processed_configuration, processed_reward, agent_logger,
 						SimTime(), pre_processor.list_of_available_actions);
 					break;
 				}
@@ -629,24 +577,26 @@ void Agent :: ComputeNewConfiguration(){
 		}
 
 	} else {
-
 		printf("The learning operation is not allowed at this moment.\n");
-
 	}
 
 }
 
+/**
+ * Update the Action object for the corresponding played action
+ * @param "action_ix" [type int]: index of the selected action/configuration
+ */
 void Agent :: UpdateAction(int action_ix){
-
-	actions[action_ix].instantaneous_performance = reward_per_arm[action_ix];
-	actions[action_ix].cumulative_performance = cumulative_reward_per_arm[action_ix];
-	actions[action_ix].times_played = times_arm_has_been_selected[action_ix];
-
-	actions[action_ix].average_performance_since_last_request = average_reward_per_arm_since_last_request[action_ix];
-	actions[action_ix].times_played_since_last_request = times_arm_has_been_selected_since_last_request[action_ix];
-
+	// Current information
+	actions[action_ix].performance_since_last_request = performance;
+	actions[action_ix].instantaneous_reward = processed_reward;
+	// Full run information
+	actions[action_ix].cumulative_reward += processed_reward;
+	++actions[action_ix].times_played;
+	// Information since last CC request
+	actions[action_ix].cumulative_reward_since_last_request += processed_reward;
+	++actions[action_ix].times_played_since_last_request;
 }
-
 
 /*****************************/
 /*****************************/
@@ -666,44 +616,17 @@ void Agent :: InitializeAgent() {
 	controller_on = FALSE;
 	automatic_forward_enabled = TRUE;
 
+	flag_request_from_controller = false;
+	flag_information_available = false;
+
+	indexes_configuration = new int[NUM_FEATURES_ACTIONS];
+
 	list_of_channels = new int[num_actions_channel];
 	list_of_pd_values = new double[num_actions_sensitivity];
 	list_of_tx_power_values = new double[num_actions_tx_power];
 	list_of_dcb_policy = new int[num_actions_dcb_policy];
 
-//	available_actions = new int[num_actions];
-
-	// Generate actions
 	actions = new Action[num_actions];
-	// Statistics for each action
-	reward_per_arm = new double[num_actions];
-	average_reward_per_arm = new double[num_actions];
-	cumulative_reward_per_arm = new double[num_actions];
-	times_arm_has_been_selected = new int[num_actions];
-	// Statistics for each action during a specific time elapse (based on CC requests)
-	average_reward_per_arm_since_last_request = new double[num_actions];
-	cumulative_reward_per_arm_since_last_request = new double[num_actions];
-	times_arm_has_been_selected_since_last_request = new int[num_actions];
-
-	for (int i = 0; i < num_actions; ++i) {
-		reward_per_arm[i] = 0;
-		average_reward_per_arm[i] = 0;
-		cumulative_reward_per_arm[i] = 0;
-		times_arm_has_been_selected[i] = 0;
-		average_reward_per_arm_since_last_request[i] = 0;
-		cumulative_reward_per_arm_since_last_request[i] = 0;
-		times_arm_has_been_selected_since_last_request[i] = 0;
-//		available_actions[i] = 1;
-	}
-
-	flag_request_from_controller = false;
-//	flag_compute_new_configuration = false;
-	flag_information_available = false;
-
-	indexes_configuration = new int[NUM_FEATURES_ACTIONS];
-
-//	// Specify that the learning mechanism has not been initialized (to be done for the first AP-agent interaction)
-//	not_initialized = true;
 
 }
 
@@ -797,7 +720,7 @@ void Agent :: PrintAgentInfo(){
 }
 
 /**
- * Write information of the Agent into a given logs file
+ * Write information of the Agent into a given logs file - NOTE: We don't use "LOGS" because this can be called from other entities (e.g., the controller)
  * @param "logger" [type Logger]: logger object that prints the information into a file
  * @param "header_str" [type std::string]: heading string
  */
@@ -833,31 +756,6 @@ void Agent :: WriteAgentInfo(Logger logger, std::string header_str){
 	fprintf(logger.file, "%s - action_selection_strategy = %d\n", header_str.c_str(), action_selection_strategy);
 	fprintf(logger.file, "%s - save_agent_logs = %d\n", header_str.c_str(), save_agent_logs);
 	fprintf(logger.file, "%s - print_agent_logs = %d\n", header_str.c_str(), print_agent_logs);
-}
-
-/**
- * Write the configuration of the Agent into the agent logs file
- * @param "configuration_to_write" [type Configuration]: configuration object to be written
- */
-void Agent :: WriteConfiguration(Configuration configuration_to_write) {
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.15f;A%d;%s;%s Configuration:\n", SimTime(), agent_id, LOG_C03, LOG_LVL2);
-	// Selected primary channel
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.15f;A%d;%s;%s selected_primary_channel = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
-		configuration_to_write.selected_primary_channel);
-	// Select Packet Detect (PD) threshold
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.15f;A%d;%s;%s selected_pd = %f dBm\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
-		ConvertPower(PW_TO_DBM,configuration_to_write.selected_pd));
-	// Selected Transmit Power
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.15f;A%d;%s;%s selected_tx_power = %f dBm\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
-		ConvertPower(PW_TO_DBM,configuration_to_write.selected_tx_power));
-	// Selected DCB policy
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.15f;A%d;%s;%s selected_dcb_policy = %d\n", SimTime(), agent_id, LOG_C03, LOG_LVL3,
-		configuration_to_write.selected_dcb_policy);
 }
 
 /**

@@ -196,18 +196,22 @@ class MlModel {
 			Configuration *configuration_array) {
 
 			// TODO: Hardcoded!
-			double THRESHOLD_BANNING_1(0.65);	// Threshold 1 for deciding whether to ban an action or not
+			double THRESHOLD_BANNING_1(0);	// Threshold 1 for deciding whether to ban an action or not
 //			double THRESHOLD_BANNING_2 = 0.6;	// Threshold 2 for deciding whether to ban an action or not
 
             int min_num_times_action_is_played(0);
 
 			for(int i = 0; i < agents_number; ++i) {
-
-                //printf("Num times each action is played (A%d): ", i);
-                //for (int k = 0; k < num_actions_per_agent[i]; ++k) {
-                //    printf(" %d ", times_action_played_per_agent[i][k]);
-                //}
-                //printf("\n");
+				printf("Average performance (%d) = %f\n", i, average_performance_per_agent[i]);
+                for(int j = 0; j < agents_number; ++j) {
+					if(i != j && clusters_per_wlan[i][j] == 1) {
+						printf("Num times each action is played (A%d): ", j);
+						for (int k = 0; k < num_actions_per_agent[j]; ++k) {
+							printf(" %d ", times_action_played_per_agent[j][k]);
+						}
+						printf("\n");
+					}
+				}
 
 //				printf("average_performance_per_agent[%d] = %f\n", i, average_performance_per_agent[i]);
 				// Ban actions based on the performance of each cluster
@@ -225,8 +229,8 @@ class MlModel {
 									if (list_of_available_actions_per_agent[j] >= 0)
 										sum_available_actions += list_of_available_actions_per_agent[j][k];
 								}
-                                min_num_times_action_is_played = (int)10/sum_available_actions;
-								//printf("min_num_times_action_is_played = %d (%d)\n", min_num_times_action_is_played, times_action_played_per_agent[j][most_played_action_per_agent[j]]);
+                                min_num_times_action_is_played = 3;
+								printf("min_num_times_action_is_played = %d (%d)\n", min_num_times_action_is_played, times_action_played_per_agent[j][most_played_action_per_agent[j]]);
 								if (sum_available_actions > 1 && times_action_played_per_agent[j][most_played_action_per_agent[j]] > min_num_times_action_is_played) {
 									list_of_available_actions_per_agent[j][most_played_action_per_agent[j]] = 0;
 									configuration_array[j].agent_capabilities.available_actions[most_played_action_per_agent[j]] = 0;

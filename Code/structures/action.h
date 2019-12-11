@@ -59,30 +59,74 @@ struct Action
 
 	int id;				///> Action identifier
 
-	// Configuration
+	// Configuration - Only channel, sensitivity, transmission power and DCB policy are considered at this moment
 	int channel;		///> Channel selected
 	double cca;			///> CCA level
 	double tx_power;	///> Tx Power
 	int dcb_policy;		///> DCB policy
 
-	// Performance
-	double instantaneous_performance;
-	double cumulative_performance;
+	// Full run information
+	double instantaneous_reward;
+	double cumulative_reward;
 	int times_played;
 
-	// Performance since last request from the controller
-	double average_performance_since_last_request;
+	// Information since last request from the controller
+	Performance performance_since_last_request;
+	double cumulative_reward_since_last_request;
 	int times_played_since_last_request;
+	double average_reward_since_last_request;
 
 	/**
-	 * Print the configuration of the action
+	 * Print the action
 	 */
-	void PrintAction(){
-		printf("------------\n Action (%d):\n", id);
+	void PrintAction() {
+		printf("------------\n Action %d:\n", id);
 		printf(" * channel = %d\n", channel);
 		printf(" * cca = %f dBm\n", ConvertPower(PW_TO_DBM, cca));
 		printf(" * tx_power = %f dBm\n", ConvertPower(PW_TO_DBM, tx_power));
 		printf(" * dcb_policy = %d\n", dcb_policy);
+		printf("------------\n");
+	}
+
+	/**
+	 * Write the action to the agent logs file
+	 * @param "agent_logger" [type Logger]: logger object
+	 * @param "save_agent_logs" [type int]: bool indicating whether to save logs or not
+	 * @param "sim_time" [type double]: simulation time
+	 * @param "agent_id" [type int]: identifier of the agent writing the logs
+	 */
+	void WriteAction(Logger agent_logger, int save_agent_logs, double sim_time, int agent_id) {
+		LOGS(save_agent_logs, agent_logger.file,
+			"%.15f;A%d;%s;%s Action (%d):\n", sim_time, agent_id, LOG_C03, LOG_LVL2, id);
+		LOGS(save_agent_logs, agent_logger.file,
+			"%.15f;A%d;%s;%s channel = %d\n", sim_time, agent_id, LOG_C03, LOG_LVL3, channel);
+		LOGS(save_agent_logs, agent_logger.file,
+			"%.15f;A%d;%s;%s cca = %f dBm\n", sim_time, agent_id, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, cca));
+		LOGS(save_agent_logs, agent_logger.file,
+			"%.15f;A%d;%s;%s tx_power = %f dBm\n", sim_time, agent_id, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, tx_power));
+		LOGS(save_agent_logs, agent_logger.file,
+			"%.15f;A%d;%s;%s dcb_policy = %d\n", sim_time, agent_id, LOG_C03, LOG_LVL3, dcb_policy);
+	}
+
+	/**
+	 * Print the performance of the action
+	 */
+	void PrintRewardInformation() {
+		printf("------------\n Reward information (a%d):\n", id);
+		printf(" * instantaneous_reward = %f\n", instantaneous_reward);
+		printf(" * cumulative_reward = %f\n", cumulative_reward);
+		printf(" * times_played = %d\n", times_played);
+		printf("------------\n");
+	}
+
+	/**
+	 * Print the performance of the action
+	 */
+	void PrintControllerStatistics() {
+		printf("------------\n Information since last CC request (a%d):\n", id);
+		printf(" * cumulative_reward_since_last_request = %f\n", cumulative_reward_since_last_request);
+		printf(" * times_played_since_last_request = %d\n", times_played_since_last_request);
+		printf(" * average_reward_since_last_request = %f\n", average_reward_since_last_request);
 		printf("------------\n");
 	}
 

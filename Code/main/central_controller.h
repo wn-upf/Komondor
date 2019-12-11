@@ -91,7 +91,8 @@ component CentralController : public TypeII{
 		void GenerateGlobalConfiguration();
 		void GenerateSingleConfiguration();
 
-		void UpdateAgentAveragePerformance(int agent_id, double *average_performance, int *times_arm_has_been_selected);
+//		void UpdateAgentAveragePerformance(int agent_id, double *average_performance, int *times_arm_has_been_selected);
+		void UpdateAgentAveragePerformance(int agent_id, Action *actions);
 
 		// Communication with Agents
 		void RequestInformationToAgents();
@@ -145,6 +146,12 @@ component CentralController : public TypeII{
 	// Private items (just for node operation)
 	private:
 
+		// File for writing node logs
+		FILE *output_log_file;				///> File for logs in which the agent is involved
+		char own_file_path[32];				///> Name of the file for agent logs
+		Logger central_controller_logger;	///> struct containing the attributes needed for writing logs in a file
+		char *header_string;				///> Header string for the logger
+
 		Configuration configuration;		///> Configuration object
 		Configuration new_configuration;	///> Auxiliary configuration object
 
@@ -155,12 +162,6 @@ component CentralController : public TypeII{
 
 		MlModel ml_model;					///> Instantiation of the ML Model
 		PreProcessor pre_processor;			///> Instantiation of the Pre-Processor
-
-		// File for writing node logs
-		FILE *output_log_file;				///> File for logs in which the agent is involved
-		char own_file_path[32];				///> Name of the file for agent logs
-		Logger central_controller_logger;	///> struct containing the attributes needed for writing logs in a file
-		char *header_string;				///> Header string for the logger
 
 		int counter_responses_received; 	///> Needed to determine the number of answers that the controller receives from agents
 
@@ -184,8 +185,10 @@ component CentralController : public TypeII{
 	public:
 
 		// INPORT connections for receiving notifications
+//		inport void inline InportReceivingInformationFromAgent(int agent_id, Configuration &configuration,
+//			Performance &performance, double *average_performance_per_configuration, int *times_action_played);
 		inport void inline InportReceivingInformationFromAgent(int agent_id, Configuration &configuration,
-			Performance &performance, double *average_performance_per_configuration, int *times_action_played);
+			Performance &performance, Action *actions);
 
 		// OUTPORT connections for sending notifications
 		outport void outportSendCommandToAgent(int destination_agent_id, int command_id,
@@ -393,7 +396,8 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
  * @param "agent_id" [type int]: identifier of the agent
  */
 void CentralController :: InportReceivingInformationFromAgent(int agent_id, Configuration &received_configuration,
-	Performance &received_performance, double *average_performance_per_configuration, int *times_arm_has_been_selected) {
+//	Performance &received_performance, double *average_performance_per_configuration, int *times_arm_has_been_selected) {
+	Performance &received_performance, Action *actions) {
 
 	LOGS(save_controller_logs,central_controller_logger.file,
 		"%.15f;CC;%s;%s InportReceivingInformationFromAgent()\n", SimTime(), LOG_F00, LOG_LVL1);
@@ -407,7 +411,8 @@ void CentralController :: InportReceivingInformationFromAgent(int agent_id, Conf
 	performance_array[agent_id] = received_performance;
 
 	// Update the average performance obtained for each arm
-	UpdateAgentAveragePerformance(agent_id, average_performance_per_configuration, times_arm_has_been_selected);
+//	UpdateAgentAveragePerformance(agent_id, average_performance_per_configuration, times_arm_has_been_selected);
+	UpdateAgentAveragePerformance(agent_id, actions);
 
 	// Print and/or write the configuration and the performance report
 //	if(save_controller_logs) {
@@ -551,8 +556,7 @@ void CentralController :: GenerateSingleConfiguration(){
 /**
  * Updates the average performance obtained by every associated agent.
  */
-void CentralController :: UpdateAgentAveragePerformance(int agent_id,
-	double *average_performance_per_configuration, int *times_arm_has_been_selected) {
+void CentralController :: UpdateAgentAveragePerformance(int agent_id, Action *actions) {
 
 	double cumulative_performance_per_action(0);
 	double visited_actions(0);
@@ -560,17 +564,20 @@ void CentralController :: UpdateAgentAveragePerformance(int agent_id,
 
 	for (int i = 0; i < max_number_of_actions; ++i) {
 
-        times_action_played_per_agent[agent_id][i] = times_arm_has_been_selected[i];
+//        times_action_played_per_agent[agent_id][i] = times_arm_has_been_selected[i];
+        times_action_played_per_agent[agent_id][i] = actions[i].times_played_since_last_request;
 
 		if (num_actions_per_agent[agent_id] >= i) {
-			performance_action_per_agent[agent_id][i] = average_performance_per_configuration[i];
+//			performance_action_per_agent[agent_id][i] = average_performance_per_configuration[i];
+			performance_action_per_agent[agent_id][i] = actions[i].average_reward_since_last_request;
 			if (performance_action_per_agent[agent_id][i] > 0) {
-				cumulative_performance_per_action += average_performance_per_configuration[i];
+//				cumulative_performance_per_action += average_performance_per_configuration[i];
+				cumulative_performance_per_action += actions[i].average_reward_since_last_request;
 				++visited_actions;
 			}
 			// Update the most played action per agent
-			if (times_arm_has_been_selected[i] > times_action_played) {
-				times_action_played = times_arm_has_been_selected[i];
+			if (actions[i].times_played_since_last_request > times_action_played) {
+				times_action_played = actions[i].times_played_since_last_request;
 				most_played_action_per_agent[agent_id] = i;
 			}
 		}
