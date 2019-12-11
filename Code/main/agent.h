@@ -80,6 +80,7 @@ component Agent : public TypeII{
 
 		// Generic
 		void InitializeAgent();
+        void InitializeMlPipeline();
 		void InitializePreProcessor();
 		void InitializeMlModel();
 
@@ -96,6 +97,7 @@ component Agent : public TypeII{
 		// Communication with other Agents (distributed methods)
 		// ... [Future feature]
 
+		// Actions management
 		void UpdateAction(int action_ix);
 
 		// Print methods
@@ -108,9 +110,9 @@ component Agent : public TypeII{
 
 		// Specific to each agent
 		int agent_id; 				///> Node identifier
-		int agent_centralized;				///> Indicates the mode of the agent (DECENTRALIZED; COOPERATIVE; CENTRALIZED)
+		int agent_centralized;		///> Indicates the mode of the agent (DECENTRALIZED; COOPERATIVE; CENTRALIZED)
 		std::string wlan_code;		///> WLAN code to which the agent belongs
-		int wlan_id;
+		int wlan_id;                ///> WLAN identifier to which the agent belongs
 		int num_stas;				///> Number of STAs associated to the WLAN
 
 		// Learning mechanism
@@ -134,8 +136,8 @@ component Agent : public TypeII{
 		int num_actions_dcb_policy;			///> Number of DCB policies available
 
 		// Other input parameters
-		int type_of_reward;						///> Type of reward
-		double time_between_requests; 			///> Time between two information requests to the AP (for a given measurement)
+		int type_of_reward;					///> Type of reward
+		double time_between_requests; 		///> Time between two information requests to the AP (for a given measurement)
 
 		// Print/write variables
 		int save_agent_logs;			///> Boolean that indicates whether to write agent's logs or not
@@ -143,66 +145,59 @@ component Agent : public TypeII{
 		std::string simulation_code;	///> Simulation code
 
 		// RTOT
-		double margin;
+		double margin;      ///> Margin for the RTOT mechanism (see https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8319274)
 
-	// Private items (just for node operation)
+	// Private items (just for internal agent operation)
 	private:
 
-		//
-		int num_requests;					///> Number of requests made by the agent to the AP
-		int ix_selected_arm; 				///> Index of the current selected arm
-		double initial_reward;				///> Initial reward assigned to each arm
+        // File for writing node logs
+        FILE *output_log_file;				///> File for logs in which the agent is involved
+        char own_file_path[32];				///> Name of the file for agent logs
+        Logger agent_logger;				///> struct containing the attributes needed for writing logs in a file
+        char *header_string;				///> Header string for the logger
 
-		// Variables to store performance and configuration reports
-		Performance performance;						///> Performance object
-		Configuration configuration;					///> Configuration object
-		Configuration new_configuration;				///> Auxiliary configuration object
-		Configuration configuration_from_controller;	///> Configuration object obtained from the CC
-		int *indexes_configuration;
+        // Variables to store performance and configuration reports
+        Performance performance;						///> Performance object
+        int *indexes_configuration;                     ///>
+        Configuration configuration;					///> Configuration object
+        Configuration new_configuration;				///> Object containing the new configuration to be set
+        Configuration configuration_from_controller;	///> Configuration object obtained from the CC
+        double ml_output;	                            ///> Output of the ML model (previous step to the new configuration)
 
-		// File for writting node logs
-		FILE *output_log_file;				///> File for logs in which the agent is involved
-		char own_file_path[32];				///> Name of the file for agent logs
-		Logger agent_logger;				///> struct containing the attributes needed for writing logs in a file
-		char *header_string;				///> Header string for the logger
-
-		PreProcessor pre_processor;
-		MlModel ml_model;
+        // ML-based architecture (see https://arxiv.org/abs/1910.03510)
+        PreProcessor pre_processor;             ///> Pre-processor object
+        MlModel ml_model;                       ///> ML model object
+        int learning_allowed;                   ///> Flag to indicate whether learning is allowed or not
+        int flag_compute_new_configuration; 	///> Flag to be activated in case of needing to compute a new configuration
 
 		// Configuration and performance after being processed by the Pre-processor
-		int processed_configuration;		///> Processed configuration
+		int processed_configuration;	///> Processed configuration
 		double processed_reward;		///> Processed performance
 
-		double ML_output;	///> Output of the ML model
-
+		// Items related to the interaction with the Central Controller (CC)
+        int automatic_forward_enabled;          ///> Flag to indicate that data received from the AP is automatically forwarded to the CC
 		int flag_request_from_controller;		///> Flag to be activated in case the CC made a request
-		int flag_compute_new_configuration; 	///> Flag to be activated in case of needing to compute a new configuration
 		int flag_information_available;			///> Flag to indicate that information is available at the agent
 
-		int learning_allowed;
-		int automatic_forward_enabled;
+		// Auxiliary variables
+        int num_requests;			///> Number of requests made by the agent to the AP
+        double initial_reward;		///> Initial reward assigned to each arm
 
 	// Connections and timers
 	public:
 
 		// INPORT connections for receiving notifications
 		inport void inline InportReceivingInformationFromAp(Configuration &configuration, Performance &performance);
-		// INPORT (centralized system only)
-//		inport void inline InportReceivingRequestFromController(int destination_agent_id);
-		inport void inline InportReceiveCommandFromController(int destination_agent_id, int command_id,
-			Configuration &new_configuration);
-		// OUTPORT connections for sending notifications
+		// OUTPORT connections for sending requests/notifications
 		outport void outportRequestInformationToAp();
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
-		// OUTPORT (centralized system only)
-		outport void outportAnswerToController(int agent_id, Configuration &configuration,
-			Performance &performance, Action *actions);
+		// INPORT & OUTPORT (centralized system only)
+        inport void inline InportReceiveCommandFromController(int destination_agent_id, int command_id, Configuration &new_configuration);
+		outport void outportAnswerToController(int agent_id, Configuration &configuration, Performance &performance, Action *actions);
 		// Triggers
-		Timer <trigger_t> trigger_request_information_to_ap; // Timer for requesting information to the AP
-		// Every time the timer expires execute this
-		inport inline void RequestInformationToAp(trigger_t& t1);
-		// Connect timers to methods
-		Agent () {
+		Timer <trigger_t> trigger_request_information_to_ap;        // Timer for requesting information to the AP
+		inport inline void RequestInformationToAp(trigger_t& t1);   // Every time the timer expires execute this
+		Agent () { // Connect timers to methods
 			connect trigger_request_information_to_ap.to_component,RequestInformationToAp;
 		}
 
@@ -232,12 +227,10 @@ void Agent :: Start(){
 	}
 	LOGS(save_agent_logs, agent_logger.file, "%.18f;A%d;%s;%s Start()\n", SimTime(), agent_id, LOG_B00, LOG_LVL1);
 
-	// Initialize the PP and the ML Method
-	InitializePreProcessor();
-	InitializeMlModel();
-	// Initialize the actions array
-	actions = pre_processor.InitializeActions();
-	// Compute the new configuration, based on the ML model
+	// Initialize the ML Pipeline
+	InitializeMlPipeline();
+
+	// Compute the new configuration by using the current ML model
 	ComputeNewConfiguration();
 
 };
@@ -545,13 +538,13 @@ void Agent :: ComputeNewConfiguration(){
 				/* Multi-Armed Bandits */
 				case MULTI_ARMED_BANDITS:{
 					// Update the configuration according to the MABs operation
-					ML_output = ml_model.ComputeIndividualConfiguration
+					ml_output = ml_model.ComputeIndividualConfiguration
 						(processed_configuration, processed_reward, agent_logger,
 						SimTime(), pre_processor.list_of_available_actions);
 					break;
 				}
 				case RTOT_ALGORITHM:{
-					ML_output = ml_model.ComputeIndividualConfiguration
+                    ml_output = ml_model.ComputeIndividualConfiguration
 						(processed_configuration, processed_reward, agent_logger,
 						SimTime(), pre_processor.list_of_available_actions);
 					break;
@@ -564,7 +557,7 @@ void Agent :: ComputeNewConfiguration(){
 				}
 			}
 			// Process the configuration from the output of the ML method
-			new_configuration = pre_processor.ProcessMLOutput(learning_mechanism, configuration, ML_output);
+			new_configuration = pre_processor.ProcessMLOutput(learning_mechanism, configuration, ml_output);
 			// Send the configuration to the AP
 			SendNewConfigurationToAp(new_configuration);
 		} else {
@@ -573,7 +566,6 @@ void Agent :: ComputeNewConfiguration(){
 			// TODO: add an activation time, to be introduced by the user in the agent's configuration file
 			double extra_wait_test = 0.005 * (double) agent_id;
 			trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests + extra_wait_test,13,12));
-	//		flag_compute_new_configuration = true;
 		}
 
 	} else {
@@ -592,10 +584,10 @@ void Agent :: UpdateAction(int action_ix){
 	actions[action_ix].instantaneous_reward = processed_reward;
 	// Full run information
 	actions[action_ix].cumulative_reward += processed_reward;
-	++actions[action_ix].times_played;
+	++ actions[action_ix].times_played;
 	// Information since last CC request
 	actions[action_ix].cumulative_reward_since_last_request += processed_reward;
-	++actions[action_ix].times_played_since_last_request;
+	++ actions[action_ix].times_played_since_last_request;
 }
 
 /*****************************/
@@ -633,6 +625,16 @@ void Agent :: InitializeAgent() {
 /**
  * Initialize the pre-processor
  */
+void Agent :: InitializeMlPipeline() {
+    // Initialize the PP
+    InitializePreProcessor();
+    // Initialize the ML Method
+    InitializeMlModel();
+}
+
+/**
+ * Initialize the pre-processor
+ */
 void Agent :: InitializePreProcessor() {
 
 	pre_processor.type_of_reward = type_of_reward;
@@ -649,6 +651,9 @@ void Agent :: InitializePreProcessor() {
 	pre_processor.list_of_pd_values = list_of_pd_values;
 	pre_processor.list_of_tx_power_values = list_of_tx_power_values;
 	pre_processor.list_of_dcb_policy = list_of_dcb_policy;
+
+    // Initialize the actions array
+    actions = pre_processor.InitializeActions();
 
 }
 

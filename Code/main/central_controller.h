@@ -85,6 +85,7 @@ component CentralController : public TypeII{
 
 		// Generic
 		void InitializeCentralController();
+        void StartCcActivity();
 
 		// Configuration generation methods
 		void ApplyMlMethod();
@@ -112,7 +113,8 @@ component CentralController : public TypeII{
 		void UpdatePerformancePerCluster(int shared_performance_metric);
 
 		// Initialization
-		void InitializePreProcessor();
+		void InitializeMlPipeline();
+        void InitializePreProcessor();
 		void InitializeMlModel();
 
 
@@ -185,8 +187,6 @@ component CentralController : public TypeII{
 	public:
 
 		// INPORT connections for receiving notifications
-//		inport void inline InportReceivingInformationFromAgent(int agent_id, Configuration &configuration,
-//			Performance &performance, double *average_performance_per_configuration, int *times_action_played);
 		inport void inline InportReceivingInformationFromAgent(int agent_id, Configuration &configuration,
 			Performance &performance, Action *actions);
 
@@ -202,7 +202,6 @@ component CentralController : public TypeII{
 		// Every time the timer expires execute this
 		inport inline void ApplyMlMethod(trigger_t& t1);
 		inport inline void RequestInformationToAgents(trigger_t& t1);
-//		inport inline void GenerateAndSendNewConfiguration(trigger_t& t1);
 
 		// Connect timers to methods
 		CentralController () {
@@ -226,9 +225,10 @@ void CentralController :: Setup(){
 void CentralController :: Start(){
 
 	if (controller_on) {
+
 		// Create CC logs file (if required)
 		if(save_controller_logs) {
-			sprintf(own_file_path,"%s_CENTRAL_CONTROLLER.txt","../output/logs_output");
+			sprintf(own_file_path, "%s_CENTRAL_CONTROLLER.txt","../output/logs_output");
 			remove(own_file_path);
 			output_log_file = fopen(own_file_path, "at");
 			central_controller_logger.save_logs = save_controller_logs;
@@ -237,25 +237,16 @@ void CentralController :: Start(){
 		}
 		LOGS(save_controller_logs,central_controller_logger.file,
 			"%.18f;CC;%s;%s Start()\n", SimTime(), LOG_B00, LOG_LVL1);
+
 		// Initialize the PP and the ML Method
-		InitializePreProcessor();
-		InitializeMlModel();
-		// Hardcoded [TODO: introduce this parameter from the input]
+		InitializeMlPipeline();
+
+		// Hardcoded [TODO: introduce this parameter to the input]
 		controller_mode = CC_MODE_ACTIVE; // CC_MODE_ACTIVE, CC_MODE_PASSIVE
-		// According to the defined mode, start making requests by activating triggers
-		if(controller_mode == CC_MODE_ACTIVE) {
-			// Indicate all the agents to only send information upon receiving a trigger
-			SendCommandToAllAgents(COMMUNICATION_UPON_TRIGGER, configuration_array);	// TODO: based on the intent for the CC, decide to use triggers or not (now it is hardcoded)
-			// Generate the time trigger for the first request
-			if (time_between_requests > 0) {
-				trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
-			} else {
-				// Idea: when "time_between_requests" is negative, apply the ML method after the simulation ends (batch learning)
-			}
-		} else if(controller_mode == CC_MODE_PASSIVE) {
-			// Wait until the agents send data to the CC
-		}
-//			trigger_apply_ml_method.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
+
+		// Start CC's activity
+		StartCcActivity();
+
 	} else {
 		printf("The central controller is NOT active\n");
 	}
@@ -469,11 +460,31 @@ void CentralController :: InportReceivingInformationFromAgent(int agent_id, Conf
 
 
 
-/****************/
-/****************/
-/*  ML METHODS  */
-/****************/
-/****************/
+/*****************/
+/*****************/
+/*  CC ACTIVITY  */
+/*****************/
+/*****************/
+
+/**
+ * Start requesting information to agents, according to the current CC's mode
+ */
+void CentralController :: StartCcActivity() {
+    // According to the defined mode, start making requests by activating triggers
+    if (controller_mode == CC_MODE_ACTIVE) {
+        // Indicate all the agents to only send information upon receiving a trigger
+        SendCommandToAllAgents(COMMUNICATION_UPON_TRIGGER, configuration_array);    // TODO: based on the intent for the CC, decide to use triggers or not (now it is hardcoded)
+        // Generate the time trigger for the first request
+        if (time_between_requests > 0) {
+            trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
+        } else {
+            // TODO: [Idea] when "time_between_requests" is negative, apply the ML method after the simulation ends (batch learning)
+        }
+        } else if (controller_mode == CC_MODE_PASSIVE) {
+            // Wait until the agents send data to the CC
+        }
+    // trigger_apply_ml_method.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
+}
 
 /**
  * Request information (configuration and performance) to agents upon trigger-based activation
@@ -720,6 +731,15 @@ void CentralController :: PrintOrWriteClusters(int print_or_write){
 /*  VARIABLES INITIALIZATION  */
 /******************************/
 /******************************/
+
+/**
+ * Initialize the ML Pipeline
+ */
+void CentralController :: InitializeMlPipeline() {
+    InitializePreProcessor();
+    InitializeMlModel();
+}
+
 
 /**
  * Initialize the Pre-Processor (PP)

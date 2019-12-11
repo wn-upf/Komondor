@@ -52,11 +52,10 @@
 
 struct Performance
 {
-	//
-	int num_stas;
+	int num_stas;                   ///> Number of STAs in the BSS
 
 	// Time of the last measurement
-	double timestamp;		///> Timestamp of the last measurement
+	double timestamp;		        ///> Timestamp of the last measurement
 	double sum_time_channel_idle;	///> Sum time the channel has been idle
 
 	// Throughput statistics
