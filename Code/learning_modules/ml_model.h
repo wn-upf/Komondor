@@ -123,16 +123,11 @@ class MlModel {
 
 			switch(learning_mechanism) {
 				/* GRAPH COLORING */
+				// TODO: to be improved (right now, it is not fully operative
 				case GRAPH_COLORING: {
 					// Apply Hminmax to decide the new channels configuration
 					graph_coloring.UpdateConfiguration(configuration_array,
 						performance_array, central_controller_logger, sim_time);
-					break;
-				}
-				case RTOT_ALGORITHM: {
-					break;
-				}
-				case CENTRALIZED_ACTION_BANNING: {
 					break;
 				}
 				default: {
@@ -142,6 +137,77 @@ class MlModel {
 			}
 
 		}
+
+		/**
+		* Method for banning actions (configurations) based on different criteria. Fills "available_actions_per_agent".
+		* @param "list_of_available_actions_per_agent" [type **int]: list of actions available for each agent (matrix)
+		* @param "num_actions_per_agent" [type int]: number of actions for each agent
+		* @param "agents_number" [type int]: number of agents associated to the CC
+		* @param "cluster_performance" [type *double]: performance obtained for each cluster (shared metric)
+		* @param "clusters_per_wlan" [type **int]: clusters from each agent perspective (matrix)
+		* @param "most_played_action_per_agent" [type *int]: most played action by each agent
+		* @param "configuration_array" [type *Configuration]: array of configuration objects of each agent
+		*/
+		void CentralizedActionBanning(int **list_of_available_actions_per_agent, int agents_number,
+			int *num_actions_per_agent, double *average_performance_per_agent, double *cluster_performance,
+			int **clusters_per_wlan, int *most_played_action_per_agent, int **times_action_played_per_agent,
+			Configuration *configuration_array) {
+
+			// TODO: Hardcoded!
+			double THRESHOLD_BANNING_1(0.5);	// Threshold 1 for deciding whether to ban an action or not
+//			double THRESHOLD_BANNING_2 = 0.6;	// Threshold 2 for deciding whether to ban an action or not
+
+			int min_num_times_action_is_played(0);
+
+			for(int i = 0; i < agents_number; ++i) {
+				printf("Average performance (%d) = %f\n", i, average_performance_per_agent[i]);
+				for(int j = 0; j < agents_number; ++j) {
+					if(i != j && clusters_per_wlan[i][j] == 1) {
+						printf("Num times each action is played (A%d): ", j);
+						for (int k = 0; k < num_actions_per_agent[j]; ++k) {
+							printf(" %d ", times_action_played_per_agent[j][k]);
+						}
+						printf("\n");
+					}
+				}
+
+//				printf("average_performance_per_agent[%d] = %f\n", i, average_performance_per_agent[i]);
+				// Ban actions based on the performance of each cluster
+				// 		STEP 1: first filter - check if the affected agent obtained the minimum amount of resources (minus a margin)
+				if (average_performance_per_agent[i] < THRESHOLD_BANNING_1) {
+//					printf("cluster_performance[i] = %f\n", cluster_performance[i]);
+					// 		STEP 2: second filter - check the overall performance and apply the decision
+//					if (cluster_performance[i] < THRESHOLD_BANNING_2) {
+						// Ban the action most played by the others
+						for(int j = 0; j < agents_number; ++j) {
+							if(i != j && clusters_per_wlan[i][j] == 1) {
+								// Count the number of actions available in every agent (to prevent deleting all the actions)
+								int sum_available_actions(0);
+								for (int k = 0; k < num_actions_per_agent[j]; ++k) {
+									if (list_of_available_actions_per_agent[j] >= 0)
+										sum_available_actions += list_of_available_actions_per_agent[j][k];
+								}
+								min_num_times_action_is_played = 3;
+								printf("min_num_times_action_is_played = %d (%d)\n", min_num_times_action_is_played, times_action_played_per_agent[j][most_played_action_per_agent[j]]);
+								if (sum_available_actions > 1 && times_action_played_per_agent[j][most_played_action_per_agent[j]] > min_num_times_action_is_played) {
+									list_of_available_actions_per_agent[j][most_played_action_per_agent[j]] = 0;
+									configuration_array[j].agent_capabilities.available_actions[most_played_action_per_agent[j]] = 0;
+									printf("Banned action %d of A%d\n", most_played_action_per_agent[j], j);
+								}
+							}
+//						}
+					}
+				}
+			}
+
+		};
+
+
+		/************************************/
+		/************************************/
+		/*  DECENTRALIZED LEARNING METHODS  */
+		/************************************/
+		/************************************/
 
 		/**
 		* Method for computing an individual configuration (decentralized case)
@@ -180,75 +246,11 @@ class MlModel {
 			return new_action;
 		};
 
-		/**
-		* Method for banning actions (configurations) based on different criteria. Fills "available_actions_per_agent".
-		* @param "list_of_available_actions_per_agent" [type **int]: list of actions available for each agent (matrix)
-		* @param "num_actions_per_agent" [type int]: number of actions for each agent
-		* @param "agents_number" [type int]: number of agents associated to the CC
-		* @param "cluster_performance" [type *double]: performance obtained for each cluster (shared metric)
-		* @param "clusters_per_wlan" [type **int]: clusters from each agent perspective (matrix)
-		* @param "most_played_action_per_agent" [type *int]: most played action by each agent
-		* @param "configuration_array" [type *Configuration]: array of configuration objects of each agent
-		*/
-		void CentralizedActionBanning(int **list_of_available_actions_per_agent, int agents_number,
-			int *num_actions_per_agent, double *average_performance_per_agent, double *cluster_performance,
-			int **clusters_per_wlan, int *most_played_action_per_agent, int **times_action_played_per_agent,
-			Configuration *configuration_array) {
-
-			// TODO: Hardcoded!
-			double THRESHOLD_BANNING_1(0);	// Threshold 1 for deciding whether to ban an action or not
-//			double THRESHOLD_BANNING_2 = 0.6;	// Threshold 2 for deciding whether to ban an action or not
-
-            int min_num_times_action_is_played(0);
-
-			for(int i = 0; i < agents_number; ++i) {
-				printf("Average performance (%d) = %f\n", i, average_performance_per_agent[i]);
-                for(int j = 0; j < agents_number; ++j) {
-					if(i != j && clusters_per_wlan[i][j] == 1) {
-						printf("Num times each action is played (A%d): ", j);
-						for (int k = 0; k < num_actions_per_agent[j]; ++k) {
-							printf(" %d ", times_action_played_per_agent[j][k]);
-						}
-						printf("\n");
-					}
-				}
-
-//				printf("average_performance_per_agent[%d] = %f\n", i, average_performance_per_agent[i]);
-				// Ban actions based on the performance of each cluster
-				// 		STEP 1: first filter - check if the affected agent obtained the minimum amount of resources (minus a margin)
-				if (average_performance_per_agent[i] < THRESHOLD_BANNING_1) {
-//					printf("cluster_performance[i] = %f\n", cluster_performance[i]);
-					// 		STEP 2: second filter - check the overall performance and apply the decision
-//					if (cluster_performance[i] < THRESHOLD_BANNING_2) {
-						// Ban the action most played by the others
-						for(int j = 0; j < agents_number; ++j) {
-							if(i != j && clusters_per_wlan[i][j] == 1) {
-								// Count the number of actions available in every agent (to prevent deleting all the actions)
-								int sum_available_actions(0);
-								for (int k = 0; k < num_actions_per_agent[j]; ++k) {
-									if (list_of_available_actions_per_agent[j] >= 0)
-										sum_available_actions += list_of_available_actions_per_agent[j][k];
-								}
-                                min_num_times_action_is_played = 3;
-								printf("min_num_times_action_is_played = %d (%d)\n", min_num_times_action_is_played, times_action_played_per_agent[j][most_played_action_per_agent[j]]);
-								if (sum_available_actions > 1 && times_action_played_per_agent[j][most_played_action_per_agent[j]] > min_num_times_action_is_played) {
-									list_of_available_actions_per_agent[j][most_played_action_per_agent[j]] = 0;
-									configuration_array[j].agent_capabilities.available_actions[most_played_action_per_agent[j]] = 0;
-									printf("Banned action %d of A%d\n", most_played_action_per_agent[j], j);
-								}
-							}
-//						}
-					}
-				}
-			}
-
-		};
-
-		/*******************/
-		/*******************/
-		/*  OHTER METHODS  */
-		/*******************/
-		/*******************/
+		/******************************/
+		/******************************/
+		/*  VARIABLES INITIALIZATION  */
+		/******************************/
+		/******************************/
 
 		/**
 		* Initialize variables in the ML model
@@ -311,6 +313,12 @@ class MlModel {
 				}
 			}
 		}
+
+		/*************************/
+		/*************************/
+		/*  PRINT/WRITE METHODS  */
+		/*************************/
+		/*************************/
 
 		/**
 		* Print or write statistics of the ML Model

@@ -63,32 +63,24 @@ class PreProcessor {
 	// Public items
 	public:
 
-		int agent_id;						///> Identified of the agent instantiating the PP
-		int num_actions;					///> Number of actions
+		// General parameters
 		int type_of_reward;					///> Index indicating the type of reward
-
 		int selected_strategy;				///> Index of the chosen action-selection strategy
 
-		int num_actions_channel;			///> Number of channel actions
-		int num_actions_sensitivity;		///> Number of sensitivity actions
-		int num_actions_tx_power;			///> Number of transmission power actions
-		int num_actions_dcb_policy;			///> Number of DCB policy actions
-
+		// Lists of configurations
 		int *list_of_channels;				///> List of channels to be selected
 		double *list_of_pd_values;			///> List of PD values to be selected
 		double *list_of_tx_power_values;	///> List of Tx Power values to be selected
 		int *list_of_dcb_policy;			///> List of DCB policies to be selected
 
-		int *list_of_available_actions;
-
+		// Actions management
+		int num_actions;					///> Number of actions
+		int num_actions_channel;			///> Number of channel actions
+		int num_actions_sensitivity;		///> Number of sensitivity actions
+		int num_actions_tx_power;			///> Number of transmission power actions
+		int num_actions_dcb_policy;			///> Number of DCB policy actions
 		int *indexes_selected_arm;			///> Indexes for each parameter that conform the current selected arm
-
-//		double *average_performance_per_agent;
-//		double **performance_action_per_agent;
-//
-//		int *num_actions_per_agent;
-//		int *most_played_action_per_agent;
-//		int **times_action_played_per_agent;
+		int *list_of_available_actions;		///> List of available actions
 
 	// Private items
 	private:
@@ -150,34 +142,26 @@ class PreProcessor {
 			double reward;
 			// Switch to select the reward according to the metric used (rewards must be normalized)
 			switch(type_of_reward){
-				/* PERFORMANCE_PACKETS_SENT:
+				/* REWARD_TYPE_PACKETS_SUCCESSFUL:
 				 * - The number of packets sent are taken into account
 				 * - The reward must be bounded by the maximum number of data packets
 				 * 	 that can be sent in each interval (e.g., packets that were sent but lost)
 				 */
-				case REWARD_TYPE_PACKETS_SENT:{
-					reward = performance.data_packets_sent/performance.data_packets_lost;
+				case REWARD_TYPE_PACKETS_SUCCESSFUL:{
+					reward = (performance.data_packets_sent-performance.data_packets_lost)/performance.data_packets_sent;
 					break;
 				}
-				/* PERFORMANCE_THROUGHPUT:
+				/* REWARD_TYPE_AVERAGE_THROUGHPUT:
 				 * - The throughput experienced during the last period is taken into account
 				 * - The reward must be bounded by the maximum throughput that would be experienced
 				 * 	 (e.g., consider the data rate granted by the modulation and the total time)
 				 */
-				case REWARD_TYPE_THROUGHPUT:{
+				case REWARD_TYPE_AVERAGE_THROUGHPUT:{
 					if (performance.max_bound_throughput == 0) {
 						reward = 0;
 					} else {
 						reward = (double) performance.throughput/performance.max_bound_throughput;
 					}
-					break;
-				}
-				/* REWARD_TYPE_PACKETS_GENERATED:
-				 * -
-				 */
-				case REWARD_TYPE_PACKETS_GENERATED:{
-					reward = (performance.num_packets_generated - performance.num_packets_dropped) /
-						performance.num_packets_generated;
 					break;
 				}
 				/* REWARD_TYPE_MIN_RSSI:
@@ -188,6 +172,20 @@ class PreProcessor {
 					for (int i = 0; i < performance.num_stas; ++i) {
 						if(reward > performance.rssi_list_per_sta[i]) reward = performance.rssi_list_per_sta[i];
 					}
+					break;
+				}
+				/* REWARD_TYPE_MAX_DELAY:
+				 * -
+				 */
+				case REWARD_TYPE_MAX_DELAY:{
+					reward = performance.average_delay;
+					break;
+				}
+				/* REWARD_TYPE_AVERAGE_DELAY:
+				 * -
+				 */
+				case REWARD_TYPE_AVERAGE_DELAY:{
+					reward = performance.average_delay;
 					break;
 				}
 				/* Default */
@@ -238,6 +236,33 @@ class PreProcessor {
 		/***********************/
 
 		/**
+		* Initialize actions
+		* @return "action_array" [type *Action]: initialized array of Action structs
+		*/
+		Action* InitializeActions(){
+			Action *action_array = new Action[num_actions];
+			int *indexes_arm = new int[NUM_FEATURES_ACTIONS];
+			for(int i = 0; i < num_actions; ++i) {
+				index2values(indexes_arm, i, num_actions_channel,num_actions_sensitivity,
+					num_actions_tx_power, num_actions_dcb_policy);
+				action_array[i].id = i;
+				// Configuration
+				action_array[i].channel = list_of_channels[indexes_arm[0]];
+				action_array[i].cca = list_of_pd_values[indexes_arm[1]];
+				action_array[i].tx_power = list_of_tx_power_values[indexes_arm[2]];
+				action_array[i].dcb_policy = list_of_dcb_policy[indexes_arm[3]];
+				// Performance
+				action_array[i].instantaneous_reward = 0;
+				action_array[i].instantaneous_reward = 0;
+				action_array[i].times_played = 0;
+				action_array[i].average_reward_since_last_request = 0;
+				action_array[i].times_played_since_last_request = 0;
+//				action_array[i].PrintAction();
+			}
+			return action_array;
+		}
+
+		/**
 		* Encapsulate the configuration of a node to be sent
 		* @param "configuration" [type Configuration]: current configuration report from the AP
 		* @param "action_ix" [type int]: index of the action that corresponds to the new configuration
@@ -265,22 +290,6 @@ class PreProcessor {
 			}
 			new_configuration.selected_tx_power = new_tx_power;			// TX Power
 			new_configuration.selected_dcb_policy = new_dcb_policy;		// DCB policy
-			return new_configuration;
-		}
-
-		/**
-		* Encapsulate the configuration of a node to be sent
-		* @param "configuration" [type Configuration]: current configuration report from the AP
-		* @param "action_ix" [type int]: index of the action that corresponds to the new configuration
-		* @return "new_configuration" [type Configuration]: configuration report, corresponding to the new action
-		*/
-		Configuration GenerateNewConfigurationRtotAlg(Configuration configuration, double ml_output){
-			// Generate the configuration object
-			Configuration new_configuration;
-			// Set configuration to the received one, and then change specific parameters
-			new_configuration = configuration;
-			new_configuration.non_srg_obss_pd = ml_output;
-
 			return new_configuration;
 		}
 
@@ -335,41 +344,32 @@ class PreProcessor {
 			int action_ix = values2index(indexes_selected_arm, num_actions_channel,
 				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
 //			PrintActionBandits(action_ix);
-//			printf("index_channel = %d (channel %d)\n",index_channel,list_of_channels[index_channel]);
-//			printf("index_pd = %d (CCA %f)\n",index_pd,list_of_pd_values[index_pd]);
-//			printf("index_tx_power = %d (Power %f)\n",index_tx_power,list_of_tx_power_values[index_tx_power]);
-//			printf("index_dcb_policy = %d (DCB %d)\n",index_dcb_policy,list_of_dcb_policy[index_dcb_policy]);
-//			printf("RESULT: action_ix = %d\n",action_ix);
 
 			return action_ix;
 		}
 
+		/******************/
+		/******************/
+		/*  RTOT METHODS  */
+		/******************/
+		/******************/
+
 		/**
-		* Initialize actions
-		* @return "action_array" [type *Action]: initialized array of Action structs
+		* Encapsulate the configuration of a node to be sent
+		* @param "configuration" [type Configuration]: current configuration report from the AP
+		* @param "action_ix" [type int]: index of the action that corresponds to the new configuration
+		* @return "new_configuration" [type Configuration]: configuration report, corresponding to the new action
 		*/
-		Action* InitializeActions(){
-			Action *action_array = new Action[num_actions];
-			int *indexes_arm = new int[NUM_FEATURES_ACTIONS];
-			for(int i = 0; i < num_actions; ++i) {
-				index2values(indexes_arm, i, num_actions_channel,num_actions_sensitivity,
-					num_actions_tx_power, num_actions_dcb_policy);
-				action_array[i].id = i;
-				// Configuration
-				action_array[i].channel = list_of_channels[indexes_arm[0]];
-				action_array[i].cca = list_of_pd_values[indexes_arm[1]];
-				action_array[i].tx_power = list_of_tx_power_values[indexes_arm[2]];
-				action_array[i].dcb_policy = list_of_dcb_policy[indexes_arm[3]];
-				// Performance
-				action_array[i].instantaneous_reward = 0;
-				action_array[i].instantaneous_reward = 0;
-				action_array[i].times_played = 0;
-				action_array[i].average_reward_since_last_request = 0;
-				action_array[i].times_played_since_last_request = 0;
-//				action_array[i].PrintAction();
-			}
-			return action_array;
+		Configuration GenerateNewConfigurationRtotAlg(Configuration configuration, double ml_output){
+			// Generate the configuration object
+			Configuration new_configuration;
+			// Set configuration to the received one, and then change specific parameters
+			new_configuration = configuration;
+			new_configuration.non_srg_obss_pd = ml_output;
+
+			return new_configuration;
 		}
+
 
 		/*************************/
 		/*************************/
@@ -412,10 +412,11 @@ class PreProcessor {
 		* Print the available reward types
 		*/
 		void PrintAvailableRewardTypes(){
-			printf("%s Available types of rewards:\n%s REWARD_TYPE_PACKETS_SENT (%d)\n"
-				"%s REWARD_TYPE_THROUGHPUT (%d)\n%s REWARD_TYPE_PACKETS_GENERATED (%d)\n",
-				LOG_LVL2, LOG_LVL3, REWARD_TYPE_PACKETS_SENT, LOG_LVL3, REWARD_TYPE_THROUGHPUT,
-				LOG_LVL3, REWARD_TYPE_PACKETS_GENERATED);
+			printf("%s Available types of rewards:\n%s REWARD_TYPE_PACKETS_SUCCESSFUL (%d)\n"
+				"%s REWARD_TYPE_AVERAGE_THROUGHPUT (%d)\n%s REWARD_TYPE_MIN_RSSI (%d)\n"
+				"%s REWARD_TYPE_MAX_DELAY (%d)\n%s REWARD_TYPE_AVERAGE_DELAY (%d)\n",
+				LOG_LVL2, LOG_LVL3, REWARD_TYPE_PACKETS_SUCCESSFUL, LOG_LVL3, REWARD_TYPE_AVERAGE_THROUGHPUT,
+				LOG_LVL3, REWARD_TYPE_MIN_RSSI, LOG_LVL3, REWARD_TYPE_MAX_DELAY, LOG_LVL3, REWARD_TYPE_AVERAGE_DELAY);
 		}
 
 		/**
@@ -431,44 +432,43 @@ class PreProcessor {
 		 * @param "performance_to_write" [type Performance]: performance object to be written
 		 */
 		void WritePerformance(Logger &logger, double sim_time, char string_device[],
-				Performance performance, int performance_selected) {
+				Performance performance, int type_of_reward) {
 
-			LOGS(TRUE, logger.file,
-				"%.15f;%s;%s;%s Performance:\n", sim_time, string_device, LOG_C03, LOG_LVL2);
-			switch(performance_selected) {
-				// Packets sent
-				case REWARD_TYPE_PACKETS_SENT:{
+			LOGS(TRUE, logger.file, "%.15f;%s;%s;%s Performance:\n", sim_time, string_device, LOG_C03, LOG_LVL2);
+			switch(type_of_reward) {
+				// Packets successful ratio
+				case REWARD_TYPE_PACKETS_SUCCESSFUL:{
 					LOGS(TRUE, logger.file,
-						"%.15f;%s;%s;%s #pkts sent = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3,
-						performance.data_packets_sent);
+						"%.15f;%s;%s;%s Packet successful ratio = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3,
+						(double)((performance.data_packets_sent-performance.data_packets_lost)/performance.data_packets_sent));
 					break;
 				}
-				// Throughput (Mbps)
-				case REWARD_TYPE_THROUGHPUT:{
+				// Average Throughput (Mbps)
+				case REWARD_TYPE_AVERAGE_THROUGHPUT:{
 					LOGS(TRUE, logger.file,
-						"%.15f;%s;%s;%s throughput = %.2f Mbps\n", sim_time, string_device, LOG_C03, LOG_LVL3,
-						performance.throughput * pow(10,-6));
-					break;
-				}
-				// Packets generated
-				case REWARD_TYPE_PACKETS_GENERATED:{
-					LOGS(TRUE, logger.file,
-						"%.15f;%s;%s;%s #pkts generated = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3,
-						performance.num_packets_generated);
+						"%.15f;%s;%s;%s Average throughput = %.2f Mbps\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.throughput * pow(10,-6));
 					break;
 				}
 				// Minimum RSSI
 				case REWARD_TYPE_MIN_RSSI:{
 					LOGS(TRUE, logger.file,
-						"%.15f;%s;%s;%s min RSSI = %.2f dBm\n", sim_time, string_device, LOG_C03, LOG_LVL3,
-						performance.rssi_list_per_sta[0]);
+						"%.15f;%s;%s;%s Min RSSI = %.2f dBm\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.rssi_list_per_sta[0]);
 					break;
 				}
 				// Maximum delay
 				case REWARD_TYPE_MAX_DELAY:{
 					LOGS(TRUE, logger.file,
-						"%.15f;%s;%s;%s average delay = %.2f ms\n", sim_time, string_device, LOG_C03, LOG_LVL3,
-						performance.average_delay * pow(10,-3));
+						"%.15f;%s;%s;%s Max delay = %.2f ms\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.average_delay * pow(10,-3));
+					break;
+				}
+				// Average delay
+				case REWARD_TYPE_AVERAGE_DELAY:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Average delay = %.2f ms\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.average_delay * pow(10,-3));
 					break;
 				}
 			}

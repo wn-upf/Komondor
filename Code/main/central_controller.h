@@ -87,101 +87,95 @@ component CentralController : public TypeII{
 		void InitializeCentralController();
         void StartCcActivity();
 
-		// Configuration generation methods
-		void ApplyMlMethod();
-		void GenerateGlobalConfiguration();
-		void GenerateSingleConfiguration();
-
-//		void UpdateAgentAveragePerformance(int agent_id, double *average_performance, int *times_arm_has_been_selected);
-		void UpdateAgentAveragePerformance(int agent_id, Action *actions);
-
 		// Communication with Agents
 		void RequestInformationToAgents();
-//		void GenerateAndSendNewConfiguration();
 		void SendCommandToAllAgents(int command_id, Configuration *conf_array);
 		void SendConfigurationToSingleAgent(int destination_agent_id, Configuration conf);
 		void SendCommandToSingleAgent(int destination_agent_id, int command_id, Configuration conf);
 
-		// Print methods
-		void PrintControllerInfo();
-		void WriteControllerInfo(Logger logger);
-		void PrintOrWriteControllerStatistics(int print_or_write);
+		// Methods related to ML activity
+		void ApplyMlMethod();
+		void GenerateGlobalConfiguration();
+		void GenerateSingleConfiguration();
 
 		// Clustering methods (to group agents/BSSs)
 		void GenerateClusters(int wlan_id, Performance performance, Configuration configuration);
 		void PrintOrWriteClusters(int print_or_write);
 		void UpdatePerformancePerCluster(int shared_performance_metric);
 
+		// Methods for updating statistics
+		void UpdateAgentAveragePerformance(int agent_id, Action *actions);
+
+		// Print methods
+		void PrintControllerInfo();
+		void WriteControllerInfo(Logger logger);
+		void PrintOrWriteControllerStatistics(int print_or_write);
+
 		// Initialization
 		void InitializeMlPipeline();
         void InitializePreProcessor();
 		void InitializeMlModel();
 
-
 	// Public items (entered by agents constructor in komondor_main)
 	public:
 
-		int agents_number;			///> Number of agents controlled by the CC
-		int *list_of_agents;		///> List of the identifiers of the agents controlled by the CC
-		int wlans_number;			///> Number of WLANs
-
-		int *num_requests_per_agent;				///> List of the number of requests performed to each agent
+		// General configuration of the CC
+		int controller_on;				///> Flag indicating whether the CC is active or not
+		int controller_mode; 			///> The CC can be either passive (0) or active (1)
 		double time_between_requests;	///> Time between requests
 
-		int save_controller_logs;		///> Boolean that indicates whether to write CC's logs or not
-		int print_controller_logs;		///> Boolean that indicates whether to print CC's logs or not
+		// Keep track of attached agents
+		int agents_number;				///> Number of agents controlled by the CC
+		int *list_of_agents;			///> List of the identifiers of the agents controlled by the CC
+		int wlans_number;				///> Number of WLANs
+		int total_nodes_number;			///> Number of nodes
+		int *num_actions_per_agent;		///> Array containing the number of actions available to each agent
+		int max_number_of_actions;		///> Maximum number of actions available for all the agents (for generating data structures)
 
-		int controller_mode; 			///> The CC can be either passive (0) or active (1)
-
+		// Reward and ML method types
 		int type_of_reward;				///> Type of reward
 		int learning_mechanism;			///> Index of the chosen learning mechanism
 		int action_selection_strategy;	///> Index of the chosen action-selection strategy
 
-		int num_channels;				///> Number of channels
-		int total_nodes_number;			///> Number of nodes
-		int num_actions;
-		int *num_actions_per_agent;
-		int max_number_of_actions;
-
-		int controller_on;				///> Flag indicating whether the CC is active or not
+		// Logs
+		int save_controller_logs;		///> Boolean that indicates whether to write CC's logs or not
+		int print_controller_logs;		///> Boolean that indicates whether to print CC's logs or not
 
 	// Private items (just for node operation)
 	private:
 
-		// File for writing node logs
+		// File for writing CC logs
 		FILE *output_log_file;				///> File for logs in which the agent is involved
 		char own_file_path[32];				///> Name of the file for agent logs
 		Logger central_controller_logger;	///> struct containing the attributes needed for writing logs in a file
 		char *header_string;				///> Header string for the logger
 
-		Configuration configuration;		///> Configuration object
-		Configuration new_configuration;	///> Auxiliary configuration object
-
-		Performance performance;			///> Performance object
-
+		// Arrays with configurations and performances
 		Configuration *configuration_array;	///> Array of configuration objects from all the agents
 		Performance *performance_array;		///> Array of performance objects from all the agents
 
+		// Per-agent information
+		double *performance_per_agent;				///> Processed performance for each agent
+		double *average_performance_per_agent;		///> Average performance of each agent during the last CC iteration
+		double **performance_action_per_agent;		///> Matrix with the performance achieved by each agent, for each of its available actions
+		int **times_action_played_per_agent;		///> Matrix with the times each agent has played every action
+		int *most_played_action_per_agent;			///> Array containing the index of the most played action by each agent
+
+		// Clustering
+		int **clusters_per_wlan;		///> Clusters from each BSS perspective (1 if another BSS belongs to the same cluster)
+		double *cluster_performance;	///> Shared performance of each cluster
+
+		// Action-banning
+		int **list_of_available_actions_per_agent;	///> List of available actions in each agent
+
+		// ML Pipeline elements
 		MlModel ml_model;					///> Instantiation of the ML Model
 		PreProcessor pre_processor;			///> Instantiation of the Pre-Processor
 
+		// Auxiliary variables for CC operation
+		int cc_iteration; 					///> Counter that keeps track of the number of iterations at the CC
 		int counter_responses_received; 	///> Needed to determine the number of answers that the controller receives from agents
 
-		GraphColoring graph_coloring;		///> Instantiation of the Graph coloring approach
-
-		bool initialization_flag;			///> Boolean indicating whether initialization has been performed or not
-		int cc_iteration; 					///> Counter that keeps track of the number of iterations at the CC
-
-		double *performance_per_agent;
-		double *average_performance_per_agent;
-
-		int **clusters_per_wlan;
-		double *cluster_performance;
-		int *most_played_action_per_agent;
-
-		int **list_of_available_actions_per_agent;
-		double **performance_action_per_agent;
-		int **times_action_played_per_agent;
 
 	// Connections and timers
 	public:
@@ -197,7 +191,6 @@ component CentralController : public TypeII{
 		// Timers
 		Timer <trigger_t> trigger_apply_ml_method;					// Timer for applying the ML method
 		Timer <trigger_t> trigger_request_information_to_agents;	// Timer for requesting information to the AP
-//		Timer <trigger_t> trigger_safe_responses_collection;
 
 		// Every time the timer expires execute this
 		inport inline void ApplyMlMethod(trigger_t& t1);
@@ -207,7 +200,6 @@ component CentralController : public TypeII{
 		CentralController () {
 			connect trigger_apply_ml_method.to_component,ApplyMlMethod;
 			connect trigger_request_information_to_agents.to_component,RequestInformationToAgents;
-//			connect trigger_safe_responses_collection.to_component,GenerateAndSendNewConfiguration;
 		}
 
 };
@@ -238,7 +230,7 @@ void CentralController :: Start(){
 		LOGS(save_controller_logs,central_controller_logger.file,
 			"%.18f;CC;%s;%s Start()\n", SimTime(), LOG_B00, LOG_LVL1);
 
-		// Initialize the PP and the ML Method
+		// Initialize the ML Pipeline
 		InitializeMlPipeline();
 
 		// Hardcoded [TODO: introduce this parameter to the input]
@@ -269,6 +261,31 @@ void CentralController :: Stop() {
 	}
 
 };
+
+/**************************/
+/**************************/
+/*  CONTROLLER'S ACTIVITY */
+/**************************/
+/**************************/
+
+/**
+ * Start requesting information to agents, according to the current CC's mode
+ */
+void CentralController :: StartCcActivity() {
+    // According to the defined mode, start making requests by activating triggers
+    if (controller_mode == CC_MODE_ACTIVE) {
+        // Indicate all the agents to only send information upon receiving a trigger
+        SendCommandToAllAgents(COMMUNICATION_UPON_TRIGGER, configuration_array);    // TODO: based on the intent for the CC, decide to use triggers or not (now it is hardcoded)
+        // Generate the time trigger for the first request
+        if (time_between_requests > 0) {
+            trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
+        } else {
+            // TODO: [Idea] when "time_between_requests" is negative, apply the ML method after the simulation ends (batch learning)
+        }
+	} else if (controller_mode == CC_MODE_PASSIVE) {
+		// Wait until the agents send data to the CC
+	}
+}
 
 /**************************/
 /**************************/
@@ -340,9 +357,7 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
 			break;
 		}
 		case BAN_CONFIGURATION: {
-			// Specify which configuration needs to be banned
-			// ...
-			// Indicate the time this configuration should be unavailable
+			// TODO: Indicate the time this configuration should be unavailable
 			// ...
 			LOGS(save_controller_logs,central_controller_logger.file,
 				"%.15f;CC;%s;%s Requesting Agent %d to BAN a configuration\n",
@@ -386,63 +401,43 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
  * @param "received_performance" [type Performance]: performance of the agent
  * @param "agent_id" [type int]: identifier of the agent
  */
-void CentralController :: InportReceivingInformationFromAgent(int agent_id, Configuration &received_configuration,
-//	Performance &received_performance, double *average_performance_per_configuration, int *times_arm_has_been_selected) {
-	Performance &received_performance, Action *actions) {
+void CentralController :: InportReceivingInformationFromAgent(int agent_id,
+	Configuration &received_configuration, Performance &received_performance, Action *actions) {
 
 	LOGS(save_controller_logs,central_controller_logger.file,
 		"%.15f;CC;%s;%s InportReceivingInformationFromAgent()\n", SimTime(), LOG_F00, LOG_LVL1);
 	LOGS(save_controller_logs,central_controller_logger.file,
 		"%.15f;CC;%s;%s New information has been received from Agent %d\n", SimTime(), LOG_C00, LOG_LVL2, agent_id);
 
-	++counter_responses_received;
+	++ counter_responses_received;
 
 	// Update the configuration and performance received
 	configuration_array[agent_id] = received_configuration;
 	performance_array[agent_id] = received_performance;
 
-	// Update the average performance obtained for each arm
-//	UpdateAgentAveragePerformance(agent_id, average_performance_per_configuration, times_arm_has_been_selected);
+	// Update the average performance statistics for the agent that sent information
 	UpdateAgentAveragePerformance(agent_id, actions);
 
 	// Print and/or write the configuration and the performance report
-//	if(save_controller_logs) {
-//		configuration_array[agent_id].WriteConfiguration(central_controller_logger, SimTime());
-//		configuration_array[agent_id].capabilities.WriteCapabilities(central_controller_logger, SimTime());
-//		char device_code[10]("CC");
-//		pre_processor.WritePerformance(central_controller_logger, SimTime(), device_code, performance, type_of_reward);
-//	}
-
-//	performance_per_agent[agent_id] = pre_processor.UpdateAgentPerformanceCC(performance_array[agent_id]);
+	if(save_controller_logs) {
+		configuration_array[agent_id].WriteConfiguration(central_controller_logger, SimTime());
+		char device_code[10]("CC");
+		pre_processor.WritePerformance(central_controller_logger, SimTime(), device_code,
+			performance_array[agent_id], type_of_reward);
+	}
 
 	// According to the defined mode, behave in one way or another
 	switch(controller_mode) {
-		// Passive mode: the agents send information to the CC
+		// Passive mode: the agents send information to the CC, which only observes (monitoring mode)
 		case CC_MODE_PASSIVE: {
 			break;
 		}
 		// Active mode: the CC requests information to agents
 		case CC_MODE_ACTIVE: {
-
 			// Create-update clusters, which can be used by the ML method
 			GenerateClusters(agent_id, performance_array[agent_id], configuration_array[agent_id]);
-//			PrintOrWriteClusters(PRINT_LOG);
-
 			// Once all the information is available, compute a new configuration according to the updated rewards
 			if (counter_responses_received == agents_number) {
-//				// Update the number of responses received
-//				++ counter_responses_received ;
-//				if(initialization_flag) {
-//					// Initialization phase of the graph coloring method
-//					graph_coloring.GraphColoringInitialization(configuration_array);
-//					// Send the initial configuration to all the associated agents
-////					SendCommandToAllAgents();
-//					SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
-//					initialization_flag = false;
-//					trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
-//				} else {
-//					trigger_safe_responses_collection.Set(FixTimeOffset(SimTime(),13,12));
-//				}
 				trigger_apply_ml_method.Set(FixTimeOffset(SimTime(), 13, 12));
 				counter_responses_received = 0;
 			}
@@ -458,33 +453,11 @@ void CentralController :: InportReceivingInformationFromAgent(int agent_id, Conf
 
 };
 
-
-
-/*****************/
-/*****************/
-/*  CC ACTIVITY  */
-/*****************/
-/*****************/
-
-/**
- * Start requesting information to agents, according to the current CC's mode
- */
-void CentralController :: StartCcActivity() {
-    // According to the defined mode, start making requests by activating triggers
-    if (controller_mode == CC_MODE_ACTIVE) {
-        // Indicate all the agents to only send information upon receiving a trigger
-        SendCommandToAllAgents(COMMUNICATION_UPON_TRIGGER, configuration_array);    // TODO: based on the intent for the CC, decide to use triggers or not (now it is hardcoded)
-        // Generate the time trigger for the first request
-        if (time_between_requests > 0) {
-            trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
-        } else {
-            // TODO: [Idea] when "time_between_requests" is negative, apply the ML method after the simulation ends (batch learning)
-        }
-        } else if (controller_mode == CC_MODE_PASSIVE) {
-            // Wait until the agents send data to the CC
-        }
-    // trigger_apply_ml_method.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
-}
+/****************/
+/****************/
+/*  ML METHODS  */
+/****************/
+/****************/
 
 /**
  * Request information (configuration and performance) to agents upon trigger-based activation
@@ -495,50 +468,36 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 		"%.15f;CC;%s;%s Applying the ML method (iteration %d)\n",
 		SimTime(), LOG_C00, LOG_LVL1, cc_iteration);
 
-	// STEP 1 PROCESS INFORMATION FROM AGENTS
-	// 		STEP 1.1 IF THERE IS NOT INFORMATION, FORCE A REQUEST
-	//	pre_processor.UpdatePerformancePerAgentCC(performance_per_agent, agents_number);
-	// ...
-
+	// STEP 1 [OPTIONAL]: Update the performance observed per cluster (shared metric)
 	UpdatePerformancePerCluster(MAX_MIN_PERFORMANCE);
 
-	// STEP 2 APPLY THE ML METHOD
+	// STEP 2: APPLY THE ML METHOD
+	switch(ml_model.learning_mechanism) {
+		// Action banning: special case where configurations are banned, rather that provided
+		case CENTRALIZED_ACTION_BANNING: {
+			ml_model.CentralizedActionBanning(list_of_available_actions_per_agent, agents_number,
+				num_actions_per_agent, average_performance_per_agent, cluster_performance, clusters_per_wlan,
+				most_played_action_per_agent, times_action_played_per_agent, configuration_array);
+			// Forward the output to agents
+			SendCommandToAllAgents(BAN_CONFIGURATION, configuration_array);
+			break;
+		}
+		case GRAPH_COLORING: {
+			GenerateGlobalConfiguration();
+			SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
+			break;
+		}
+		// Unknown controller mode
+		default:{
+			printf("[CC] ERROR: Undefined centralized ML method %d\n"
+				"	- Use CENTRALIZED_ACTION_BANNING (%d)\n",
+				controller_mode, CENTRALIZED_ACTION_BANNING);
+		}
+	}
 
-//	for (int i = 0; i < agents_number; ++i) {
-//		printf("[CC] average_performance_per_agent[%d] = %f\n", i, average_performance_per_agent[i]);
-//	}
-
-	ml_model.CentralizedActionBanning(list_of_available_actions_per_agent, agents_number,
-		num_actions_per_agent, average_performance_per_agent, cluster_performance, clusters_per_wlan,
-		most_played_action_per_agent, times_action_played_per_agent, configuration_array);
-
-//
-//	double THRESHOLD_BANNING = 0.5;
-//	// ACTION-BANNING (TODO: move this to ml_model.h)
-//	for(int i = 0; i < agents_number; ++i) {
-//		if (cluster_performance[i] < THRESHOLD_BANNING) {
-//			// Ban the action most played by the others
-//			for(int j = 0; j < agents_number; ++j) {
-//				if(i != j && clusters_per_wlan[i][j] == 1) {
-//					list_of_available_actions_per_agent[j][most_played_action_per_agent[j]] = 0;
-//					configuration_array[j].agent_capabilities.available_actions[most_played_action_per_agent[j]] = 0;
-//					printf("Banned action %d of A%d\n", most_played_action_per_agent[j], j);
-//				}
-//			}
-//		}
-//	}
-
-	// STEP 3 FORWARD THE OUTPUT TO AGETNS
-	SendCommandToAllAgents(BAN_CONFIGURATION, configuration_array);
-
-	// STEP 4: Set the trigger for performing the next request
+	// STEP 3: Set the trigger for initiating the next CC iteration
 	trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
-
 	++cc_iteration;
-
-	// GenerateGlobalConfiguration();
-	// SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
-	// ...
 
 };
 
@@ -574,15 +533,10 @@ void CentralController :: UpdateAgentAveragePerformance(int agent_id, Action *ac
 	int times_action_played(0);
 
 	for (int i = 0; i < max_number_of_actions; ++i) {
-
-//        times_action_played_per_agent[agent_id][i] = times_arm_has_been_selected[i];
         times_action_played_per_agent[agent_id][i] = actions[i].times_played_since_last_request;
-
 		if (num_actions_per_agent[agent_id] >= i) {
-//			performance_action_per_agent[agent_id][i] = average_performance_per_configuration[i];
 			performance_action_per_agent[agent_id][i] = actions[i].average_reward_since_last_request;
 			if (performance_action_per_agent[agent_id][i] > 0) {
-//				cumulative_performance_per_action += average_performance_per_configuration[i];
 				cumulative_performance_per_action += actions[i].average_reward_since_last_request;
 				++visited_actions;
 			}
@@ -592,15 +546,13 @@ void CentralController :: UpdateAgentAveragePerformance(int agent_id, Action *ac
 				most_played_action_per_agent[agent_id] = i;
 			}
 		}
-//		printf("	 + performance_action_per_agent[%d][%d] = %f / %f\n", agent_id, i,
-//			performance_action_per_agent[agent_id][i], average_performance_per_configuration[i]);
 	}
 	if (visited_actions > 0) {
 		average_performance_per_agent[agent_id] = cumulative_performance_per_action / visited_actions;
 	} else {
 		average_performance_per_agent[agent_id] = 0;
 	}
-//	printf("average_performance_per_agent[%d] = %f\n", agent_id, average_performance_per_agent[agent_id]);
+
 }
 
 /************************/
@@ -617,17 +569,13 @@ void CentralController :: UpdateAgentAveragePerformance(int agent_id, Action *ac
  */
 void CentralController :: GenerateClusters(int wlan_id, Performance perf, Configuration conf){
 
-	int clustering_approach(CLUSTER_BY_CCA); // HARDCODED
+	int clustering_approach(CLUSTER_BY_CCA); // HARDCODED, TODO: read this parameter from the input file
 
 	switch(clustering_approach) {
-
-		case CLUSTER_BY_CCA :{ // CCA + Margin
-			double margin_db(3);
+		// CCA + Margin
+		case CLUSTER_BY_CCA :{
+			double margin_db(3);	// TODO: read this margin from input files
 			for (int j = 0; j < wlans_number; ++j) {
-//				printf("perf.max_received_power_in_ap_per_wlan[j] = %f\n",
-//					ConvertPower(PW_TO_DBM, perf.max_received_power_in_ap_per_wlan[j]));
-//				printf("conf.capabilities.sensitivity_default - margin = %f\n",
-//					ConvertPower(PW_TO_DBM, conf.capabilities.sensitivity_default) - margin_db);
 				if (wlan_id != j && ConvertPower(PW_TO_DBM, perf.max_received_power_in_ap_per_wlan[j])
 					  > ConvertPower(PW_TO_DBM, conf.capabilities.sensitivity_default) - margin_db ) {
 					clusters_per_wlan[wlan_id][j] = 1;
@@ -635,18 +583,20 @@ void CentralController :: GenerateClusters(int wlan_id, Performance perf, Config
 			}
 			break;
 		}
-
-		case CLUSTER_BY_DISTANCE :{ // Physical distance
+		// Physical distance
+		case CLUSTER_BY_DISTANCE :{
 			// To be done...
 			break;
 		}
-
+		// Default
 		default :{
 			printf("[CC] ERROR: clustering approach '%d' does not exist\n", clustering_approach);
 			break;
 		}
-
 	}
+
+//	PrintOrWriteClusters(WRITE_LOG);
+//	PrintOrWriteClusters(PRINT_LOG);
 
 }
 
@@ -657,7 +607,7 @@ void CentralController :: GenerateClusters(int wlan_id, Performance perf, Config
 void CentralController :: UpdatePerformancePerCluster(int shared_performance_metric) {
 
 	switch(shared_performance_metric) {
-
+		// Max-min performance
 		case MAX_MIN_PERFORMANCE:{
 			double min_performance;
 			int applicable(0);
@@ -666,25 +616,44 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 				for(int j = 0; j < agents_number; ++j) {
 					if (clusters_per_wlan[i][j] && average_performance_per_agent[j] > 0) {
 						applicable = 1;
-//						printf("	+ average_performance_per_agent[j] = %f\n", average_performance_per_agent[j]);
 						if (average_performance_per_agent[j] < min_performance)
 							min_performance = average_performance_per_agent[j];
 					}
 				}
 				if(applicable) cluster_performance[i] = min_performance;
 				else cluster_performance[i] = -1;
-//				printf("cluster_performance[%d] = %f\n", i, cluster_performance[i]);
 			}
 			break;
 		}
+		// Geometric sum
 		case PROP_FAIRNESS_PERFORMANCE:{
-			// TODO
+			double cumulative_log_performance(1);	// TODO: rework this part in order to consider absolute performance values (throughput, delay, etc.)
+			for(int i = 0; i < agents_number; ++i) {
+				for(int j = 0; j < agents_number; ++j) {
+					if (clusters_per_wlan[i][j]) {
+						cumulative_log_performance += log(average_performance_per_agent[j]);
+					}
+				}
+				cluster_performance[i] = cumulative_log_performance;
+			}
 			break;
 		}
+		// Average
 		case AVERAGE_PERFORMANCE:{
-			// TODO
+			double cumulative_performance(0);
+			int num_agents_involved(0);
+			for(int i = 0; i < agents_number; ++i) {
+				for(int j = 0; j < agents_number; ++j) {
+					if (clusters_per_wlan[i][j]) {
+						cumulative_performance += average_performance_per_agent[j];
+						++ num_agents_involved;
+					}
+				}
+				cluster_performance[i] = cumulative_performance / num_agents_involved;
+			}
 			break;
 		}
+		// Default
 		default :{
 			printf("Unknown performance metric\n");
 			break;
@@ -754,12 +723,10 @@ void CentralController :: InitializePreProcessor() {
  */
 void CentralController :: InitializeMlModel() {
 	ml_model.learning_mechanism = learning_mechanism;
-	ml_model.num_channels = num_channels;
 	ml_model.save_controller_logs = save_controller_logs;
 	ml_model.print_controller_logs = print_controller_logs;
 	ml_model.action_selection_strategy = action_selection_strategy;
 	ml_model.agents_number = agents_number;
-	ml_model.num_actions = num_actions;
 	ml_model.InitializeVariables();
 
 	for (int i = 0; i < agents_number; ++i) {
@@ -798,26 +765,20 @@ void CentralController :: InitializeCentralController() {
 	configuration_array = new Configuration[agents_number];
 	performance_array  = new Performance[agents_number];
 
-	num_requests_per_agent = new int[agents_number];
+	// Keep track of the available actions and performance in each agent
 	num_actions_per_agent = new int[agents_number];
 	performance_per_agent = new double[agents_number];
 	average_performance_per_agent = new double[agents_number];
-
-	for(int i = 0; i < agents_number; ++i){
-		num_requests_per_agent[i] = 0;
-		performance_per_agent[i] = 0;
-		average_performance_per_agent[i] = 0;
-//		performance_array[i].SetSizeOfRssiList(agents_number);
-	}
-
-	// Keep track of the available actions in each agent
 	list_of_available_actions_per_agent = new int *[agents_number];
 	performance_action_per_agent = new double *[agents_number];
 	times_action_played_per_agent = new int *[agents_number];
+	most_played_action_per_agent = new int[agents_number];
+	// Clusters information
 	clusters_per_wlan = new int *[agents_number];
 	cluster_performance = new double[agents_number];
-	most_played_action_per_agent = new int[agents_number];
 	for (int i = 0; i < agents_number; ++i) {
+		performance_per_agent[i] = 0;
+		average_performance_per_agent[i] = 0;
 		list_of_available_actions_per_agent[i] = new int[max_number_of_actions];
 		performance_action_per_agent[i] = new double[max_number_of_actions];
 		times_action_played_per_agent[i] = new int[max_number_of_actions];

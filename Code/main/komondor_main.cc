@@ -1097,7 +1097,6 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 						channels_aux = strtok (NULL, ",");
 						++ num_actions_channels;
 					}
-					central_controller[0].num_channels = num_actions_channels;
 					free(tmp_cc);
 					break;	// Don't read all the other lines (entailed for agents)
 				} else {
