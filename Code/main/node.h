@@ -4665,7 +4665,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Throughput
 				printf("%s Throughput: {", LOG_LVL3);
 				for(int n = 0; n < wlan.num_stas; ++n){
-					throughput_per_sta[n] = (double)(data_frames_acked_per_sta[n] * frame_length) / SimTime();
+					throughput_per_sta[n] = ((double)data_frames_acked_per_sta[n] * (double)frame_length) / SimTime();
 					printf("%.2f Mbps",  throughput_per_sta[n] * pow(10,-6));
 					if(n<wlan.num_stas-1) printf(", ");
 				}

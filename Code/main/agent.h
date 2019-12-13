@@ -281,15 +281,13 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	configuration = received_configuration;
 	performance = received_performance;
 
-	// Process the configuration and performance reports obtained from the WLAN
+    // Find the index of the current action
 	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
+    // Process the performance to obtain the corresponding reward
 	processed_reward = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
 
-	// Find the index of the current action
-	int configuration_ix = pre_processor.FindActionIndexFromConfigurationBandits(configuration, indexes_configuration);
-
 	// Update the information of the current selected action
-	UpdateAction(configuration_ix);
+	UpdateAction(processed_configuration);
 
 	// Update the agent's capabilities
 	configuration.agent_capabilities.num_actions = num_actions;
@@ -297,12 +295,10 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	// Write configuration & performance
 	if(save_agent_logs) {
-//		WriteConfiguration(configuration);
-		actions[configuration_ix].WriteAction(agent_logger, save_agent_logs, SimTime(), agent_id);
-		char device_code[10];
-		sprintf(device_code, "A%d", agent_id);
-		pre_processor.WritePerformance(agent_logger, SimTime(), device_code,
-			performance, type_of_reward);
+        char device_code[10];
+        sprintf(device_code, "A%d", agent_id);
+		actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
+		pre_processor.WritePerformance(agent_logger, SimTime(), device_code, performance, type_of_reward);
 	}
 
 	// Set flag "information available" to true
@@ -329,19 +325,15 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
  */
 void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
 
-//	printf("%s Agent #%d: Sending new configuration to AP\n", LOG_LVL1, agent_id);
-
 	LOGS(save_agent_logs, agent_logger.file,
 		"%.15f;A%d;%s;%s SendNewConfigurationToAp()\n",
 		SimTime(), agent_id, LOG_F00, LOG_LVL1);
 
-	LOGS(save_agent_logs, agent_logger.file,
-		"%.15f;A%d;%s;%s Sending a new configuration to the AP\n",
-		SimTime(), agent_id, LOG_C00, LOG_LVL2);
-
 	// Print the configuration (action) to be sent
-	int configuration_ix = pre_processor.FindActionIndexFromConfigurationBandits(configuration_to_send, indexes_configuration);
-	if(save_agent_logs) actions[configuration_ix].WriteAction(agent_logger, save_agent_logs, SimTime(), agent_id);
+    char device_code[10];
+    sprintf(device_code, "A%d", agent_id);
+    processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration_to_send);
+	if(save_agent_logs) actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
 
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
 	outportSendConfigurationToAp(configuration_to_send);
@@ -472,16 +464,18 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
  */
 void Agent :: ForwardInformationToController(){
 
-//	printf("A%d: Forwarding information to the controller\n", agent_id);
 	LOGS(save_agent_logs, agent_logger.file,
 		"%.15f;A%d;%s;%s Forwarding information to the controller...\n",
 		SimTime(), agent_id, LOG_F02, LOG_LVL2);
+
 	// Compute the average performance achieved by each arm
 	for (int i = 0; i < num_actions; ++i) {
 		UpdateConfigurationStatisticsController(i);
 	}
+
 	// Send the current configuration (and performance) to the CC
 	outportAnswerToController(agent_id, configuration, performance, actions);
+
 	// Reset the CC statistics
 	ResetControllerStatistics();
 

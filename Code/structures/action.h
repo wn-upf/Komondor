@@ -66,15 +66,15 @@ struct Action
 	int dcb_policy;		///> DCB policy
 
 	// Full run information
-	double instantaneous_reward;
-	double cumulative_reward;
-	int times_played;
+	double instantaneous_reward;    ///> Last reward experienced by playing the action
+	double cumulative_reward;       ///> Cumulative reward obtained in total
+	int times_played;               ///> Times the action has been played in total
 
 	// Information since last request from the controller
-	Performance performance_since_last_request;
-	double cumulative_reward_since_last_request;
-	int times_played_since_last_request;
-	double average_reward_since_last_request;
+	Performance performance_since_last_request;     ///> Last performance object obtained since the last CC request
+	double cumulative_reward_since_last_request;    ///> Cumulative reward obtained since the last CC request
+	int times_played_since_last_request;            ///> Times the action has been played since the last CC request
+	double average_reward_since_last_request;       ///> Average reward experienced since the last CC request
 
 	/**
 	 * Print the action
@@ -90,22 +90,17 @@ struct Action
 
 	/**
 	 * Write the action to the agent logs file
-	 * @param "agent_logger" [type Logger]: logger object
-	 * @param "save_agent_logs" [type int]: bool indicating whether to save logs or not
+	 * @param "logger" [type Logger]: logger object
+	 * @param "save_logs" [type int]: bool indicating whether to save logs or not
 	 * @param "sim_time" [type double]: simulation time
-	 * @param "agent_id" [type int]: identifier of the agent writing the logs
+     * @param "string_device" [type *char]: code of the device writing the logs
 	 */
-	void WriteAction(Logger agent_logger, int save_agent_logs, double sim_time, int agent_id) {
-		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s Action (%d):\n", sim_time, agent_id, LOG_C03, LOG_LVL2, id);
-		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s channel = %d\n", sim_time, agent_id, LOG_C03, LOG_LVL3, channel);
-		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s cca = %f dBm\n", sim_time, agent_id, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, cca));
-		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s tx_power = %f dBm\n", sim_time, agent_id, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, tx_power));
-		LOGS(save_agent_logs, agent_logger.file,
-			"%.15f;A%d;%s;%s dcb_policy = %d\n", sim_time, agent_id, LOG_C03, LOG_LVL3, dcb_policy);
+	void WriteAction(Logger logger, int save_logs, double sim_time, char string_device[]) {
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Action (%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s channel = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, channel);
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cca = %f dBm\n", sim_time, string_device, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, cca));
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s tx_power = %f dBm\n", sim_time, string_device, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, tx_power));
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s dcb_policy = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, dcb_policy);
 	}
 
 	/**
@@ -119,16 +114,44 @@ struct Action
 		printf("------------\n");
 	}
 
-	/**
-	 * Print the performance of the action
-	 */
-	void PrintControllerStatistics() {
-		printf("------------\n Information since last CC request (a%d):\n", id);
-		printf(" * cumulative_reward_since_last_request = %f\n", cumulative_reward_since_last_request);
-		printf(" * times_played_since_last_request = %d\n", times_played_since_last_request);
-		printf(" * average_reward_since_last_request = %f\n", average_reward_since_last_request);
-		printf("------------\n");
-	}
+    /**
+     * Write the performance of the action
+     * @param "logger" [type Logger]: logger object
+     * @param "save_logs" [type int]: bool indicating whether to save logs or not
+     * @param "sim_time" [type double]: simulation time
+     * @param "string_device" [type *char]: code of the device writing the logs
+     */
+    void WriteRewardInformation(Logger logger, int save_logs, double sim_time, char string_device[]) {
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Reward information (a%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s instantaneous_reward = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, instantaneous_reward);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cumulative_reward = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, cumulative_reward);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s times_played = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, times_played);
+    }
+
+    /**
+     * Print the statistics collected for the controller (using CC iterations)
+     */
+        void PrintControllerStatistics() {
+            printf("------------\n Information since last CC request (a%d):\n", id);
+            printf(" * cumulative_reward_since_last_request = %f\n", cumulative_reward_since_last_request);
+            printf(" * times_played_since_last_request = %d\n", times_played_since_last_request);
+            printf(" * average_reward_since_last_request = %f\n", average_reward_since_last_request);
+            printf("------------\n");
+        }
+
+    /**
+     * Write the action to the agent logs file
+     * @param "agent_logger" [type Logger]: logger object
+     * @param "save_agent_logs" [type int]: bool indicating whether to save logs or not
+     * @param "sim_time" [type double]: simulation time
+     * @param "string_device" [type *char]: code of the device writing the logs
+     */
+    void WriteControllerStatistics(Logger logger, int save_logs, double sim_time, char string_device[]) {
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Information since last CC request (a%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cumulative_reward_since_last_request = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, cumulative_reward_since_last_request);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s times_played_since_last_request = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, times_played_since_last_request);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s average_reward_since_last_request = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, average_reward_since_last_request);
+    }
 
 };
 

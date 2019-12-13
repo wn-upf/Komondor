@@ -52,7 +52,6 @@
 
 struct Performance
 {
-	int num_stas;                   ///> Number of STAs in the BSS
 
 	// Time of the last measurement
 	double timestamp;		        ///> Timestamp of the last measurement
@@ -84,6 +83,8 @@ struct Performance
 
 	// Environment statistics
 	double *max_received_power_in_ap_per_wlan;
+    double *rssi_list;					///> List of RSSI received from each other WLAN
+    double *received_power_array;		///> Array containing the power received by each node
 
 	// Channel occupancy
 	double expected_backoff;							///> Expected BO
@@ -99,6 +100,7 @@ struct Performance
 	double time_in_nav;									///> Time spent in NAV state
 
 	// Per-STA statistics
+    int num_stas;                   ///> Number of STAs in the BSS
 	double *throughput_per_sta;			///> Array containing the throughput delivered to each STA
 	int *data_packets_sent_per_sta;		///> Array containing the number of packets sent to each STA
 	int *rts_cts_sent_per_sta;			///> Array containing the number of RTS/CTS sent to each STA
@@ -106,14 +108,12 @@ struct Performance
 	int *rts_cts_lost_per_sta;			///> Array containing the number of RTS/CTS lost when sent to each STA
 	int *data_packets_acked_per_sta;	///> Array containing the number of acknowledged packets by each STA
 	int *data_frames_acked_per_sta;		///> Array containing the number of acknowledged frames by each STA
+    double *rssi_list_per_sta;			///> List of RSSI perceived by each STA in the WLAN
 
 	// Other
 	int num_tx_init_tried;				///> Number of transmissions initiated
 	int num_tx_init_not_possible;		///> Number of initiated transmissions that were not possible
 	double prob_slotted_bo_collision;	///> Probability of suffering collisions by slotted BO
-	double *rssi_list;					///> List of RSSI received from each other WLAN
-	double *received_power_array;		///> Array containing the power received by each node
-	double *rssi_list_per_sta;			///> List of RSSI perceived by each STA in the WLAN
 
 	/**
 	 * Set the size of the arrays in which channel-related information is stored

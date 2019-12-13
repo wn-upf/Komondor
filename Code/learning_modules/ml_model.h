@@ -123,7 +123,7 @@ class MlModel {
 
 			switch(learning_mechanism) {
 				/* GRAPH COLORING */
-				// TODO: to be improved (right now, it is not fully operative
+				// TODO: to be improved (right now, it is not fully operative)
 				case GRAPH_COLORING: {
 					// Apply Hminmax to decide the new channels configuration
 					graph_coloring.UpdateConfiguration(configuration_array,
@@ -235,7 +235,7 @@ class MlModel {
 					break;
 				}
 				case CENTRALIZED_ACTION_BANNING: {
-					printf("[ML MODEL] ERROR, Action-Banning is not an ML method. Use 'CentralizedActionBanning()' instead.\n");
+					printf("[ML MODEL] ERROR, Action-Banning is not a decentralized ML method. Use 'CentralizedActionBanning()' instead.\n");
 					break;
 				}
 				default: {
