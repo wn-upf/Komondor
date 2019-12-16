@@ -59,8 +59,8 @@ class GraphColoring {
 	// Public items
 	public:
 
-		int save_controller_logs;	///> Boolean for saving logs
-		int print_controller_logs;	///> Boolean for printing logs
+		int save_logs;	///> Boolean for saving logs
+		int print_logs;	///> Boolean for printing logs
 		int agents_number;			///> Number of agents
 		int wlans_number;			///> Number of WLANs
 		int num_channels;			///> Number of channels
@@ -102,7 +102,7 @@ class GraphColoring {
 			// Optimization phase
 			GraphColoringOptimization(configuration_array);
 
-			if(save_controller_logs) {
+			if(save_logs) {
 				fprintf(central_controller_logger.file, "%.15f;%s;CC;%s GraphColoring: "
 					"New configurations provided\n", sim_time, LOG_C00, LOG_LVL2);
 				for (int i = 0; i < agents_number; ++ i) {

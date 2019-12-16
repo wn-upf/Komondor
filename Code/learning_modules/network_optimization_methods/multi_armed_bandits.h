@@ -60,8 +60,8 @@ class MultiArmedBandit {
 	public:
 
 		int agent_id;						///> Identified of the agent using MABs
-		int save_agent_logs;				///> Boolean for saving logs
-		int print_agent_logs;				///> Boolean for printing logs
+		int save_logs;				///> Boolean for saving logs
+		int print_logs;				///> Boolean for printing logs
 		int num_actions;					///> Number of actions
 		int action_selection_strategy;		///> Index of the chosen action-selection strategy
 
@@ -276,7 +276,7 @@ class MultiArmedBandit {
 			switch(write_or_print){
 				// Print logs in console
 				case PRINT_LOG:{
-					if(print_agent_logs){
+					if(print_logs){
 						printf("%s Reward per arm: ", LOG_LVL3);
 						for(int n = 0; n < num_actions; n++){
 							printf("%f  ", reward_per_arm[n]);
@@ -295,28 +295,28 @@ class MultiArmedBandit {
 				}
 				// Write logs in agent's output file
 				case WRITE_LOG:{
-					if(save_agent_logs) fprintf(logger.file, "%.15f;A%d;%s;%s Reward per arm: ",
+					if(save_logs) fprintf(logger.file, "%.15f;A%d;%s;%s Reward per arm: ",
 						sim_time, agent_id, LOG_C00, LOG_LVL3);
 					for(int n = 0; n < num_actions; n++){
-						 if(save_agent_logs){
+						 if(save_logs){
 							 fprintf(logger.file, "%f  ", reward_per_arm[n]);
 						 }
 					}
-					if(save_agent_logs) fprintf(logger.file, "\n%.15f;A%d;%s;%s Cumulative reward per arm: ",
+					if(save_logs) fprintf(logger.file, "\n%.15f;A%d;%s;%s Cumulative reward per arm: ",
 						sim_time, agent_id, LOG_C00, LOG_LVL3);
 					for(int n = 0; n < num_actions; n++){
-						 if(save_agent_logs){
+						 if(save_logs){
 							 fprintf(logger.file, "%f  ", cumulative_reward_per_arm[n]);
 						 }
 					}
 					fprintf(logger.file, "\n%.15f;A%d;%s;%s Times each arm has been selected: ",
 									sim_time, agent_id, LOG_C00, LOG_LVL3);
 					for(int n = 0; n < num_actions; n++){
-						if(save_agent_logs){
+						if(save_logs){
 							fprintf(logger.file, "%d ", times_arm_has_been_selected[n]);
 						}
 					}
-					if(save_agent_logs) fprintf(logger.file, "\n");
+					if(save_logs) fprintf(logger.file, "\n");
 					break;
 				}
 			}

@@ -63,6 +63,7 @@
 #include "../structures/node_configuration.h"
 #include "../structures/performance.h"
 #include "../structures/action.h"
+#include "../structures/controller_report.h"
 
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
@@ -95,8 +96,6 @@ component CentralController : public TypeII{
 
 		// Methods related to ML activity
 		void ApplyMlMethod();
-//		void GenerateGlobalConfiguration();
-//		void GenerateSingleConfiguration();
 
 		// Clustering methods (to group agents/BSSs)
 		void GenerateClusters(int wlan_id, Performance performance, Configuration configuration);
@@ -104,7 +103,7 @@ component CentralController : public TypeII{
 		void UpdatePerformancePerCluster(int shared_performance_metric);
 
 		// Methods for updating statistics
-		void UpdateAgentAveragePerformance(int agent_id, Action *actions);
+		void UpdateControllerReport(int agent_id, Action *actions);
 
 		// Print/write methods
 		void PrintControllerInfo();
@@ -152,23 +151,12 @@ component CentralController : public TypeII{
 		Logger central_controller_logger;	///> struct containing the attributes needed for writing logs in a file
 		char *header_string;				///> Header string for the logger
 
+		// CC's report
+		ControllerReport controller_report;
+
 		// Arrays with configurations and performances
 		Configuration *configuration_array;	///> Array of configuration objects from all the agents
 		Performance *performance_array;		///> Array of performance objects from all the agents
-
-		// Per-agent information
-		double *performance_per_agent;				///> Processed performance for each agent
-		double *average_performance_per_agent;		///> Average performance of each agent during the last CC iteration
-		double **performance_action_per_agent;		///> Matrix with the performance achieved by each agent, for each of its available actions
-		int **times_action_played_per_agent;		///> Matrix with the times each agent has played every action
-		int *most_played_action_per_agent;			///> Array containing the index of the most played action by each agent
-
-		// Clustering
-		int **clusters_per_wlan;		///> Clusters from each BSS perspective (1 if another BSS belongs to the same cluster)
-		double *cluster_performance;	///> Shared performance of each cluster
-
-		// Action-banning
-		int **list_of_available_actions_per_agent;	///> List of available actions in each agent
 
 		// ML Pipeline elements
 		MlModel ml_model;					///> Instantiation of the ML Model
@@ -177,7 +165,6 @@ component CentralController : public TypeII{
 		// Auxiliary variables for CC operation
 		int cc_iteration; 					///> Counter that keeps track of the number of iterations at the CC
 		int counter_responses_received; 	///> Needed to determine the number of answers that the controller receives from agents
-
 
 	// Connections and timers
 	public:
@@ -292,30 +279,35 @@ void CentralController :: StartCcActivity() {
 /**
  * Updates the average performance obtained by every associated agent
  */
-void CentralController :: UpdateAgentAveragePerformance(int agent_id, Action *actions) {
+//void CentralController :: UpdateAgentAveragePerformance(int agent_id, Action *actions) {
+void CentralController :: UpdateControllerReport(int agent_id, Action *actions) {
 
+	// Update the average performance achieved by each agent
     double cumulative_performance_per_action(0);
     double visited_actions(0);
     int times_action_played(0);
 
+    controller_report.num_actions_per_agent = num_actions_per_agent;
+
     for (int i = 0; i < max_number_of_actions; ++i) {
-        times_action_played_per_agent[agent_id][i] = actions[i].times_played_since_last_request;
+    	controller_report.times_action_played_per_agent[agent_id][i] = actions[i].times_played_since_last_request;
         if (num_actions_per_agent[agent_id] >= i) {
-            performance_action_per_agent[agent_id][i] = actions[i].average_reward_since_last_request;
-            cumulative_performance_per_action += actions[i].average_reward_since_last_request *
-                                                 actions[i].times_played_since_last_request;
+        	controller_report.performance_action_per_agent[agent_id][i] = actions[i].average_reward_since_last_request;
+            cumulative_performance_per_action +=
+            	actions[i].average_reward_since_last_request *
+                actions[i].times_played_since_last_request;
             visited_actions += actions[i].times_played_since_last_request;
             // Update the most played action per agent
             if (actions[i].times_played_since_last_request > times_action_played) {
                 times_action_played = actions[i].times_played_since_last_request;
-                most_played_action_per_agent[agent_id] = i;
+                controller_report.most_played_action_per_agent[agent_id] = i;
             }
         }
     }
     if (visited_actions > 0) {
-        average_performance_per_agent[agent_id] = cumulative_performance_per_action / visited_actions;
+    	controller_report.average_performance_per_agent[agent_id] = cumulative_performance_per_action / visited_actions;
     } else {
-        average_performance_per_agent[agent_id] = 0;
+    	controller_report.average_performance_per_agent[agent_id] = 0;
     }
 
 }
@@ -448,7 +440,7 @@ void CentralController :: InportReceivingInformationFromAgent(int agent_id,
 	performance_array[agent_id] = received_performance;
 
 	// Update the average performance statistics for the agent that sent information
-	UpdateAgentAveragePerformance(agent_id, actions);
+	UpdateControllerReport(agent_id, actions);
 
 	// Print and/or write the configuration and the performance report
 	if(save_controller_logs) {
@@ -500,18 +492,17 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 	UpdatePerformancePerCluster(MAX_MIN_PERFORMANCE); // TODO: specify the shared performance from input files (now hardcoded)
 
 	// STEP 2: APPLY THE ML METHOD
+	ml_model.ComputeGlobalConfiguration(controller_report, central_controller_logger, SimTime());
+
+	// STEP 3: PROVIDE A RESPONSE
 	switch(ml_model.learning_mechanism) {
 		// Action banning: special case where configurations are banned, rather that provided
 		case CENTRALIZED_ACTION_BANNING: {
-			ml_model.CentralizedActionBanning(list_of_available_actions_per_agent, agents_number,
-				num_actions_per_agent, average_performance_per_agent, cluster_performance, clusters_per_wlan,
-				most_played_action_per_agent, times_action_played_per_agent, configuration_array);
 			// Forward the output to agents
 			SendCommandToAllAgents(BAN_CONFIGURATION, configuration_array);
 			break;
 		}
-		case GRAPH_COLORING: { // TODO: this approach is not fully operative (needs rework in case of being of utility in the future)
-            ml_model.ComputeGlobalConfiguration(configuration_array, performance_array, central_controller_logger, SimTime());
+		case GRAPH_COLORING: {
             // Send the updated configuration to agents
 			SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
 			break;
@@ -552,7 +543,7 @@ void CentralController :: GenerateClusters(int wlan_id, Performance perf, Config
 			for (int j = 0; j < wlans_number; ++j) {
 				if (wlan_id != j && ConvertPower(PW_TO_DBM, perf.max_received_power_in_ap_per_wlan[j])
 					  > ConvertPower(PW_TO_DBM, conf.capabilities.sensitivity_default) - margin_db ) {
-					clusters_per_wlan[wlan_id][j] = 1;
+					controller_report.clusters_per_wlan[wlan_id][j] = 1;
 				}
 			}
 			break;
@@ -587,14 +578,14 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 			for(int i = 0; i < agents_number; ++i) {
 				min_performance = 1;
 				for(int j = 0; j < agents_number; ++j) {
-					if (clusters_per_wlan[i][j] && average_performance_per_agent[j] > 0) {
+					if (controller_report.clusters_per_wlan[i][j] && controller_report.average_performance_per_agent[j] > 0) {
 						applicable = 1;
-						if (average_performance_per_agent[j] < min_performance)
-							min_performance = average_performance_per_agent[j];
+						if (controller_report.average_performance_per_agent[j] < min_performance)
+							min_performance = controller_report.average_performance_per_agent[j];
 					}
 				}
-				if(applicable) cluster_performance[i] = min_performance;
-				else cluster_performance[i] = -1;
+				if(applicable) controller_report.cluster_performance[i] = min_performance;
+				else controller_report.cluster_performance[i] = -1;
 			}
 			break;
 		}
@@ -603,11 +594,11 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 			double cumulative_log_performance(1);	// TODO: rework this part in order to consider absolute performance values (throughput, delay, etc.)
 			for(int i = 0; i < agents_number; ++i) {
 				for(int j = 0; j < agents_number; ++j) {
-					if (clusters_per_wlan[i][j]) {
-						cumulative_log_performance += log(average_performance_per_agent[j]);
+					if (controller_report.clusters_per_wlan[i][j]) {
+						cumulative_log_performance += log(controller_report.average_performance_per_agent[j]);
 					}
 				}
-				cluster_performance[i] = cumulative_log_performance;
+				controller_report.cluster_performance[i] = cumulative_log_performance;
 			}
 			break;
 		}
@@ -617,12 +608,12 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 			int num_agents_involved(0);
 			for(int i = 0; i < agents_number; ++i) {
 				for(int j = 0; j < agents_number; ++j) {
-					if (clusters_per_wlan[i][j]) {
-						cumulative_performance += average_performance_per_agent[j];
+					if (controller_report.clusters_per_wlan[i][j]) {
+						cumulative_performance += controller_report.average_performance_per_agent[j];
 						++ num_agents_involved;
 					}
 				}
-				cluster_performance[i] = cumulative_performance / num_agents_involved;
+				controller_report.cluster_performance[i] = cumulative_performance / num_agents_involved;
 			}
 			break;
 		}
@@ -646,7 +637,7 @@ void CentralController :: PrintOrWriteClusters(int print_or_write){
 			for (int i = 0; i < wlans_number; ++i) {
 				printf("	Agent %d:", i);
 				for (int j = 0; j < wlans_number; ++j) {
-					printf(" %d ", clusters_per_wlan[i][j]);
+					printf(" %d ", controller_report.clusters_per_wlan[i][j]);
 				}
 				printf("\n");
 			}
@@ -660,7 +651,7 @@ void CentralController :: PrintOrWriteClusters(int print_or_write){
 					"%.15f;CC;%s;%s Agent %d:" , SimTime(), LOG_C00, LOG_LVL2, i);
 				for (int j = 0; j < wlans_number; ++j) {
 					LOGS(save_controller_logs, central_controller_logger.file,
-						" %d ", clusters_per_wlan[i][j]);
+						" %d ", controller_report.clusters_per_wlan[i][j]);
 				}
                 LOGS(save_controller_logs, central_controller_logger.file, "\n");
 			}
@@ -698,32 +689,34 @@ void CentralController :: InitializePreProcessor() {
 void CentralController :: InitializeMlModel() {
 
 	ml_model.learning_mechanism = learning_mechanism;
-	ml_model.save_controller_logs = save_controller_logs;
-	ml_model.print_controller_logs = print_controller_logs;
+	ml_model.save_logs = save_controller_logs;
+	ml_model.print_logs = print_controller_logs;
 	ml_model.action_selection_strategy = action_selection_strategy;
 	ml_model.agents_number = agents_number;
+	ml_model.max_number_of_actions = max_number_of_actions;
 	ml_model.InitializeVariables();
 
+	// Initialize arrays
 	for (int i = 0; i < agents_number; ++i) {
 		// Fill the matrix containing the set of available actions in each agent and the matrix indicating their performance
 		for (int j = 0; j < max_number_of_actions; ++j) {
 			if (num_actions_per_agent[i] >= j) {
-				list_of_available_actions_per_agent[i][j] = 1;		// The action exists and is available (set to 1 by default)
-				performance_action_per_agent[i][j] = 0;		// Set default performance to 0
-				times_action_played_per_agent[i][j] = 0;
+				controller_report.list_of_available_actions_per_agent[i][j] = 1;		// The action exists and is available (set to 1 by default)
+				controller_report.performance_action_per_agent[i][j] = 0;		// Set default performance to 0
+				controller_report.times_action_played_per_agent[i][j] = 0;
 			} else {
-				list_of_available_actions_per_agent[i][j] = -1;		// The action does not exist (the index exceeds the total number of actions of that agent)
-				performance_action_per_agent[i][j] = -1;	// The actions does not exist
-				times_action_played_per_agent[i][j] = -1;
+				controller_report.list_of_available_actions_per_agent[i][j] = -1;		// The action does not exist (the index exceeds the total number of actions of that agent)
+				controller_report.performance_action_per_agent[i][j] = -1;	// The actions does not exist
+				controller_report.times_action_played_per_agent[i][j] = -1;
 			}
 		}
 		// Initialize the matrix that indicates the potential interfering OBSSs of each BSS (only for agents connected to the CC)
 		for (int j = 0; j < agents_number; ++j) {
-			if (i == j) clusters_per_wlan[i][j] = 1;
-			else clusters_per_wlan[i][j] = 0;
+			if (i == j) controller_report.clusters_per_wlan[i][j] = 1;
+			else controller_report.clusters_per_wlan[i][j] = 0;
 		}
-		cluster_performance[i] = 0;
-		most_played_action_per_agent[i] = -1;
+		controller_report.cluster_performance[i] = 0;
+		controller_report.most_played_action_per_agent[i] = -1;
 	}
 
 }
@@ -733,44 +726,21 @@ void CentralController :: InitializeMlModel() {
  */
 void CentralController :: InitializeCentralController() {
 
+	save_controller_logs = TRUE;
+	print_controller_logs = TRUE;
+
 	cc_iteration = 0;
 	counter_responses_received = 0;
 
 	configuration_array = new Configuration[agents_number];
 	performance_array  = new Performance[agents_number];
 
-	// Keep track of the available actions and performance in each agent
 	num_actions_per_agent = new int[agents_number];
-	performance_per_agent = new double[agents_number];
-	average_performance_per_agent = new double[agents_number];
-	list_of_available_actions_per_agent = new int *[agents_number];
-	performance_action_per_agent = new double *[agents_number];
-	times_action_played_per_agent = new int *[agents_number];
-	most_played_action_per_agent = new int[agents_number];
-    agent_iteration_time = new double[agents_number];
-	// Clusters information
-	clusters_per_wlan = new int *[agents_number];
-	cluster_performance = new double[agents_number];
-	for (int i = 0; i < agents_number; ++i) {
-		performance_per_agent[i] = 0;
-		average_performance_per_agent[i] = 0;
-        agent_iteration_time[i] = 0;
-		list_of_available_actions_per_agent[i] = new int[max_number_of_actions];
-		performance_action_per_agent[i] = new double[max_number_of_actions];
-		times_action_played_per_agent[i] = new int[max_number_of_actions];
-		for (int j = 0; j < max_number_of_actions; ++j) {
-			list_of_available_actions_per_agent[i][j] = 0;
-			performance_action_per_agent[i][j] = 0;
-			times_action_played_per_agent[i][j] = 0;
-		}
-		clusters_per_wlan[i] = new int[agents_number];
-		for (int j = 0; j < agents_number; ++j) {
-			clusters_per_wlan[i][j] = 0;
-		}
-	}
 
-	save_controller_logs = TRUE;
-	print_controller_logs = TRUE;
+	// Initialize the controller's report
+	controller_report.agents_number = agents_number;
+	controller_report.max_number_of_actions = max_number_of_actions;
+	controller_report.SetSizeOfArrays();
 
 }
 
@@ -830,7 +800,7 @@ void CentralController :: WriteControllerInfo(Logger logger) {
 void CentralController :: WriteAgentPerformance(Action *actions, int agent_id) {
     LOGS(save_controller_logs, central_controller_logger.file,
          "%.15f;CC;%s;%s Average performance (A%d): %.2f\n",
-         SimTime(), LOG_C00, LOG_LVL3, agent_id, average_performance_per_agent[agent_id]);
+         SimTime(), LOG_C00, LOG_LVL3, agent_id, controller_report.average_performance_per_agent[agent_id]);
     LOGS(save_controller_logs, central_controller_logger.file,
          "%.15f;CC;%s;%s Average performance of actions (A%d): ", SimTime(), LOG_C00, LOG_LVL3, agent_id);
     for (int i = 0; i < num_actions_per_agent[agent_id]; ++i) {

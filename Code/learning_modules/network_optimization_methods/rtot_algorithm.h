@@ -66,7 +66,7 @@ class RtotAlgorithm {
 		double *rssi_per_sta;		///> RSSI received at each STA from the AP
 		double *obss_pd_per_sta;	///> List of OBSS/PD thresholds to be used for each STA in the WLAN
 
-		double margin;			 	///> Margin parameter in the RTOT algorithm
+		double margin_rtot;			///> Margin parameter in the RTOT algorithm
 
 	// Private items
 	private:
@@ -99,18 +99,18 @@ class RtotAlgorithm {
 		* @param "configuration_array" [type Configuration*]: array of configurations of each AP (to be updated by this method)
 		*/
 		double UpdateObssPd(double rssi) {
-			return ComputeObssPdRtotAlgorithm(rssi, margin);
+			return ComputeObssPdRtotAlgorithm(rssi, margin_rtot);
 		}
 
 		/**
 		* Updates the configuration to be used by each WLAN
 		* @param "configuration_array" [type Configuration*]: array of configurations of each AP (to be updated by this method)
 		*/
-		double ComputeObssPdRtotAlgorithm(double rssi, double margin) {
+		double ComputeObssPdRtotAlgorithm(double rssi, double margin_rtot) {
 
 			// Compute the OBSS/PD to be used based on the RSSI
 			double obss_pd_dbm(0);
-			obss_pd_dbm = floor(ConvertPower(PW_TO_DBM, rssi) - ConvertPower(PW_TO_DBM, margin));
+			obss_pd_dbm = floor(ConvertPower(PW_TO_DBM, rssi) - ConvertPower(PW_TO_DBM, margin_rtot));
 			if (obss_pd_dbm > OBSS_PD_MAX) obss_pd_dbm = OBSS_PD_MAX;
 			else if (obss_pd_dbm < OBSS_PD_MIN) obss_pd_dbm = OBSS_PD_MIN;
 
@@ -150,7 +150,7 @@ class RtotAlgorithm {
 				case PRINT_LOG:{
 					printf("%s RTOT algorithm information...\n", LOG_LVL1);
 					printf("%s num_stas = %d\n", LOG_LVL2, num_stas);
-					printf("%s margin = %f\n", LOG_LVL2, ConvertPower(PW_TO_DBM, margin));
+					printf("%s margin_rtot = %f\n", LOG_LVL2, ConvertPower(PW_TO_DBM, margin_rtot));
 					break;
 				}
 				// Write logs in agent's output file

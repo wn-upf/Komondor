@@ -56,51 +56,86 @@
 // Action info
 struct ControllerReport
 {
-	// Last configuration and performance received from each agent
-	Configuration *last_configuration_array;	///> Array of configuration objects from all the agents
-	Performance *last_performance_array;		///> Array of performance objects from all the agents
 
+	// Generic information
+	int agents_number;
+	int max_number_of_actions;
 	// Clusters information
 	int **clusters_per_wlan;
 	double *cluster_performance;
-
+	// Last configuration and performance received from each agent
+	Configuration *last_configuration_array;	///> Array of configuration objects from all the agents
+	Performance *last_performance_array;		///> Array of performance objects from all the agents
 	// Agents' activity
 	double *performance_per_agent;				///> Last performance experienced by each agent
 	double *average_performance_per_agent;		///> Average performance experienced by each agent
-
+	int *num_actions_per_agent;
 	int **list_of_available_actions_per_agent; 	///> Matrix containing the list of available actions in each agent
 	double **performance_action_per_agent;		///> Matrix containing the performance obtained by each action in each agent
 	int **times_action_played_per_agent;		///> Matrix containing the times each action has been played by each agent
 	int *most_played_action_per_agent;			///> Array containing the most played action by each agent
 
 	/**
-	 * Print the configuration of the action
-	 */
-	void PrintReport(){
-		printf("------------\n CC Report (%d):\n", id);
-		printf(" * tx_power = %f dBm\n", ConvertPower(PW_TO_DBM, tx_power));
-		printf("------------\n");
+	* Print or write the list of banned actions
+	* @param "write_or_print" [type int]: variable to indicate whether to print on the  console or to write on the the output logs file
+	* @param "logger" [type Logger]: logger object to write on the output file
+	* @param "save_logs" [type int]: boolean indicating whether to save logs or not
+	* @param "sim_time" [type double]: simulation time
+	*/
+	void PrintOrWriteAvailableActions(int write_or_print, Logger &logger, int save_logs, double sim_time) {
+		switch(write_or_print){
+			// Print logs in console
+			case PRINT_LOG:{
+				printf("+ List of available actions (max = %d):\n", max_number_of_actions);
+				for(int i = 0; i < agents_number; ++i) {
+					printf("	 * Agent %d: ", i);
+					for(int j = 0; j < max_number_of_actions; ++j) {
+						printf(" %d ", list_of_available_actions_per_agent[i][j]);
+					}
+					printf("\n");
+				}
+				break;
+			}
+			// Write logs in agent's output file
+			case WRITE_LOG:{
+				LOGS(save_logs, logger.file, "%.15f;CC;%s;%s List of available actions:\n", sim_time, LOG_C00, LOG_LVL2);
+				for(int i = 0; i < agents_number; ++i) {
+					LOGS(save_logs, logger.file, "%.15f;CC;%s;%s Agent %d: ", sim_time, LOG_C00, LOG_LVL3, i);
+					for(int j = 0; j < max_number_of_actions; ++j) {
+						LOGS(save_logs, logger.file, " %d ", list_of_available_actions_per_agent[i][j]);
+						printf(" %d ", list_of_available_actions_per_agent[i][j]);
+					}
+					LOGS(save_logs, logger.file, "\n");
+				}
+				break;
+			}
+		}
 	}
 
 	/**
 	 * Set the size of the array timestamp_frames_aggregated
-	 * @param "num_packets_aggregated" [type int]: number of packets aggregated
 	 */
-	void SetSizeOfArrays(int num_agents, int num_actions){
-
-		last_configuration_array = new Configuration[num_agents];
-		last_performance_array = new Performance[num_agents];
-
-		performance_per_agent = new double[num_agents];
-		average_performance_per_agent = new double[num_agents];
-
-		list_of_available_actions_per_agent = new int[num_agents];
-		performance_action_per_agent = new double[num_agents];
-		times_action_played_per_agent = new int[num_agents];
-		most_played_action_per_agent = new int[num_agents];
-
-		for(int t = 0; t < num_packets_aggregated; ++t){
-			timestamp_frames_aggregated[t] = 0;
+	void SetSizeOfArrays(){
+		// Configuration & performance objects
+		last_configuration_array = new Configuration[agents_number];
+		last_performance_array = new Performance[agents_number];
+		// Keep track of actions and performance statistics per agent
+		performance_per_agent = new double[agents_number];
+		average_performance_per_agent = new double[agents_number];
+		performance_action_per_agent = new double *[agents_number];
+		list_of_available_actions_per_agent = new int *[agents_number];
+		num_actions_per_agent = new int[agents_number];
+		times_action_played_per_agent = new int *[agents_number];
+		most_played_action_per_agent = new int[agents_number];
+		// Clusters information
+		clusters_per_wlan = new int *[agents_number];
+		cluster_performance = new double[agents_number];
+		// Set dimensions of 2D arrays
+		for (int i = 0; i < agents_number; ++i) {
+			list_of_available_actions_per_agent[i] = new int[max_number_of_actions];
+			performance_action_per_agent[i] = new double[max_number_of_actions];
+			times_action_played_per_agent[i] = new int[max_number_of_actions];
+			clusters_per_wlan[i] = new int[agents_number];
 		}
 	}
 

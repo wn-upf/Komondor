@@ -996,7 +996,7 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 				agent_container[agent_ix].num_stas = wlan_container[agent_container[agent_ix].wlan_id].num_stas;
 				// TRICKY - USE THE FIRST ELEMENT INT HE LIST OF PD VALUES AS THE MARGIN
 				if(agent_container[agent_ix].learning_mechanism == RTOT_ALGORITHM) {
-					agent_container[agent_ix].margin = agent_container[agent_ix].list_of_pd_values[0];
+					agent_container[agent_ix].margin_rtot = agent_container[agent_ix].list_of_pd_values[0];
 				}
 
 				agent_container[agent_ix].PrintAgentInfo();

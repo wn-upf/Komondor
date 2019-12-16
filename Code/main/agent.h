@@ -145,7 +145,7 @@ component Agent : public TypeII{
 		std::string simulation_code;	///> Simulation code
 
 		// RTOT
-		double margin;      ///> Margin for the RTOT mechanism (see https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8319274)
+		double margin_rtot;      ///> Margin for the RTOT mechanism (see https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8319274)
 
 	// Private items (just for internal agent operation)
 	private:
@@ -665,10 +665,10 @@ void Agent :: InitializeMlModel() {
 	ml_model.num_channels = num_actions_channel;
 	ml_model.num_actions = num_actions;
 	// Logs
-	ml_model.save_agent_logs = save_agent_logs;
-	ml_model.print_agent_logs = print_agent_logs;
+	ml_model.save_logs = save_agent_logs;
+	ml_model.print_logs = print_agent_logs;
 	if (learning_mechanism == RTOT_ALGORITHM) {
-		ml_model.margin = margin;
+		ml_model.margin_rtot = margin_rtot;
 	}
 	// Initialize variables
 	ml_model.InitializeVariables();
