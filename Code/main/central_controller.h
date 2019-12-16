@@ -492,7 +492,7 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 	UpdatePerformancePerCluster(MAX_MIN_PERFORMANCE); // TODO: specify the shared performance from input files (now hardcoded)
 
 	// STEP 2: APPLY THE ML METHOD
-	ml_model.ComputeGlobalConfiguration(controller_report, central_controller_logger, SimTime());
+	ml_model.ComputeGlobalConfiguration(configuration_array, controller_report, central_controller_logger, SimTime());
 
 	// STEP 3: PROVIDE A RESPONSE
 	switch(ml_model.learning_mechanism) {

@@ -129,6 +129,7 @@ component Agent : public TypeII{
 		int *list_of_dcb_policy;			///> List of DCB policies
 
 		Action *actions;					///> List of actions
+		int *list_of_available_actions;		///> List of the actions that are available
 		int num_actions;					///> Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
 		int num_actions_channel;			///> Number of channels available
 		int num_actions_sensitivity;		///> Number of PD levels available
@@ -291,7 +292,11 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	// Update the agent's capabilities
 	configuration.agent_capabilities.num_actions = num_actions;
-	configuration.agent_capabilities.available_actions = pre_processor.list_of_available_actions;
+	configuration.agent_capabilities.available_actions = list_of_available_actions;
+
+	char device_code[10];
+	sprintf(device_code, "A%d", agent_id);
+	pre_processor.PrintOrWriteAvailableActions(PRINT_LOG, device_code, 1, agent_logger, SimTime(), list_of_available_actions);
 
 	// Write configuration & performance
 	if(save_agent_logs) {
@@ -424,10 +429,11 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 					"%.15f;A%d;%s;%s BANNING/RESTORING configuration...\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2);
 				// Update list of available actions based on the information sent by the controller
-				pre_processor.list_of_available_actions = received_configuration.agent_capabilities.available_actions;
+				list_of_available_actions = received_configuration.agent_capabilities.available_actions;
 				char device_code[10];
 				sprintf(device_code, "A%d", agent_id);
-				pre_processor.PrintAvailableActions(device_code, save_agent_logs, agent_logger, SimTime());
+				pre_processor.PrintOrWriteAvailableActions(WRITE_LOG, device_code,
+					save_agent_logs, agent_logger, SimTime(), list_of_available_actions);
 				break;
 			}
 			// Do not send information unless receiving a request from the CC
@@ -534,13 +540,13 @@ void Agent :: ComputeNewConfiguration(){
 					// Update the configuration according to the MABs operation
 					ml_output = ml_model.ComputeIndividualConfiguration
 						(processed_configuration, processed_reward, agent_logger,
-						SimTime(), pre_processor.list_of_available_actions);
+						SimTime(), list_of_available_actions);
 					break;
 				}
 				case RTOT_ALGORITHM:{
                     ml_output = ml_model.ComputeIndividualConfiguration
 						(processed_configuration, processed_reward, agent_logger,
-						SimTime(), pre_processor.list_of_available_actions);
+						SimTime(), list_of_available_actions);
 					break;
 				}
 				default:{
@@ -613,6 +619,10 @@ void Agent :: InitializeAgent() {
 	list_of_dcb_policy = new int[num_actions_dcb_policy];
 
 	actions = new Action[num_actions];
+	list_of_available_actions = new int[num_actions];
+	for (int i = 0; i < num_actions; ++i) {
+		list_of_available_actions[i] = 1;
+	}
 
 }
 

@@ -114,14 +114,15 @@ class MlModel {
 		* @param "central_controller_logger" [type Logger]: logger object to write logs
 		* @param "sim_time" [type double]: simulation time at the moment of calling the function (for logging purposes)
 		*/
-		void ComputeGlobalConfiguration(ControllerReport controller_report, Logger &central_controller_logger, double sim_time) {
+		void ComputeGlobalConfiguration(Configuration *configuration_array, ControllerReport &controller_report,
+			Logger &central_controller_logger, double sim_time) {
 
 			switch(learning_mechanism) {
 				/* ACTION-BANNING */
 				case CENTRALIZED_ACTION_BANNING: {
 					// Ban configurations based on the observed performance
-					action_banner.BanActions(controller_report, central_controller_logger, sim_time);
-					controller_report.PrintOrWriteAvailableActions(PRINT_LOG, central_controller_logger, save_logs, sim_time);
+					action_banner.BanActions(configuration_array, controller_report, central_controller_logger, sim_time);
+//					controller_report.PrintOrWriteAvailableActions(PRINT_LOG, central_controller_logger, save_logs, sim_time);
 					break;
 				}
 				/* GRAPH COLORING */

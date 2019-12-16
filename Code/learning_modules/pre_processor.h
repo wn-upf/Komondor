@@ -80,7 +80,7 @@ class PreProcessor {
 		int num_actions_tx_power;			///> Number of transmission power actions
 		int num_actions_dcb_policy;			///> Number of DCB policy actions
 		int *indexes_selected_arm;			///> Indexes for each parameter that conform the current selected arm
-		int *list_of_available_actions;		///> List of available actions
+//		int *list_of_available_actions;		///> List of available actions
 
 	// Private items
 	private:
@@ -398,14 +398,29 @@ class PreProcessor {
 		* Print the list of available actions
 		* @param "action_ix" [type int]: index of the action to be printed
 		*/
-		void PrintAvailableActions(char string_device[], int save_logs, Logger &logger, double sim_time){
-			LOGS(save_logs,logger.file,
-				"%.15f;%s;%s;%s List of available actions: ",
-				sim_time, string_device, LOG_C00, LOG_LVL2);
-			for (int i = 0; i < num_actions; ++i) {
-				LOGS(save_logs, logger.file, "%d ", list_of_available_actions[i]);
+		void PrintOrWriteAvailableActions(int print_or_write, char string_device[],
+			int save_logs, Logger &logger, double sim_time, int *list_of_available_actions) {
+
+			switch(print_or_write) {
+				case PRINT_LOG: {
+					printf("%s List of available actions: ", string_device);
+					for (int i = 0; i < num_actions; ++i) {
+						printf("%d ", list_of_available_actions[i]);
+					}
+					printf("\n");
+					break;
+				}
+				case WRITE_LOG: {
+					LOGS(save_logs,logger.file,
+						"%.15f;%s;%s;%s List of available actions: ",
+						sim_time, string_device, LOG_C00, LOG_LVL2);
+					for (int i = 0; i < num_actions; ++i) {
+						LOGS(save_logs, logger.file, "%d ", list_of_available_actions[i]);
+					}
+					LOGS(save_logs,logger.file, "\n");
+				}
 			}
-			LOGS(save_logs,logger.file, "\n");
+
 		}
 
 		/**
@@ -524,10 +539,10 @@ class PreProcessor {
 			list_of_pd_values = new double[num_actions_sensitivity];
 			list_of_tx_power_values = new double[num_actions_tx_power];
 			list_of_dcb_policy = new int[num_actions_dcb_policy];
-			list_of_available_actions = new int[num_actions];
-			for (int i = 0 ; i < num_actions; ++i) {
-				list_of_available_actions[i] = 1;
-			}
+//			list_of_available_actions = new int[num_actions];
+//			for (int i = 0 ; i < num_actions; ++i) {
+//				list_of_available_actions[i] = 1;
+//			}
 			// Variable to keep track of the indexes belonging to each parameter's list
 			indexes_selected_arm = new int[NUM_FEATURES_ACTIONS]; // 4 features considered
 		}
