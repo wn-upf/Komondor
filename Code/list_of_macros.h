@@ -338,8 +338,9 @@
  * *****************************************
  */
 
-#define ORIGIN_AGENT	0		///> To determine the source of a received configuration (agent)
-#define ORIGIN_AP		1		///> To determine the source of a received configuration (AP)
+#define ORIGIN_AGENT	0		///> To determine the source of a received command/configuration (agent)
+#define ORIGIN_AP		1		///> To determine the source of a received command/configuration (AP)
+#define ORIGIN_CC		2		///> To determine the source of a received command/configuration (AP)
 
 #define NUM_FEATURES_ACTIONS			4	///> Number of features considered (e.g., primary, PD, P_tx, DCB policy)
 
@@ -349,6 +350,7 @@
 #define REWARD_TYPE_MIN_RSSI			2	///> Minimum RSSI received
 #define REWARD_TYPE_MAX_DELAY			3	///> Maximum experienced delay
 #define REWARD_TYPE_AVERAGE_DELAY		4	///> Average experienced delay
+#define REWARD_TYPE_CHANNEL_OCCUPANCY 	5	///> Average channel occupancy ratio
 
 // Agent modes
 #define AGENT_MODE_DECENTRALIZED 	0	///> Agents are independent entities that follow their own learning procedure
@@ -362,6 +364,11 @@
 #define ACTION_BANNING					3
 #define RTOT_ALGORITHM					4
 #define CENTRALIZED_ACTION_BANNING		5
+
+// Types of banning threshold adaptation
+#define BANNING_THRESHOLD_STATIC        0
+#define BANNING_THRESHOLD_LINEAR        1
+#define BANNING_THRESHOLD_LOGARITHMIC   2
 
 // Action-selection strategies (MABs)
 #define STRATEGY_EGREEDY				1

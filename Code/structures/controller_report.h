@@ -58,6 +58,7 @@ struct ControllerReport
 {
 
 	// Generic information
+	int cc_iteration;
 	int agents_number;
 	int max_number_of_actions;
 	// Clusters information

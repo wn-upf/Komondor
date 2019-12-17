@@ -138,6 +138,7 @@ component Agent : public TypeII{
 
 		// Other input parameters
 		int type_of_reward;					///> Type of reward
+		int type_of_reward_cc;              ///> Type of reward chosen by the CC
 		double time_between_requests; 		///> Time between two information requests to the AP (for a given measurement)
 
 		// Print/write variables
@@ -174,6 +175,7 @@ component Agent : public TypeII{
 		// Configuration and performance after being processed by the Pre-processor
 		int processed_configuration;	///> Processed configuration
 		double processed_reward;		///> Processed performance
+		double processed_reward_cc;     ///> Processed performance according to the type of reward fixed at the CC
 
 		// Items related to the interaction with the Central Controller (CC)
         int automatic_forward_enabled;          ///> Flag to indicate that data received from the AP is automatically forwarded to the CC
@@ -193,7 +195,8 @@ component Agent : public TypeII{
 		outport void outportRequestInformationToAp();
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
 		// INPORT & OUTPORT (centralized system only)
-        inport void inline InportReceiveCommandFromController(int destination_agent_id, int command_id, Configuration &new_configuration);
+        inport void inline InportReceiveCommandFromController(int destination_agent_id,
+            int command_id, Configuration &new_configuration, int type_of_reward);
 		outport void outportAnswerToController(int agent_id, Configuration &configuration, Performance &performance, Action *actions);
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap;        // Timer for requesting information to the AP
@@ -286,6 +289,8 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
     // Process the performance to obtain the corresponding reward
 	processed_reward = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
+    // Process the performance to obtain the corresponding reward according to the central controller
+    if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
 
 	// Update the information of the current selected action
 	UpdateAction(processed_configuration);
@@ -294,9 +299,9 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	configuration.agent_capabilities.num_actions = num_actions;
 	configuration.agent_capabilities.available_actions = list_of_available_actions;
 
-	char device_code[10];
-	sprintf(device_code, "A%d", agent_id);
-	pre_processor.PrintOrWriteAvailableActions(PRINT_LOG, device_code, 1, agent_logger, SimTime(), list_of_available_actions);
+//	char device_code[10];
+//	sprintf(device_code, "A%d", agent_id);
+//	pre_processor.PrintOrWriteAvailableActions(PRINT_LOG, device_code, 1, agent_logger, SimTime(), list_of_available_actions);
 
 	// Write configuration & performance
 	if(save_agent_logs) {
@@ -311,6 +316,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	// Forward the received information to the controller (if necessary)
 	if (controller_on && (automatic_forward_enabled || flag_request_from_controller)) {
+        // Forward the information to the controller
 		ForwardInformationToController();
 		flag_request_from_controller = false;
 	}
@@ -364,7 +370,7 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
  * @param "controller_mode" [type int]:
  */
 void Agent :: InportReceiveCommandFromController(int destination_agent_id, int command_id,
-		Configuration &received_configuration) {
+		Configuration &received_configuration, int type_of_reward) {
 
 	if(controller_on && agent_id == destination_agent_id ) {
 
@@ -372,7 +378,10 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 			"%.15f;A%d;%s;%s InportReceiveCommandFromController()\n",
 			SimTime(), agent_id, LOG_F02, LOG_LVL1);
 
-		switch(command_id) {
+		// Update the type of reward desired by the CC
+        type_of_reward_cc = type_of_reward;
+
+        switch(command_id) {
 			// Send the current configuration to the CC
 			case SEND_CONFIGURATION_PERFORMANCE:{
 				LOGS(save_agent_logs,agent_logger.file,
@@ -492,9 +501,9 @@ void Agent :: ForwardInformationToController(){
  */
 void Agent :: ResetControllerStatistics() {
 	for (int i = 0; i < num_actions; ++i) {
-		actions[i].average_reward_since_last_request = 0;
-		actions[i].cumulative_reward_since_last_request = 0;
-		actions[i].times_played_since_last_request = 0;
+		actions[i].average_reward_since_last_cc_request = 0;
+		actions[i].cumulative_reward_since_last_cc_request = 0;
+		actions[i].times_played_since_last_cc_request = 0;
 	}
 }
 
@@ -503,12 +512,12 @@ void Agent :: ResetControllerStatistics() {
  * @param "action_ix" [type int]: index of the selected configuration
  */
 void Agent :: UpdateConfigurationStatisticsController(int action_ix) {
-	if (actions[action_ix].times_played_since_last_request > 0) {
-		actions[action_ix].average_reward_since_last_request =
-			actions[action_ix].cumulative_reward_since_last_request /
-			actions[action_ix].times_played_since_last_request;
+	if (actions[action_ix].times_played_since_last_cc_request > 0) {
+		actions[action_ix].average_reward_since_last_cc_request =
+			actions[action_ix].cumulative_reward_since_last_cc_request /
+			actions[action_ix].times_played_since_last_cc_request;
 	} else {
-		actions[action_ix].average_reward_since_last_request = 0;
+		actions[action_ix].average_reward_since_last_cc_request = 0;
 	}
 }
 
@@ -580,14 +589,14 @@ void Agent :: ComputeNewConfiguration(){
  */
 void Agent :: UpdateAction(int action_ix){
 	// Current information
-	actions[action_ix].performance_since_last_request = performance;
+	actions[action_ix].performance_since_last_cc_request = performance;
 	actions[action_ix].instantaneous_reward = processed_reward;
 	// Full run information
 	actions[action_ix].cumulative_reward += processed_reward;
 	++ actions[action_ix].times_played;
 	// Information since last CC request
-	actions[action_ix].cumulative_reward_since_last_request += processed_reward;
-	++ actions[action_ix].times_played_since_last_request;
+	actions[action_ix].cumulative_reward_since_last_cc_request += processed_reward_cc;
+	++ actions[action_ix].times_played_since_last_cc_request;
 }
 
 /*****************************/
@@ -641,7 +650,7 @@ void Agent :: InitializeMlPipeline() {
  */
 void Agent :: InitializePreProcessor() {
 
-	pre_processor.type_of_reward = type_of_reward;
+//	pre_processor.type_of_reward = type_of_reward;
 
 	pre_processor.num_actions = num_actions;
 	pre_processor.num_actions_channel = num_actions_channel;

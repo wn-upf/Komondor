@@ -175,7 +175,7 @@ component CentralController : public TypeII{
 
 		// OUTPORT connections for sending notifications
 		outport void outportSendCommandToAgent(int destination_agent_id, int command_id,
-			Configuration &new_configuration);
+			Configuration &new_configuration, int type_of_reward);
 
 		// Timers
 		Timer <trigger_t> trigger_apply_ml_method;					// Timer for applying the ML method
@@ -288,18 +288,19 @@ void CentralController :: UpdateControllerReport(int agent_id, Action *actions) 
     int times_action_played(0);
 
     controller_report.num_actions_per_agent = num_actions_per_agent;
+    controller_report.cc_iteration = cc_iteration;
 
     for (int i = 0; i < max_number_of_actions; ++i) {
-    	controller_report.times_action_played_per_agent[agent_id][i] = actions[i].times_played_since_last_request;
+    	controller_report.times_action_played_per_agent[agent_id][i] = actions[i].times_played_since_last_cc_request;
         if (num_actions_per_agent[agent_id] >= i) {
-        	controller_report.performance_action_per_agent[agent_id][i] = actions[i].average_reward_since_last_request;
+        	controller_report.performance_action_per_agent[agent_id][i] = actions[i].average_reward_since_last_cc_request;
             cumulative_performance_per_action +=
-            	actions[i].average_reward_since_last_request *
-                actions[i].times_played_since_last_request;
-            visited_actions += actions[i].times_played_since_last_request;
+            	actions[i].average_reward_since_last_cc_request *
+                actions[i].times_played_since_last_cc_request;
+            visited_actions += actions[i].times_played_since_last_cc_request;
             // Update the most played action per agent
-            if (actions[i].times_played_since_last_request > times_action_played) {
-                times_action_played = actions[i].times_played_since_last_request;
+            if (actions[i].times_played_since_last_cc_request > times_action_played) {
+                times_action_played = actions[i].times_played_since_last_cc_request;
                 controller_report.most_played_action_per_agent[agent_id] = i;
             }
         }
@@ -414,7 +415,7 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
 		}
 	}
 
-	outportSendCommandToAgent(destination_agent_id, command_id, conf);
+	outportSendCommandToAgent(destination_agent_id, command_id, conf, type_of_reward);
 
 };
 
@@ -679,7 +680,7 @@ void CentralController :: InitializeMlPipeline() {
  * Initialize the Pre-Processor (PP)
  */
 void CentralController :: InitializePreProcessor() {
-	pre_processor.type_of_reward = type_of_reward;
+//	pre_processor.type_of_reward = type_of_reward;
 	pre_processor.InitializeVariables();
 }
 
@@ -805,13 +806,13 @@ void CentralController :: WriteAgentPerformance(Action *actions, int agent_id) {
          "%.15f;CC;%s;%s Average performance of actions (A%d): ", SimTime(), LOG_C00, LOG_LVL3, agent_id);
     for (int i = 0; i < num_actions_per_agent[agent_id]; ++i) {
         LOGS(save_controller_logs, central_controller_logger.file, "%.2f ",
-             actions[i].average_reward_since_last_request);
+             actions[i].average_reward_since_last_cc_request);
     }
     LOGS(save_controller_logs, central_controller_logger.file, "\n");
     LOGS(save_controller_logs, central_controller_logger.file,
          "%.15f;CC;%s;%s Times each action has been played (A%d): ", SimTime(), LOG_C00, LOG_LVL3, agent_id);
     for (int i = 0; i < num_actions_per_agent[agent_id]; ++i) {
-        LOGS(save_controller_logs, central_controller_logger.file, "%d ", actions[i].times_played_since_last_request);
+        LOGS(save_controller_logs, central_controller_logger.file, "%d ", actions[i].times_played_since_last_cc_request);
     }
     LOGS(save_controller_logs, central_controller_logger.file, "\n");
 }

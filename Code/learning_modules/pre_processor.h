@@ -64,7 +64,6 @@ class PreProcessor {
 	public:
 
 		// General parameters
-		int type_of_reward;					///> Index indicating the type of reward
 		int selected_strategy;				///> Index of the chosen action-selection strategy
 
 		// Lists of configurations
@@ -80,7 +79,6 @@ class PreProcessor {
 		int num_actions_tx_power;			///> Number of transmission power actions
 		int num_actions_dcb_policy;			///> Number of DCB policy actions
 		int *indexes_selected_arm;			///> Indexes for each parameter that conform the current selected arm
-//		int *list_of_available_actions;		///> List of available actions
 
 	// Private items
 	private:
@@ -139,7 +137,7 @@ class PreProcessor {
 		* @return "reward" [type double]: reward to be passed to the ML method
 		*/
 		double GenerateReward(int type_of_reward, Performance performance) {
-			double reward;
+			double reward(0);
 			// Switch to select the reward according to the metric used (rewards must be normalized)
 			switch(type_of_reward){
 				/* REWARD_TYPE_PACKETS_SUCCESSFUL:
@@ -187,6 +185,23 @@ class PreProcessor {
 				case REWARD_TYPE_AVERAGE_DELAY:{
 					reward = performance.average_delay;
 					break;
+				}
+                /* REWARD_TYPE_CHANNEL_OCCUPANCY:
+                 * -
+                 */
+				case REWARD_TYPE_CHANNEL_OCCUPANCY:{
+                    for(int n = 0; n < 1; ++n) {
+                        reward += (performance.total_time_transmitting_in_num_channels[n] -
+                            performance.total_time_lost_in_num_channels[n]) ;/// (SimTime() - performance.timestamp);
+                    }
+                    printf("REWARD = %f\n", reward);
+//                    for(int n = 0; n < num_channels_allowed; ++n){
+//                        printf("\n%s - %d: %f s (%.2f %%)",
+//                               LOG_LVL3, (int) pow(2,n),
+//                               total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n],
+//                               ((total_time_transmitting_in_num_channels[n] -
+//                                 total_time_lost_in_num_channels[n])) * 100 /SimTime());
+				    break;
 				}
 				/* Default */
 				default:{
@@ -255,8 +270,8 @@ class PreProcessor {
 				action_array[i].instantaneous_reward = 0;
 				action_array[i].instantaneous_reward = 0;
 				action_array[i].times_played = 0;
-				action_array[i].average_reward_since_last_request = 0;
-				action_array[i].times_played_since_last_request = 0;
+				action_array[i].average_reward_since_last_cc_request = 0;
+				action_array[i].times_played_since_last_cc_request = 0;
 //				action_array[i].PrintAction();
 			}
 			return action_array;
@@ -429,9 +444,10 @@ class PreProcessor {
 		void PrintAvailableRewardTypes(){
 			printf("%s Available types of rewards:\n%s REWARD_TYPE_PACKETS_SUCCESSFUL (%d)\n"
 				"%s REWARD_TYPE_AVERAGE_THROUGHPUT (%d)\n%s REWARD_TYPE_MIN_RSSI (%d)\n"
-				"%s REWARD_TYPE_MAX_DELAY (%d)\n%s REWARD_TYPE_AVERAGE_DELAY (%d)\n",
+				"%s REWARD_TYPE_MAX_DELAY (%d)\n%s REWARD_TYPE_AVERAGE_DELAY (%d)\n%s REWARD_TYPE_CHANNEL_OCCUPANCY (%d)",
 				LOG_LVL2, LOG_LVL3, REWARD_TYPE_PACKETS_SUCCESSFUL, LOG_LVL3, REWARD_TYPE_AVERAGE_THROUGHPUT,
-				LOG_LVL3, REWARD_TYPE_MIN_RSSI, LOG_LVL3, REWARD_TYPE_MAX_DELAY, LOG_LVL3, REWARD_TYPE_AVERAGE_DELAY);
+				LOG_LVL3, REWARD_TYPE_MIN_RSSI, LOG_LVL3, REWARD_TYPE_MAX_DELAY, LOG_LVL3, REWARD_TYPE_AVERAGE_DELAY,
+				LOG_LVL3, REWARD_TYPE_CHANNEL_OCCUPANCY);
 		}
 
 		/**

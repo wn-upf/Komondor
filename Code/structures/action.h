@@ -71,10 +71,10 @@ struct Action
 	int times_played;               ///> Times the action has been played in total
 
 	// Information since last request from the controller
-	Performance performance_since_last_request;     ///> Last performance object obtained since the last CC request
-	double cumulative_reward_since_last_request;    ///> Cumulative reward obtained since the last CC request
-	int times_played_since_last_request;            ///> Times the action has been played since the last CC request
-	double average_reward_since_last_request;       ///> Average reward experienced since the last CC request
+	Performance performance_since_last_cc_request;     ///> Last performance object obtained since the last CC request
+	double cumulative_reward_since_last_cc_request;    ///> Cumulative reward obtained since the last CC request
+	int times_played_since_last_cc_request;            ///> Times the action has been played since the last CC request
+	double average_reward_since_last_cc_request;       ///> Average reward experienced since the last CC request
 
 	/**
 	 * Print the action
@@ -133,9 +133,9 @@ struct Action
      */
         void PrintControllerStatistics() {
             printf("------------\n Information since last CC request (a%d):\n", id);
-            printf(" * cumulative_reward_since_last_request = %f\n", cumulative_reward_since_last_request);
-            printf(" * times_played_since_last_request = %d\n", times_played_since_last_request);
-            printf(" * average_reward_since_last_request = %f\n", average_reward_since_last_request);
+            printf(" * cumulative_reward_since_last_request = %f\n", cumulative_reward_since_last_cc_request);
+            printf(" * times_played_since_last_request = %d\n", times_played_since_last_cc_request);
+            printf(" * average_reward_since_last_request = %f\n", average_reward_since_last_cc_request);
             printf("------------\n");
         }
 
@@ -148,9 +148,9 @@ struct Action
      */
     void WriteControllerStatistics(Logger logger, int save_logs, double sim_time, char string_device[]) {
         LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Information since last CC request (a%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
-        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cumulative_reward_since_last_request = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, cumulative_reward_since_last_request);
-        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s times_played_since_last_request = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, times_played_since_last_request);
-        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s average_reward_since_last_request = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, average_reward_since_last_request);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cumulative_reward_since_last_request = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, cumulative_reward_since_last_cc_request);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s times_played_since_last_request = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, times_played_since_last_cc_request);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s average_reward_since_last_request = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, average_reward_since_last_cc_request);
     }
 
 };

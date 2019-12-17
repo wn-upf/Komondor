@@ -578,7 +578,6 @@ void Node :: Start(){
  */
 void Node :: Stop(){
 
-
 	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Node Stop()\n",
 		SimTime(), node_id, node_state, LOG_C00, LOG_LVL1);
 
