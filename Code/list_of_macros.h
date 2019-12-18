@@ -370,6 +370,9 @@
 #define BANNING_THRESHOLD_LINEAR        1
 #define BANNING_THRESHOLD_LOGARITHMIC   2
 
+#define INCREASE_THRESHOLD   0
+#define DECREASE_THRESHOLD   1
+
 // Action-selection strategies (MABs)
 #define STRATEGY_EGREEDY				1
 #define STRATEGY_THOMPSON_SAMPLING		2

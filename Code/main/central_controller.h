@@ -533,17 +533,17 @@ void CentralController :: ApplyMlMethod(trigger_t &){
  * @param "performance" [type perf]: performance object belonging to the WLAN of interest
  * @param "conf" [type Configuration]: configuration object belonging to the WLAN of interest
  */
-void CentralController :: GenerateClusters(int wlan_id, Performance perf, Configuration conf){
+void CentralController :: GenerateClusters(int wlan_id, Performance performance, Configuration configuration){
 
 	int clustering_approach(CLUSTER_BY_CCA); // TODO: read this parameter from the input file (now it is hardcoded)
 
 	switch(clustering_approach) {
 		// CCA + Margin
 		case CLUSTER_BY_CCA :{
-			double margin_db(3);	// TODO: read this margin from the input file (now it is hardcoded)
+			double margin_db(5);	// TODO: read this margin from the input file (now it is hardcoded)
 			for (int j = 0; j < wlans_number; ++j) {
-				if (wlan_id != j && ConvertPower(PW_TO_DBM, perf.max_received_power_in_ap_per_wlan[j])
-					  > ConvertPower(PW_TO_DBM, conf.capabilities.sensitivity_default) - margin_db ) {
+				if (wlan_id != j && ConvertPower(PW_TO_DBM, performance.max_received_power_in_ap_per_wlan[j])
+					  > ConvertPower(PW_TO_DBM, configuration.capabilities.sensitivity_default) - margin_db ) {
 					controller_report.clusters_per_wlan[wlan_id][j] = 1;
 				}
 			}

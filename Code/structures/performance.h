@@ -85,6 +85,8 @@ struct Performance
 	double *max_received_power_in_ap_per_wlan;
     double *rssi_list;					///> List of RSSI received from each other WLAN
     double *received_power_array;		///> Array containing the power received by each node
+    double total_channel_occupancy;
+    double successful_channel_occupancy;
 
 	// Channel occupancy
 	double expected_backoff;							///> Expected BO

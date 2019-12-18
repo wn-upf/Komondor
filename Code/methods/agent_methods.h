@@ -59,7 +59,7 @@
 * @param "current_performance" [type Performance]: performance obtained by the corresponding WLAN
 * @param "sim_time" [type double]: simulation time at the moment of calling the function (for logging purposes)
 */
-void RestartPerformanceMetrics(Performance *current_performance, double sim_time) {
+void RestartPerformanceMetrics(Performance *current_performance, double sim_time, int num_channels_allowed) {
 
 	current_performance->timestamp = sim_time;
 	current_performance->throughput = 0;
@@ -70,6 +70,11 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 	current_performance->rts_cts_lost = 0;
 	current_performance->num_packets_generated = 0;
 	current_performance->num_packets_dropped = 0;
+
+	for(int n = 0; n < num_channels_allowed; ++n){
+		current_performance->total_time_transmitting_in_num_channels[n] = 0;
+		current_performance->total_time_lost_in_num_channels[n] = 0;
+	}
 
 }
 

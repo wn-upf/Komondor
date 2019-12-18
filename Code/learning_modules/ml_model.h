@@ -121,7 +121,7 @@ class MlModel {
 				/* ACTION-BANNING */
 				case CENTRALIZED_ACTION_BANNING: {
 					// Ban configurations based on the observed performance
-					action_banner.BanActions(configuration_array, controller_report, central_controller_logger, sim_time);
+					action_banner.UpdateConfiguration(configuration_array, controller_report, central_controller_logger, sim_time);
 //					controller_report.PrintOrWriteAvailableActions(PRINT_LOG, central_controller_logger, save_logs, sim_time);
 					break;
 				}

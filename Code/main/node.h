@@ -3633,6 +3633,10 @@ void Node :: AckTimeout(trigger_t &){
 
 	// Sergio on 16 July 2018: [AGENTS] add data packet lost for partial throughput computations
 	// Update performance measurements
+	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	for(int c = current_left_channel; c <= current_right_channel; ++c){
+		performance_report.total_time_lost_per_channel[c] += current_tx_duration;
+	}
 	performance_report.data_packets_lost++;
 
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d lost\n",
@@ -3689,10 +3693,12 @@ void Node :: CtsTimeout(trigger_t &){
 		cw_current, cw_stage_current, cw_stage_max);
 
 	// Update TX time statistics
-
 	total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	performance_report.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
 		total_time_transmitting_per_channel[c] += current_tx_duration;
+		performance_report.total_time_transmitting_per_channel[c] += current_tx_duration;
+		performance_report.total_time_lost_per_channel[c] += current_tx_duration;
 	}
 
 	RestartNode(TRUE);
@@ -3706,6 +3712,8 @@ void Node :: DataTimeout(trigger_t &){
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
 		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
+
+	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
@@ -3980,6 +3988,20 @@ void Node :: UpdatePerformanceMeasurements(){
 	if(node_type == NODE_TYPE_AP) UpdateRssiPerSta(wlan, rssi_per_sta, received_power_array, total_nodes_number);
 	performance_report.rssi_list_per_sta = rssi_per_sta;
 
+	// -  Channel occupancy
+	double successful_occupancy(0.0);
+	double total_occupancy(0.0);
+	for(int n = 0; n < num_channels_allowed; ++n){
+		successful_occupancy += ((performance_report.total_time_transmitting_in_num_channels[n] -
+			performance_report.total_time_lost_in_num_channels[n])) / (SimTime() - performance_report.timestamp);
+		total_occupancy += performance_report.total_time_transmitting_in_num_channels[n] / (SimTime() - performance_report.timestamp);
+	}
+	performance_report.successful_channel_occupancy = successful_occupancy;
+	performance_report.total_channel_occupancy = total_occupancy;
+
+//	printf("performance_report.channel_occupancy = %f (total = %f)\n",
+//		performance_report.successful_channel_occupancy, performance_report.total_channel_occupancy);
+
 	performance_report.num_stas = wlan.num_stas;
 
 }
@@ -4008,7 +4030,7 @@ void Node :: InportReceivingRequestFromAgent() {
 	outportAnswerToAgent(configuration, performance_report);
 
 	// Restart performance metrics for future requests
-	RestartPerformanceMetrics(&performance_report, SimTime());
+	RestartPerformanceMetrics(&performance_report, SimTime(), num_channels_allowed);
 
 	LOGS(save_node_logs,node_logger.file, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
@@ -4142,8 +4164,10 @@ void Node :: RestartNode(int called_by_time_out){
 
 	// Update TX time statistics
 	total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	performance_report.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
 		total_time_transmitting_per_channel[c] += current_tx_duration;
+		performance_report.total_time_transmitting_per_channel[c] += current_tx_duration;
 	}
 
 	// Apply new configuration (if it is the case)
@@ -5088,7 +5112,7 @@ void Node :: InitializeVariables() {
 	performance_report.SetSizeOfRssiPerStaList(wlan.num_stas);
 
 	// Measurements to be sent to agents
-	RestartPerformanceMetrics(&performance_report, 0);
+	RestartPerformanceMetrics(&performance_report, 0, num_channels_allowed);
 	performance_report.SetSizeOfRssiList(total_wlans_number);
 
 	flag_apply_new_configuration = FALSE;

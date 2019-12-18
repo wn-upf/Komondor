@@ -190,17 +190,7 @@ class PreProcessor {
                  * -
                  */
 				case REWARD_TYPE_CHANNEL_OCCUPANCY:{
-                    for(int n = 0; n < 1; ++n) {
-                        reward += (performance.total_time_transmitting_in_num_channels[n] -
-                            performance.total_time_lost_in_num_channels[n]) ;/// (SimTime() - performance.timestamp);
-                    }
-                    printf("REWARD = %f\n", reward);
-//                    for(int n = 0; n < num_channels_allowed; ++n){
-//                        printf("\n%s - %d: %f s (%.2f %%)",
-//                               LOG_LVL3, (int) pow(2,n),
-//                               total_time_transmitting_in_num_channels[n] - total_time_lost_in_num_channels[n],
-//                               ((total_time_transmitting_in_num_channels[n] -
-//                                 total_time_lost_in_num_channels[n])) * 100 /SimTime());
+					reward = performance.successful_channel_occupancy;/// (SimTime() - performance.timestamp);
 				    break;
 				}
 				/* Default */
@@ -500,6 +490,13 @@ class PreProcessor {
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Average delay = %.2f ms\n", sim_time, string_device,
 						LOG_C03, LOG_LVL3, performance.average_delay * pow(10,-3));
+					break;
+				}
+				// Average delay
+				case REWARD_TYPE_CHANNEL_OCCUPANCY:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Successful channel successful_channel_occupancy = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.successful_channel_occupancy);
 					break;
 				}
 			}
