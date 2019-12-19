@@ -202,6 +202,16 @@
 #define CB_ALWAYS_MAX_LOG2_MCS		5	///> Log2 Always-max (DCB) with optimal MCS: picks the channel range + MCS providing max throughput
 #define CB_PROB_UNIFORM_LOG2		6	///> Log2 probabilistic uniform: pick with same probabilty any available channel range
 
+#define CHANNEL_AGGREGATION_CCA_SAME 0	///> Same CCA (e.g., -82 dBm) is applied to every 20-MHz channel
+#define CHANNEL_AGGREGATION_CCA_11AX 1	///> Different CCA (i.e., -82, 79, -72...) is applied depending on primary and secondary
+
+#define CCA_PRIMARY_20MHZ	-82			///> CCA for primary channel of width 20 MHz (in 40 MHz)
+#define CCA_SECONDARY_20MHZ	-72			///> CCA for secondary channel of width 20 MHz (in 40 MHz)
+#define CCA_PRIMARY_40MHZ	-79			///> CCA for primary channel of width 40 MHz (in 80 MHz)
+#define CCA_SECONDARY_40MHZ	-72			///> CCA for primary channel of width 40 MHz (in 80 MHz)
+#define CCA_PRIMARY_80MHZ	-76			///> CCA for primary channel of width 80 MHz (in 160 MHz)
+#define CCA_SECONDARY_80MHZ	-69			///> CCA for primary channel of width 80 MHz (in 160 MHz)
+
 // Adjacent channel interference model
 #define ADJACENT_CHANNEL_NONE		0	///> No adjacent channel interference
 #define ADJACENT_CHANNEL_BOUNDARY	1	///> (RECOMMENDED) Boundary adjacent channel interference: only boundary channels (left and right) used in the TX affect the rest of channels

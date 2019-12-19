@@ -377,7 +377,8 @@ component Node : public TypeII{
 		double *timestampt_channel_becomes_free;	///> Timestamp when channel becomes free (when P(channel) < PD threshold)
 		double time_to_trigger;						///> Auxiliar time to trigger an specific trigger (used for almost every .Set() function)
 		int num_channels_tx;						///> Number of channels used for transmission
-		int flag_apply_new_configuration;	///> Flag to determine if there is any new configuration to be applied when doing "RestartNode()"
+		int flag_apply_new_configuration;			///> Flag to determine if there is any new configuration to be applied when doing "RestartNode()"
+		int channel_aggregation_cca_model;			///> Flag to determine the type of CCA per bandwidth applied
 
 		// Rho measurement
 		int flag_measure_rho;					///> Flag for activating rho measurement
@@ -3104,9 +3105,9 @@ void Node :: EndBackoff(trigger_t &){
 	// Identify the channel range to TX in depending on the channel bonding scheme and free channels
 	int ix_mcs_per_node (current_destination_id - wlan.list_sta_id[0]);
 
-	GetTxChannelsByChannelBonding(channels_for_tx, current_dcb_policy, channels_free,
-		min_channel_allowed, max_channel_allowed, current_primary_channel,
-		mcs_per_node, ix_mcs_per_node, num_channels_komondor);
+	GetTxChannels(channels_for_tx, current_dcb_policy, channels_free,
+			min_channel_allowed, max_channel_allowed, current_primary_channel,
+			num_channels_komondor, &channel_power, channel_aggregation_cca_model);
 
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting: ",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
@@ -5173,4 +5174,9 @@ void Node :: InitializeVariables() {
 		}
 	}
 
+	/**************************
+	// TODO: change this in DEV to enter type of CCA per BW through config file
+	***************************/
+	//channel_aggregation_cca_model = CHANNEL_AGGREGATION_CCA_SAME;
+	channel_aggregation_cca_model = CHANNEL_AGGREGATION_CCA_11AX;
 }
