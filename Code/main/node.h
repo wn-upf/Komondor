@@ -620,11 +620,12 @@ void Node :: Stop(){
  */
 void Node :: InportSomeNodeStartTX(Notification &notification){
 
-	LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX(): N%d to N%d sends packet type %d in range %d-%d\n",
+	LOGS(save_node_logs, node_logger.file,
+			"%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX(): N%d to N%d sends packet type %d in range %d-%d at power %.2f dBm\n",
 			SimTime(), node_id, node_state, LOG_D00, LOG_LVL1,
 			notification.source_id, notification.destination_id, notification.packet_type,
-			notification.left_channel, notification.right_channel);
+			notification.left_channel, notification.right_channel,
+			ConvertPower(PW_TO_DBM, notification.tx_info.tx_power));
 
 	LOGS(save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Nodes transmitting: ",
@@ -663,7 +664,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 		if (notification.tx_info.flag_change_in_tx_power) {
 			received_power_array[notification.source_id] =
 				ComputePowerReceived(distances_array[notification.source_id],
-				notification.tx_info.tx_power, tx_gain, rx_gain, central_frequency, path_loss_model);
+				notification.tx_info.tx_power, notification.tx_info.tx_gain, rx_gain,
+				central_frequency, path_loss_model);
 		}
 
 		// Update the power sensed at each channel
@@ -761,13 +763,14 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
 						notification, node_state, power_received_per_node, &channel_power);
 
-					LOGS(save_node_logs,node_logger.file,
-						"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm\n",
+					LOGS(save_node_logs, node_logger.file,
+						"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %.2f dBm - P_if = %.2f dBm - P_noise = %.2f dBm\n",
 						SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 						channel_max_intereference,
 						ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
 						ConvertPower(PW_TO_DBM, power_rx_interest),
-						ConvertPower(PW_TO_DBM, max_pw_interference));
+						ConvertPower(PW_TO_DBM, max_pw_interference),
+						ConvertPower(PW_TO_DBM, noise_level));
 
 					if(notification.packet_type == PACKET_TYPE_RTS) {	// Notification CONTAINS an RTS PACKET
 
@@ -3127,9 +3130,12 @@ void Node :: EndBackoff(trigger_t &){
 			"%.15f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, current_left_channel, current_right_channel);
 
+		int previous_num_channels = num_channels_tx;
 		num_channels_tx = current_right_channel - current_left_channel + 1;
 		++num_trials_tx_per_num_channels[(int)log2(num_channels_tx)];
 		int ix_num_channels_used (log2(num_channels_tx));
+
+		if(previous_num_channels != num_channels_tx) flag_change_in_tx_power = TRUE;
 
 		// Get the current modulation according to the channels selected for transmission
 		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
@@ -3483,7 +3489,6 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 			ack_duration, rts_duration, cts_duration, current_tx_power, num_channels_tx,
 			tx_gain, bits_ofdm_sym, x, y, z);
 	}
-
 
 	// Spatial Reuse parameters
 	notification.tx_info.bss_color = bss_color;
