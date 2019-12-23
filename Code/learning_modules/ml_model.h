@@ -85,7 +85,7 @@ class MlModel {
 		int num_channels;				///> Number of channels
 
 		// Variables used by some of the ML methods
-		int num_actions;				///> Number of actions (Bandits)
+		int num_arms;				///> Number of actions (Bandits)
 		int max_number_of_actions;		///> Maximum number of actions among all the agents (centralized)
 		int num_stas;					///> Number of STAs in a BSS
 		double margin_rtot;				///> Margin [dB] used by the RTOT algorithm
@@ -155,17 +155,17 @@ class MlModel {
 		* @param "sim_time" [type double]: simulation time at the moment of calling the function (for logging purposes)
 		* @return "new_action" [type int]: index of the new selected action
 		*/
-		double ComputeIndividualConfiguration(int arm_ix, double reward,
+		int ComputeIndividualConfiguration(int arm_ix, double reward,
 			Logger &agent_logger, double sim_time, int *available_arms) {
 
-			double new_action(0);
+			int new_action(0);
 			switch(learning_mechanism) {
 				/* MULTI_ARMED_BANDITS */
 				case MULTI_ARMED_BANDITS: {
 					// Update the reward of the last played configuration
 					mab_agent.UpdateArmStatistics(arm_ix, reward);
 					// Select a new action according to the updated information
-					new_action = (double) mab_agent.SelectNewAction(available_arms);
+					new_action = mab_agent.SelectNewAction(available_arms, arm_ix);
 					break;
 				}
 				case RTOT_ALGORITHM: {
@@ -227,7 +227,7 @@ class MlModel {
 					mab_agent.save_logs = save_logs;
 					mab_agent.print_logs = print_logs;
 					mab_agent.action_selection_strategy = action_selection_strategy;
-					mab_agent.num_actions = num_actions;
+					mab_agent.num_arms = num_arms;
 					mab_agent.InitializeVariables();
 					break;
 				}
@@ -288,9 +288,9 @@ class MlModel {
 				}
 				case CENTRALIZED_ACTION_BANNING: {
 					if (write_or_print == PRINT_LOG) {
-//						printf("Available actions (%d agents with %d actions):\n", agents_number, num_actions);
+//						printf("Available actions (%d agents with %d actions):\n", agents_number, num_arms);
 //						for (int i = 0; i < agents_number; ++i) {
-//							for (int j = 0; j < num_actions; ++j) {
+//							for (int j = 0; j < num_arms; ++j) {
 //								printf("%d ", available_actions_per_agent[i][j]);
 //							}
 //							printf("\n");

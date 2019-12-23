@@ -92,7 +92,7 @@ component Komondor : public CostSimEng {
 		void SetupEnvironmentByReadingConfigFile();
 		void GenerateNodesByReadingInputFile(const char *nodes_filename);
 
-		void GenerateAgents(const char *agents_filename);
+		void GenerateAgents(const char *agents_filename, const char *simulation_code_console);
 		void GenerateCentralController(const char *agents_filename);
 
 		int GetNumOfLines(const char *nodes_filename);
@@ -147,10 +147,10 @@ component Komondor : public CostSimEng {
 
 		// Agents info
 		Agent[] agent_container;		///> Array containing all the agents
-		int num_actions_channel;		///> Number of available channels
-		int num_actions_sensitivity;	///> Number of available sensitivity levels
-		int num_actions_tx_power;		///> Number of available transmit power levels
-		int num_actions_dcb_policy;		///> Number of available DCB policies
+		int num_arms_channel;		///> Number of available channels
+		int num_arms_sensitivity;	///> Number of available sensitivity levels
+		int num_arms_tx_power;		///> Number of available transmit power levels
+		int num_arms_dcb_policy;		///> Number of available DCB policies
 
 		double *actions_pd;				///> Array of Packet Detect (PD) actions
 		double *actions_tx_power;		///> Array of transmission power actions
@@ -211,16 +211,16 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	print_agent_logs = print_agent_logs_console;
 	nodes_input_filename = nodes_input_filename_console;
 	agents_input_filename = agents_input_filename_console;
-	std::string simulation_code;
-	simulation_code.append(ToString(simulation_code_console));
+//	std::string simulation_code;
+//    simulation_code.append(ToString(simulation_code_console));
 	seed = seed_console;
 	agents_enabled = agents_enabled_console;
 	total_wlans_number = 0;
 
-	// Generate output files
+    // Generate output files
 	if (print_system_logs) printf("\n%s Creating output files\n", LOG_LVL1);
 	std::string simulation_filename_remove;
-	simulation_filename_remove.append("output/logs_console_").append(simulation_code).append(".txt");
+	simulation_filename_remove.append("output/logs_console_").append(simulation_code_console).append(".txt");
 	std::string simulation_filename_fopen;
 	simulation_filename_fopen.append("../").append(simulation_filename_remove);
 	if(remove(simulation_filename_remove.c_str()) == 0){
@@ -240,7 +240,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	script_output_file = fopen(script_output_filename, "at");	// Script output is removed when script is executed
 	logger_script.save_logs = SAVE_LOG;
 	logger_script.file = script_output_file;
-	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code.c_str(), seed);
+	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code_console, seed);
 
 	// Read system (environment) file
 	SetupEnvironmentByReadingConfigFile();
@@ -294,7 +294,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 
 	// Generate agents (if enabled)
 	central_controller_flag = 0;
-	if (agents_enabled) { GenerateAgents(agents_input_filename); }
+	if (agents_enabled) { GenerateAgents(agents_input_filename, simulation_code_console); }
 	// Generate the central controller (if enabled)
 	if (agents_enabled && central_controller_flag) { GenerateCentralController(agents_input_filename); }
 
@@ -783,7 +783,7 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
  * Generate the agents deterministically, according to the input agents file
  * @param "agents_filename" [type char*]: filename of the agents input CSV
  */
-void Komondor :: GenerateAgents(const char *agents_filename) {
+void Komondor :: GenerateAgents(const char *agents_filename, const char *simulation_code_console) {
 
 	if (print_system_logs) printf("%s Generating agents...\n", LOG_LVL1);
 	if (print_system_logs) printf("%s Reading agents input file '%s'...\n", LOG_LVL2, agents_filename);
@@ -817,13 +817,13 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			channel_values_text.append(ToString(channel_values_aux));
 			const char *channel_aux;
 			channel_aux = strtok ((char*)channel_values_text.c_str(),",");
-			num_actions_channel = 0;
+			num_arms_channel = 0;
 			while (channel_aux != NULL) {
 				channel_aux = strtok (NULL, ",");
-				++ num_actions_channel;
+				++ num_arms_channel;
 			}
 			// Set the length of channel actions to agent's field
-			agent_container[agent_ix].num_actions_channel = num_actions_channel;
+			agent_container[agent_ix].num_arms_channel = num_arms_channel;
 			// Find the length of the pd actions array
 			tmp_agents = strdup(line_agents);
 			const char *pd_values_aux (GetField(tmp_agents, IX_AGENT_PD_VALUES));
@@ -831,13 +831,13 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			pd_values_text.append(ToString(pd_values_aux));
 			const char *pd_aux;
 			pd_aux = strtok ((char*)pd_values_text.c_str(),",");
-			num_actions_sensitivity = 0;
+			num_arms_sensitivity = 0;
 			while (pd_aux != NULL) {
 				pd_aux = strtok (NULL, ",");
-				++ num_actions_sensitivity;
+				++ num_arms_sensitivity;
 			}
 			// Set the length of sensitivity actions to agent's field
-			agent_container[agent_ix].num_actions_sensitivity = num_actions_sensitivity;
+			agent_container[agent_ix].num_arms_sensitivity = num_arms_sensitivity;
 			// Find the length of the Tx power actions array
 			tmp_agents = strdup(line_agents);
 			const char *tx_power_values_aux (GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES));
@@ -845,13 +845,13 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			tx_power_values_text.append(ToString(tx_power_values_aux));
 			const char *tx_power_aux;
 			tx_power_aux = strtok ((char*)tx_power_values_text.c_str(),",");
-			num_actions_tx_power = 0;
+			num_arms_tx_power = 0;
 			while (tx_power_aux != NULL) {
 				tx_power_aux = strtok (NULL, ",");
-				++ num_actions_tx_power;
+				++ num_arms_tx_power;
 			}
 			// Set the length of Tx power actions to agent's field
-			agent_container[agent_ix].num_actions_tx_power = num_actions_tx_power;
+			agent_container[agent_ix].num_arms_tx_power = num_arms_tx_power;
 			// Find the length of the DCB actions actions array
 			tmp_agents = strdup(line_agents);
 			const char *policy_values_aux (GetField(tmp_agents, IX_AGENT_DCB_POLICY));
@@ -859,17 +859,20 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			policy_values_text.append(ToString(policy_values_aux));
 			const char *policy_aux;
 			policy_aux = strtok ((char*)policy_values_text.c_str(),",");
-			num_actions_dcb_policy = 0;
+			num_arms_dcb_policy = 0;
 			while (policy_aux != NULL) {
 				policy_aux = strtok (NULL, ",");
-				++num_actions_dcb_policy;
+				++num_arms_dcb_policy;
 			}
 			// Set the length of DCB actions to agent's field
-			agent_container[agent_ix].num_actions_dcb_policy = num_actions_dcb_policy;
+			agent_container[agent_ix].num_arms_dcb_policy = num_arms_dcb_policy;
 
 			// Set the lenght of the total actions in the agent (combinations of parameters)
-			agent_container[agent_ix].num_actions = num_actions_channel * num_actions_sensitivity
-				* num_actions_tx_power * num_actions_dcb_policy;
+			agent_container[agent_ix].num_arms = num_arms_channel * num_arms_sensitivity
+				* num_arms_tx_power * num_arms_dcb_policy;
+
+			// Set the simulation code for generating output files
+			agent_container[agent_ix].simulation_code.append(ToString(simulation_code_console));
 
 			++agent_ix;
 			free(tmp_agents);
@@ -1026,7 +1029,7 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 		central_controller[0].wlans_number = total_wlans_number;
 		int max_number_of_actions(0);
 		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
-			if(agent_container[agent_ix].num_actions > max_number_of_actions) max_number_of_actions = agent_container[agent_ix].num_actions;
+			if(agent_container[agent_ix].num_arms > max_number_of_actions) max_number_of_actions = agent_container[agent_ix].num_arms;
 		}
 		central_controller[0].max_number_of_actions = max_number_of_actions;
 		// Initialize the CC
@@ -1042,7 +1045,7 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 				// Add agent id to list of agents attached to the controller
 				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
 				agent_container[agent_ix].controller_on = central_controller[0].controller_on;
-				central_controller[0].num_actions_per_agent[agent_ix] = agent_container[agent_ix].num_actions;
+				central_controller[0].num_arms_per_agent[agent_ix] = agent_container[agent_ix].num_arms;
 //				double agent_time_between_requests (agent_container[agent_list_ix].time_between_requests);
 //				// Store the maximum time between requests
 //				if (agent_time_between_requests > max_time_between_requests) {
@@ -1092,10 +1095,10 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 					channel_values_text.append(ToString(channel_values_aux));
 					const char *channels_aux;
 					channels_aux = strtok ((char*)channel_values_text.c_str(),",");
-					int num_actions_channels = 0;
+					int num_arms_channels = 0;
 					while (channels_aux != NULL) {
 						channels_aux = strtok (NULL, ",");
-						++ num_actions_channels;
+						++ num_arms_channels;
 					}
 					free(tmp_cc);
 					break;	// Don't read all the other lines (entailed for agents)

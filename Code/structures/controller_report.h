@@ -70,7 +70,7 @@ struct ControllerReport
 	// Agents' activity
 	double *performance_per_agent;				///> Last performance experienced by each agent
 	double *average_performance_per_agent;		///> Average performance experienced by each agent
-	int *num_actions_per_agent;
+	int *num_arms_per_agent;
 	int **list_of_available_actions_per_agent; 	///> Matrix containing the list of available actions in each agent
 	double **performance_action_per_agent;		///> Matrix containing the performance obtained by each action in each agent
 	int **times_action_played_per_agent;		///> Matrix containing the times each action has been played by each agent
@@ -125,7 +125,7 @@ struct ControllerReport
 		average_performance_per_agent = new double[agents_number];
 		performance_action_per_agent = new double *[agents_number];
 		list_of_available_actions_per_agent = new int *[agents_number];
-		num_actions_per_agent = new int[agents_number];
+		num_arms_per_agent = new int[agents_number];
 		times_action_played_per_agent = new int *[agents_number];
 		most_played_action_per_agent = new int[agents_number];
 		// Clusters information

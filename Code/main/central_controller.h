@@ -130,7 +130,7 @@ component CentralController : public TypeII{
 		int *list_of_agents;			///> List of the identifiers of the agents controlled by the CC
 		int wlans_number;				///> Number of WLANs
 		int total_nodes_number;			///> Number of nodes
-		int *num_actions_per_agent;		///> Array containing the number of actions available to each agent
+		int *num_arms_per_agent;		///> Array containing the number of actions available to each agent
 		int max_number_of_actions;		///> Maximum number of actions available for all the agents (for generating data structures)
 
 		// Reward and ML method types
@@ -287,12 +287,12 @@ void CentralController :: UpdateControllerReport(int agent_id, Action *actions) 
     double visited_actions(0);
     int times_action_played(0);
 
-    controller_report.num_actions_per_agent = num_actions_per_agent;
+    controller_report.num_arms_per_agent = num_arms_per_agent;
     controller_report.cc_iteration = cc_iteration;
 
     for (int i = 0; i < max_number_of_actions; ++i) {
     	controller_report.times_action_played_per_agent[agent_id][i] = actions[i].times_played_since_last_cc_request;
-        if (num_actions_per_agent[agent_id] >= i) {
+        if (num_arms_per_agent[agent_id] >= i) {
         	controller_report.performance_action_per_agent[agent_id][i] = actions[i].average_reward_since_last_cc_request;
             cumulative_performance_per_action +=
             	actions[i].average_reward_since_last_cc_request *
@@ -701,7 +701,7 @@ void CentralController :: InitializeMlModel() {
 	for (int i = 0; i < agents_number; ++i) {
 		// Fill the matrix containing the set of available actions in each agent and the matrix indicating their performance
 		for (int j = 0; j < max_number_of_actions; ++j) {
-			if (num_actions_per_agent[i] >= j) {
+			if (num_arms_per_agent[i] >= j) {
 				controller_report.list_of_available_actions_per_agent[i][j] = 1;		// The action exists and is available (set to 1 by default)
 				controller_report.performance_action_per_agent[i][j] = 0;		// Set default performance to 0
 				controller_report.times_action_played_per_agent[i][j] = 0;
@@ -736,7 +736,7 @@ void CentralController :: InitializeCentralController() {
 	configuration_array = new Configuration[agents_number];
 	performance_array  = new Performance[agents_number];
 
-	num_actions_per_agent = new int[agents_number];
+	num_arms_per_agent = new int[agents_number];
 
 	// Initialize the controller's report
 	controller_report.agents_number = agents_number;
@@ -804,14 +804,14 @@ void CentralController :: WriteAgentPerformance(Action *actions, int agent_id) {
          SimTime(), LOG_C00, LOG_LVL3, agent_id, controller_report.average_performance_per_agent[agent_id]);
     LOGS(save_controller_logs, central_controller_logger.file,
          "%.15f;CC;%s;%s Average performance of actions (A%d): ", SimTime(), LOG_C00, LOG_LVL3, agent_id);
-    for (int i = 0; i < num_actions_per_agent[agent_id]; ++i) {
+    for (int i = 0; i < num_arms_per_agent[agent_id]; ++i) {
         LOGS(save_controller_logs, central_controller_logger.file, "%.2f ",
              actions[i].average_reward_since_last_cc_request);
     }
     LOGS(save_controller_logs, central_controller_logger.file, "\n");
     LOGS(save_controller_logs, central_controller_logger.file,
          "%.15f;CC;%s;%s Times each action has been played (A%d): ", SimTime(), LOG_C00, LOG_LVL3, agent_id);
-    for (int i = 0; i < num_actions_per_agent[agent_id]; ++i) {
+    for (int i = 0; i < num_arms_per_agent[agent_id]; ++i) {
         LOGS(save_controller_logs, central_controller_logger.file, "%d ", actions[i].times_played_since_last_cc_request);
     }
     LOGS(save_controller_logs, central_controller_logger.file, "\n");

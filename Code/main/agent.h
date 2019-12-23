@@ -130,11 +130,11 @@ component Agent : public TypeII{
 
 		Action *actions;					///> List of actions
 		int *list_of_available_actions;		///> List of the actions that are available
-		int num_actions;					///> Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
-		int num_actions_channel;			///> Number of channels available
-		int num_actions_sensitivity;		///> Number of PD levels available
-		int num_actions_tx_power;			///> Number of TX power levels available
-		int num_actions_dcb_policy;			///> Number of DCB policies available
+		int num_arms;					///> Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
+		int num_arms_channel;			///> Number of channels available
+		int num_arms_sensitivity;		///> Number of PD levels available
+		int num_arms_tx_power;			///> Number of TX power levels available
+		int num_arms_dcb_policy;			///> Number of DCB policies available
 
 		// Other input parameters
 		int type_of_reward;					///> Type of reward
@@ -164,7 +164,7 @@ component Agent : public TypeII{
         Configuration configuration;					///> Configuration object
         Configuration new_configuration;				///> Object containing the new configuration to be set
         Configuration configuration_from_controller;	///> Configuration object obtained from the CC
-        double ml_output;	                            ///> Output of the ML model (previous step to the new configuration)
+        int ml_output;	                            ///> Output of the ML model (previous step to the new configuration)
 
         // ML-based architecture (see https://arxiv.org/abs/1910.03510)
         PreProcessor pre_processor;             ///> Pre-processor object
@@ -222,7 +222,8 @@ void Agent :: Start(){
 	// Create agent logs file if required
 	if(save_agent_logs) {
 		// Name agent log file accordingly to the agent_id
-		sprintf(own_file_path,"%s_A%d_%s.txt","../output/logs_output", agent_id, wlan_code.c_str());
+		printf("Simulation code = %s\n", simulation_code.c_str());
+		sprintf(own_file_path,"%s_%s_A%d_%s.txt","../output/logs_output", simulation_code.c_str(), agent_id, wlan_code.c_str());
 		remove(own_file_path);
 		output_log_file = fopen(own_file_path, "at");
 		agent_logger.save_logs = save_agent_logs;
@@ -296,7 +297,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	UpdateAction(processed_configuration);
 
 	// Update the agent's capabilities
-	configuration.agent_capabilities.num_actions = num_actions;
+	configuration.agent_capabilities.num_arms = num_arms;
 	configuration.agent_capabilities.available_actions = list_of_available_actions;
 
 //	char device_code[10];
@@ -484,7 +485,7 @@ void Agent :: ForwardInformationToController(){
 		SimTime(), agent_id, LOG_F02, LOG_LVL2);
 
 	// Compute the average performance achieved by each arm
-	for (int i = 0; i < num_actions; ++i) {
+	for (int i = 0; i < num_arms; ++i) {
 		UpdateConfigurationStatisticsController(i);
 	}
 
@@ -500,7 +501,7 @@ void Agent :: ForwardInformationToController(){
  * Reset the statistics set during the last CC iteration
  */
 void Agent :: ResetControllerStatistics() {
-	for (int i = 0; i < num_actions; ++i) {
+	for (int i = 0; i < num_arms; ++i) {
 		actions[i].average_reward_since_last_cc_request = 0;
 		actions[i].cumulative_reward_since_last_cc_request = 0;
 		actions[i].times_played_since_last_cc_request = 0;
@@ -569,6 +570,12 @@ void Agent :: ComputeNewConfiguration(){
 			new_configuration = pre_processor.ProcessMLOutput(learning_mechanism, configuration, ml_output);
 			// Send the configuration to the AP
 			SendNewConfigurationToAp(new_configuration);
+
+            if(agent_id == 1) {
+                int output_ix = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, new_configuration);
+                printf("Agent 1 selected action %d\n", output_ix);
+            }
+
 		} else {
 			// Generate the first request to be triggered after "time_between_requests"
 			// *** We generate here the first request in order to obtain the AP's configuration
@@ -622,14 +629,14 @@ void Agent :: InitializeAgent() {
 
 	indexes_configuration = new int[NUM_FEATURES_ACTIONS];
 
-	list_of_channels = new int[num_actions_channel];
-	list_of_pd_values = new double[num_actions_sensitivity];
-	list_of_tx_power_values = new double[num_actions_tx_power];
-	list_of_dcb_policy = new int[num_actions_dcb_policy];
+	list_of_channels = new int[num_arms_channel];
+	list_of_pd_values = new double[num_arms_sensitivity];
+	list_of_tx_power_values = new double[num_arms_tx_power];
+	list_of_dcb_policy = new int[num_arms_dcb_policy];
 
-	actions = new Action[num_actions];
-	list_of_available_actions = new int[num_actions];
-	for (int i = 0; i < num_actions; ++i) {
+	actions = new Action[num_arms];
+	list_of_available_actions = new int[num_arms];
+	for (int i = 0; i < num_arms; ++i) {
 		list_of_available_actions[i] = 1;
 	}
 
@@ -652,11 +659,11 @@ void Agent :: InitializePreProcessor() {
 
 //	pre_processor.type_of_reward = type_of_reward;
 
-	pre_processor.num_actions = num_actions;
-	pre_processor.num_actions_channel = num_actions_channel;
-	pre_processor.num_actions_sensitivity = num_actions_sensitivity;
-	pre_processor.num_actions_tx_power = num_actions_tx_power;
-	pre_processor.num_actions_dcb_policy = num_actions_dcb_policy;
+	pre_processor.num_arms = num_arms;
+	pre_processor.num_arms_channel = num_arms_channel;
+	pre_processor.num_arms_sensitivity = num_arms_sensitivity;
+	pre_processor.num_arms_tx_power = num_arms_tx_power;
+	pre_processor.num_arms_dcb_policy = num_arms_dcb_policy;
 
 	pre_processor.InitializeVariables();
 
@@ -681,8 +688,8 @@ void Agent :: InitializeMlModel() {
 	ml_model.learning_mechanism = learning_mechanism;
 	ml_model.action_selection_strategy = action_selection_strategy;
 	// MABs information
-	ml_model.num_channels = num_actions_channel;
-	ml_model.num_actions = num_actions;
+	ml_model.num_channels = num_arms_channel;
+	ml_model.num_arms = num_arms;
 	// Logs
 	ml_model.save_logs = save_agent_logs;
 	ml_model.print_logs = print_agent_logs;
@@ -711,22 +718,22 @@ void Agent :: PrintAgentInfo(){
 	printf("%s type_of_reward = %d\n", LOG_LVL4, type_of_reward);
 	printf("%s initial_reward = %f\n", LOG_LVL4, initial_reward);
 	printf("%s list_of_channels: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_channel; ++i) {
+	for (int i = 0; i < num_arms_channel; ++i) {
 		printf("%d  ", list_of_channels[i]);
 	}
 	printf("\n");
 	printf("%s list_of_pd_values: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_sensitivity; ++i) {
+	for (int i = 0; i < num_arms_sensitivity; ++i) {
 		printf("%f pW (%f dBm)  ", list_of_pd_values[i], ConvertPower(PW_TO_DBM, list_of_pd_values[i]));
 	}
 	printf("\n");
 	printf("%s list_of_tx_power_values: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_tx_power; ++i) {
+	for (int i = 0; i < num_arms_tx_power; ++i) {
 		printf("%f pW (%f dBm)  ", list_of_tx_power_values[i], ConvertPower(PW_TO_DBM, list_of_tx_power_values[i]));
 	}
 	printf("\n");
 	printf("%s list_of_dcb_policy: ", LOG_LVL4);
-	for (int i = 0; i < num_actions_dcb_policy; ++i) {
+	for (int i = 0; i < num_arms_dcb_policy; ++i) {
 		printf("%d  ", list_of_dcb_policy[i]);
 	}
 	printf("\n");
@@ -751,22 +758,22 @@ void Agent :: WriteAgentInfo(Logger logger, std::string header_str){
 	fprintf(logger.file, "%s - type_of_reward = %d\n", header_str.c_str(), type_of_reward);
 	fprintf(logger.file, "%s - initial_reward = %f\n", header_str.c_str(), initial_reward);
 	fprintf(logger.file, "%s - list_of_channels: ", header_str.c_str());
-	for (int i = 0; i < num_actions_channel; ++i) {
+	for (int i = 0; i < num_arms_channel; ++i) {
 		fprintf(logger.file, "%d  ", list_of_channels[i]);
 	}
 	fprintf(logger.file, "\n");
 	fprintf(logger.file, "%s - list_of_pd_values: ", header_str.c_str());
-	for (int i = 0; i < num_actions_sensitivity; ++i) {
+	for (int i = 0; i < num_arms_sensitivity; ++i) {
 		fprintf(logger.file, "%f pW (%f dBm)  ", list_of_pd_values[i], ConvertPower(PW_TO_DBM, list_of_pd_values[i]));
 	}
 	fprintf(logger.file, "\n");
 	fprintf(logger.file, "%s - list_of_tx_power_values: ", header_str.c_str());
-	for (int i = 0; i < num_actions_channel; ++i) {
+	for (int i = 0; i < num_arms_channel; ++i) {
 		fprintf(logger.file, "%f pW (%f dBm)  ", list_of_tx_power_values[i], ConvertPower(PW_TO_DBM, list_of_tx_power_values[i]));
 	}
 	fprintf(logger.file, "\n");
 	fprintf(logger.file, "%s - list_of_dcb_policy: ", header_str.c_str());
-	for (int i = 0; i < num_actions_channel; ++i) {
+	for (int i = 0; i < num_arms_channel; ++i) {
 		fprintf(logger.file, "%d  ", list_of_dcb_policy[i]);
 	}
 	fprintf(logger.file, "\n");

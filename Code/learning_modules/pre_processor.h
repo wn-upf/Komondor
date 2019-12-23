@@ -73,11 +73,11 @@ class PreProcessor {
 		int *list_of_dcb_policy;			///> List of DCB policies to be selected
 
 		// Actions management
-		int num_actions;					///> Number of actions
-		int num_actions_channel;			///> Number of channel actions
-		int num_actions_sensitivity;		///> Number of sensitivity actions
-		int num_actions_tx_power;			///> Number of transmission power actions
-		int num_actions_dcb_policy;			///> Number of DCB policy actions
+		int num_arms;					///> Number of actions
+		int num_arms_channel;			///> Number of channel actions
+		int num_arms_sensitivity;		///> Number of sensitivity actions
+		int num_arms_tx_power;			///> Number of transmission power actions
+		int num_arms_dcb_policy;			///> Number of DCB policy actions
 		int *indexes_selected_arm;			///> Indexes for each parameter that conform the current selected arm
 
 	// Private items
@@ -245,11 +245,11 @@ class PreProcessor {
 		* @return "action_array" [type *Action]: initialized array of Action structs
 		*/
 		Action* InitializeActions(){
-			Action *action_array = new Action[num_actions];
+			Action *action_array = new Action[num_arms];
 			int *indexes_arm = new int[NUM_FEATURES_ACTIONS];
-			for(int i = 0; i < num_actions; ++i) {
-				index2values(indexes_arm, i, num_actions_channel,num_actions_sensitivity,
-					num_actions_tx_power, num_actions_dcb_policy);
+			for(int i = 0; i < num_arms; ++i) {
+				index2values(indexes_arm, i, num_arms_channel,num_arms_sensitivity,
+					num_arms_tx_power, num_arms_dcb_policy);
 				action_array[i].id = i;
 				// Configuration
 				action_array[i].channel = list_of_channels[indexes_arm[0]];
@@ -275,8 +275,8 @@ class PreProcessor {
 		*/
 		Configuration GenerateNewConfigurationBandits(Configuration configuration, double ml_output){
 			// Find which parameters correspond to the selected arm
-			index2values(indexes_selected_arm, (int) ml_output, num_actions_channel,
-				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
+			index2values(indexes_selected_arm, (int) ml_output, num_arms_channel,
+				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
 			// Update each parameter according to the configuration provided by the MAB
 			int new_primary = list_of_channels[indexes_selected_arm[0]];
 			double new_pd = list_of_pd_values[indexes_selected_arm[1]];
@@ -311,7 +311,7 @@ class PreProcessor {
 			int index_tx_power = -1;
 			int index_dcb_policy = -1;
 			// Channel
-			for(int i = 0; i < num_actions_channel; i++) {
+			for(int i = 0; i < num_arms_channel; i++) {
 				if(configuration.selected_primary_channel == list_of_channels[i]) {
 					index_channel = i;
 				}
@@ -323,19 +323,19 @@ class PreProcessor {
 			} else {
 				selected_pd = configuration.selected_pd;
 			}
-			for(int i = 0; i < num_actions_sensitivity; i++) {
+			for(int i = 0; i < num_arms_sensitivity; i++) {
 				if(selected_pd == list_of_pd_values[i]) {
 					index_pd = i;
 				}
 			}
 			// Tx Power
-			for(int i = 0; i < num_actions_tx_power; i++) {
+			for(int i = 0; i < num_arms_tx_power; i++) {
 				if(configuration.selected_tx_power == list_of_tx_power_values[i]) {
 					index_tx_power = i;
 				}
 			}
 			// DCB policy
-			for(int i = 0; i < num_actions_dcb_policy; i++) {
+			for(int i = 0; i < num_arms_dcb_policy; i++) {
 				if(configuration.selected_dcb_policy == list_of_dcb_policy[i]) {
 					index_dcb_policy = i;
 				}
@@ -346,8 +346,8 @@ class PreProcessor {
 			indexes_selected_arm[2] = index_tx_power;
 			indexes_selected_arm[3] = index_dcb_policy;
 			// Find the action ix and return it
-			int action_ix = values2index(indexes_selected_arm, num_actions_channel,
-				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
+			int action_ix = values2index(indexes_selected_arm, num_arms_channel,
+				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
 //			PrintActionBandits(action_ix);
 
 			return action_ix;
@@ -387,8 +387,8 @@ class PreProcessor {
 		* @param "action_ix" [type int]: index of the action to be printed
 		*/
 		void PrintActionBandits(int action_ix){
-			index2values(indexes_selected_arm, action_ix, num_actions_channel,
-				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
+			index2values(indexes_selected_arm, action_ix, num_arms_channel,
+				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
 			printf("%s Action %d ([%d %d %d %d]\n", LOG_LVL2,
 				action_ix, indexes_selected_arm[0], indexes_selected_arm[1], indexes_selected_arm[2], indexes_selected_arm[3]);
 			printf("%s Channel: %d\n", LOG_LVL3, list_of_channels[indexes_selected_arm[0]]);
@@ -409,7 +409,7 @@ class PreProcessor {
 			switch(print_or_write) {
 				case PRINT_LOG: {
 					printf("%s List of available actions: ", string_device);
-					for (int i = 0; i < num_actions; ++i) {
+					for (int i = 0; i < num_arms; ++i) {
 						printf("%d ", list_of_available_actions[i]);
 					}
 					printf("\n");
@@ -419,7 +419,7 @@ class PreProcessor {
 					LOGS(save_logs,logger.file,
 						"%.15f;%s;%s;%s List of available actions: ",
 						sim_time, string_device, LOG_C00, LOG_LVL2);
-					for (int i = 0; i < num_actions; ++i) {
+					for (int i = 0; i < num_arms; ++i) {
 						LOGS(save_logs, logger.file, "%d ", list_of_available_actions[i]);
 					}
 					LOGS(save_logs,logger.file, "\n");
@@ -548,12 +548,12 @@ class PreProcessor {
 		 */
 		void InitializeVariables(){
 			// Lists of modifiable parameters
-			list_of_channels = new int[num_actions_channel];
-			list_of_pd_values = new double[num_actions_sensitivity];
-			list_of_tx_power_values = new double[num_actions_tx_power];
-			list_of_dcb_policy = new int[num_actions_dcb_policy];
-//			list_of_available_actions = new int[num_actions];
-//			for (int i = 0 ; i < num_actions; ++i) {
+			list_of_channels = new int[num_arms_channel];
+			list_of_pd_values = new double[num_arms_sensitivity];
+			list_of_tx_power_values = new double[num_arms_tx_power];
+			list_of_dcb_policy = new int[num_arms_dcb_policy];
+//			list_of_available_actions = new int[num_arms];
+//			for (int i = 0 ; i < num_arms; ++i) {
 //				list_of_available_actions[i] = 1;
 //			}
 			// Variable to keep track of the indexes belonging to each parameter's list

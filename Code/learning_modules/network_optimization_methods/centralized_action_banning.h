@@ -78,7 +78,7 @@ class CentralizedActionBanning {
 		int max_number_of_actions;
 
 		int **list_of_available_actions_per_agent;
-		int *num_actions_per_agent;
+		int *num_arms_per_agent;
 		double *average_performance_per_agent;
 		double *cluster_performance;
 		int **clusters_per_wlan;
@@ -135,18 +135,21 @@ class CentralizedActionBanning {
 
 			// Check which agents have been the affected - they obtained less than a minimum amount of resources
 			for(int i = 0; i < agents_number; ++i) {
-//					printf("Average performance (%d) = %f\n", i, average_performance_per_agent[i]);
-//					printf("Perf. + margin = %f\n", average_performance_per_agent[i] + MARGIN_THRESHOLD_BANNING);
-//					printf("current_banning_threshold[%d] = %f\n", i, current_banning_threshold[i]);
-					// For each other agent in the same cluster (i.e., the environment), check which actions were played
+//                printf("Affectation of A%d to the environment (obtained %.2f):\n", i, average_performance_per_agent[i]);
+                // Check the performance of each other agent in the same cluster (i.e., affectation to the environment)
 				for(int j = 0; j < agents_number; ++j) {
 					if(i != j && clusters_per_wlan[i][j] == 1) {
-						if (average_performance_per_agent[j] + MARGIN_THRESHOLD_BANNING < current_banning_threshold[i]) {
+//					    if (average_performance_per_agent[j] + MARGIN_THRESHOLD_BANNING < current_banning_threshold[i]) {
+                        if (average_performance_per_agent[j] < current_banning_threshold[i]) {
+//                            printf("   * Agent %d:\n", j);
+//                            printf("         - Average performance = %.2f (+ Margin = %.2f)\n",
+//                                   average_performance_per_agent[j], average_performance_per_agent[j] + MARGIN_THRESHOLD_BANNING);
+//                            printf("         - Current banning threshold of %d = %.2f\n", i, current_banning_threshold[i]);
 							// Assess whether the agent in the cluster affected negatively to the others
 							if(AssessActionNegativeImpact(i)) {
                                 LOGS(save_logs, central_controller_logger.file, "%.15f;CC;%s;%s Banned action %d of A%d\n",
                                      sim_time, LOG_C00, LOG_LVL1, most_played_action_per_agent[i], i);
-								printf("Banned action %d of A%d\n", most_played_action_per_agent[i], i);
+//								printf("Banned action %d of A%d\n", most_played_action_per_agent[i], i);
 								list_of_available_actions_per_agent[i][most_played_action_per_agent[i]] = 0;
 								configuration_array[i].agent_capabilities.available_actions[most_played_action_per_agent[i]] = 0;
                                 previously_banned_action_per_agent[i] = most_played_action_per_agent[i];
@@ -170,9 +173,10 @@ class CentralizedActionBanning {
         */
 		void RestoreBannedActions(Configuration *configuration_array, ControllerReport &controller_report,
             Logger central_controller_logger, double sim_time) {
-            // Check which agents have been the affected - they obtained less than a minimum amount of resources
+            // Check which agents have been affected - i.e., they obtained a lower performance than before banning
             for(int i = 0; i < agents_number; ++i) {
-                if (average_performance_per_agent[i] < (previous_performance_per_agent[i] - DELTA)) {
+//                if (average_performance_per_agent[i] < (previous_performance_per_agent[i] - DELTA)) {
+                if (average_performance_per_agent[i] <= previous_performance_per_agent[i]) {
                     // For each other agent in the same cluster (i.e., the environment), check which actions were previously banned
                     for(int j = 0; j < agents_number; ++j) {
                         if(i != j && clusters_per_wlan[i][j] == 1 && previously_banned_action_per_agent[j] >= 0) {
@@ -198,24 +202,24 @@ class CentralizedActionBanning {
 		int AssessActionNegativeImpact(int agent_id) {
 
 		    // Count the total number of actions played during the last CC iteration
-		    int total_num_actions_played(0);
-		    for (int i = 0; i < num_actions_per_agent[agent_id]; ++i) {
-                total_num_actions_played += times_action_played_per_agent[agent_id][i];
+		    int total_num_arms_played(0);
+		    for (int i = 0; i < num_arms_per_agent[agent_id]; ++i) {
+                total_num_arms_played += times_action_played_per_agent[agent_id][i];
 		    }
 
 			// Define the minimum number of times an action has to be played before banning
 			double POPULARITY_PERCENTAGE(0.33);
-			int min_num_times_action_is_played = (POPULARITY_PERCENTAGE * total_num_actions_played);
+			int min_num_times_action_is_played = (POPULARITY_PERCENTAGE * total_num_arms_played);
 
 			// Count the number of actions available in every agent (to prevent deleting all the actions)
 			int sum_available_actions(0);
-			for (int i = 0; i < num_actions_per_agent[agent_id]; ++i) {
+			for (int i = 0; i < num_arms_per_agent[agent_id]; ++i) {
 				if (list_of_available_actions_per_agent[agent_id] >= 0)
 					sum_available_actions += list_of_available_actions_per_agent[agent_id][i];
 			}
 			// BAN the most popular action(s) if played a minimum number of times
             int  times_played_most_popular_action = times_action_played_per_agent[agent_id][most_played_action_per_agent[agent_id]];
-//            printf("min_num_times_action_is_played = %d (%d, %d)\n", min_num_times_action_is_played, times_played_most_popular_action, total_num_actions_played);
+//            printf("min_num_times_action_is_played = %d (%d, %d)\n", min_num_times_action_is_played, times_played_most_popular_action, total_num_arms_played);
 			if (sum_available_actions > 1 && times_played_most_popular_action >= min_num_times_action_is_played) {
 				banned_in_last_iteration = TRUE;
 				return TRUE;
@@ -234,7 +238,7 @@ class CentralizedActionBanning {
 		void UpdateVariables(ControllerReport controller_report) {
 
 			// Update information related to actions
-			num_actions_per_agent = controller_report.num_actions_per_agent;
+			num_arms_per_agent = controller_report.num_arms_per_agent;
 			list_of_available_actions_per_agent = controller_report.list_of_available_actions_per_agent;
 			most_played_action_per_agent = controller_report.most_played_action_per_agent;
 			times_action_played_per_agent = controller_report.times_action_played_per_agent;
@@ -336,31 +340,6 @@ class CentralizedActionBanning {
 							 sim_time, LOG_C00, LOG_LVL2, current_banning_threshold[i]);
 					}
 				}
-//				for(int i = 0; i < agents_number; ++i) {
-//					if(average_performance_per_agent[i] > current_banning_threshold[i] ||
-//						max_reward_seen_per_agent[i] < current_banning_threshold[i]) {
-//						// Check if the threshold needs to be updated or not and whether an increase or a decrease is required
-//						for(int j = 0; j < agents_number; ++j) {
-//							if(i != j && clusters_per_wlan[i][j] == 1) {
-//								double threshold_shift (ComputeBanningShift());
-//								if(average_performance_per_agent[i] > current_banning_threshold[i])
-//									current_banning_threshold[j] += threshold_shift;
-//								else if(max_reward_seen_per_agent[i] < current_banning_threshold[i])
-//									current_banning_threshold[j] -= threshold_shift;
-//								// Security check
-//								if (current_banning_threshold[j] > MAX_THRESHOLD_BANNING) {
-//									current_banning_threshold[j] = MAX_THRESHOLD_BANNING;
-//								}
-//								if (current_banning_threshold[j] < MIN_THRESHOLD_BANNING)
-//									current_banning_threshold[j] = MIN_THRESHOLD_BANNING;
-//							}
-//							LOGS(save_logs, central_controller_logger.file, "%.15f;CC;%s;%s Updating the banning threshold of Agent %d (mode %d)... \n",
-//								 sim_time, LOG_C00, LOG_LVL1, j, banning_threshold_type);
-//							LOGS(save_logs, central_controller_logger.file, "%.15f;CC;%s;%s New threshold = %f\n",
-//								 sim_time, LOG_C00, LOG_LVL2, current_banning_threshold[j]);
-//						}
-//					}
-//				}
 			}
 
         }
@@ -427,7 +406,7 @@ class CentralizedActionBanning {
 
             // Information provided by the CC
 			list_of_available_actions_per_agent = new int *[agents_number];
-			num_actions_per_agent = new int[agents_number];
+			num_arms_per_agent = new int[agents_number];
 			average_performance_per_agent = new double[agents_number];
 			cluster_performance = new double[agents_number];
 			clusters_per_wlan = new int *[agents_number];
@@ -439,7 +418,7 @@ class CentralizedActionBanning {
                 initial_banning_threshold[i] = 0;
                 current_banning_threshold[i] = 0;
 				list_of_available_actions_per_agent[i] = new int[max_number_of_actions];	// Set the initial reward
-				num_actions_per_agent[i] = 0;
+				num_arms_per_agent[i] = 0;
 				average_performance_per_agent[i] = 0;
                 previous_performance_per_agent[i] = 0;
                 previously_banned_action_per_agent[i] = -1;

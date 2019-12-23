@@ -59,10 +59,13 @@ class MultiArmedBandit {
 	// Public items
 	public:
 
+        // Print and write logs
+        int save_logs;				///> Boolean for saving logs
+        int print_logs;				///> Boolean for printing logs
+
+        // General information
 		int agent_id;						///> Identified of the agent using MABs
-		int save_logs;				///> Boolean for saving logs
-		int print_logs;				///> Boolean for printing logs
-		int num_actions;					///> Number of actions
+		int num_arms;					///> Number of actions
 		int action_selection_strategy;		///> Index of the chosen action-selection strategy
 
 		// Generic variables to all the learning strategies
@@ -120,8 +123,8 @@ class MultiArmedBandit {
 		* Select a new action according to the chosen action selection strategy
 		* @return "action_ix" [type int]: index of the selected action
 		*/
-		int SelectNewAction(int *available_arms) {
-			int action_ix;
+		int SelectNewAction(int *available_arms, int current_arm) {
+			int arm_ix;
 			// Select an action according to the chosen strategy: TODO improve this part (now it is hardcoded)
 			//action_selection_strategy = STRATEGY_EGREEDY;
 			switch(action_selection_strategy) {
@@ -132,9 +135,7 @@ class MultiArmedBandit {
 					// Update epsilon
 					epsilon = initial_epsilon / sqrt( (double) num_iterations);
 					// Pick an action according to e-greedy
-					action_ix = PickArmEgreedy(num_actions, average_reward_per_arm, epsilon, available_arms);
-					// Increase the number of iterations
-					num_iterations ++;
+                    arm_ix = PickArmEgreedy(num_arms, average_reward_per_arm, epsilon, available_arms);
 					break;
 				}
 				/*
@@ -142,19 +143,28 @@ class MultiArmedBandit {
 				 */
 				case STRATEGY_THOMPSON_SAMPLING:{
 					// Pick an action according to Thompson sampling
-					action_ix = PickArmThompsonSampling(num_actions,
+                    arm_ix = PickArmThompsonSampling(num_arms,
 						estimated_reward_per_arm, times_arm_has_been_selected, available_arms);
-					// Increase the number of iterations
-					num_iterations ++;
 					break;
 				}
+                /*
+                 * Thompson sampling strategy:
+                 */
+                case STRATEGY_SEQUENTIAL:{
+                    // Pick an action according to Thompson sampling
+                    arm_ix = PickArmSequentially(num_arms, available_arms, current_arm);
+                    break;
+                }
 				default:{
 					printf("[MAB] ERROR: '%d' is not a correct action-selection strategy!\n", action_selection_strategy);
 					PrintAvailableActionSelectionStrategies();
 					exit(EXIT_FAILURE);
 				}
 			}
-			return action_ix;
+            // Increase the number of iterations
+            ++ num_iterations;
+            // Return the selected action
+			return arm_ix;
 		}
 
 		/****************************/
@@ -165,27 +175,27 @@ class MultiArmedBandit {
 
 		/**
 		 * Select an action according to the epsilon-greedy strategy
-		 * @param "num_actions" [type int]: number of possible actions
+		 * @param "num_arms" [type int]: number of possible actions
 		 * @param "reward_per_arm" [type double]: array containing the last stored reward for each action
 		 * @param "epsilon" [type double]: current exploration coefficient
 		 * @return "action_ix" [type int]: index of the selected action
 		 */
-		int PickArmEgreedy(int num_actions, double *reward_per_arm, double epsilon, int *available_arms) {
+		int PickArmEgreedy(int num_arms, double *reward_per_arm, double epsilon, int *available_arms) {
 
 			double rand_number = ((double) rand() / (RAND_MAX));
 			int action_ix;
 
 			if (rand_number < epsilon) { //EXPLORE
-				action_ix = rand() % num_actions;
+				action_ix = rand() % num_arms;
 				int counter(0);
 				while (!available_arms[action_ix]) {
-					action_ix = rand() % num_actions;
+					action_ix = rand() % num_arms;
 					if(counter > 1000) break; // To avoid getting stuck (none of the actions is available)
 				}
 //				printf("EXPLORE: Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
 			} else { //EXPLOIT
 				double max = 0;
-				for (int i = 0; i < num_actions; i ++) {
+				for (int i = 0; i < num_arms; i ++) {
 					if(available_arms[i] && reward_per_arm[i] >= max) {
 						max = reward_per_arm[i];
 						action_ix = i;
@@ -226,19 +236,19 @@ class MultiArmedBandit {
 
 		/**
 		 * Select an action according to the Thompson sampling strategy
-		 * @param "num_actions" [type int]: number of possible actions
+		 * @param "num_arms" [type int]: number of possible actions
 		 * @param "estimated_reward_per_arm" [type double*]: array containing the estimated reward for each action
 		 * @param "times_arm_has_been_selected" [type int*]: array containing the times each action has been selected
 		 * @return "action_ix" [type int]: index of the selected action
 		 */
-		int PickArmThompsonSampling(int num_actions, double *estimated_reward_per_arm,
+		int PickArmThompsonSampling(int num_arms, double *estimated_reward_per_arm,
 			int *times_arm_has_been_selected, int *available_arms) {
 			//TODO: validate the behavior of this implementation
 			int action_ix;
-			double *theta = new double[num_actions];
+			double *theta = new double[num_arms];
 			double std;
 			// Compute the posterior probability of each arm
-			for (int i = 0; i < num_actions; ++i) {
+			for (int i = 0; i < num_arms; ++i) {
 				if (available_arms[i]) {
 					std = 1.0/(1+times_arm_has_been_selected[i]);
 					theta[i] = gaussrand(estimated_reward_per_arm[i], std);
@@ -248,7 +258,7 @@ class MultiArmedBandit {
 			}
 			// Find the action with the highest likelihood
 			double max = theta[0];
-			for (int i = 0; i < num_actions; ++i) {
+			for (int i = 0; i < num_arms; ++i) {
 				if(theta[i] > max) {
 					max = theta[i];
 					action_ix = i;
@@ -258,6 +268,33 @@ class MultiArmedBandit {
 //			printf("Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
 			return action_ix;
 		}
+
+        /*******************/
+        /*******************/
+        /*  OTHER METHODS  */
+        /*******************/
+        /*******************/
+
+
+        /**
+         * Select an action according to the Thompson sampling strategy
+         * @param "num_arms" [type int]: number of possible actions
+         * @param "estimated_reward_per_arm" [type double*]: array containing the estimated reward for each action
+         * @param "times_arm_has_been_selected" [type int*]: array containing the times each action has been selected
+         * @return "action_ix" [type int]: index of the selected action
+         */
+        int PickArmSequentially(int num_arms, int *available_arms, int current_arm_ix) {
+            int arm_ix(0);
+            if (num_iterations == 1) {
+                arm_ix = num_iterations;
+            } else {
+                arm_ix = (current_arm_ix + 1) % num_arms;
+            }
+            if (available_arms[arm_ix] != 1) {
+                arm_ix = PickArmSequentially(num_arms, available_arms, arm_ix);
+            }
+            return arm_ix;
+        }
 
 		/*************************/
 		/*************************/
@@ -278,15 +315,15 @@ class MultiArmedBandit {
 				case PRINT_LOG:{
 					if(print_logs){
 						printf("%s Reward per arm: ", LOG_LVL3);
-						for(int n = 0; n < num_actions; n++){
+						for(int n = 0; n < num_arms; n++){
 							printf("%f  ", reward_per_arm[n]);
 						}
 						printf("\n%s Cumulative reward per arm: ", LOG_LVL3);
-						for(int n = 0; n < num_actions; n++){
+						for(int n = 0; n < num_arms; n++){
 							printf("%f  ", cumulative_reward_per_arm[n]);
 						}
 						printf("\n%s Times each arm has been selected: ", LOG_LVL3);
-						for(int n = 0; n < num_actions; n++){
+						for(int n = 0; n < num_arms; n++){
 							printf("%d  ", times_arm_has_been_selected[n]);
 						}
 						printf("\n");
@@ -297,21 +334,21 @@ class MultiArmedBandit {
 				case WRITE_LOG:{
 					if(save_logs) fprintf(logger.file, "%.15f;A%d;%s;%s Reward per arm: ",
 						sim_time, agent_id, LOG_C00, LOG_LVL3);
-					for(int n = 0; n < num_actions; n++){
+					for(int n = 0; n < num_arms; n++){
 						 if(save_logs){
 							 fprintf(logger.file, "%f  ", reward_per_arm[n]);
 						 }
 					}
 					if(save_logs) fprintf(logger.file, "\n%.15f;A%d;%s;%s Cumulative reward per arm: ",
 						sim_time, agent_id, LOG_C00, LOG_LVL3);
-					for(int n = 0; n < num_actions; n++){
+					for(int n = 0; n < num_arms; n++){
 						 if(save_logs){
 							 fprintf(logger.file, "%f  ", cumulative_reward_per_arm[n]);
 						 }
 					}
 					fprintf(logger.file, "\n%.15f;A%d;%s;%s Times each arm has been selected: ",
 									sim_time, agent_id, LOG_C00, LOG_LVL3);
-					for(int n = 0; n < num_actions; n++){
+					for(int n = 0; n < num_arms; n++){
 						if(save_logs){
 							fprintf(logger.file, "%d ", times_arm_has_been_selected[n]);
 						}
@@ -347,13 +384,13 @@ class MultiArmedBandit {
 			initial_reward = 0;
 			num_iterations = 1;
 			// Initialize the rewards assigned to each arm
-			reward_per_arm = new double[num_actions];
-			cumulative_reward_per_arm = new double[num_actions];
-			average_reward_per_arm = new double[num_actions];
-			estimated_reward_per_arm = new double[num_actions];
+			reward_per_arm = new double[num_arms];
+			cumulative_reward_per_arm = new double[num_arms];
+			average_reward_per_arm = new double[num_arms];
+			estimated_reward_per_arm = new double[num_arms];
 			// Initialize the array containing the times each arm has been played
-			times_arm_has_been_selected = new int[num_actions];
-			for(int i = 0; i < num_actions; ++i){
+			times_arm_has_been_selected = new int[num_arms];
+			for(int i = 0; i < num_arms; ++i){
 				reward_per_arm[i] = initial_reward;	// Set the initial reward
 				cumulative_reward_per_arm[i] = initial_reward;
 				average_reward_per_arm[i] = initial_reward;

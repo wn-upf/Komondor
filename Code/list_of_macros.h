@@ -376,6 +376,7 @@
 // Action-selection strategies (MABs)
 #define STRATEGY_EGREEDY				1
 #define STRATEGY_THOMPSON_SAMPLING		2
+#define STRATEGY_SEQUENTIAL             3
 
 #define MAX_TIME_INFORMATION_VALID		10 ///> Maximum amount of time (in seconds) the information of the network is considered to be valid
 
