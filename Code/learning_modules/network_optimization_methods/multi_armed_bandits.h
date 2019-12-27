@@ -284,7 +284,7 @@ class MultiArmedBandit {
          * @return "action_ix" [type int]: index of the selected action
          */
         int PickArmSequentially(int num_arms, int *available_arms, int current_arm_ix) {
-            int arm_ix(0);
+            int arm_ix(1);
             if (num_iterations == 1) {
                 arm_ix = num_iterations;
             } else {

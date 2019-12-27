@@ -56,7 +56,7 @@ public class AddNaiveColumn {
 
         System.out.println("FINDING FILES TO MODIFY...");
         // your directory
-        File f = new File("C:\\Users\\UPF\\Google Drive\\Academia\\PhD\\Workspace\\Komondor_private\\Komondor\\Apps\\Input Generation\\files_to_append");
+        File f = new File("/home/dtic/Documents/Komondor/Apps/Input Generation/files_to_append");
         File[] matchingFiles = f.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 // return name.startsWith("input_nodes_n") && name.endsWith("4.csv");
@@ -71,7 +71,7 @@ public class AddNaiveColumn {
         }
         
         String output_path_directory = 
-                "C:\\Users\\UPF\\Google Drive\\Academia\\PhD\\Workspace\\Komondor_private\\Komondor\\Apps\\Input Generation\\appended_files";
+                "/home/dtic/Documents/Komondor/Apps/Input Generation/appended_files";
         System.out.println("DELETING OLD APPENDED FILES...");
         // Delete files
         File f_delete = new File(output_path_directory);

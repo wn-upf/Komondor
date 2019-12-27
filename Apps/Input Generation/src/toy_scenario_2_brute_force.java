@@ -441,17 +441,15 @@ public class toy_scenario_2_brute_force {
 //            non_srg_obss_pd_list[i] = -82 + i;
 //        }
         
-        int[] sensitvity_list = new int[4];  
-        sensitvity_list[0] = -68;
+        int[] sensitvity_list = new int[3];  
+        sensitvity_list[0] = -82;
         sensitvity_list[1] = -72;
-        sensitvity_list[2] = -78;
-        sensitvity_list[3] = -82;
+        sensitvity_list[2] = -62;
         
-        int[] tx_power_list = new int[4];  
+        int[] tx_power_list = new int[3];  
         tx_power_list[0] = 1;
-        tx_power_list[1] = 5;
-        tx_power_list[2] = 10;
-        tx_power_list[3] = 20;
+        tx_power_list[1] = 10;
+        tx_power_list[2] = 20;
         
         input_attributes(input_path);
                                

@@ -441,17 +441,15 @@ public class toy_scenario_1_brute_force {
 //            non_srg_obss_pd_list[i] = -82 + i;
 //        }
         
-        int[] sensitvity_list = new int[4];  
-        sensitvity_list[0] = -68;
+        int[] sensitvity_list = new int[3];  
+        sensitvity_list[0] = -82;
         sensitvity_list[1] = -72;
-        sensitvity_list[2] = -78;
-        sensitvity_list[3] = -82;
+        sensitvity_list[2] = -62;
         
-        int[] tx_power_list = new int[4];  
+        int[] tx_power_list = new int[3];  
         tx_power_list[0] = 1;
-        tx_power_list[1] = 5;
-        tx_power_list[2] = 10;
-        tx_power_list[3] = 20;
+        tx_power_list[1] = 10;
+        tx_power_list[2] = 20;
         
         input_attributes(input_path);
                                
@@ -463,6 +461,7 @@ public class toy_scenario_1_brute_force {
                for (int i2 = 0; i2 < sensitvity_list.length; i2++) {                        
                     for (int j2 = 0; j2 < tx_power_list.length; j2++) {  
 //                        System.out.println("WLAN2" + "; " + sensitvity_list[i2] + "; " + tx_power_list[j2]);
+                        System.out.println("sce_id: " + sce_id);
                         generate_wlans(new int[] {sensitvity_list[i], sensitvity_list[i2]}, 
                             new int[] {tx_power_list[j], tx_power_list[j2]});
                         output_path = "./output/input_nodes_n" + num_wlans + "_s" + String.format("%03d", sce_id) +
@@ -470,7 +469,7 @@ public class toy_scenario_1_brute_force {
                             "_txp1_" + String.format("%02d", (int) tx_power_list[j]) +
                             "_sens2_" + String.format("%03d", (int) sensitvity_list[i2]) +
                             "_txp2_" + String.format("%02d", (int) tx_power_list[j2]) + ".csv";
-                        System.out.println("output_path: " + output_path);
+                        //System.out.println("output_path: " + output_path);
                         generate_file(output_path);                          
                         sce_id ++;
                     }
