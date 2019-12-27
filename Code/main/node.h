@@ -610,8 +610,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			notification.left_channel, notification.right_channel);
 
 	LOGS(save_node_logs,node_logger.file,
-				"%.15f;N%d;S%d;%s;%s Nodes transmitting: ",
-				SimTime(), node_id, node_state, LOG_D00, LOG_LVL3);
+	        "%.15f;N%d;S%d;%s;%s Nodes transmitting: ",
+			SimTime(), node_id, node_state, LOG_D00, LOG_LVL3);
 
 	// Identify node that has started the transmission as transmitting node in the array
 	nodes_transmitting[notification.source_id] = TRUE;
@@ -639,14 +639,15 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			"%.15f;N%d;S%d;%s;%s START Channel before updating: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
-		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs, &channel_power);
+        // Update 'power received' array in case a new tx power is used
+//        if(node_id == 0) printf("notification.tx_info.flag_change_in_tx_power = %d\n", notification.tx_info.flag_change_in_tx_power);
+        if (notification.tx_info.flag_change_in_tx_power) {
+            received_power_array[notification.source_id] =
+                ComputePowerReceived(distances_array[notification.source_id],
+                notification.tx_info.tx_power, central_frequency, path_loss_model);
+        }
 
-		// Update 'power received' array in case a new tx power is used
-		if (notification.tx_info.flag_change_in_tx_power) {
-			received_power_array[notification.source_id] =
-				ComputePowerReceived(distances_array[notification.source_id],
-				notification.tx_info.tx_power, central_frequency, path_loss_model);
-		}
+		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs, &channel_power);
 
 		// Update the power sensed at each channel
 		UpdateChannelsPower(&channel_power, notification, TX_INITIATED,
@@ -2301,6 +2302,9 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 								notification.packet_id, notification.tx_info.num_packets_aggregated,
 								notification.timestamp_generated, current_tx_duration);
 
+                        // Reset the flag that indicates whether the tx power changed or not
+                        flag_change_in_tx_power = FALSE;
+
 						if(backoff_type == BACKOFF_SLOTTED){
 							ack_notification.tx_info.preoccupancy_duration = time_rand_value;
 						}
@@ -2514,6 +2518,9 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							cts_notification = GenerateNotification(PACKET_TYPE_CTS, current_destination_id,
 								notification.packet_id, notification.tx_info.num_packets_aggregated,
 								notification.timestamp_generated, current_tx_duration);
+
+                            // Reset the flag that indicates whether the tx power changed or not
+                            flag_change_in_tx_power = FALSE;
 //
 //							current_tx_info = GenerateTxInfo(notification.tx_info.num_packets_aggregated, data_duration,
 //									ack_duration,
@@ -2615,6 +2622,9 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						data_notification = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
 								notification.packet_id, notification.tx_info.num_packets_aggregated,
 								notification.timestamp_generated, current_tx_duration);
+
+						// Reset the flag that indicates whether the tx power changed or not
+                        flag_change_in_tx_power = FALSE;
 
 						if(backoff_type == BACKOFF_SLOTTED){
 							data_notification.tx_info.preoccupancy_duration = time_rand_value;
@@ -3228,6 +3238,9 @@ void Node :: EndBackoff(trigger_t &){
 			first_packet_buffer.packet_id, limited_num_packets_aggregated,
 			first_packet_buffer.timestamp_generated, current_tx_duration);
 
+        // Reset the flag that indicates whether the tx power changed or not
+        flag_change_in_tx_power = FALSE;
+
 		LOGS(save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission of RTS #%d started\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL3, rts_notification.packet_id);
@@ -3357,11 +3370,12 @@ void Node :: MyTxFinished(trigger_t &){
 			break;
 		}
 
-
-
 		default:
 			break;
 	}
+
+    // Reset the flag that indicates whether the tx power changed or not
+    flag_change_in_tx_power = FALSE;
 
 	// LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;  MyTxFinished()\n", SimTime(), node_id, node_state, LOG_G01, LOG_LVL1);
 };
@@ -3456,20 +3470,19 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 	if (spatial_reuse_enabled && txop_sr_identified) {
 		notification.tx_info = GenerateTxInfo(num_packets_aggregated, data_duration,
 			ack_duration, rts_duration, cts_duration, current_tx_power_sr, num_channels_tx,
-			bits_ofdm_sym, x, y, z);
+			bits_ofdm_sym, x, y, z, flag_change_in_tx_power);
 	} else {
 		notification.tx_info = GenerateTxInfo(num_packets_aggregated, data_duration,
 			ack_duration, rts_duration, cts_duration, current_tx_power, num_channels_tx,
-			bits_ofdm_sym, x, y, z);
+			bits_ofdm_sym, x, y, z, flag_change_in_tx_power);
 	}
-
 
 	// Spatial Reuse parameters
 	notification.tx_info.bss_color = bss_color;
 	notification.tx_info.srg = srg;
 
-	// Notify potential changes in the tx power
-	notification.tx_info.flag_change_in_tx_power = flag_change_in_tx_power;
+//	// Notify potential changes in the tx power
+//	notification.tx_info.flag_change_in_tx_power = flag_change_in_tx_power;
 
 	switch(packet_type){
 
@@ -3517,6 +3530,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 	}
 
 	return notification;
+
 }
 
 /**
@@ -4072,6 +4086,7 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 	// Set new configuration according to received instructions
 	current_primary_channel = new_configuration.selected_primary_channel;
 	current_pd = new_configuration.selected_pd;
+	if(current_tx_power != new_configuration.selected_tx_power) flag_change_in_tx_power = TRUE;
 	current_tx_power = new_configuration.selected_tx_power;
 	current_dcb_policy = new_configuration.selected_dcb_policy;
 	non_srg_obss_pd = new_configuration.non_srg_obss_pd;
@@ -4121,7 +4136,9 @@ void Node :: InportNewWlanConfigurationReceived(Configuration &received_configur
 
 //		if(node_state == STATE_SENSING) RestartNode(FALSE);
 		// Force restart
-		RestartNode(FALSE);
+		if(node_state == STATE_SENSING || node_state == STATE_NAV) {
+            RestartNode(FALSE);
+		}
 
 	} else {
 		printf("ERROR: the broadcast of a new configuration cannot be received at APs\n");
@@ -4185,8 +4202,6 @@ void Node :: RestartNode(int called_by_time_out){
 
 	receiving_from_node_id = NODE_ID_NONE;
 	receiving_packet_id = NO_PACKET_ID;
-
-	flag_change_in_tx_power = FALSE;
 
 	// Cancel triggers for safety
 	trigger_end_backoff.Cancel();

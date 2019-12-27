@@ -222,7 +222,6 @@ void Agent :: Start(){
 	// Create agent logs file if required
 	if(save_agent_logs) {
 		// Name agent log file accordingly to the agent_id
-		printf("Simulation code = %s\n", simulation_code.c_str());
 		sprintf(own_file_path,"%s_%s_A%d_%s.txt","../output/logs_output", simulation_code.c_str(), agent_id, wlan_code.c_str());
 		remove(own_file_path);
 		output_log_file = fopen(own_file_path, "at");
@@ -285,7 +284,6 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	// Save the Configuration and Performance reports received from the AP
 	configuration = received_configuration;
 	performance = received_performance;
-
     // Find the index of the current action
 	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
     // Process the performance to obtain the corresponding reward
@@ -299,10 +297,6 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	// Update the agent's capabilities
 	configuration.agent_capabilities.num_arms = num_arms;
 	configuration.agent_capabilities.available_actions = list_of_available_actions;
-
-//	char device_code[10];
-//	sprintf(device_code, "A%d", agent_id);
-//	pre_processor.PrintOrWriteAvailableActions(PRINT_LOG, device_code, 1, agent_logger, SimTime(), list_of_available_actions);
 
 	// Write configuration & performance
 	if(save_agent_logs) {
@@ -345,7 +339,7 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
     char device_code[10];
     sprintf(device_code, "A%d", agent_id);
     processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration_to_send);
-	if(save_agent_logs) actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
+//	if(save_agent_logs) actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
 
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
 	outportSendConfigurationToAp(configuration_to_send);
@@ -571,10 +565,10 @@ void Agent :: ComputeNewConfiguration(){
 			// Send the configuration to the AP
 			SendNewConfigurationToAp(new_configuration);
 
-            if(agent_id == 1) {
-                int output_ix = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, new_configuration);
-                printf("Agent 1 selected action %d\n", output_ix);
-            }
+//            if(agent_id == 0) {
+//                int output_ix = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, new_configuration);
+//                printf("Agent 0 selected action %d\n", output_ix);
+//            }
 
 		} else {
 			// Generate the first request to be triggered after "time_between_requests"

@@ -137,7 +137,8 @@ class PreProcessor {
 		* @return "reward" [type double]: reward to be passed to the ML method
 		*/
 		double GenerateReward(int type_of_reward, Performance performance) {
-			double reward(0);
+
+            double reward(0);
 			// Switch to select the reward according to the metric used (rewards must be normalized)
 			switch(type_of_reward){
 				/* REWARD_TYPE_PACKETS_SUCCESSFUL:
@@ -305,11 +306,13 @@ class PreProcessor {
 		* @return "action_ix" [type Configuration]: index of the action that corresponds to the input configuration
 		*/
 		int FindActionIndexFromConfigurationBandits(Configuration configuration, int* &indexes_selected_arm) {
-			// Find the index of each chosen parameter
+
+		    // Find the index of each chosen parameter
 			int index_channel = -1;
 			int index_pd = -1;
 			int index_tx_power = -1;
 			int index_dcb_policy = -1;
+
 			// Channel
 			for(int i = 0; i < num_arms_channel; i++) {
 				if(configuration.selected_primary_channel == list_of_channels[i]) {
