@@ -3116,8 +3116,8 @@ void Node :: EndBackoff(trigger_t &){
 		channels_for_tx);
 
 	// Act according to possible (not possible) transmission
-	if(channels_for_tx[0] != TX_NOT_POSSIBLE
-		&& current_modulation != MODULATION_FORBIDDEN){	// Transmission IS POSSIBLE
+	if(channels_for_tx[0] != TX_NOT_POSSIBLE) {
+		//&& current_modulation != MODULATION_FORBIDDEN){	// Transmission IS POSSIBLE
 
 		// Change to state "transmitting RTS"
 		node_state = STATE_TX_RTS;

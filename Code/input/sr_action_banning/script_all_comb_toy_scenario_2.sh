@@ -1,10 +1,8 @@
 # define execution parameters
-SIM_TIME=10
+SIM_TIME=100
 SEED=1992
 # compile KOMONDOR
 pwd
-cd ..
-cd ..
 cd ..
 pwd
 cd main
@@ -17,7 +15,7 @@ pwd
 rm output/*
 
 # get input files path in folder 'script_input_files'
-cd input/sr_action_banning/preliminar_analysis/toy_scenario_1_all_comb_2/
+cd input/sr_action_banning/input_nodes_toy_scenario_2/
 pwd
 
 echo 'DETECTED KOMONDOR INPUT FILES: '
@@ -35,7 +33,6 @@ done < <(ls)
 cd ..
 cd ..
 cd ..
-cd ..
 pwd
 cd main
 pwd
@@ -44,11 +41,11 @@ do
 	echo ""
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./komondor_main ../input/sr_action_banning/preliminar_analysis/toy_scenario_1_all_comb_2/${array[executing_ix]} ../input/sr_action_banning/preliminar_analysis/agents_decentralized_monitor_2.csv ../output/script_output.txt sim_$(printf %02d $executing_ix) 0 0 1 0 1 1 $SIM_TIME $SEED >> ../output/logs_console.txt
+	./komondor_main ../input/sr_action_banning/input_nodes_toy_scenario_2/${array[executing_ix]} ../output/script_output_toy_scenario_2.txt sim_${array[executing_ix]} 0 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo ""
 done
 echo ""
-echo 'SCRIPT FINISHED: OUTUP FILE SAVED IN /output/script_output.txt'
+echo 'SCRIPT FINISHED: OUTUP FILE SAVED IN /output/script_output_toy_scenario_2.txt'
 echo ""
 echo ""
