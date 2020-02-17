@@ -143,8 +143,8 @@ Before executing the regression test, it is important to ensure that "simulation
 
 ## Academic/Education projects
 One of the main purposes of Komondor is to serve as an academic/educational tool. In what follows, we list the projects in which Komondor has been used as a simulation tool:
-* Barrachina-Muñoz, Sergio, et al. "Online Primary Channel Selection for Dynamic Channel Bonding in High-Density WLANs." IEEE Wireless Communications Letters (2019)](https://ieeexplore.ieee.org/abstract/document/8894073/). 
-* Barrachina-Muñoz, Sergio, et al. "Komondor: a wireless network simulator for next-generation high-density WLANs." Wireless Days (WD), 1-8 (2019)](https://ieeexplore.ieee.org/abstract/document/8734225). 
+* Barrachina-Muñoz, Sergio, et al. "Online Primary Channel Selection for Dynamic Channel Bonding in High-Density WLANs." [IEEE Wireless Communications Letters (2019)](https://ieeexplore.ieee.org/abstract/document/8894073/). 
+* Barrachina-Muñoz, Sergio, et al. "Komondor: a wireless network simulator for next-generation high-density WLANs." [Wireless Days (WD), 1-8 (2019)](https://ieeexplore.ieee.org/abstract/document/8734225). 
 * Barrachina-Muñoz, Sergio, et al. "Dynamic Channel Bonding in Spatially Distributed High-Density WLANs." [IEEE Transactions on Mobile Computing (2019)](https://ieeexplore.ieee.org/abstract/document/8642923). 
 * Wilhelmi, Francesc, et al. "Potential and pitfalls of multi-armed bandits for decentralized spatial reuse in wlans." [Journal of Network and Computer Applications 127 (2019)](https://www.sciencedirect.com/science/article/pii/S1084804518303655): 26-42. 
 * Barrachina-Muñoz, Sergio, et al. "To overlap or not to overlap: Enabling channel bonding in high-density WLANs." [Computer Networks 152 (2019)](https://www.sciencedirect.com/science/article/pii/S1389128618309745). 
