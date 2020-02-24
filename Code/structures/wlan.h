@@ -44,7 +44,7 @@
  */
 
  /**
- * performance_metrics.h: this file defines a WLAN and provides basic displaying methods
+ * wlan.h: this file defines a WLAN and provides basic displaying methods
  */
 
 #ifndef _AUX_WLAN_
@@ -92,7 +92,7 @@ struct Wlan
 	}
 
 	/**
-	 * Print the list of STAs IDs belonging to the WLAN
+	 * Print the list of STAs IDs belonging to the BSS
 	 */
 	void PrintStaIds(){
 		for(int s = 0; s < num_stas; s++){
@@ -102,7 +102,7 @@ struct Wlan
 	}
 
 	/**
-	 * Write STAs list of IDs in a given file
+	 * Write STAs list of IDs to an output file
 	 * @param "logger" [type Logger]: logger containing the file to write on
 	 */
 	void WriteStaIds(Logger logger){
@@ -114,7 +114,7 @@ struct Wlan
 	}
 
 	/**
-	 * Print general WLAN's information
+	 * Print general WLAN information
 	 */
 	void PrintWlanInfo(){
 		printf("%s WLAN %s:\n", LOG_LVL3, wlan_code.c_str());
@@ -126,7 +126,7 @@ struct Wlan
 	}
 
 	/**
-	 * Write general WLAN info in a given file
+	 * Write general WLAN info to an output file
 	 * @param "logger" [type Logger]: logger containing the file to write on
 	 * @param "header_string" [type std::string]: header string
 	 */

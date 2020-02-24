@@ -1,4 +1,4 @@
-/* Komondor IEEE 802.11ax Simulator
+	/* Komondor IEEE 802.11ax Simulator
  *
  * Copyright (c) 2017, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
@@ -55,7 +55,7 @@
 #include <sstream>
 
 #include "../list_of_macros.h"
-#include "../structures/performance_metrics.h"
+#include "../structures/performance.h"
 #include "../structures/node_configuration.h"
 #include "../structures/wlan.h"
 
@@ -154,7 +154,7 @@ void ComputeSimulationStatistics(Performance *performance_report, Configuration 
 */
 void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_logs, Logger &logger_simulation,
 		Performance *performance_report, Configuration *configuration_per_node, int total_nodes_number,
-		int total_wlans_number, double frame_length, int max_num_packets_aggregated, double simulation_time_komondor) {
+		int total_wlans_number, double simulation_time_komondor) {
 
 	// Compute global statistics
 	ComputeSimulationStatistics(performance_report, configuration_per_node, total_nodes_number, total_wlans_number);
@@ -162,20 +162,21 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 	// Print final statistics in console logs
 	if (print_system_logs) {
 		printf("\n%s General Statistics (NEW FUNCTION):\n", LOG_LVL1);
-		printf("%s Average throughput per WLAN = %.3f Mbps (%.2f pkt/s)\n",
-				LOG_LVL2, (total_throughput * pow(10,-6)/total_wlans_number),
-				(total_throughput / (double) frame_length) /total_wlans_number);
+		printf("%s Average throughput per WLAN = %.3f Mbps\n",
+			LOG_LVL2, (total_throughput * pow(10,-6) / total_wlans_number));
 		printf("%s Min. throughput = %.2f Mbps (%.2f pkt/s)\n",
-				LOG_LVL3, min_throughput * pow(10,-6), min_throughput / (frame_length * max_num_packets_aggregated));
+			LOG_LVL3, min_throughput * pow(10,-6), min_throughput / (configuration_per_node[0].frame_length
+			* configuration_per_node[0].max_num_packets_aggregated));
 		printf("%s Max. throughput = %.2f Mbps (%.2f pkt/s)\n",
-						LOG_LVL3, max_throughput * pow(10,-6), max_throughput / (frame_length * max_num_packets_aggregated));
+			LOG_LVL3, max_throughput * pow(10,-6), max_throughput / (configuration_per_node[0].frame_length
+			* configuration_per_node[0].max_num_packets_aggregated));
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, total_throughput * pow(10,-6));
 		printf("%s Total number of packets sent = %d\n", LOG_LVL3, total_data_packets_sent);
 		printf("%s Average number of data packets successfully sent per WLAN = %.2f\n",
-				LOG_LVL4, ((double) total_data_packets_sent/ (double) total_wlans_number));
+			LOG_LVL4, ((double) total_data_packets_sent/ (double) total_wlans_number));
 		printf("%s Average number of RTS packets lost due to slotted BO = %f (%.3f %% loss)\n",
-				LOG_LVL4, (double) total_rts_lost_slotted_bo/(double) total_wlans_number,
-				((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
+			LOG_LVL4, (double) total_rts_lost_slotted_bo/(double) total_wlans_number,
+			((double) total_rts_lost_slotted_bo *100/ (double) total_rts_cts_sent));
 		printf("%s Average number of packets sent per WLAN = %d\n", LOG_LVL3, (total_data_packets_sent/total_wlans_number));
 		printf("%s Proportional Fairness = %.2f\n", LOG_LVL2, proportional_fairness);
 		printf("%s Jain's Fairness = %.2f\n",  LOG_LVL2, jains_fairness);
@@ -185,8 +186,8 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 		printf("%s Av. expected waiting time = %.2f ms\n", LOG_LVL3, av_expected_waiting_time * pow(10,3));
 		printf("%s Average bandwidth used for transmitting = %.2f MHz\n",
 			LOG_LVL2, total_bandiwdth_tx / (double) total_wlans_number);
-		printf("%s Time channel was idle = %.2f s (%f%%)\n",  LOG_LVL2,
-			performance_report[0].sum_time_channel_idle, (100*performance_report[0].sum_time_channel_idle/simulation_time_komondor));
+		printf("%s Time channel was idle = %.2f s (%f%%)\n",  LOG_LVL2, performance_report[0].sum_time_channel_idle,
+			(100*performance_report[0].sum_time_channel_idle/simulation_time_komondor));
 		printf("\n\n");
 	}
 
@@ -227,8 +228,7 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 * @param "simulation_time_komondor" [type double]: total simulation time
 */
 void GenerateScriptOutput(int simulation_index, Performance *performance_report, Configuration *configuration_per_node,
-	Logger &logger_script, int total_wlans_number, int	total_nodes_number, int frame_length,
-	int max_num_packets_aggregated, Wlan *wlan_container, double simulation_time_komondor) {
+	Logger &logger_script, int total_wlans_number, int	total_nodes_number, Wlan *wlan_container, double simulation_time_komondor) {
 
 	// Generate the content for the "Script output"
 	switch(simulation_index){
@@ -309,8 +309,10 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 				configuration_per_node[2].capabilities.current_dcb_policy,
 				performance_report[0].num_packets_generated,
 				performance_report[2].num_packets_generated,
-				performance_report[0].throughput / (frame_length * max_num_packets_aggregated),
-				performance_report[2].throughput / (frame_length * max_num_packets_aggregated),
+				performance_report[0].throughput / (configuration_per_node[0].frame_length *
+					configuration_per_node[0].max_num_packets_aggregated),
+				performance_report[2].throughput / (configuration_per_node[2].frame_length *
+					configuration_per_node[2].max_num_packets_aggregated),
 				performance_report[0].average_rho,
 				performance_report[2].average_rho,
 				performance_report[0].average_delay * pow(10,3),
@@ -331,7 +333,8 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 		case 7:{
 			// Sergio logs for Paper #5: central WLAN scenario
 			fprintf(logger_script.file, ";%.0f;%d;%d;%d;%d;%d;%d;%d;%f;%f;%f;%f;%f\n",
-				performance_report[0].throughput / (frame_length * max_num_packets_aggregated),
+				performance_report[0].throughput / (configuration_per_node[0].frame_length *
+					configuration_per_node[0].max_num_packets_aggregated),
 				performance_report[0].rts_cts_sent,
 				performance_report[0].rts_cts_lost,
 				performance_report[0].rts_lost_slotted_bo,
@@ -354,7 +357,8 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 				"%.4f;%.2f;%.4f;%.4f;%.4f;%.4f\n",
 				configuration_per_node[0].capabilities.current_dcb_policy,
 				performance_report[0].num_packets_generated,
-				performance_report[0].throughput / (frame_length * max_num_packets_aggregated),
+				performance_report[0].throughput / (configuration_per_node[0].frame_length *
+					configuration_per_node[0].max_num_packets_aggregated),
 				performance_report[0].average_rho,
 				performance_report[0].average_delay * pow(10,3),
 				performance_report[0].average_utilization,
@@ -369,9 +373,11 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 		case 9:{
 			// Sergio logs for Paper #5: 6 WLAN random
 			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%d;%.4f;%.4f;%.4f;%.2f;%.2f;%.2f;%f;%f;%f\n",
-				total_throughput/(frame_length * max_num_packets_aggregated * total_wlans_number),
+				total_throughput/(configuration_per_node[0].frame_length *
+					configuration_per_node[0].max_num_packets_aggregated * total_wlans_number),
 				(total_throughput * pow(10,-6)/total_wlans_number),
-				min_throughput/(frame_length * max_num_packets_aggregated),
+				min_throughput/(configuration_per_node[0].frame_length *
+					configuration_per_node[0].max_num_packets_aggregated),
 				ix_wlan_min_throughput,
 				proportional_fairness,
 				jains_fairness,
@@ -381,7 +387,8 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 				total_bandiwdth_tx / (double) total_wlans_number,
 				av_expected_waiting_time * pow(10,3),
 				min_delay * pow(10,3),
-				max_throughput/(frame_length * max_num_packets_aggregated)
+				max_throughput/(configuration_per_node[0].frame_length *
+					configuration_per_node[0].max_num_packets_aggregated)
 				);
 			break;
 		}
@@ -633,10 +640,18 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		// RTOT algorithm for 11ax SR enhancement
 		case 14: {
-
 			//  - Throughput experienced/allocated for each device (AP and STAs)
 			char tpt_array[250] = "";
 			char aux_tpt[50];
+			// Total airtime
+			char airtime_array[250] = "";
+			char aux_airtime[50];
+			// Successful airtime
+			char sairtime_array[250] = "";
+			char aux_sairtime[50];
+			// - RSSI in STAs from the associated AP
+			char max_power_in_ap_per_wlan[1000] = "";
+			char aux_power_in_ap[250];
 
 			for(int i = 0; i < total_nodes_number; i ++) {
 				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
@@ -644,9 +659,34 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 					sprintf(aux_tpt, "%.2f", performance_report[i].throughput * pow(10,-6));
 					strcat(tpt_array, aux_tpt);
 					strcat(tpt_array, ";");
+					// Total airtime
+					sprintf(aux_airtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
+					 - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
+					strcat(airtime_array, aux_airtime);
+					strcat(airtime_array, ";");
+					// Successful airtime
+					sprintf(aux_sairtime, "%.2f", (performance_report[i].total_time_transmitting_in_num_channels[0]*100/simulation_time_komondor));
+					strcat(sairtime_array, aux_sairtime);
+					strcat(sairtime_array, ";");
+					// RSSI received from the AP (dBm)
+					// Increase the number of visited nodes
+					strcat(max_power_in_ap_per_wlan, "{");
+					for(int w = 0; w < total_wlans_number; w ++) {
+						// Array to store all details of STA
+						// RSSI received from the AP
+						sprintf(aux_power_in_ap, "%.2f", ConvertPower(PW_TO_DBM,
+							performance_report[i].max_received_power_in_ap_per_wlan[w]));
+						strcat(max_power_in_ap_per_wlan, aux_power_in_ap);
+						// Increase the number of visited nodes
+						if (w < total_wlans_number-1) strcat(max_power_in_ap_per_wlan, ",");
+					}
+					strcat(max_power_in_ap_per_wlan, "};");
 				}
 			}
-			fprintf(logger_script.file, ";%s\n", tpt_array);
+
+			fprintf(logger_script.file, ";%s%s%s%s\n", tpt_array, airtime_array, sairtime_array, max_power_in_ap_per_wlan);
+			break;
+
 		}
 
 		default:{

@@ -410,7 +410,7 @@ public class random_scenarios {
     public static void main(String args[]) throws IOException {
 
         // Parameters to be changed, according to the desired scenario type
-        String type_of_scenario = "sparse";
+        String type_of_scenario = "dense";
         String traffic_type = "medium";
         
         // Complete path building
@@ -420,11 +420,13 @@ public class random_scenarios {
         String output_path = "./output/*";
 
         // DEFINE THE CCA VALUES TO BE USED
-        int[] non_srg_obss_pd_list = new int[-62 + 82 + 1]; 
-        for (int i = 0; i < -62 + 82 + 1; i ++) {
-            non_srg_obss_pd_list[i] = -82 + i;
-        }
-
+//        int[] non_srg_obss_pd_list = new int[-62 + 82 + 1]; 
+//        for (int i = 0; i < -62 + 82 + 1; i ++) {
+//            non_srg_obss_pd_list[i] = -82 + i;
+//        }
+        int[] non_srg_obss_pd_list = new int[1]; 
+        non_srg_obss_pd_list[0] = -82;
+        
         int num_outputs = 1;
 
         Random r = new Random();

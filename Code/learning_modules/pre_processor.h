@@ -53,7 +53,7 @@
 #include "../list_of_macros.h"
 
 #include "../structures/node_configuration.h"
-#include "../structures/performance_metrics.h"
+#include "../structures/performance.h"
 
 #ifndef _AUX_PP_
 #define _AUX_PP_
@@ -63,22 +63,21 @@ class PreProcessor {
 	// Public items
 	public:
 
-		int agent_id;						///> Identified of the agent instantiating the PP
-		int num_actions;					///> Number of actions
-		int type_of_reward;					///> Index indicating the type of reward
-
+		// General parameters
 		int selected_strategy;				///> Index of the chosen action-selection strategy
 
-		int num_actions_channel;			///> Number of channel actions
-		int num_actions_sensitivity;		///> Number of sensitivity actions
-		int num_actions_tx_power;			///> Number of transmission power actions
-		int num_actions_dcb_policy;			///> Number of DCB policy actions
-
+		// Lists of configurations
 		int *list_of_channels;				///> List of channels to be selected
 		double *list_of_pd_values;			///> List of PD values to be selected
 		double *list_of_tx_power_values;	///> List of Tx Power values to be selected
 		int *list_of_dcb_policy;			///> List of DCB policies to be selected
 
+		// Actions management
+		int num_arms;					///> Number of actions
+		int num_arms_channel;			///> Number of channel actions
+		int num_arms_sensitivity;		///> Number of sensitivity actions
+		int num_arms_tx_power;			///> Number of transmission power actions
+		int num_arms_dcb_policy;			///> Number of DCB policy actions
 		int *indexes_selected_arm;			///> Indexes for each parameter that conform the current selected arm
 
 	// Private items
@@ -138,37 +137,30 @@ class PreProcessor {
 		* @return "reward" [type double]: reward to be passed to the ML method
 		*/
 		double GenerateReward(int type_of_reward, Performance performance) {
-			double reward;
+
+            double reward(0);
 			// Switch to select the reward according to the metric used (rewards must be normalized)
 			switch(type_of_reward){
-				/* PERFORMANCE_PACKETS_SENT:
+				/* REWARD_TYPE_PACKETS_SUCCESSFUL:
 				 * - The number of packets sent are taken into account
 				 * - The reward must be bounded by the maximum number of data packets
 				 * 	 that can be sent in each interval (e.g., packets that were sent but lost)
 				 */
-				case REWARD_TYPE_PACKETS_SENT:{
-					reward = performance.data_packets_sent/performance.data_packets_lost;
+				case REWARD_TYPE_PACKETS_SUCCESSFUL:{
+					reward = (performance.data_packets_sent-performance.data_packets_lost)/performance.data_packets_sent;
 					break;
 				}
-				/* PERFORMANCE_THROUGHPUT:
+				/* REWARD_TYPE_AVERAGE_THROUGHPUT:
 				 * - The throughput experienced during the last period is taken into account
 				 * - The reward must be bounded by the maximum throughput that would be experienced
 				 * 	 (e.g., consider the data rate granted by the modulation and the total time)
 				 */
-				case REWARD_TYPE_THROUGHPUT:{
+				case REWARD_TYPE_AVERAGE_THROUGHPUT:{
 					if (performance.max_bound_throughput == 0) {
 						reward = 0;
 					} else {
 						reward = (double) performance.throughput/performance.max_bound_throughput;
 					}
-					break;
-				}
-				/* REWARD_TYPE_PACKETS_GENERATED:
-				 * -
-				 */
-				case REWARD_TYPE_PACKETS_GENERATED:{
-					reward = (performance.num_packets_generated - performance.num_packets_dropped) /
-						performance.num_packets_generated;
 					break;
 				}
 				/* REWARD_TYPE_MIN_RSSI:
@@ -181,6 +173,27 @@ class PreProcessor {
 					}
 					break;
 				}
+				/* REWARD_TYPE_MAX_DELAY:
+				 * -
+				 */
+				case REWARD_TYPE_MAX_DELAY:{
+					reward = performance.average_delay;
+					break;
+				}
+				/* REWARD_TYPE_AVERAGE_DELAY:
+				 * -
+				 */
+				case REWARD_TYPE_AVERAGE_DELAY:{
+					reward = performance.average_delay;
+					break;
+				}
+                /* REWARD_TYPE_CHANNEL_OCCUPANCY:
+                 * -
+                 */
+				case REWARD_TYPE_CHANNEL_OCCUPANCY:{
+					reward = performance.successful_channel_occupancy;/// (SimTime() - performance.timestamp);
+				    break;
+				}
 				/* Default */
 				default:{
 					printf("[Pre-Processor] ERROR: '%d' is not a correct type of performance indicator\n", type_of_reward);
@@ -189,6 +202,7 @@ class PreProcessor {
 					break;
 				}
 			}
+//			printf("Reward = %f\n",reward);
 			return reward;
 		}
 
@@ -228,6 +242,33 @@ class PreProcessor {
 		/***********************/
 
 		/**
+		* Initialize actions
+		* @return "action_array" [type *Action]: initialized array of Action structs
+		*/
+		Action* InitializeActions(){
+			Action *action_array = new Action[num_arms];
+			int *indexes_arm = new int[NUM_FEATURES_ACTIONS];
+			for(int i = 0; i < num_arms; ++i) {
+				index2values(indexes_arm, i, num_arms_channel,num_arms_sensitivity,
+					num_arms_tx_power, num_arms_dcb_policy);
+				action_array[i].id = i;
+				// Configuration
+				action_array[i].channel = list_of_channels[indexes_arm[0]];
+				action_array[i].cca = list_of_pd_values[indexes_arm[1]];
+				action_array[i].tx_power = list_of_tx_power_values[indexes_arm[2]];
+				action_array[i].dcb_policy = list_of_dcb_policy[indexes_arm[3]];
+				// Performance
+				action_array[i].instantaneous_reward = 0;
+				action_array[i].instantaneous_reward = 0;
+				action_array[i].times_played = 0;
+				action_array[i].average_reward_since_last_cc_request = 0;
+				action_array[i].times_played_since_last_cc_request = 0;
+//				action_array[i].PrintAction();
+			}
+			return action_array;
+		}
+
+		/**
 		* Encapsulate the configuration of a node to be sent
 		* @param "configuration" [type Configuration]: current configuration report from the AP
 		* @param "action_ix" [type int]: index of the action that corresponds to the new configuration
@@ -235,8 +276,8 @@ class PreProcessor {
 		*/
 		Configuration GenerateNewConfigurationBandits(Configuration configuration, double ml_output){
 			// Find which parameters correspond to the selected arm
-			index2values(indexes_selected_arm, (int) ml_output, num_actions_channel,
-				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
+			index2values(indexes_selected_arm, (int) ml_output, num_arms_channel,
+				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
 			// Update each parameter according to the configuration provided by the MAB
 			int new_primary = list_of_channels[indexes_selected_arm[0]];
 			double new_pd = list_of_pd_values[indexes_selected_arm[1]];
@@ -248,11 +289,78 @@ class PreProcessor {
 			new_configuration = configuration;
 			//new_configuration.timestamp = sim_time;						// Timestamp
 			new_configuration.selected_primary_channel = new_primary;	// Primary
-			new_configuration.selected_pd = new_pd;					// pd
+			if (configuration.spatial_reuse_enabled) {
+				new_configuration.non_srg_obss_pd = new_pd;
+			} else {
+				new_configuration.selected_pd = new_pd;
+			}
 			new_configuration.selected_tx_power = new_tx_power;			// TX Power
 			new_configuration.selected_dcb_policy = new_dcb_policy;		// DCB policy
 			return new_configuration;
 		}
+
+		/**
+		* Find the action index according to the global configuration report
+		* @param "configuration" [type Configuration]: configuration report including all the parameters currently selected
+		* @param "indexes_selected_arm" [type int*]: array containing the index of each parameter chosen by the WLAN
+		* @return "action_ix" [type Configuration]: index of the action that corresponds to the input configuration
+		*/
+		int FindActionIndexFromConfigurationBandits(Configuration configuration, int* &indexes_selected_arm) {
+
+		    // Find the index of each chosen parameter
+			int index_channel = -1;
+			int index_pd = -1;
+			int index_tx_power = -1;
+			int index_dcb_policy = -1;
+
+			// Channel
+			for(int i = 0; i < num_arms_channel; i++) {
+				if(configuration.selected_primary_channel == list_of_channels[i]) {
+					index_channel = i;
+				}
+			}
+			// Packet Detection (PD) threshold
+			double selected_pd;
+			if(configuration.spatial_reuse_enabled) {
+				selected_pd = configuration.non_srg_obss_pd;
+			} else {
+				selected_pd = configuration.selected_pd;
+			}
+			for(int i = 0; i < num_arms_sensitivity; i++) {
+				if(selected_pd == list_of_pd_values[i]) {
+					index_pd = i;
+				}
+			}
+			// Tx Power
+			for(int i = 0; i < num_arms_tx_power; i++) {
+				if(configuration.selected_tx_power == list_of_tx_power_values[i]) {
+					index_tx_power = i;
+				}
+			}
+			// DCB policy
+			for(int i = 0; i < num_arms_dcb_policy; i++) {
+				if(configuration.selected_dcb_policy == list_of_dcb_policy[i]) {
+					index_dcb_policy = i;
+				}
+			}
+			// Update the index of each chosen parameter
+			indexes_selected_arm[0] = index_channel;
+			indexes_selected_arm[1] = index_pd;
+			indexes_selected_arm[2] = index_tx_power;
+			indexes_selected_arm[3] = index_dcb_policy;
+			// Find the action ix and return it
+			int action_ix = values2index(indexes_selected_arm, num_arms_channel,
+				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
+//			PrintActionBandits(action_ix);
+
+			return action_ix;
+		}
+
+		/******************/
+		/******************/
+		/*  RTOT METHODS  */
+		/******************/
+		/******************/
 
 		/**
 		* Encapsulate the configuration of a node to be sent
@@ -270,52 +378,6 @@ class PreProcessor {
 			return new_configuration;
 		}
 
-		/**
-		* Find the action index according to the global configuration report
-		* @param "configuration" [type Configuration]: configuration report including all the parameters currently selected
-		* @param "indexes_selected_arm" [type int*]: array containing the index of each parameter chosen by the WLAN
-		* @return "action_ix" [type Configuration]: index of the action that corresponds to the input configuration
-		*/
-		int FindActionIndexFromConfigurationBandits(Configuration configuration, int* &indexes_selected_arm) {
-			// Find the index of each chosen parameter
-			int index_channel = -1;
-			int index_pd = -1;
-			int index_tx_power = -1;
-			int index_dcb_policy = -1;
-			// Channel
-			for(int i = 0; i < num_actions_channel; i++) {
-				if(configuration.selected_primary_channel == list_of_channels[i]) {
-					index_channel = i;
-				}
-			}
-			// Packet Detection (PD) threshold
-			for(int i = 0; i < num_actions_sensitivity; i++) {
-				if(configuration.selected_pd == list_of_pd_values[i]) {
-					index_pd = i;
-				}
-			}
-			// Tx Power
-			for(int i = 0; i < num_actions_tx_power; i++) {
-				if(configuration.selected_tx_power == list_of_tx_power_values[i]) {
-					index_tx_power = i;
-				}
-			}
-			// DCB policy
-			for(int i = 0; i < num_actions_dcb_policy; i++) {
-				if(configuration.selected_dcb_policy == list_of_dcb_policy[i]) {
-					index_dcb_policy = i;
-				}
-			}
-			// Update the index of each chosen parameter
-			indexes_selected_arm[0] = index_channel;
-			indexes_selected_arm[1] = index_pd;
-			indexes_selected_arm[2] = index_tx_power;
-			indexes_selected_arm[3] = index_dcb_policy;
-			// Find the action ix and return it
-			int action_ix = values2index(indexes_selected_arm, num_actions_channel,
-				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
-			return action_ix;
-		}
 
 		/*************************/
 		/*************************/
@@ -328,8 +390,8 @@ class PreProcessor {
 		* @param "action_ix" [type int]: index of the action to be printed
 		*/
 		void PrintActionBandits(int action_ix){
-			index2values(indexes_selected_arm, action_ix, num_actions_channel,
-				num_actions_sensitivity, num_actions_tx_power, num_actions_dcb_policy);
+			index2values(indexes_selected_arm, action_ix, num_arms_channel,
+				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
 			printf("%s Action %d ([%d %d %d %d]\n", LOG_LVL2,
 				action_ix, indexes_selected_arm[0], indexes_selected_arm[1], indexes_selected_arm[2], indexes_selected_arm[3]);
 			printf("%s Channel: %d\n", LOG_LVL3, list_of_channels[indexes_selected_arm[0]]);
@@ -341,13 +403,44 @@ class PreProcessor {
 		}
 
 		/**
+		* Print the list of available actions
+		* @param "action_ix" [type int]: index of the action to be printed
+		*/
+		void PrintOrWriteAvailableActions(int print_or_write, char string_device[],
+			int save_logs, Logger &logger, double sim_time, int *list_of_available_actions) {
+
+			switch(print_or_write) {
+				case PRINT_LOG: {
+					printf("%s List of available actions: ", string_device);
+					for (int i = 0; i < num_arms; ++i) {
+						printf("%d ", list_of_available_actions[i]);
+					}
+					printf("\n");
+					break;
+				}
+				case WRITE_LOG: {
+					LOGS(save_logs,logger.file,
+						"%.15f;%s;%s;%s List of available actions: ",
+						sim_time, string_device, LOG_C00, LOG_LVL2);
+					for (int i = 0; i < num_arms; ++i) {
+						LOGS(save_logs, logger.file, "%d ", list_of_available_actions[i]);
+					}
+					LOGS(save_logs,logger.file, "\n");
+				}
+			}
+
+		}
+
+		/**
 		* Print the available reward types
 		*/
 		void PrintAvailableRewardTypes(){
-			printf("%s Available types of rewards:\n%s REWARD_TYPE_PACKETS_SENT (%d)\n"
-				"%s REWARD_TYPE_THROUGHPUT (%d)\n%s REWARD_TYPE_PACKETS_GENERATED (%d)\n",
-				LOG_LVL2, LOG_LVL3, REWARD_TYPE_PACKETS_SENT, LOG_LVL3, REWARD_TYPE_THROUGHPUT,
-				LOG_LVL3, REWARD_TYPE_PACKETS_GENERATED);
+			printf("%s Available types of rewards:\n%s REWARD_TYPE_PACKETS_SUCCESSFUL (%d)\n"
+				"%s REWARD_TYPE_AVERAGE_THROUGHPUT (%d)\n%s REWARD_TYPE_MIN_RSSI (%d)\n"
+				"%s REWARD_TYPE_MAX_DELAY (%d)\n%s REWARD_TYPE_AVERAGE_DELAY (%d)\n%s REWARD_TYPE_CHANNEL_OCCUPANCY (%d)",
+				LOG_LVL2, LOG_LVL3, REWARD_TYPE_PACKETS_SUCCESSFUL, LOG_LVL3, REWARD_TYPE_AVERAGE_THROUGHPUT,
+				LOG_LVL3, REWARD_TYPE_MIN_RSSI, LOG_LVL3, REWARD_TYPE_MAX_DELAY, LOG_LVL3, REWARD_TYPE_AVERAGE_DELAY,
+				LOG_LVL3, REWARD_TYPE_CHANNEL_OCCUPANCY);
 		}
 
 		/**
@@ -356,6 +449,61 @@ class PreProcessor {
 		void PrintAvailableLearningMechanisms(){
 			printf("%s Available types of learning mechanisms:\n", LOG_LVL2);
 			printf("%s MULTI_ARMED_BANDITS (%d)\n", LOG_LVL3, MULTI_ARMED_BANDITS);
+		}
+
+		/**
+		 * Write the performance of the Agent into the agent logs file
+		 * @param "performance_to_write" [type Performance]: performance object to be written
+		 */
+		void WritePerformance(Logger &logger, double sim_time, char string_device[],
+				Performance performance, int type_of_reward) {
+
+			LOGS(TRUE, logger.file, "%.15f;%s;%s;%s Performance:\n", sim_time, string_device, LOG_C03, LOG_LVL2);
+			switch(type_of_reward) {
+				// Packets successful ratio
+				case REWARD_TYPE_PACKETS_SUCCESSFUL:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Packet successful ratio = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3,
+						(double)((performance.data_packets_sent-performance.data_packets_lost)/performance.data_packets_sent));
+					break;
+				}
+				// Average Throughput (Mbps)
+				case REWARD_TYPE_AVERAGE_THROUGHPUT:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Average throughput = %.2f Mbps\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.throughput * pow(10,-6));
+					break;
+				}
+				// Minimum RSSI
+				case REWARD_TYPE_MIN_RSSI:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Min RSSI = %.2f dBm\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.rssi_list_per_sta[0]);
+					break;
+				}
+				// Maximum delay
+				case REWARD_TYPE_MAX_DELAY:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Max delay = %.2f ms\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.average_delay * pow(10,-3));
+					break;
+				}
+				// Average delay
+				case REWARD_TYPE_AVERAGE_DELAY:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Average delay = %.2f ms\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.average_delay * pow(10,-3));
+					break;
+				}
+				// Average delay
+				case REWARD_TYPE_CHANNEL_OCCUPANCY:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Successful channel successful_channel_occupancy = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.successful_channel_occupancy);
+					break;
+				}
+			}
+
 		}
 
 		/***********************/
@@ -403,10 +551,14 @@ class PreProcessor {
 		 */
 		void InitializeVariables(){
 			// Lists of modifiable parameters
-			list_of_channels = new int[num_actions_channel];
-			list_of_pd_values = new double[num_actions_sensitivity];
-			list_of_tx_power_values = new double[num_actions_tx_power];
-			list_of_dcb_policy = new int[num_actions_dcb_policy];
+			list_of_channels = new int[num_arms_channel];
+			list_of_pd_values = new double[num_arms_sensitivity];
+			list_of_tx_power_values = new double[num_arms_tx_power];
+			list_of_dcb_policy = new int[num_arms_dcb_policy];
+//			list_of_available_actions = new int[num_arms];
+//			for (int i = 0 ; i < num_arms; ++i) {
+//				list_of_available_actions[i] = 1;
+//			}
 			// Variable to keep track of the indexes belonging to each parameter's list
 			indexes_selected_arm = new int[NUM_FEATURES_ACTIONS]; // 4 features considered
 		}

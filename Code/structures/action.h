@@ -50,24 +50,109 @@
 #include "../list_of_macros.h"
 #include "logger.h"
 
+#ifndef _AUX_ACTION_
+#define _AUX_ACTION_
+
 // Action info
 struct Action
 {
+
+	int id;				///> Action identifier
+
+	// Configuration - Only channel, sensitivity, transmission power and DCB policy are considered at this moment
 	int channel;		///> Channel selected
 	double cca;			///> CCA level
 	double tx_power;	///> Tx Power
 	int dcb_policy;		///> DCB policy
 
+	// Full run information
+	double instantaneous_reward;    ///> Last reward experienced by playing the action
+	double cumulative_reward;       ///> Cumulative reward obtained in total
+	int times_played;               ///> Times the action has been played in total
+
+	// Information since last request from the controller
+	Performance performance_since_last_cc_request;     ///> Last performance object obtained since the last CC request
+	double cumulative_reward_since_last_cc_request;    ///> Cumulative reward obtained since the last CC request
+	int times_played_since_last_cc_request;            ///> Times the action has been played since the last CC request
+	double average_reward_since_last_cc_request;       ///> Average reward experienced since the last CC request
+
 	/**
-	 * Print the list of STAs IDs belonging to the WLAN
+	 * Print the action
 	 */
-	void PrintAction(){
-		printf("------------\n Action:\n");
+	void PrintAction() {
+		printf("------------\n Action %d:\n", id);
 		printf(" * channel = %d\n", channel);
-		printf(" * cca = %f\n", cca);
-		printf(" * tx_power = %f\n", tx_power);
+		printf(" * cca = %f dBm\n", ConvertPower(PW_TO_DBM, cca));
+		printf(" * tx_power = %f dBm\n", ConvertPower(PW_TO_DBM, tx_power));
 		printf(" * dcb_policy = %d\n", dcb_policy);
 		printf("------------\n");
 	}
 
+	/**
+	 * Write the action to the agent logs file
+	 * @param "logger" [type Logger]: logger object
+	 * @param "save_logs" [type int]: bool indicating whether to save logs or not
+	 * @param "sim_time" [type double]: simulation time
+     * @param "string_device" [type *char]: code of the device writing the logs
+	 */
+	void WriteAction(Logger logger, int save_logs, double sim_time, char string_device[]) {
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Action (%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s channel = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, channel);
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cca = %f dBm\n", sim_time, string_device, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, cca));
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s tx_power = %f dBm\n", sim_time, string_device, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, tx_power));
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s dcb_policy = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, dcb_policy);
+	}
+
+	/**
+	 * Print the performance of the action
+	 */
+	void PrintRewardInformation() {
+		printf("------------\n Reward information (a%d):\n", id);
+		printf(" * instantaneous_reward = %f\n", instantaneous_reward);
+		printf(" * cumulative_reward = %f\n", cumulative_reward);
+		printf(" * times_played = %d\n", times_played);
+		printf("------------\n");
+	}
+
+    /**
+     * Write the performance of the action
+     * @param "logger" [type Logger]: logger object
+     * @param "save_logs" [type int]: bool indicating whether to save logs or not
+     * @param "sim_time" [type double]: simulation time
+     * @param "string_device" [type *char]: code of the device writing the logs
+     */
+    void WriteRewardInformation(Logger logger, int save_logs, double sim_time, char string_device[]) {
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Reward information (a%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s instantaneous_reward = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, instantaneous_reward);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cumulative_reward = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, cumulative_reward);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s times_played = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, times_played);
+    }
+
+    /**
+     * Print the statistics collected for the controller (using CC iterations)
+     */
+        void PrintControllerStatistics() {
+            printf("------------\n Information since last CC request (a%d):\n", id);
+            printf(" * cumulative_reward_since_last_request = %f\n", cumulative_reward_since_last_cc_request);
+            printf(" * times_played_since_last_request = %d\n", times_played_since_last_cc_request);
+            printf(" * average_reward_since_last_request = %f\n", average_reward_since_last_cc_request);
+            printf("------------\n");
+        }
+
+    /**
+     * Write the action to the agent logs file
+     * @param "agent_logger" [type Logger]: logger object
+     * @param "save_agent_logs" [type int]: bool indicating whether to save logs or not
+     * @param "sim_time" [type double]: simulation time
+     * @param "string_device" [type *char]: code of the device writing the logs
+     */
+    void WriteControllerStatistics(Logger logger, int save_logs, double sim_time, char string_device[]) {
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Information since last CC request (a%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cumulative_reward_since_last_request = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, cumulative_reward_since_last_cc_request);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s times_played_since_last_request = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, times_played_since_last_cc_request);
+        LOGS(save_logs, logger.file, "%.15f;%s;%s;%s average_reward_since_last_request = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, average_reward_since_last_cc_request);
+    }
+
 };
+
+#endif

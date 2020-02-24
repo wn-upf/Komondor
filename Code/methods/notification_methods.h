@@ -344,7 +344,7 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double pd,
 	int packet_lost;
 	double per (0);
 
-	// Try to decode when power received is greater than pd
+	// Try to decode when power received is greater than the packet detect (pd) threshold
 	if(sinr < capture_effect || power_rx_interest < pd) {
 		per = 1;
 	} else {
@@ -451,9 +451,10 @@ int IsPacketLost(int primary_channel, Notification incoming_notification, Notifi
 * @param "z" [type double]: z position of the node sending the notification
 * @return "tx_info" [type TxInfo]: transmission information to be included in a notification
 */
+
 TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double ack_duration,
 		double rts_duration, double cts_duration, double current_tx_power, int num_channels_tx,
-		double tx_gain,	int bits_ofdm_sym, double x, double y, double z) {
+		int bits_ofdm_sym, double x, double y, double z, double flag_change_in_tx_power) {
 
 	TxInfo tx_info;
 	tx_info.SetSizeOfMCS(4);	// TODO: make size dynamic
@@ -465,12 +466,12 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	tx_info.rts_duration = rts_duration;
 	tx_info.cts_duration = cts_duration;
 	tx_info.tx_power = ComputeTxPowerPerChannel(current_tx_power, num_channels_tx);
-	tx_info.tx_gain = tx_gain;
 	tx_info.bits_ofdm_sym = bits_ofdm_sym;
 	tx_info.x = x;
 	tx_info.y = y;
 	tx_info.z = z;
 	tx_info.nav_time = 0;
+    tx_info.flag_change_in_tx_power = flag_change_in_tx_power;
 
 	return tx_info;
 

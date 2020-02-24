@@ -47,19 +47,18 @@
  * ml_model.h: this file contains functions related to the agents' operation
  *
  *  - This file contains the methods used by the ML Model in the Machine Learning (ML) pipeline.
- * 	 In particular, this module manages the ML operation
+ * 	 In particular, this module applies the actual ML operation
  */
 
 #include "../list_of_macros.h"
 
 #include "../structures/node_configuration.h"
-#include "../structures/performance_metrics.h"
+#include "../structures/performance.h"
+#include "../structures/controller_report.h"
 
-#include "../network_optimization/channel_assignment/centralized_graph_coloring.h"
-#include "../network_optimization/spatial_reuse/rtot_algorithm.h"
-
-#include "/multi_armed_bandits/multi_armed_bandits.h"
-
+#include "/network_optimization_methods/centralized_action_banning.h"
+#include "/network_optimization_methods/multi_armed_bandits.h"
+#include "/network_optimization_methods/rtot_algorithm.h"
 
 #ifndef _AUX_ML_MODEL_
 #define _AUX_ML_MODEL_
@@ -69,38 +68,34 @@ class MlModel {
 	// Public items
 	public:
 
+		// Generic
+		int agent_id;					///> ID of the agent calling the ML method
 		int learning_mechanism;			///> Index of the learning mechanism employed
+		int action_selection_strategy;	///> Index of the chosen action-selection strategy
+
+		// Logs
+		int save_logs;		///> Flag to indicate whether to save logs or not
+		int print_logs;		///> Flag to indicate whether to print logs or not
 
 		// Information of the network
 		int agents_number;				///> Number of agents
 		int wlans_number;				///> Number of WLANs
 		int total_nodes_number;			///> Number of nodes
-
-		// Parameters
 		int num_channels;				///> Number of channels
 
-		// Logs
-		int save_controller_logs;		///> Flag to indicate whether to save the controller logs or not
-		int print_controller_logs;		///> Flag to indicate whether to print the controller logs or not
-		int save_agent_logs;			///> Flag to indicate whether to save the agents logs or not
-		int print_agent_logs;			///> Flag to indicate whether to print the agents logs or not
-
-		GraphColoring graph_coloring;	///> Graph coloring object
-
-		int agent_id;					///> ID of the agent calling the ML method
-
-		// Multi-armed bandits
-		MultiArmedBandit mab_agent;		///> Multi-Armed Bandit object
-		int action_selection_strategy;	///> Index of the chosen action-selection strategy
-		int num_actions;				///> Number of actions (Bandits)
-
-		// RTOT algorithm
-		RtotAlgorithm rtot_alg;
-		int num_stas;
-		double margin;
+		// Variables used by some of the ML methods
+		int num_arms;				///> Number of actions (Bandits)
+		int max_number_of_actions;		///> Maximum number of actions among all the agents (centralized)
+		int num_stas;					///> Number of STAs in a BSS
+		double margin_rtot;				///> Margin [dB] used by the RTOT algorithm
 
 	// Private items
 	private:
+
+		// Objects belonging to every implemented optimization method
+		MultiArmedBandit mab_agent;				///> Multi-Armed Bandit
+		RtotAlgorithm rtot_alg;					///> RTOT algorithm
+		CentralizedActionBanning action_banner;	///> Centralized action-banning
 
 	// Methods
 	public:
@@ -112,24 +107,20 @@ class MlModel {
 		/********************************/
 
 		/**
-		* Method for computing the global configuration
-		* @param "configuration_array" [type Configuration*]: array of configurations of each AP (to be updated by this method)
-		* @param "performance_array" [type Performance*]: array of performances of each AP
+		* Method for computing the global configuration at a Central Controller (CC)
+		* @param "controller_report" [type ControllerReport]: report provided by the CC
 		* @param "central_controller_logger" [type Logger]: logger object to write logs
 		* @param "sim_time" [type double]: simulation time at the moment of calling the function (for logging purposes)
 		*/
-		void ComputeGlobalConfiguration(Configuration *configuration_array, Performance *performance_array,
-				Logger &central_controller_logger, double sim_time) {
+		void ComputeGlobalConfiguration(Configuration *configuration_array, ControllerReport &controller_report,
+			Logger &central_controller_logger, double sim_time) {
 
 			switch(learning_mechanism) {
-				/* GRAPH COLORING */
-				case GRAPH_COLORING: {
-					// Apply Hminmax to decide the new channels configuration
-					graph_coloring.UpdateConfiguration(configuration_array,
-						performance_array, central_controller_logger, sim_time);
-					break;
-				}
-				case RTOT_ALGORITHM: {
+				/* ACTION-BANNING */
+				case CENTRALIZED_ACTION_BANNING: {
+					// Ban configurations based on the observed performance
+					action_banner.UpdateConfiguration(configuration_array, controller_report, central_controller_logger, sim_time);
+//					controller_report.PrintOrWriteAvailableActions(PRINT_LOG, central_controller_logger, save_logs, sim_time);
 					break;
 				}
 				default: {
@@ -140,6 +131,12 @@ class MlModel {
 
 		}
 
+		/************************************/
+		/************************************/
+		/*  DECENTRALIZED LEARNING METHODS  */
+		/************************************/
+		/************************************/
+
 		/**
 		* Method for computing an individual configuration (decentralized case)
 		* @param "arm_ix" [type int]: index of the current selected arm (bandits)
@@ -148,19 +145,25 @@ class MlModel {
 		* @param "sim_time" [type double]: simulation time at the moment of calling the function (for logging purposes)
 		* @return "new_action" [type int]: index of the new selected action
 		*/
-		double ComputeIndividualConfiguration(int arm_ix, double reward, Logger &agent_logger, double sim_time) {
-			double new_action(0);
+		int ComputeIndividualConfiguration(int arm_ix, double reward,
+			Logger &agent_logger, double sim_time, int *available_arms) {
+
+			int new_action(0);
 			switch(learning_mechanism) {
 				/* MULTI_ARMED_BANDITS */
 				case MULTI_ARMED_BANDITS: {
 					// Update the reward of the last played configuration
 					mab_agent.UpdateArmStatistics(arm_ix, reward);
 					// Select a new action according to the updated information
-					new_action = (double) mab_agent.SelectNewAction();
+					new_action = mab_agent.SelectNewAction(available_arms, arm_ix);
 					break;
 				}
 				case RTOT_ALGORITHM: {
 					new_action = rtot_alg.UpdateObssPd(reward);
+					break;
+				}
+				case CENTRALIZED_ACTION_BANNING: {
+					printf("[ML MODEL] ERROR, Action-Banning is not a decentralized ML method. Use 'CentralizedActionBanning()' instead.\n");
 					break;
 				}
 				default: {
@@ -171,12 +174,11 @@ class MlModel {
 			return new_action;
 		};
 
-
-		/*******************/
-		/*******************/
-		/*  OHTER METHODS  */
-		/*******************/
-		/*******************/
+		/******************************/
+		/******************************/
+		/*  VARIABLES INITIALIZATION  */
+		/******************************/
+		/******************************/
 
 		/**
 		* Initialize variables in the ML model
@@ -184,36 +186,34 @@ class MlModel {
 		void InitializeVariables() {
 
 			switch(learning_mechanism) {
-				/* GRAPH COLORING */
-				case GRAPH_COLORING: {
-					// Initialize the graph coloring method
-					graph_coloring.save_controller_logs = save_controller_logs;
-					graph_coloring.print_controller_logs = print_controller_logs;
-					graph_coloring.agents_number = agents_number;
-					graph_coloring.wlans_number = wlans_number;
-					graph_coloring.num_channels = num_channels;
-					graph_coloring.total_nodes_number = total_nodes_number;
-					// Initialize variables characteristic to the graph coloring method
-					graph_coloring.InitializeVariables();
+				/* Monitoring */
+				case MONITORING_ONLY:{
+					// DO NOTHING
 					break;
 				}
-				/* ACTION BANNING */
-				case ACTION_BANNING: {
+				/* Centralized action-banning */
+				case CENTRALIZED_ACTION_BANNING: {
+					action_banner.save_logs = save_logs;
+					action_banner.print_logs = print_logs;
+					action_banner.agents_number = agents_number;
+					action_banner.max_number_of_actions = max_number_of_actions;
+					action_banner.InitializeVariables();
 					break;
 				}
 				/* Multi-Armed Bandits */
 				case MULTI_ARMED_BANDITS: {
 					mab_agent.agent_id = agent_id;
-					mab_agent.save_agent_logs = save_agent_logs;
-					mab_agent.print_agent_logs = print_agent_logs;
+					mab_agent.save_logs = save_logs;
+					mab_agent.print_logs = print_logs;
 					mab_agent.action_selection_strategy = action_selection_strategy;
-					mab_agent.num_actions = num_actions;
+					mab_agent.num_arms = num_arms;
 					mab_agent.InitializeVariables();
 					break;
 				}
+				/* RTOT Algorithm for decentralized spatial reuse */
 				case RTOT_ALGORITHM: {
 					rtot_alg.num_stas = num_stas;
-					rtot_alg.margin = margin;
+					rtot_alg.margin_rtot = margin_rtot;
 					rtot_alg.InitializeVariables();
 					break;
 				}
@@ -231,6 +231,12 @@ class MlModel {
 			}
 		}
 
+		/*************************/
+		/*************************/
+		/*  PRINT/WRITE METHODS  */
+		/*************************/
+		/*************************/
+
 		/**
 		* Print or write statistics of the ML Model
 		* @param "write_or_print" [type int]: variable to indicate whether to print on the  console or to write on the the output logs file
@@ -240,9 +246,9 @@ class MlModel {
 		void PrintOrWriteStatistics(int write_or_print, Logger &logger, double sim_time) {
 
 			switch(learning_mechanism) {
-				/* GRAPH COLORING */
-				case GRAPH_COLORING: {
-					graph_coloring.PrintOrWriteStatistics(write_or_print, logger);
+				/* MONITORING */
+				case MONITORING_ONLY:{
+					// DO NOTHING
 					break;
 				}
 				/* Multi-Armed Bandits */
@@ -251,8 +257,11 @@ class MlModel {
 					break;
 				}
 				case RTOT_ALGORITHM: {
-//					rtot_alg.PrintOrWriteInformation(write_or_print, logger);
-//					rtot_alg.PrintOrWriteStatistics(write_or_print, logger);
+					rtot_alg.PrintOrWriteStatistics(write_or_print, logger);
+					break;
+				}
+				case CENTRALIZED_ACTION_BANNING: {
+                    action_banner.PrintOrWriteStatistics(write_or_print, logger);
 					break;
 				}
 				/* UNKNOWN */
@@ -271,10 +280,9 @@ class MlModel {
 		*/
 		void PrintAvailableLearningMechanisms(){
 			printf("%s Available types of learning mechanisms:\n", LOG_LVL2);
-			printf("%s MULTI_ARMED_BANDITS (%d)\n", LOG_LVL3, MULTI_ARMED_BANDITS);
-			printf("%s GRAPH_COLORING (%d)\n", LOG_LVL3, GRAPH_COLORING);
-			printf("%s ACTION_BANNING (%d)\n", LOG_LVL3, ACTION_BANNING);
-			printf("%s RTOT_ALGORITHM (%d)\n", LOG_LVL3, RTOT_ALGORITHM);
+			printf("%s MULTI_ARMED_BANDITS (#%d)\n", LOG_LVL3, MULTI_ARMED_BANDITS);
+			printf("%s ACTION_BANNING (#%d)\n", LOG_LVL3, ACTION_BANNING);
+			printf("%s RTOT_ALGORITHM (#%d)\n", LOG_LVL3, RTOT_ALGORITHM);
 		}
 
 };

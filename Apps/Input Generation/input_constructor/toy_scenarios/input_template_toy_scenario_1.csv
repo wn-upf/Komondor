@@ -1,2 +1,2 @@
-//map_width;map_heigth;M;N_MIN;N_MAX;d_min_AP_AP;d_min_AP_STA;d_max_AP_STA;legacy_ratio;c_sys_width;cont_wind;cont_wind_stage;tpc_min;tpc_default;tpc_max;cca_min;cca_default;cca_max;tx_antenna_gain;rx_antenna_gain;channel_bonding;modulation_default;central_freq;lambda;ieee_protocol;traffic_load [pkt/s];bss_color;spatial_reuse_group;non_srg_obss_pd;srg_obss_pd
-100;100;2;1;1;6;1;1;0;1;16;5;20;20;20;-82;-82;-82;0;0;4;0;5;10000;1;1000;0;0;-82;-82
+//map_width;map_heigth;M;N_MIN;N_MAX;d_min_AP_AP;d_min_AP_STA;d_max_AP_STA;legacy_ratio;c_sys_width;cw_adaptation;cont_wind;cont_wind_stage;tpc_default;cca_default;channel_bonding;central_freq;traffic_model;traffic_load;packet length;num_packets_aggregated;ce_model;ce_thr;constant_per;pifs_activated;bss_color;spatial_reuse_group;non_srg_obss_pd;srg_obss_pd
+100;100;2;1;1;6;1;1;0;1;0;16;5;20;-82;4;5;99;1000;12000;64;0;10;0;0;0;0;-82;-82

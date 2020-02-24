@@ -83,21 +83,21 @@ component Komondor : public CostSimEng {
 	public:
 
 		void Setup(double simulation_time_komondor, int save_system_logs, int save_node_logs, int save_agent_logs,
-			int print_node_logs, int print_system_logs, int print_agent_logs, const char *system_filename,
-			const char *nodes_filename, const char *script_filename, const char *simulation_code, int seed_console,
-			int agents_enabled, const char *agents_filename);
+			int print_node_logs, int print_system_logs, int print_agent_logs, const char *nodes_filename,
+			const char *script_filename, const char *simulation_code, int seed_console, int agents_enabled, const char *agents_filename);
 		void Stop();
 		void Start();
 		void InputChecker();
 
-		void SetupEnvironmentByReadingInputFile(const char *system_filename);
+		void SetupEnvironmentByReadingConfigFile();
 		void GenerateNodesByReadingInputFile(const char *nodes_filename);
 
-		void GenerateAgents(const char *agents_filename);
+		void GenerateAgents(const char *agents_filename, const char *simulation_code_console);
 		void GenerateCentralController(const char *agents_filename);
 
 		int GetNumOfLines(const char *nodes_filename);
 		int GetNumOfNodes(const char *nodes_filename, int node_type, std::string wlan_code);
+		int CheckCentralController(const char *agents_filename);
 
 		void PrintSystemInfo();
 		void PrintAllWlansInfo();
@@ -109,7 +109,6 @@ component Komondor : public CostSimEng {
 		void WriteAllWlansInfo(Logger logger, std::string header_str);
 		void WriteAllNodesInfo(Logger logger, int info_detail_level,  std::string header_str);
 		void WriteAllAgentsInfo(Logger logger, std::string header_str);
-		void ReadSystemConfigurationFile();
 
 	// Public items (to shared with the nodes)
 	public:
@@ -121,7 +120,7 @@ component Komondor : public CostSimEng {
 
 		int total_wlans_number;						///> Total number of WLANs
 		int total_agents_number;					///> Total number of agents
-		int total_controlled_agents_number;			///> Total number of agents attached to the central controller
+		int total_controlled_agents_number;		///> Total number of agents attached to the central controller
 
 		// Parameters entered per console
 		int save_node_logs;					///> Flag for activating the log writting of nodes
@@ -130,27 +129,16 @@ component Komondor : public CostSimEng {
 		int print_agent_logs;				///> Flag for activating the printing of agent logs
 		double simulation_time_komondor;	///> Simulation time [s]
 
-		// Parameters entered via system file
-		int num_channels_komondor;		///> Number of subchannels composing the whole channel
-		double basic_channel_bandwidth;	///> Basic channel bandwidth [Mbps]
+		// Parameters regarding system model
 		int pdf_backoff;				///> Probability distribution type of the backoff (0: exponential, 1: deterministic)
 		int pdf_tx_time;				///> Probability distribution type of the transmission time (0: exponential, 1: deterministic)
-		int frame_length;				///> Packet length [bits]
-		int ack_length;					///> ACK length [bits]
-		int rts_length;					///> RTS length [bits]
-		int cts_length;					///> CTS length [bits]
-		int max_num_packets_aggregated;	///> Number of packets aggregated in one transmission
 		int path_loss_model;			///> Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
-		double capture_effect;			///> Capture effect threshold [linear ratio]
-		double noise_level;				///> Environment noise [pW]
 		int adjacent_channel_model;		///> Co-channel interference model
 		int collisions_model;			///> Collisions model
 		double constant_per;			///> Constant PER for successful transmissions
-		int traffic_model;				///> Traffic model (0: full buffer, 1: poisson, 2: deterministic)
 		int backoff_type;				///> Type of Backoff (0: Slotted 1: Continuous)
-		int cw_adaptation;				///> CW adaptation (0: constant, 1: bineary exponential backoff)
-		int pifs_activated;				///> PIFS mechanism activation
 		int capture_effect_model;		///> Capture Effect model (default or IEEE 802.11-based)
+		int simulation_index;			///> Simulation index for selecting the type of output in scripts
 
 		int agents_enabled;				///> Determined according to the input (for generating agents or not)
 
@@ -159,10 +147,10 @@ component Komondor : public CostSimEng {
 
 		// Agents info
 		Agent[] agent_container;		///> Array containing all the agents
-		int num_actions_channel;		///> Number of available channels
-		int num_actions_sensitivity;	///> Number of available sensitivity levels
-		int num_actions_tx_power;		///> Number of available transmit power levels
-		int num_actions_dcb_policy;		///> Number of available DCB policies
+		int num_arms_channel;		///> Number of available channels
+		int num_arms_sensitivity;	///> Number of available sensitivity levels
+		int num_arms_tx_power;		///> Number of available transmit power levels
+		int num_arms_dcb_policy;		///> Number of available DCB policies
 
 		double *actions_pd;				///> Array of Packet Detect (PD) actions
 		double *actions_tx_power;		///> Array of transmission power actions
@@ -209,7 +197,7 @@ component Komondor : public CostSimEng {
  */
 void Komondor :: Setup(double sim_time_console, int save_system_logs_console, int save_node_logs_console,
 		int save_agent_logs_console, int print_system_logs_console, int print_node_logs_console,
-		int print_agent_logs_console, const char *system_input_filename, const char *nodes_input_filename_console,
+		int print_agent_logs_console, const char *nodes_input_filename_console,
 		const char *script_output_filename, const char *simulation_code_console, int seed_console,
 		int agents_enabled_console, const char *agents_input_filename_console){
 
@@ -223,19 +211,16 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	print_agent_logs = print_agent_logs_console;
 	nodes_input_filename = nodes_input_filename_console;
 	agents_input_filename = agents_input_filename_console;
-	std::string simulation_code;
-	simulation_code.append(ToString(simulation_code_console));
+//	std::string simulation_code;
+//    simulation_code.append(ToString(simulation_code_console));
 	seed = seed_console;
 	agents_enabled = agents_enabled_console;
 	total_wlans_number = 0;
 
-	// Read system configuration file [TODO: discuss about this and provide further implementation (if necessary)]
-	// ReadSystemConfigurationFile();
-
-	// Generate output files
-	if (print_system_logs) printf("%s Creating output files\n", LOG_LVL1);
+    // Generate output files
+	if (print_system_logs) printf("\n%s Creating output files\n", LOG_LVL1);
 	std::string simulation_filename_remove;
-	simulation_filename_remove.append("output/logs_console_").append(simulation_code).append(".txt");
+	simulation_filename_remove.append("output/logs_console_").append(simulation_code_console).append(".txt");
 	std::string simulation_filename_fopen;
 	simulation_filename_fopen.append("../").append(simulation_filename_remove);
 	if(remove(simulation_filename_remove.c_str()) == 0){
@@ -255,10 +240,10 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	script_output_file = fopen(script_output_filename, "at");	// Script output is removed when script is executed
 	logger_script.save_logs = SAVE_LOG;
 	logger_script.file = script_output_file;
-	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code.c_str(), seed);
+	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code_console, seed);
 
 	// Read system (environment) file
-	SetupEnvironmentByReadingInputFile(system_input_filename);
+	SetupEnvironmentByReadingConfigFile();
 
 	// Generate nodes
 	GenerateNodesByReadingInputFile(nodes_input_filename);
@@ -276,8 +261,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 				node_container[i].received_power_array[j] = 0;
 			} else {
 				node_container[i].received_power_array[j] = ComputePowerReceived(node_container[i].distances_array[j],
-					node_container[j].tx_power_default, node_container[j].tx_gain, node_container[i].rx_gain,
-					node_container[i].central_frequency, path_loss_model);
+					node_container[j].tx_power_default, node_container[i].central_frequency, path_loss_model);
 			}
 		}
 	}
@@ -310,7 +294,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 
 	// Generate agents (if enabled)
 	central_controller_flag = 0;
-	if (agents_enabled) { GenerateAgents(agents_input_filename); }
+	if (agents_enabled) { GenerateAgents(agents_input_filename, simulation_code_console); }
 	// Generate the central controller (if enabled)
 	if (agents_enabled && central_controller_flag) { GenerateCentralController(agents_input_filename); }
 
@@ -340,10 +324,11 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 		WriteAllWlansInfo(logger_simulation, header_str);
 		fprintf(logger_simulation.file, "%s Nodes generated!\n", LOG_LVL2);
 		WriteAllNodesInfo(logger_simulation, INFO_DETAIL_LEVEL_0, header_str);
-		if(agents_enabled) fprintf(logger_simulation.file, "%s Agents generated!\n", LOG_LVL2);
-		WriteAllAgentsInfo(logger_simulation, header_str);
+		if(agents_enabled) {
+		    fprintf(logger_simulation.file, "%s Agents generated!\n", LOG_LVL2);
+            WriteAllAgentsInfo(logger_simulation, header_str);
+        }
 	}
-
 	// Set connections among nodes
 	for(int n = 0; n < total_nodes_number; ++n){
 
@@ -376,6 +361,7 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 				for(int w = 0; w < total_agents_number; ++w){
 					// Connect the agent to the corresponding AP, according to "wlan_code"
 					if (strcmp(node_container[n].wlan_code.c_str(), agent_container[w].wlan_code.c_str()) == 0) {
+//						printf("Connecting agent %d with node %d\n", agent_container[w].agent_id, node_container[n].node_id);
 						connect agent_container[w].outportRequestInformationToAp,node_container[n].InportReceivingRequestFromAgent;
 						connect node_container[n].outportAnswerToAgent,agent_container[w].InportReceivingInformationFromAp;
 						connect agent_container[w].outportSendConfigurationToAp,node_container[n].InportReceiveConfigurationFromAgent;
@@ -386,17 +372,15 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 	}
 
 	// Connect the agents to the central controller, if applicable
-	if (agents_enabled) {
+	if (agents_enabled && central_controller_flag) {
 		for(int w = 0; w < total_agents_number; ++w){
-			if(agent_container[w].communication_level ==  PURE_CENTRALIZED ||
-				agent_container[w].communication_level == HYBRID_CENTRALIZED_DECENTRALIZED) {
-				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
+			if(agent_container[w].agent_centralized && central_controller[0].controller_on) {
+//				connect central_controller[0].outportRequestInformationToAgent,agent_container[w].InportReceivingRequestFromController;
 				connect agent_container[w].outportAnswerToController,central_controller[0].InportReceivingInformationFromAgent;
-				connect central_controller[0].outportSendConfigurationToAgent,agent_container[w].InportReceiveConfigurationFromController;
+				connect central_controller[0].outportSendCommandToAgent,agent_container[w].InportReceiveCommandFromController;
 			}
 		}
 	}
-
 };
 
 /**
@@ -411,7 +395,7 @@ void Komondor :: Start(){
  */
 void Komondor :: Stop(){
 
-	printf("%s STOP KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code.c_str(), seed);
+	printf("\n%s STOP KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code.c_str(), seed);
 
 	// Display (in logs and files) statistics of the simulation
 	Performance *performance_per_node = new Performance[total_nodes_number];
@@ -424,13 +408,11 @@ void Komondor :: Stop(){
 	// Print and write global statistics
 	PrintAndWriteSimulationStatistics(print_system_logs, save_system_logs, logger_simulation,
 		performance_per_node, configuration_per_node, total_nodes_number, total_wlans_number,
-		frame_length, max_num_packets_aggregated, simulation_time_komondor);
+		simulation_time_komondor);
 
 	// Generate the output for scripts
-	int simulation_index (14);	// Choose the simulation index (TODO: change the way the simulation index is introduced by the user)
 	GenerateScriptOutput(simulation_index, performance_per_node, configuration_per_node, logger_script,
-		total_wlans_number, total_nodes_number, frame_length, max_num_packets_aggregated,
-		wlan_container, simulation_time_komondor);
+		total_wlans_number, total_nodes_number, wlan_container, simulation_time_komondor);
 
 	// End of logs
 	fclose(simulation_output_file);
@@ -458,7 +440,7 @@ void Komondor :: InputChecker(){
 		nodes_z[i] = 0;
 	}
 
-	if (print_system_logs) printf("\n%s Validating input files...\n", LOG_LVL2);
+	if (print_system_logs) printf("%s Validating input files...\n", LOG_LVL2);
 
 	for (int i = 0; i < total_nodes_number; ++i) {
 
@@ -468,22 +450,18 @@ void Komondor :: InputChecker(){
 		nodes_z[i] = node_container[i].z;
 
 		// Check the range of transmission power values (min <= defalut <= max)
-		if (node_container[i].tx_power_min > node_container[i].tx_power_max
-				|| node_container[i].tx_power_default > node_container[i].tx_power_max
-				|| node_container[i].tx_power_default < node_container[i].tx_power_min) {
+		if (node_container[i].tx_power_default > ConvertPower(DBM_TO_PW, MAX_TX_POWER_DBM)
+				|| node_container[i].tx_power_default < ConvertPower(DBM_TO_PW, MIN_TX_POWER_DBM)) {
 			printf("\nERROR: tx_power values are not properly configured at node in line %d\n"
-					"node_container[i].tx_power_min = %f\n"
-					"node_container[i].tx_power_default = %f\n"
-					"node_container[i].tx_power_max = %f\n\n",
-					i+2, node_container[i].tx_power_min, node_container[i].tx_power_default, node_container[i].tx_power_max);
+				"MIN_TX_POWER_DBM = %d\nnode_container[i].tx_power_default = %f\nMAX_TX_POWER_DBM = %d\n\n",
+				i+2, MIN_TX_POWER_DBM, ConvertPower(PW_TO_DBM, node_container[i].tx_power_default), MAX_TX_POWER_DBM);
 			exit(-1);
 		}
 
 		// Check the range of sensitivity values (min <= defalut <= max)
-		if (node_container[i].sensitivity_min > node_container[i].sensitivity_max
-				|| node_container[i].sensitivity_default > node_container[i].sensitivity_max
-				|| node_container[i].sensitivity_default < node_container[i].sensitivity_min) {
-			printf("\nERROR: pd values are not properly configured at node in line %d\n\n",i+2);
+		if (node_container[i].sensitivity_default > ConvertPower(DBM_TO_PW,MAX_SENSITIVITY_DBM)
+				|| node_container[i].sensitivity_default > ConvertPower(DBM_TO_PW,MAX_SENSITIVITY_DBM)) {
+			printf("\nERROR: sensitivity values are not properly configured at node in line %d\n\n",i+2);
 			exit(-1);
 		}
 
@@ -491,9 +469,9 @@ void Komondor :: InputChecker(){
 		if (node_container[i].current_primary_channel > node_container[i].max_channel_allowed
 				|| node_container[i].current_primary_channel < node_container[i].min_channel_allowed
 				|| node_container[i].min_channel_allowed > node_container[i].max_channel_allowed
-				|| node_container[i].current_primary_channel > num_channels_komondor
-				|| node_container[i].min_channel_allowed > (num_channels_komondor-1)
-				|| node_container[i].max_channel_allowed > (num_channels_komondor-1)) {
+				|| node_container[i].current_primary_channel > NUM_CHANNELS_KOMONDOR
+				|| node_container[i].min_channel_allowed > (NUM_CHANNELS_KOMONDOR-1)
+				|| node_container[i].max_channel_allowed > (NUM_CHANNELS_KOMONDOR-1)) {
 			printf("\nERROR: Channels are not properly configured at node in line %d\n\n",i+2);
 			exit(-1);
 		}
@@ -519,105 +497,59 @@ void Komondor :: InputChecker(){
 }
 
 /**
- * Set up the Komondor environment by reading the system input file
+ * Set up the Komondor environment by reading the system input file (MS-DOS type)
  * @param "system_input_filename" [type char*]: filename of the system input CSV
  */
-void Komondor :: SetupEnvironmentByReadingInputFile(const char *system_filename) {
+void Komondor :: SetupEnvironmentByReadingConfigFile() {
 
-	if (print_system_logs) printf("%s Reading system configuration file '%s'...\n", LOG_LVL1, system_filename);
-	fprintf(simulation_output_file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code.c_str(), seed);
-
-	FILE* stream_system = fopen(system_filename, "r");
-	if (!stream_system){
-		printf("%s Komondor system file '%s' not found!\n", LOG_LVL3, system_filename);
-		fprintf(simulation_output_file, "%s Komondor system file '%s' not found!\n", LOG_LVL3, system_filename);
+	const char *filename_test = "../config_models";
+	char delim[] = "=";
+	char *ptr;
+	int ix_param = 0;
+	if (print_system_logs) printf("\n%s Reading system configuration file '%s'...\n", LOG_LVL1, filename_test);
+	FILE* test_input_config = fopen(filename_test, "r");
+	if (!test_input_config){
+		printf("%s Test file '%s' not found!\n", LOG_LVL3, filename_test);
 		exit(-1);
 	}
 	char line_system[CHAR_BUFFER_SIZE];
-	int first_line_skiped_flag (0);	// Flag for skipping first informative line of input file
-
-	while (fgets(line_system, CHAR_BUFFER_SIZE, stream_system)){
-
-		if(!first_line_skiped_flag){	// Skip the first line of the .csv file
-			first_line_skiped_flag = 1;
-		} else {
-			char* tmp = strdup(line_system);
-			// Number of channels
-			tmp = strdup(line_system);
-			const char* num_channels_char (GetField(tmp, IX_NUM_CHANNELS));
-			num_channels_komondor = atoi(num_channels_char);
-			// Basic channel bandwidth
-			tmp = strdup(line_system);
-			const char* basic_channel_bandwidth_char (GetField(tmp, IX_BASIC_CH_BW));
-			basic_channel_bandwidth = atoi(basic_channel_bandwidth_char);
-			// Prob. distribution of backoff duration
-			tmp = strdup(line_system);
-			const char* pdf_backoff_char (GetField(tmp, IX_PDF_BACKOFF));
-			pdf_backoff = atoi(pdf_backoff_char);
-			// Prob. distribution of transmission duration
-			tmp = strdup(line_system);
-			const char* pdf_tx_time_char (GetField(tmp, IX_PDF_TX_TIME));
-			pdf_tx_time = atoi(pdf_tx_time_char);
-			// Data packet length
-			tmp = strdup(line_system);
-			const char* packet_length_char (GetField(tmp, IX_PACKET_LENGTH));
-			frame_length = atoi(packet_length_char);
-			// Number of packets aggregated in one transmission
-			tmp = strdup(line_system);
-			const char* num_packets_aggregated_char (GetField(tmp, IX_NUM_PACKETS_AGGREGATED));
-			max_num_packets_aggregated = atoi(num_packets_aggregated_char);
-			// Path loss model
-			tmp = strdup(line_system);
-			const char* path_loss_model_char (GetField(tmp, IX_PATH_LOSS));
-			path_loss_model = atoi(path_loss_model_char);
-			// capture_effect
-			tmp = strdup(line_system);
-			const char* capture_effect_char (GetField(tmp, IX_CAPTURE_EFFECT));
-			double capture_effect_db (atof(capture_effect_char));
-			capture_effect = ConvertPower(DB_TO_LINEAR, capture_effect_db);
-			// Noise level
-			tmp = strdup(line_system);
-			const char* noise_level_char (GetField(tmp, IX_NOISE_LEVEL));
-			double noise_level_dbm (atof(noise_level_char));
-			noise_level = ConvertPower(DBM_TO_PW, noise_level_dbm);
-			// Co-channel model
-			tmp = strdup(line_system);
-			const char* adjacent_channel_model_char (GetField(tmp, IX_COCHANNEL_MODEL));
-			adjacent_channel_model = atof(adjacent_channel_model_char);
-			// Collisions model
-			tmp = strdup(line_system);
-			const char* collisions_model_char (GetField(tmp, IX_COLLISIONS_MODEL));
-			collisions_model = atof(collisions_model_char);
-			// Constant PER for successful transmissions
-			tmp = strdup(line_system);
-			const char* constant_PER_char (GetField(tmp, IX_CONSTANT_PER));
-			constant_per = atof(constant_PER_char);
-			// Traffic model
-			tmp = strdup(line_system);
-			const char* traffic_model_char (GetField(tmp, IX_TRAFFIC_MODEL));
-			traffic_model = atoi(traffic_model_char);
-			// Backoff type
-			tmp = strdup(line_system);
-			const char* backoff_type_char (GetField(tmp, IX_BO_TYPE));
-			backoff_type = atoi(backoff_type_char);
-			// Contention window adaptation
-			tmp = strdup(line_system);
-			const char* cw_adaptation_char (GetField(tmp, IX_CW_ADAPTATION));
-			cw_adaptation = atoi(cw_adaptation_char);
-			// PIFS mechanism activation
-			tmp = strdup(line_system);
-			const char* pifs_activated_char (GetField(tmp, IX_PIFS_ACTIVATION));
-			pifs_activated = atoi(pifs_activated_char);
-			// PIFS mechanism activation
-			tmp = strdup(line_system);
-			const char* capture_effect_model_char (GetField(tmp, IX_CAPTURE_EFFECT_MODEL));
-			capture_effect_model = atoi(capture_effect_model_char);
-
-			free(tmp);
+	while (fgets(line_system, CHAR_BUFFER_SIZE, test_input_config)){
+		// Ignore lines with comments
+		if(line_system[0] == '#') {
+			continue;
 		}
+		// Separate the value of the parameter from the entire line
+		ptr = strtok(line_system, delim);
+		ptr = strtok(NULL, delim);
+		// Store the parameter as a global variable
+		if (ix_param == 0){
+			// Path-loss model
+			path_loss_model = atoi(ptr);
+		} else if (ix_param == 1) {
+			// Adjacent channel interference model
+			adjacent_channel_model = atoi(ptr);
+		} else if (ix_param == 2) {
+			// Collisions model
+			collisions_model = atoi(ptr);
+		} else if (ix_param == 3) {
+			// Backoff model
+			backoff_type = atoi(ptr);
+		} else if (ix_param == 4) {
+			// PDF backoff model
+			pdf_backoff = atoi(ptr);
+		} else if (ix_param == 5) {
+			// PDF tx time model
+			pdf_tx_time = atoi(ptr);
+		} else if (ix_param == 6) {
+			// Simulation index (script's output)
+			simulation_index = atoi(ptr);
+		}
+		ix_param++;
 	}
+	fclose(test_input_config);
 
-	fclose(stream_system);
+	if (print_system_logs) printf("%s System environment properly set!\n", LOG_LVL2);
+
 }
 
 /* *******************
@@ -631,7 +563,7 @@ void Komondor :: SetupEnvironmentByReadingInputFile(const char *system_filename)
  */
 void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 
-	if (print_system_logs) printf("%s Generating nodes DETERMINISTICALLY through NODES input file...\n", LOG_LVL1);
+	if (print_system_logs) printf("\n%s Generating nodes DETERMINISTICALLY through NODES input file...\n", LOG_LVL1);
 	if (save_system_logs) fprintf(simulation_output_file, "%s Generating nodes DETERMINISTICALLY...\n", LOG_LVL1);
 
 	if (print_system_logs) printf("%s Reading nodes input file '%s'...\n", LOG_LVL2, nodes_filename);
@@ -717,9 +649,6 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 						}
 					}
 				}
-				// Destination ID
-				tmp_nodes = strdup(line_nodes);
-				node_container[node_ix].destination_id = atoi(GetField(tmp_nodes, IX_DESTINATION_ID));
 				// Position
 				tmp_nodes = strdup(line_nodes);
 				node_container[node_ix].x = atof(GetField(tmp_nodes, IX_POSITION_X));
@@ -727,12 +656,13 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				node_container[node_ix].y = atof(GetField(tmp_nodes, IX_POSITION_Y));
 				tmp_nodes = strdup(line_nodes);
 				node_container[node_ix].z = atof(GetField(tmp_nodes, IX_POSITION_Z));
-				// CW min
+				// Central frequency in GHz (e.g. 2.4)
 				tmp_nodes = strdup(line_nodes);
-				node_container[node_ix].cw_min = atoi(GetField(tmp_nodes, IX_CW_MIN));
-				// CW max
+				const char* central_frequency_char (GetField(tmp_nodes, IX_CENTRAL_FREQ));
+				node_container[node_ix].central_frequency = atof(central_frequency_char) * pow(10,9);
+				// Channel bonding model
 				tmp_nodes = strdup(line_nodes);
-				node_container[node_ix].cw_stage_max = atoi(GetField(tmp_nodes, IX_CW_STAGE_MAX));
+				node_container[node_ix].current_dcb_policy = atoi(GetField(tmp_nodes, IX_CHANNEL_BONDING_MODEL));
 				// Primary channel
 				tmp_nodes = strdup(line_nodes);
 				node_container[node_ix].current_primary_channel = atoi(GetField(tmp_nodes, IX_PRIMARY_CHANNEL));
@@ -742,58 +672,50 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				// Max channel allowed
 				tmp_nodes = strdup(line_nodes);
 				node_container[node_ix].max_channel_allowed = atoi(GetField(tmp_nodes, IX_MAX_CH_ALLOWED));
-				// Min tx_power
-				tmp_nodes = strdup(line_nodes);
-				double tx_power_min_dbm (atof(GetField(tmp_nodes, IX_TX_POWER_MIN)));
-				node_container[node_ix].tx_power_min = ConvertPower(DBM_TO_PW, tx_power_min_dbm);
 				// Default tx_power
 				tmp_nodes = strdup(line_nodes);
 				double tx_power_default_dbm (atof(GetField(tmp_nodes, IX_TX_POWER_DEFAULT)));
 				node_container[node_ix].tx_power_default = ConvertPower(DBM_TO_PW, tx_power_default_dbm);
-				// Max tx_power
-				tmp_nodes = strdup(line_nodes);
-				double tx_power_max_dbm = atof(GetField(tmp_nodes, IX_TX_POWER_MAX));
-				node_container[node_ix].tx_power_max = ConvertPower(DBM_TO_PW, tx_power_max_dbm);
-				// Min pd
-				tmp_nodes = strdup(line_nodes);
-				double sensitivity_min_dbm (atoi(GetField(tmp_nodes, IX_PD_MIN)));
-				node_container[node_ix].sensitivity_min = ConvertPower(DBM_TO_PW, sensitivity_min_dbm);
-				// Default pd
+				// Default pd threshold
 				tmp_nodes = strdup(line_nodes);
 				double sensitivity_default_dbm (atoi(GetField(tmp_nodes, IX_PD_DEFAULT)));
 				node_container[node_ix].sensitivity_default = ConvertPower(DBM_TO_PW, sensitivity_default_dbm);
-				// Max pd
+				// Traffic model
 				tmp_nodes = strdup(line_nodes);
-				double sensitivity_max_dbm (atoi(GetField(tmp_nodes, IX_PD_MAX)));
-				node_container[node_ix].sensitivity_max = ConvertPower(DBM_TO_PW, sensitivity_max_dbm);
-				// TX gain
-				tmp_nodes = strdup(line_nodes);
-				double tx_gain_db (atoi(GetField(tmp_nodes, IX_TX_GAIN)));
-				node_container[node_ix].tx_gain = ConvertPower(DB_TO_LINEAR, tx_gain_db);
-				// RX gain
-				tmp_nodes = strdup(line_nodes);
-				double rx_gain_db (atoi(GetField(tmp_nodes, IX_RX_GAIN)));
-				node_container[node_ix].rx_gain = ConvertPower(DB_TO_LINEAR, rx_gain_db);
-				// Channel bonding model
-				tmp_nodes = strdup(line_nodes);
-				node_container[node_ix].current_dcb_policy = atoi(GetField(tmp_nodes, IX_CHANNEL_BONDING_MODEL));
-				// Default modulation
-				tmp_nodes = strdup(line_nodes);
-				node_container[node_ix].modulation_default = atoi(GetField(tmp_nodes, IX_MODULATION_DEFAULT));
-				// Central frequency in GHz (e.g. 2.4)
-				tmp_nodes = strdup(line_nodes);
-				const char* central_frequency_char (GetField(tmp_nodes, IX_CENTRAL_FREQ));
-				node_container[node_ix].central_frequency = atof(central_frequency_char) * pow(10,9);
-				// Lambda (BO generation rate)
-				tmp_nodes = strdup(line_nodes);
-				const char* lambda_char (GetField(tmp_nodes, IX_LAMBDA));
-				// IEEE protocol type
-				tmp_nodes = strdup(line_nodes);
-				const char* ieee_protocol_char (GetField(tmp_nodes, IX_IEEE_PROTOCOL_TYPE));
-				node_container[node_ix].ieee_protocol = atof(ieee_protocol_char);
+				const char* traffic_model_char (GetField(tmp_nodes, IX_TRAFFIC_MODEL));
 				// Traffic load (packet generation rate)
 				tmp_nodes = strdup(line_nodes);
 				const char* traffic_load_char (GetField(tmp_nodes, IX_TRAFFIC_LOAD));
+				// Packet length
+				tmp_nodes = strdup(line_nodes);
+				const char* packet_length_char (GetField(tmp_nodes, IX_PACKET_LENGTH));
+				node_container[node_ix].frame_length = atoi(packet_length_char);
+				// Maximum number of aggregated packets
+				tmp_nodes = strdup(line_nodes);
+				const char* packets_aggregated_char (GetField(tmp_nodes, IX_NUM_PACKETS_AGG));
+				node_container[node_ix].max_num_packets_aggregated = atoi(packets_aggregated_char);
+				// Capture effect model -  0=default (recommended) or 1=IEEE 802.11-like
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].capture_effect_model = atoi(GetField(tmp_nodes, IX_CAPTURE_EFFECT_MODEL));
+				// Capture effect threshold in dB
+				tmp_nodes = strdup(line_nodes);
+				const char* capture_effect_char (GetField(tmp_nodes, IX_CAPTURE_EFFECT_THR));
+				node_container[node_ix].capture_effect = ConvertPower(DB_TO_LINEAR, atof(capture_effect_char));
+				// Constant PER
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].constant_per = atof(GetField(tmp_nodes, IX_CONSTANT_PER));
+				// PIFS activated
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].pifs_activated = atoi(GetField(tmp_nodes, IX_PIFS_ACTIVATED));
+				// CW adaptation activated
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].cw_adaptation = atoi(GetField(tmp_nodes, IX_CW_ADAPTATION_FLAG));
+				// CW min
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].cw_min = atoi(GetField(tmp_nodes, IX_CW_MIN));
+				// CW max stage
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].cw_stage_max = atoi(GetField(tmp_nodes, IX_CW_STAGE_MAX));
 				// SPATIAL REUSE parameters
 				//  - BSS color
 				tmp_nodes = strdup(line_nodes);
@@ -807,33 +729,18 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				//  - SRG OBSS_PD
 				tmp_nodes = strdup(line_nodes);
 				const char* srg_obss_pd_char = GetField(tmp_nodes, IX_SRG_OBSS_PD);
-				// System
+				// System and models
 				node_container[node_ix].simulation_time_komondor = simulation_time_komondor;
 				node_container[node_ix].total_wlans_number = total_wlans_number;
 				node_container[node_ix].total_nodes_number = total_nodes_number;
 				node_container[node_ix].collisions_model = collisions_model;
-				node_container[node_ix].capture_effect = capture_effect;
 				node_container[node_ix].save_node_logs = save_node_logs;
 				node_container[node_ix].print_node_logs = print_node_logs;
-				node_container[node_ix].basic_channel_bandwidth = basic_channel_bandwidth;
-				node_container[node_ix].num_channels_komondor = num_channels_komondor;
 				node_container[node_ix].adjacent_channel_model = adjacent_channel_model;
-				node_container[node_ix].default_destination_id = NODE_ID_NONE;
-				node_container[node_ix].noise_level = noise_level;
-				node_container[node_ix].constant_per = constant_per;
 				node_container[node_ix].pdf_backoff = pdf_backoff;
 				node_container[node_ix].path_loss_model = path_loss_model;
 				node_container[node_ix].pdf_tx_time = pdf_tx_time;
-				node_container[node_ix].frame_length = frame_length;
-				node_container[node_ix].max_num_packets_aggregated = max_num_packets_aggregated;
-				node_container[node_ix].ack_length = ack_length;
-				node_container[node_ix].rts_length = rts_length;
-				node_container[node_ix].cts_length = cts_length;
-				node_container[node_ix].traffic_model = traffic_model;
 				node_container[node_ix].backoff_type = backoff_type;
-				node_container[node_ix].cw_adaptation = cw_adaptation;
-				node_container[node_ix].pifs_activated = pifs_activated;
-				node_container[node_ix].capture_effect_model = capture_effect_model;
 				node_container[node_ix].simulation_code = simulation_code;
 				// SPATIAL REUSE
 				if (bss_color_char != NULL) { // Check if the input file is compliant with SR
@@ -852,10 +759,9 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				// Traffic generator
 				traffic_generator_container[node_ix].node_type = node_type;
 				traffic_generator_container[node_ix].node_id = node_ix;
-				traffic_generator_container[node_ix].traffic_model = traffic_model;
+				traffic_generator_container[node_ix].traffic_model = atoi(traffic_model_char);
+				node_container[node_ix].traffic_model = atoi(traffic_model_char); // Tell the node in case full buffer model is selected
 				traffic_generator_container[node_ix].traffic_load = atof(traffic_load_char);
-				traffic_generator_container[node_ix].lambda = atof(lambda_char);
-				traffic_generator_container[node_ix].burst_rate = atof(lambda_char);
 
 				++node_ix;
 				free(tmp_nodes);
@@ -877,29 +783,33 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
  * Generate the agents deterministically, according to the input agents file
  * @param "agents_filename" [type char*]: filename of the agents input CSV
  */
-void Komondor :: GenerateAgents(const char *agents_filename) {
+void Komondor :: GenerateAgents(const char *agents_filename, const char *simulation_code_console) {
 
 	if (print_system_logs) printf("%s Generating agents...\n", LOG_LVL1);
 	if (print_system_logs) printf("%s Reading agents input file '%s'...\n", LOG_LVL2, agents_filename);
 
-	// STEP 1: set size of the agents container
-	total_agents_number = GetNumOfLines(agents_filename);
+	// STEP 1: CHECK IF THERE IS A CC AND PARSE ITS INFORMATION DIFFERENTLY THAN FROM AGENTS
+	central_controller_flag = CheckCentralController(agents_filename);
+	// STEP 2: SET SIZE OF THE AGENTS CONTAINER
+	total_agents_number = GetNumOfLines(agents_filename) - central_controller_flag;
 	agent_container.SetSize(total_agents_number);
-
 	if (print_system_logs) printf("%s Num. of agents (WLANs): %d/%d\n", LOG_LVL3, total_agents_number, total_wlans_number);
-
-	// STEP 2: read the input file to determine the action space
+	// STEP 3: read the input file to determine the action space
 	if (print_system_logs) printf("%s Setting action space...\n", LOG_LVL4);
 	FILE* stream_agents = fopen(agents_filename, "r");
 	char line_agents[CHAR_BUFFER_SIZE];
 	first_line_skiped_flag = 0;	// Flag for skipping first informative line of input file
 	int agent_ix (0);	// Auxiliary index
-
 	while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_agents)){
 		if(!first_line_skiped_flag){	// Skip the first line of the .csv file
 			first_line_skiped_flag = 1;
 		} else{
 			char* tmp_agents = strdup(line_agents);
+			const char *wlan_code_aux (GetField(tmp_agents, IX_AGENT_WLAN_CODE));
+			std::string wlan_code;
+			wlan_code.append(ToString(wlan_code_aux));
+			// Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
+			if (strcmp(wlan_code.c_str(), "NULL") == 0) continue;
 			// Find the length of the channel actions array
 			tmp_agents = strdup(line_agents);
 			const char *channel_values_aux (GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
@@ -907,13 +817,13 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			channel_values_text.append(ToString(channel_values_aux));
 			const char *channel_aux;
 			channel_aux = strtok ((char*)channel_values_text.c_str(),",");
-			num_actions_channel = 0;
+			num_arms_channel = 0;
 			while (channel_aux != NULL) {
 				channel_aux = strtok (NULL, ",");
-				++ num_actions_channel;
+				++ num_arms_channel;
 			}
 			// Set the length of channel actions to agent's field
-			agent_container[agent_ix].num_actions_channel = num_actions_channel;
+			agent_container[agent_ix].num_arms_channel = num_arms_channel;
 			// Find the length of the pd actions array
 			tmp_agents = strdup(line_agents);
 			const char *pd_values_aux (GetField(tmp_agents, IX_AGENT_PD_VALUES));
@@ -921,13 +831,13 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			pd_values_text.append(ToString(pd_values_aux));
 			const char *pd_aux;
 			pd_aux = strtok ((char*)pd_values_text.c_str(),",");
-			num_actions_sensitivity = 0;
+			num_arms_sensitivity = 0;
 			while (pd_aux != NULL) {
 				pd_aux = strtok (NULL, ",");
-				++ num_actions_sensitivity;
+				++ num_arms_sensitivity;
 			}
 			// Set the length of sensitivity actions to agent's field
-			agent_container[agent_ix].num_actions_sensitivity = num_actions_sensitivity;
+			agent_container[agent_ix].num_arms_sensitivity = num_arms_sensitivity;
 			// Find the length of the Tx power actions array
 			tmp_agents = strdup(line_agents);
 			const char *tx_power_values_aux (GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES));
@@ -935,13 +845,13 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			tx_power_values_text.append(ToString(tx_power_values_aux));
 			const char *tx_power_aux;
 			tx_power_aux = strtok ((char*)tx_power_values_text.c_str(),",");
-			num_actions_tx_power = 0;
+			num_arms_tx_power = 0;
 			while (tx_power_aux != NULL) {
 				tx_power_aux = strtok (NULL, ",");
-				++ num_actions_tx_power;
+				++ num_arms_tx_power;
 			}
 			// Set the length of Tx power actions to agent's field
-			agent_container[agent_ix].num_actions_tx_power = num_actions_tx_power;
+			agent_container[agent_ix].num_arms_tx_power = num_arms_tx_power;
 			// Find the length of the DCB actions actions array
 			tmp_agents = strdup(line_agents);
 			const char *policy_values_aux (GetField(tmp_agents, IX_AGENT_DCB_POLICY));
@@ -949,13 +859,20 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 			policy_values_text.append(ToString(policy_values_aux));
 			const char *policy_aux;
 			policy_aux = strtok ((char*)policy_values_text.c_str(),",");
-			num_actions_dcb_policy = 0;
+			num_arms_dcb_policy = 0;
 			while (policy_aux != NULL) {
 				policy_aux = strtok (NULL, ",");
-				++num_actions_dcb_policy;
+				++num_arms_dcb_policy;
 			}
 			// Set the length of DCB actions to agent's field
-			agent_container[agent_ix].num_actions_dcb_policy = num_actions_dcb_policy;
+			agent_container[agent_ix].num_arms_dcb_policy = num_arms_dcb_policy;
+
+			// Set the lenght of the total actions in the agent (combinations of parameters)
+			agent_container[agent_ix].num_arms = num_arms_channel * num_arms_sensitivity
+				* num_arms_tx_power * num_arms_dcb_policy;
+
+			// Set the simulation code for generating output files
+			agent_container[agent_ix].simulation_code.append(ToString(simulation_code_console));
 
 			++agent_ix;
 			free(tmp_agents);
@@ -969,127 +886,132 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
 	stream_agents = fopen(agents_filename, "r");
 	first_line_skiped_flag = 0;		// Flag for skipping first informative line of input file
 	agent_ix = 0;	// Auxiliary index
+	total_controlled_agents_number = 0;
 	while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_agents)){
 		if(!first_line_skiped_flag){	// Skip the first line of the .csv file
 			first_line_skiped_flag = 1;
 		} else{
-			// Initialize actions and arrays in agents
-			agent_container[agent_ix].InitializeAgent();
-			// Agent ID
-			agent_container[agent_ix].agent_id = agent_ix;
 			// WLAN code
 			char* tmp_agents (strdup(line_agents));
 			const char *wlan_code_aux (GetField(tmp_agents, IX_AGENT_WLAN_CODE));
 			std::string wlan_code;
 			wlan_code.append(ToString(wlan_code_aux));
-			agent_container[agent_ix].wlan_code = wlan_code.c_str();
-			// WLAN Id
-			for(int w=0; w < total_wlans_number; ++w){
-				if(strcmp(wlan_container[w].wlan_code.c_str(), agent_container[agent_ix].wlan_code.c_str()) == 0	) {
-					agent_container[agent_ix].wlan_id = w;
+			// Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
+			if (strcmp(wlan_code.c_str(), "NULL") == 0) {
+				continue;
+			} else {
+				// Agent ID
+				agent_container[agent_ix].agent_id = agent_ix;
+				agent_container[agent_ix].wlan_code = wlan_code.c_str();
+				// WLAN Id
+				for(int w=0; w < total_wlans_number; ++w){
+					if(strcmp(wlan_container[w].wlan_code.c_str(), agent_container[agent_ix].wlan_code.c_str()) == 0) {
+						agent_container[agent_ix].wlan_id = w;
+					}
 				}
-			}
-			//  Communication level
-			tmp_agents = strdup(line_agents);
-			int communication_level (atoi(GetField(tmp_agents, IX_COMMUNICATION_LEVEL)));
-			agent_container[agent_ix].communication_level = communication_level;
-			// Check if the central controller has to be created or not
-			if(communication_level ==  PURE_CENTRALIZED || communication_level == HYBRID_CENTRALIZED_DECENTRALIZED) {
-				++total_controlled_agents_number;
-				central_controller_flag = 1;
-			}
-			// Time between requests (in seconds)
-			tmp_agents = strdup(line_agents);
-			double time_between_requests (atof(GetField(tmp_agents, IX_AGENT_TIME_BW_REQUESTS)));
-			agent_container[agent_ix].time_between_requests = time_between_requests;
-			// Channel values
-			tmp_agents = strdup(line_agents);
-			std::string channel_values_text = ToString(GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
-			// Fill the channel actions array
-			char *channel_aux_2;
-			char *channel_values_text_char = new char[channel_values_text.length() + 1];
-			strcpy(channel_values_text_char, channel_values_text.c_str());
-			channel_aux_2 = strtok (channel_values_text_char,",");
-			int ix (0);
-			while (channel_aux_2 != NULL) {
-				int a (atoi(channel_aux_2));
-				agent_container[agent_ix].list_of_channels[ix] = a;
-				channel_aux_2 = strtok (NULL, ",");
-				++ix;
-			}
-			// sensitivity values
-			tmp_agents = strdup(line_agents);
-			std::string pd_values_text = ToString(GetField(tmp_agents, IX_AGENT_PD_VALUES));
-			// Fill the sensitivity actions array
-			char *pd_aux_2;
-			char *pd_values_text_char = new char[pd_values_text.length() + 1];
-			strcpy(pd_values_text_char, pd_values_text.c_str());
-			pd_aux_2 = strtok (pd_values_text_char,",");
-			ix = 0;
-			while (pd_aux_2 != NULL) {
-				int a = atoi(pd_aux_2);
-				agent_container[agent_ix].list_of_pd_values[ix] = ConvertPower(DBM_TO_PW, a);
-				pd_aux_2 = strtok (NULL, ",");
-				++ix;
-			}
-			// Tx Power values
-			tmp_agents = strdup(line_agents);
-			std::string tx_power_values_text = ToString(GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES));
-			// Fill the TX power actions array
-			char *tx_power_aux_2;
-			char *tx_power_values_text_char = new char[tx_power_values_text.length() + 1];
-			strcpy(tx_power_values_text_char, tx_power_values_text.c_str());
-			tx_power_aux_2 = strtok (tx_power_values_text_char,",");
-			ix = 0;
-			while (tx_power_aux_2 != NULL) {
-				int a (atoi(tx_power_aux_2));
-				agent_container[agent_ix].list_of_tx_power_values[ix] = ConvertPower(DBM_TO_PW, a);
-				tx_power_aux_2 = strtok (NULL, ",");
-				++ix;
-			}
-			// DCB policy values
-			tmp_agents = strdup(line_agents);
-			std::string dcb_policy_values_text = ToString(GetField(tmp_agents, IX_AGENT_DCB_POLICY));
-			// Fill the DCB policy actions array
-			char *policy_aux_2;
-			char *dcb_policy_values_text_char = new char[dcb_policy_values_text.length() + 1];
-			strcpy(dcb_policy_values_text_char, dcb_policy_values_text.c_str());
-			policy_aux_2 = strtok (dcb_policy_values_text_char,",");
-			ix = 0;
-			while (policy_aux_2 != NULL) {
-				int a (atoi(policy_aux_2));
-				agent_container[agent_ix].list_of_dcb_policy[ix] = a;
-				policy_aux_2 = strtok (NULL, ",");
-				++ix;
-			}
-			// Type of reward
-			tmp_agents = strdup(line_agents);
-			int type_of_reward (atoi(GetField(tmp_agents, IX_AGENT_TYPE_OF_REWARD)));
-			agent_container[agent_ix].type_of_reward = type_of_reward;
-			// Learning mechanism
-			tmp_agents = strdup(line_agents);
-			int learning_mechanism (atoi(GetField(tmp_agents, IX_AGENT_LEARNING_MECHANISM)));
-			agent_container[agent_ix].learning_mechanism = learning_mechanism;
-			// Selected strategy
-			tmp_agents = strdup(line_agents);
-			int action_selection_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
-			agent_container[agent_ix].action_selection_strategy = action_selection_strategy;
+				// Initialize actions and arrays in agents
+				agent_container[agent_ix].InitializeAgent();
+				//  Agent associated to the Central Controller (CC)
+				tmp_agents = strdup(line_agents);
+				int agent_centralized (atoi(GetField(tmp_agents, IX_COMMUNICATION_LEVEL)));
+				agent_container[agent_ix].agent_centralized = agent_centralized;
+				// Check if the central controller has to be created or not
+				if(agent_centralized) ++total_controlled_agents_number;
+				// Time between requests (in seconds)
+				tmp_agents = strdup(line_agents);
+				double time_between_requests (atof(GetField(tmp_agents, IX_AGENT_TIME_BW_REQUESTS)));
+				agent_container[agent_ix].time_between_requests = time_between_requests;
+				// Channel values
+				tmp_agents = strdup(line_agents);
+				std::string channel_values_text = ToString(GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
+				// Fill the channel actions array
+				char *channel_aux_2;
+				char *channel_values_text_char = new char[channel_values_text.length() + 1];
+				strcpy(channel_values_text_char, channel_values_text.c_str());
+				channel_aux_2 = strtok (channel_values_text_char,",");
+				int ix (0);
+				while (channel_aux_2 != NULL) {
+					int a (atoi(channel_aux_2));
+					agent_container[agent_ix].list_of_channels[ix] = a;
+					channel_aux_2 = strtok (NULL, ",");
+					++ix;
+				}
+				// sensitivity values
+				tmp_agents = strdup(line_agents);
+				std::string pd_values_text = ToString(GetField(tmp_agents, IX_AGENT_PD_VALUES));
+				// Fill the sensitivity actions array
+				char *pd_aux_2;
+				char *pd_values_text_char = new char[pd_values_text.length() + 1];
+				strcpy(pd_values_text_char, pd_values_text.c_str());
+				pd_aux_2 = strtok (pd_values_text_char,",");
+				ix = 0;
+				while (pd_aux_2 != NULL) {
+					int a = atoi(pd_aux_2);
+					agent_container[agent_ix].list_of_pd_values[ix] = ConvertPower(DBM_TO_PW, a);
+					pd_aux_2 = strtok (NULL, ",");
+					++ix;
+				}
+				// Tx Power values
+				tmp_agents = strdup(line_agents);
+				std::string tx_power_values_text = ToString(GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES));
+				// Fill the TX power actions array
+				char *tx_power_aux_2;
+				char *tx_power_values_text_char = new char[tx_power_values_text.length() + 1];
+				strcpy(tx_power_values_text_char, tx_power_values_text.c_str());
+				tx_power_aux_2 = strtok (tx_power_values_text_char,",");
+				ix = 0;
+				while (tx_power_aux_2 != NULL) {
+					int a (atoi(tx_power_aux_2));
+					agent_container[agent_ix].list_of_tx_power_values[ix] = ConvertPower(DBM_TO_PW, a);
+					tx_power_aux_2 = strtok (NULL, ",");
+					++ix;
+				}
+				// DCB policy values
+				tmp_agents = strdup(line_agents);
+				std::string dcb_policy_values_text = ToString(GetField(tmp_agents, IX_AGENT_DCB_POLICY));
+				// Fill the DCB policy actions array
+				char *policy_aux_2;
+				char *dcb_policy_values_text_char = new char[dcb_policy_values_text.length() + 1];
+				strcpy(dcb_policy_values_text_char, dcb_policy_values_text.c_str());
+				policy_aux_2 = strtok (dcb_policy_values_text_char,",");
+				ix = 0;
+				while (policy_aux_2 != NULL) {
+					int a (atoi(policy_aux_2));
+					agent_container[agent_ix].list_of_dcb_policy[ix] = a;
+					policy_aux_2 = strtok (NULL, ",");
+					++ix;
+				}
+				// Type of reward
+				tmp_agents = strdup(line_agents);
+				int type_of_reward (atoi(GetField(tmp_agents, IX_AGENT_TYPE_OF_REWARD)));
+				agent_container[agent_ix].type_of_reward = type_of_reward;
+				// Learning mechanism
+				tmp_agents = strdup(line_agents);
+				int learning_mechanism (atoi(GetField(tmp_agents, IX_AGENT_LEARNING_MECHANISM)));
+				agent_container[agent_ix].learning_mechanism = learning_mechanism;
+				// Selected strategy
+				tmp_agents = strdup(line_agents);
+				int action_selection_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
+				agent_container[agent_ix].action_selection_strategy = action_selection_strategy;
+				// Other information
+				agent_container[agent_ix].save_agent_logs = save_agent_logs;
+				agent_container[agent_ix].print_agent_logs = print_agent_logs;
+				agent_container[agent_ix].num_stas = wlan_container[agent_container[agent_ix].wlan_id].num_stas;
+				// TRICKY - USE THE FIRST ELEMENT INT HE LIST OF PD VALUES AS THE MARGIN
+				if(agent_container[agent_ix].learning_mechanism == RTOT_ALGORITHM) {
+					agent_container[agent_ix].margin_rtot = agent_container[agent_ix].list_of_pd_values[0];
+				}
 
-			// Other information
-			agent_container[agent_ix].save_agent_logs = save_agent_logs;
-			agent_container[agent_ix].print_agent_logs = print_agent_logs;
-			agent_container[agent_ix].num_stas = wlan_container[agent_container[agent_ix].wlan_id].num_stas;
+				agent_container[agent_ix].PrintAgentInfo();
 
-			// TRICKY - USE THE FIRST ELEMENT INT HE LIST OF PD VALUES AS THE MARGIN
-			if(agent_container[agent_ix].learning_mechanism == RTOT_ALGORITHM) {
-				agent_container[agent_ix].margin = agent_container[agent_ix].list_of_pd_values[0];
+				++agent_ix;
+
 			}
-
-			++agent_ix;
 			free(tmp_agents);
 		}
 	}
 	if (print_system_logs) printf("%s Agents parameters set!\n", LOG_LVL4);
+
 }
 
 /**
@@ -1097,68 +1019,92 @@ void Komondor :: GenerateAgents(const char *agents_filename) {
  * @param "agents_filename" [type char*]: filename of the agents input CSV
  */
 void Komondor :: GenerateCentralController(const char *agents_filename) {
+
 	if (print_system_logs) printf("%s Generating the Central Controller...\n", LOG_LVL1);
 	// So far, we consider a single controller. For scalability purposes, the CC must be declared as an array
-	central_controller.SetSize(1);
+	if (central_controller_flag) central_controller.SetSize(1);
 	if (total_controlled_agents_number > 0) {	// Check that the CC has one or more agents attached
+		central_controller[0].controller_on = TRUE;
 		central_controller[0].agents_number = total_controlled_agents_number;
 		central_controller[0].wlans_number = total_wlans_number;
+		int max_number_of_actions(0);
+		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
+			if(agent_container[agent_ix].num_arms > max_number_of_actions) max_number_of_actions = agent_container[agent_ix].num_arms;
+		}
+		central_controller[0].max_number_of_actions = max_number_of_actions;
+		// Initialize the CC
 		central_controller[0].InitializeCentralController();
 		int *agents_list;
 		agents_list = new int[total_controlled_agents_number];
 		int agent_list_ix (0);					// Index considering the agents attached to the central entity
-		double max_time_between_requests (0);	// To determine the maximum time between requests for agents
+
+//		double max_time_between_requests (0);	// To determine the maximum time between requests for agents
 		// Check which agents are attached to the central controller
 		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
-			if(agent_container[agent_ix].communication_level ==  PURE_CENTRALIZED ||
-				agent_container[agent_ix].communication_level == HYBRID_CENTRALIZED_DECENTRALIZED) {
+			if(agent_container[agent_ix].agent_centralized) {
 				// Add agent id to list of agents attached to the controller
 				agents_list[agent_list_ix] = agent_container[agent_ix].agent_id;
-				double agent_time_between_requests (agent_container[agent_list_ix].time_between_requests);
-				// Store the maximum time between requests
-				if (agent_time_between_requests > max_time_between_requests) {
-					central_controller[0].time_between_requests = agent_time_between_requests;
-				}
+				agent_container[agent_ix].controller_on = central_controller[0].controller_on;
+				central_controller[0].num_arms_per_agent[agent_ix] = agent_container[agent_ix].num_arms;
+//				double agent_time_between_requests (agent_container[agent_list_ix].time_between_requests);
+//				// Store the maximum time between requests
+//				if (agent_time_between_requests > max_time_between_requests) {
+//					central_controller[0].time_between_requests = agent_time_between_requests;
+//				}
 				++agent_list_ix;
 			}
 		}
+
 		// The overall "time between requests" is set to the maximum among all the agents
 		central_controller[0].list_of_agents = agents_list;
 		// Initialize the CC with parameters from the agents input file
 		FILE* stream_cc = fopen(agents_filename, "r");
 		char line_agents[CHAR_BUFFER_SIZE];
-		char* tmp_agents (strdup(line_agents));
+		char* tmp_cc (strdup(line_agents));
 		first_line_skiped_flag = 0;		// Flag for skipping first informative line of input file
 		while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_cc)){
 			if(!first_line_skiped_flag){
 				first_line_skiped_flag = 1;
 			} else{
-				// Type of reward
-				tmp_agents = strdup(line_agents);
-				int type_of_reward (atoi(GetField(tmp_agents, IX_AGENT_TYPE_OF_REWARD)));
-				central_controller[0].type_of_reward = type_of_reward;
-				// Learning mechanism
-				tmp_agents = strdup(line_agents);
-				int learning_mechanism (atoi(GetField(tmp_agents, IX_AGENT_LEARNING_MECHANISM)));
-				central_controller[0].learning_mechanism = learning_mechanism;
-				// Selected strategy
-				tmp_agents = strdup(line_agents);
-				int action_selection_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
-				central_controller[0].action_selection_strategy = action_selection_strategy;
-				// Find the length of the channel actions array
-				tmp_agents = strdup(line_agents);
-				const char *channel_values_aux (GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
-				std::string channel_values_text;
-				channel_values_text.append(ToString(channel_values_aux));
-				const char *channels_aux;
-				channels_aux = strtok ((char*)channel_values_text.c_str(),",");
-				int num_actions_channels = 0;
-				while (channels_aux != NULL) {
-					channels_aux = strtok (NULL, ",");
-					++ num_actions_channels;
+				tmp_cc = strdup(line_agents);
+				const char *wlan_code_aux (GetField(tmp_cc, IX_AGENT_WLAN_CODE));
+				std::string wlan_code;
+				wlan_code.append(ToString(wlan_code_aux));
+				// Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
+				if (strcmp(wlan_code.c_str(), "NULL") == 0) {
+					// Time between requests
+					tmp_cc = strdup(line_agents);
+					double time_between_requests (atoi(GetField(tmp_cc, IX_AGENT_TIME_BW_REQUESTS)));
+					central_controller[0].time_between_requests = time_between_requests;
+					// Type of reward
+					tmp_cc = strdup(line_agents);
+					int type_of_reward (atoi(GetField(tmp_cc, IX_AGENT_TYPE_OF_REWARD)));
+					central_controller[0].type_of_reward = type_of_reward;
+					// Learning mechanism
+					tmp_cc = strdup(line_agents);
+					int learning_mechanism (atoi(GetField(tmp_cc, IX_AGENT_LEARNING_MECHANISM)));
+					central_controller[0].learning_mechanism = learning_mechanism;
+					// Selected strategy
+					tmp_cc = strdup(line_agents);
+					int action_selection_strategy (atoi(GetField(tmp_cc, IX_AGENT_SELECTED_STRATEGY)));
+					central_controller[0].action_selection_strategy = action_selection_strategy;
+					// Find the length of the channel actions array
+					tmp_cc = strdup(line_agents);
+					const char *channel_values_aux (GetField(tmp_cc, IX_AGENT_CHANNEL_VALUES));
+					std::string channel_values_text;
+					channel_values_text.append(ToString(channel_values_aux));
+					const char *channels_aux;
+					channels_aux = strtok ((char*)channel_values_text.c_str(),",");
+					int num_arms_channels = 0;
+					while (channels_aux != NULL) {
+						channels_aux = strtok (NULL, ",");
+						++ num_arms_channels;
+					}
+					free(tmp_cc);
+					break;	// Don't read all the other lines (entailed for agents)
+				} else {
+					continue; // Keep reading until finding "NULL", which indicated the CC line
 				}
-				central_controller[0].num_channels = num_actions_channels;
-				free(tmp_agents);
 			}
 		}
 
@@ -1169,7 +1115,10 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 
 	} else {
 		printf("%s WARNING: THE CENTRAL CONTROLLER DOES NOT HAVE ANY ATTACHED AGENT! CHECK YOUR AGENTS' INPUT FILE\n", LOG_LVL2);
+		central_controller[0].controller_on = FALSE;
 	}
+
+	central_controller[0].PrintControllerInfo();
 
 }
 
@@ -1183,24 +1132,12 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 void Komondor :: PrintSystemInfo(){
 	if (print_system_logs){
 		printf("%s total_nodes_number = %d\n", LOG_LVL3, total_nodes_number);
-		printf("%s num_channels_komondor = %d\n", LOG_LVL3, num_channels_komondor);
-		printf("%s basic_channel_bandwidth = %f MHz\n", LOG_LVL3, basic_channel_bandwidth);
 		printf("%s pdf_backoff = %d\n", LOG_LVL3, pdf_backoff);
 		printf("%s pdf_tx_time = %d\n", LOG_LVL3, pdf_tx_time);
-		printf("%s frame_length = %d bits\n", LOG_LVL3, frame_length);
-		printf("%s traffic_model = %d\n", LOG_LVL3, traffic_model);
 		printf("%s backoff_type = %d\n", LOG_LVL3, backoff_type);
-		printf("%s cw_adaptation = %d\n", LOG_LVL3, cw_adaptation);
-		printf("%s pifs_activated = %d\n", LOG_LVL3, pifs_activated);
-		printf("%s capture_effect_model = %d\n", LOG_LVL3, capture_effect_model);
-		printf("%s max_num_packets_aggregated = %d\n", LOG_LVL3, max_num_packets_aggregated);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
-		printf("%s capture_effect = %f [linear] (%f dB)\n", LOG_LVL3, capture_effect, ConvertPower(LINEAR_TO_DB, capture_effect));
-		printf("%s noise_level = %f pW (%f dBm)\n",
-				LOG_LVL3, noise_level, ConvertPower(PW_TO_DBM, noise_level));
 		printf("%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
 		printf("%s collisions_model = %d\n", LOG_LVL3, collisions_model);
-		printf("%s Constant PER = %f\n", LOG_LVL3, constant_per);
 		printf("\n");
 	}
 }
@@ -1211,16 +1148,9 @@ void Komondor :: PrintSystemInfo(){
  */
 void Komondor :: WriteSystemInfo(Logger logger){
 	fprintf(logger.file, "%s total_nodes_number = %d\n", LOG_LVL3, total_nodes_number);
-	fprintf(logger.file, "%s num_channels_komondor = %d\n", LOG_LVL3, num_channels_komondor);
-	fprintf(logger.file, "%s basic_channel_bandwidth = %f\n", LOG_LVL3, basic_channel_bandwidth);
 	fprintf(logger.file, "%s pdf_backoff = %d\n", LOG_LVL3, pdf_backoff);
 	fprintf(logger.file, "%s pdf_tx_time = %d\n", LOG_LVL3, pdf_tx_time);
-	fprintf(logger.file, "%s frame_length = %d bits\n", LOG_LVL3, frame_length);
-	fprintf(logger.file, "%s ack_length = %d bits\n", LOG_LVL3, ack_length);
-	fprintf(logger.file, "%s max_num_packets_aggregated = %d\n", LOG_LVL3, max_num_packets_aggregated);
 	fprintf(logger.file, "%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
-	fprintf(logger.file, "%s capture_effect = %f\n", LOG_LVL3, capture_effect);
-	fprintf(logger.file, "%s noise_level = %f dBm\n", LOG_LVL3, noise_level);
 	fprintf(logger.file, "%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
 	fprintf(logger.file, "%s collisions_model = %d\n", LOG_LVL3, collisions_model);
 }
@@ -1401,36 +1331,32 @@ int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::st
 }
 
 /**
- * READ CONFIG FILE (MS-DOS type) WITH SPECIFIC INFORMATION (SUCH AS THE SIMULATION_INDEX)
+ * Return TRUE if there is a Central Controller declared. FALSE, otherwise.
+ * The CC is declared in any line by setting the WLAN_CODE field to "NULL"
+ * @param "nodes_filename" [type char*]: nodes configuration filename
+ * @return "presence_central_cotnroller" [type bool]: flag indicating whether a CC is present or not
  */
-void Komondor :: ReadSystemConfigurationFile() {
-
-	const char *filename_test = "../input/test_system_config_file";
-	printf("%s Reading TEST configuration file '%s'...\n", LOG_LVL1, filename_test);
-	FILE* test_input_config = fopen(filename_test, "r");
-	if (!test_input_config){
-		printf("%s Test file '%s' not found!\n", LOG_LVL3, filename_test);
-		exit(-1);
-	}
-	char line_system[CHAR_BUFFER_SIZE];
-	while (fgets(line_system, CHAR_BUFFER_SIZE, test_input_config)){
-		if(line_system[0] == '#') continue;
-		char delim[] = "=";
-		char *ptr = strtok(line_system, delim);
-		while(ptr != NULL)
-		{
-			if(strcmp(ptr, "SIMULATION_INDEX")) {
-				ptr = strtok(NULL, delim);
-				if(ptr!=NULL) printf("SIMULATION_INDEX: %s\n", ptr);
-			} else if (strcmp(ptr, "SEED")) {
-				ptr = strtok(NULL, delim);
-				if(ptr!=NULL) printf("SEED: %s\n", ptr);
+int Komondor :: CheckCentralController(const char *agents_filename){
+	int presence_central_cotnroller(FALSE);
+	FILE* stream_agents = fopen(agents_filename, "r");
+	char line_agents[CHAR_BUFFER_SIZE];
+	first_line_skiped_flag = 0;	// Flag for skipping first informative line of input file
+	while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_agents)){
+		if(!first_line_skiped_flag){	// Skip the first line of the .csv file
+			first_line_skiped_flag = 1;
+		} else{
+			// WLAN code
+			char* tmp_agents (strdup(line_agents));
+			const char *wlan_code_aux (GetField(tmp_agents, IX_AGENT_WLAN_CODE));
+			std::string wlan_code;
+			wlan_code.append(ToString(wlan_code_aux));
+			// Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
+			if (strcmp(wlan_code.c_str(), "NULL") == 0) {
+				presence_central_cotnroller = TRUE;
 			}
 		}
-		printf("\n");
 	}
-	fclose(test_input_config);
-
+	return presence_central_cotnroller;
 }
 
 /**********/
@@ -1447,7 +1373,6 @@ int main(int argc, char *argv[]){
 	printf("\n\n");
 
 	// Input variables
-	char *system_input_filename;
 	char *nodes_input_filename;
 	char *agents_input_filename;
 	std::string script_output_filename;
@@ -1466,41 +1391,38 @@ int main(int argc, char *argv[]){
 
 	// Get input variables per console
 	if(argc == NUM_FULL_ARGUMENTS_CONSOLE){	// Full configuration entered per console
-		system_input_filename = argv[1];
-		nodes_input_filename = argv[2];
-		agents_input_filename = argv[3];
-		script_output_filename = ToString(argv[4]);
-		simulation_code = ToString(argv[5]);
-		save_system_logs = atoi(argv[6]);
-		save_node_logs = atoi(argv[7]);
-		save_agent_logs = atoi(argv[8]);
-		print_system_logs = atoi(argv[9]);
-		print_node_logs = atoi(argv[10]);
-		print_agent_logs = atoi(argv[11]);
-		sim_time = atof(argv[12]);
-		seed = atoi(argv[13]);
-		// Enable the operation of agents
-		agents_enabled = TRUE;
-		if (print_system_logs) printf("%s FULL configuration entered per console.\n", LOG_LVL1);
-	} else if(argc == NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS){	// Configuration without agents
-		system_input_filename = argv[1];
-		nodes_input_filename = argv[2];
+		nodes_input_filename = argv[1];
+		agents_input_filename = argv[2];
 		script_output_filename = ToString(argv[3]);
 		simulation_code = ToString(argv[4]);
 		save_system_logs = atoi(argv[5]);
 		save_node_logs = atoi(argv[6]);
-		print_system_logs = atoi(argv[7]);
-		print_node_logs = atoi(argv[8]);
-		sim_time = atof(argv[9]);
-		seed = atoi(argv[10]);
+		save_agent_logs = atoi(argv[7]);
+		print_system_logs = atoi(argv[8]);
+		print_node_logs = atoi(argv[9]);
+		print_agent_logs = atoi(argv[10]);
+		sim_time = atof(argv[11]);
+		seed = atoi(argv[12]);
+		// Enable the operation of agents
+		agents_enabled = TRUE;
+		if (print_system_logs) printf("%s FULL configuration entered per console (AGENTS ENABLED).\n", LOG_LVL1);
+	} else if(argc == NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS){	// Configuration without agents
+		nodes_input_filename = argv[1];
+		script_output_filename = ToString(argv[2]);
+		simulation_code = ToString(argv[3]);
+		save_system_logs = atoi(argv[4]);
+		save_node_logs = atoi(argv[5]);
+		print_system_logs = atoi(argv[6]);
+		print_node_logs = atoi(argv[7]);
+		sim_time = atof(argv[8]);
+		seed = atoi(argv[9]);
 		// Disable the operation of agents
 		agents_enabled = FALSE;
 		if (print_system_logs) printf("%s FULL configuration entered per console (AGENTS DISABLED).\n", LOG_LVL1);
 	} else if(argc == NUM_PARTIAL_ARGUMENTS_CONSOLE) {	// Partial configuration entered per console
-		system_input_filename = argv[1];
-		nodes_input_filename = argv[2];
-		sim_time = atof(argv[3]);
-		seed = atoi(argv[4]);
+		nodes_input_filename = argv[1];
+		sim_time = atof(argv[2]);
+		seed = atoi(argv[3]);
 		// Default values
 		script_output_filename.append(ToString(DEFAULT_SCRIPT_FILENAME));
 		simulation_code.append(ToString(DEFAULT_SIMULATION_CODE));
@@ -1513,11 +1435,10 @@ int main(int argc, char *argv[]){
 		if (print_system_logs) printf("%s PARTIAL configuration entered per console. "
 			"Some parameters are set by DEFAULT.\n", LOG_LVL1);
 	} else if(argc == NUM_PARTIAL_ARGUMENTS_SCRIPT) {	// Partial configuration entered per console (useful for scripts)
-		system_input_filename = argv[1];
-		nodes_input_filename = argv[2];
-		simulation_code = ToString(argv[3]);	// For scripts --> useful to identify simulations
-		sim_time = atof(argv[4]);
-		seed = atoi(argv[5]);
+		nodes_input_filename = argv[1];
+		simulation_code = ToString(argv[2]);	// For scripts --> useful to identify simulations
+		sim_time = atof(argv[3]);
+		seed = atoi(argv[4]);
 		// Default values
 		script_output_filename.append(ToString(DEFAULT_SCRIPT_FILENAME));
 		save_system_logs = DEFAULT_WRITE_SYSTEM_LOGS;
@@ -1547,7 +1468,6 @@ int main(int argc, char *argv[]){
 
 	if (print_system_logs) {
 		printf("%s Komondor input configuration:\n", LOG_LVL1);
-		printf("%s system_input_filename: %s\n", LOG_LVL2, system_input_filename);
 		printf("%s nodes_input_filename: %s\n", LOG_LVL2, nodes_input_filename);
 		printf("%s agents_enabled: %d\n", LOG_LVL2, agents_enabled);
 		if (agents_enabled) { printf("%s agents_input_filename: %s\n", LOG_LVL2, agents_input_filename); }
@@ -1566,9 +1486,9 @@ int main(int argc, char *argv[]){
 	komondor_simulation.Seed = seed;
 	srand(seed); // Needed for ensuring randomness dependency on seed
 	komondor_simulation.StopTime(sim_time);
-	komondor_simulation.Setup(sim_time, save_system_logs, save_node_logs, save_agent_logs, print_system_logs, print_node_logs, print_agent_logs,
-		system_input_filename, nodes_input_filename, script_output_filename.c_str(), simulation_code.c_str(), seed,
-		agents_enabled, agents_input_filename);
+	komondor_simulation.Setup(sim_time, save_system_logs, save_node_logs, save_agent_logs, print_system_logs,
+		print_node_logs, print_agent_logs, nodes_input_filename, script_output_filename.c_str(),
+		simulation_code.c_str(), seed, agents_enabled, agents_input_filename);
 
 	printf("------------------------------------------\n");
 	printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());

@@ -1,3 +1,4 @@
-wlan+AF8-code	centralized	time between requests (seconds)	actions channels	actions cca (dBm)	actions tx power (dBm)	actions dcb policy	reward	learning+AF8-mechanism
-A	0	0.5	0	+AC0-82, +AC0-68	1,5,10,15,20	4	1	1
-B	0	0.5	0	+AC0-82, +AC0-68	1,5,10,15,20	4	1	1
+Wlan code;centralized;time between requests (seconds);actions channels;actions cca (dBm);actions tx power (dBm);actions dcb policy;reward;learning mechanism;selected_strategy
+NULL;0;0.5;0;0;0;4;1;1;1
+A;0;0.5;0;-82;5,15,25;4;1;1;2
+B;0;0.5;1;-82;5,15,25;4;1;1;2

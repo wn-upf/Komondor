@@ -46,19 +46,21 @@
  * - This file contains all the macros used by the rest of the code
  */
 
-
+// C++ macros
+#define MIN_VALUE_C_LANGUAGE		0.000001				///> Minimum float value printable for default by C++ language
+#define MIN_DOUBLE_VALUE_KOMONDOR	0.000000000000001		///> Minimum value accepted by Komondor
+#define MILLI_VALUE					0.001					///> Milli value (10^-3)
+#define MICRO_VALUE					0.000001				///> Micro value (10^-6)
+#define NANO_VALUE					0.000000001				///> Nano value (10^-9)
+#define PICO_VALUE					0.000000000001			///> Pico value (10^-12)
+#define FEMTO_VALUE					0.000000000000001		///> Femto value (10^-15)
+#define ATTO_VALUE					0.000000000000000001	///> Atto value (10^-18)
 
 // Code parameters
 #define FALSE 				0			///> Boolean: false
 #define TRUE 				1			///> Boolean: true
 #define INTEGER_SIZE		8			///> Size of an integer
 #define CHAR_BUFFER_SIZE	1024		///> Size of system buffer
-
-// System parameters
-#define SLOT_TIME 			0.000009	///> Slot time unit [s]
-
-// Physical parameters
-#define SPEED_LIGHT			3*pow(10,8)	///> Speed of light [m/s]
 
 // Log hierarchy level to make output log file more readable
 #define LOG_LVL1	""
@@ -84,12 +86,24 @@
 #define STATE_NAV		12	///> Virtual Carrier Sense (process only RTS and CTS)
 #define STATE_SLEEP		13	///> Virtual Carrier Sense (process only RTS and CTS)
 
+// Node types
+#define NODE_TYPE_UNKWNOW	-1	///> Unknown (none) node type
+#define NODE_TYPE_AP		0	///> Access Point
+#define NODE_TYPE_STA		1	///> Station
+#define NODE_TYPE_OTHER		2	///> Other kind of devices
+
 // Logs
 #define PRINT_LOG				0	///> Print logs per console
 #define WRITE_LOG				1	///> Write log in file
 #define SAVE_LOG_NONE			0	///> Don't save logs
 #define SAVE_LOG				1	///> Save logs
 #define LOG_HEADER_NODE_SIZE	30	///> Node log header size
+
+// Information detail level to be displayed in logs
+#define INFO_DETAIL_LEVEL_0		0
+#define INFO_DETAIL_LEVEL_1		1
+#define INFO_DETAIL_LEVEL_2		2
+#define INFO_DETAIL_LEVEL_3		3
 
 // Transmission initiated or finished
 #define TX_INITIATED		0	///> Transmission is initiated ('inportSomeNodeStartTX()')
@@ -128,11 +142,7 @@
 #define PACKET_TYPE_RTS				4		///> RTS type
 #define PACKET_TYPE_CTS				5		///> CTS type
 
-// Backoff types
-#define BACKOFF_SLOTTED		0
-#define BACKOFF_CONTINUOUS	1
-
-// PD
+// Packet detect
 #define PD_NOT_EXCEEDED	0	///> PD is not exceeded (primary channel is free)
 #define PD_EXCEEDED		1	///> PD is exceeded
 
@@ -159,22 +169,17 @@
 #define PROGRESS_BAR_DELTA		5	///> Amount of percentage between two progress bar indicators
 #define PROGRESS_BAR_DISPLAY 	1	///> Activate progress bar
 
-// C++ macros
-#define MIN_VALUE_C_LANGUAGE		0.000001				///> Minimum float value printable for default by C++ language
-#define MIN_DOUBLE_VALUE_KOMONDOR	0.000000000000001		///> Minimum value accepted by Komondor
-#define MILLI_VALUE					0.001					///> Milli value (10^-3)
-#define MICRO_VALUE					0.000001				///> Micro value (10^-6)
-#define NANO_VALUE					0.000000001				///> Nano value (10^-9)
-#define PICO_VALUE					0.000000000001			///> Pico value (10^-12)
-#define FEMTO_VALUE					0.000000000000001		///> Femto value (10^-15)
-#define ATTO_VALUE					0.000000000000000001	///> Atto value (10^-18)
-
 // Timers
 #define PAUSE_TIMER					0					///> Try to pause a timer (e.g. backoff)
 #define RESUME_TIMER				1					///> Try to resume timer
 #define MAX_NUM_RAND_TIME			1000				///> Max. number of time rand values
 #define MAX_DIFFERENCE_SAME_TIME	MAX_NUM_RAND_TIME * PICO_VALUE	///> Max. difference for considering that two events occur at the same time
 #define TIME_OUT_EXTRA_TIME			PICO_VALUE	///> TO is triggered when exceeded TIME_OUT_EXTRA_TIME
+
+/* **********
+ * * Models *
+ * **********
+ */
 
 // Path-loss models
 #define PATH_LOSS_LFS 				0		///> Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx
@@ -214,28 +219,40 @@
 #define TRAFFIC_POISSON_BURST					3	///> Traffic is generated in bursts following a Poisson distribution
 #define TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION	99	///> Transmitters always have the same packet pending to be transmitted
 
-#define PACKET_BUFFER_SIZE		100		///> Size of the packets buffer
-
 // Protocols
 #define INCREASE_CW 1		///> Command to increase contention window
 #define RESET_CW 2			///> Command to reset the contention window
-#define MAX_POWER 20 		///> Maximum power that can be transmitted (dBm)
 
 // CE Model
 #define CE_DEFAULT			0	///>
 #define CE_IEEE_802_11		1	///>
 
-// Node type
-#define NODE_TYPE_UNKWNOW	-1	///> Unknown (none) node type
-#define NODE_TYPE_AP		0	///> Access Point
-#define NODE_TYPE_STA		1	///> Station
-#define NODE_TYPE_OTHER		2	///> Other kind of devices
-
 // Probability distribution types
 #define PDF_DETERMINISTIC	0	///> Deterministic (same value as mean)
 #define PDF_EXPONENTIAL		1	///> Exponential pdf
 
-// MODULATION TYPES TODO https://en.wikipedia.org/wiki/IEEE_802.11ax
+// IEEE protocol
+#define IEEE_NOT_SPECIFIED		0
+#define IEEE_802_11_AX			1
+
+// Backoff types
+#define BACKOFF_SLOTTED		0
+#define BACKOFF_CONTINUOUS	1
+
+/* *********************
+ * * System parameters *
+ * *********************
+ */
+
+// Physical parameters
+#define SPEED_LIGHT			3*pow(10,8)	///> Speed of light [m/s]
+#define NUM_CHANNELS_KOMONDOR	8   ///> Total number of frequency channels
+#define CHANNEL_BW_MHZ			20	///> Bandwidth of a basic channel [MHz]
+#define NOISE_LEVEL_DBM			-95	///> Noise level [dBm]
+#define ANTENNA_RX_GAIN_DB 		0	///> Antenna receiption gain [dB]
+#define ANTENNA_TX_GAIN_DB 		0	///> Antenna transmission gain [dB]
+
+// MODULATION TYPES: https://en.wikipedia.org/wiki/IEEE_802.11ax
 #define MODULATION_FORBIDDEN	-1
 #define MODULATION_NONE			0
 #define MODULATION_BPSK_1_2		1
@@ -251,15 +268,8 @@
 #define MODULATION_1024QAM_3_4	11
 #define MODULATION_1024QAM_5_6	12
 
-// Information detail level
-#define INFO_DETAIL_LEVEL_0		0
-#define INFO_DETAIL_LEVEL_1		1
-#define INFO_DETAIL_LEVEL_2		2
-#define INFO_DETAIL_LEVEL_3		3
-
-// IEEE protocol
-#define IEEE_NOT_SPECIFIED		0
-#define IEEE_802_11_AX			1
+// Application parameters
+#define PACKET_BUFFER_SIZE		100		///> Size of the packets buffer
 
 /* *****************
  * * IEEE 802.11ax *
@@ -279,6 +289,7 @@
 
 // --- MAC parameters ---
 
+#define SLOT_TIME	0.000009					///> Slot time unit [s]
 #define SIFS 		(16 * MICRO_VALUE)			///> SIFS value
 #define DIFS		(SIFS + (2 * SLOT_TIME))	///> DIFS value
 #define PIFS		(SIFS + SLOT_TIME)			///> PIFS value
@@ -302,10 +313,18 @@
 #define IEEE_BITS_OFDM_SYM_LEGACY 		24					///> Number of bits per symbol in the legacy OFDM operation
 
 /* *****************************************
+ * * NODES CAPABILITIES *
+ * *****************************************
+ */
+#define MIN_TX_POWER_DBM 		1
+#define MAX_TX_POWER_DBM 		20
+#define MIN_SENSITIVITY_DBM 	-82
+#define MAX_SENSITIVITY_DBM 	-62
+
+/* *****************************************
  * * SPATIAL REUSE OPERATION IEEE 802.11ax *
  * *****************************************
  */
-
 #define INTRA_BSS_FRAME		0		///> Frame type = Intra-BSS or legacy
 #define NON_SRG_FRAME		1		///> Frame type = Inter-BSS with different SRG
 #define SRG_FRAME			2		///> Frame type = Inter-BSS with same SRG
@@ -319,32 +338,47 @@
  * *****************************************
  */
 
-#define ORIGIN_AGENT	0		///> To determine the source of a received configuration (agent)
-#define ORIGIN_AP		1		///> To determine the source of a received configuration (AP)
+#define ORIGIN_AGENT	0		///> To determine the source of a received command/configuration (agent)
+#define ORIGIN_AP		1		///> To determine the source of a received command/configuration (AP)
+#define ORIGIN_CC		2		///> To determine the source of a received command/configuration (AP)
 
 #define NUM_FEATURES_ACTIONS			4	///> Number of features considered (e.g., primary, PD, P_tx, DCB policy)
 
 // Types of rewards
-#define REWARD_TYPE_PACKETS_SENT 		0	///> To determine the reward according to the type of performance indicator
-#define REWARD_TYPE_THROUGHPUT 			1	///> To determine the reward according to the type of performance indicator
-#define REWARD_TYPE_PACKETS_GENERATED 	2
-#define REWARD_TYPE_MIN_RSSI			3
+#define REWARD_TYPE_PACKETS_SUCCESSFUL	0	///> Packets sent
+#define REWARD_TYPE_AVERAGE_THROUGHPUT 	1	///> Throughput
+#define REWARD_TYPE_MIN_RSSI			2	///> Minimum RSSI received
+#define REWARD_TYPE_MAX_DELAY			3	///> Maximum experienced delay
+#define REWARD_TYPE_AVERAGE_DELAY		4	///> Average experienced delay
+#define REWARD_TYPE_CHANNEL_OCCUPANCY 	5	///> Average channel occupancy ratio
 
-// Communication levels provided
-#define PURE_DECENTRALIZED 					0	///> Agents learn based on their own information
-#define DISTRIBUTED		 					1	///> Agents exchange information among them
-#define PURE_CENTRALIZED					2	///> The learning operation is fully controlled by a central controller
-#define HYBRID_CENTRALIZED_DECENTRALIZED	3	///> The learning operation is held at both controller and agents
+// Agent modes
+#define AGENT_MODE_DECENTRALIZED 	0	///> Agents are independent entities that follow their own learning procedure
+#define AGENT_MODE_COOPERATIVE		1	///> Agents combine local and distributed/centralized learning approaches
+#define AGENT_MODE_CENTRALIZED		2	///> The learning operation is fully managed by a central controller
 
 // Learning mechanisms allowed
+#define MONITORING_ONLY		 			0
 #define MULTI_ARMED_BANDITS 			1
 #define GRAPH_COLORING					2
 #define ACTION_BANNING					3
 #define RTOT_ALGORITHM					4
+#define CENTRALIZED_ACTION_BANNING		5
+
+// Types of banning threshold adaptation
+#define BANNING_THRESHOLD_STATIC        0
+#define BANNING_THRESHOLD_LINEAR        1
+#define BANNING_THRESHOLD_LOGARITHMIC   2
+
+#define INCREASE_THRESHOLD   0
+#define DECREASE_THRESHOLD   1
 
 // Action-selection strategies (MABs)
 #define STRATEGY_EGREEDY				1
 #define STRATEGY_THOMPSON_SAMPLING		2
+#define STRATEGY_SEQUENTIAL             3
+
+#define MAX_TIME_INFORMATION_VALID		10 ///> Maximum amount of time (in seconds) the information of the network is considered to be valid
 
 // Levels of applicability for configurations computed by agents / central controller
 #define CONFIGURATION_SUGGESTED 		0
@@ -352,8 +386,28 @@
 #define CONFIGURATION_REQUIRED			2
 
 // Modes of the Central Controller (CC)
-#define MODE_PASSIVE	0
-#define MODE_ACTIVE		1
+#define CC_MODE_PASSIVE		0
+#define CC_MODE_ACTIVE		1
+
+// Types of commands that the CC can send to agents
+#define SEND_CONFIGURATION_PERFORMANCE 	0
+#define UPDATE_CONFIGURATION			1
+#define STOP_ACTING						2
+#define RESUME_ACTIVITY					3
+#define MODIFY_ITERATION_TIME			4
+#define BAN_CONFIGURATION				5
+#define UNBAN_CONFIGURATION				6
+#define COMMUNICATION_UPON_TRIGGER		7
+#define COMMUNICATION_AUTOMATIC			8
+
+// Clustering approaches for grouping agents / BSSs
+#define CLUSTER_BY_CCA			0
+#define CLUSTER_BY_DISTANCE		1
+
+// Shared performance metrics
+#define MAX_MIN_PERFORMANCE			0
+#define PROP_FAIRNESS_PERFORMANCE	1
+#define AVERAGE_PERFORMANCE			2
 
 /* ********************************************
  * * INPUT/OUTPUT FILES AND CONSOLE ARGUMENTS *
@@ -361,10 +415,10 @@
  */
 
 // CONSOLE ARGUMENTS
-#define NUM_FULL_ARGUMENTS_CONSOLE				14		///> Number of arguments entered per console corresponding to full config
-#define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	11		///> Number of arguments entered per console corresponding to full config (NO AGENTS)
-#define NUM_PARTIAL_ARGUMENTS_CONSOLE			5		///> Number of arguments entered per console corresponding to partial config
-#define NUM_PARTIAL_ARGUMENTS_SCRIPT			6		///> Number of arguments entered per script corresponding to partial config
+#define NUM_FULL_ARGUMENTS_CONSOLE				13		///> Number of arguments entered per console corresponding to full config
+#define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	10		///> Number of arguments entered per console corresponding to full config (NO AGENTS)
+#define NUM_PARTIAL_ARGUMENTS_CONSOLE			4		///> Number of arguments entered per console corresponding to partial config
+#define NUM_PARTIAL_ARGUMENTS_SCRIPT			5		///> Number of arguments entered per script corresponding to partial config
 
 #define IX_SYSTEM_INPUT_FILE		1
 #define IX_NODES_INPUT_FILE			2
@@ -390,56 +444,35 @@
 #define FILE_TYPE_NODES			1
 #define FILE_NAME_CODE_NODES	"nodes"
 
-// System file
-#define IX_NUM_CHANNELS				1
-#define IX_BASIC_CH_BW				2
-#define IX_PDF_BACKOFF				3
-#define IX_PDF_TX_TIME				4
-#define IX_PACKET_LENGTH			5
-#define IX_NUM_PACKETS_AGGREGATED	6
-#define IX_PATH_LOSS				7
-#define IX_CAPTURE_EFFECT			8
-#define IX_NOISE_LEVEL				9
-#define IX_COCHANNEL_MODEL			10
-#define IX_COLLISIONS_MODEL			11
-#define IX_CONSTANT_PER				12
-#define IX_TRAFFIC_MODEL			13
-#define IX_BO_TYPE					14
-#define IX_CW_ADAPTATION			15
-#define IX_PIFS_ACTIVATION			16
-#define IX_CAPTURE_EFFECT_MODEL		17
-
 // Nodes file
 #define IX_NODE_CODE				1
 #define IX_NODE_TYPE				2
 #define IX_WLAN_CODE				3
-#define IX_DESTINATION_ID			4
-#define IX_POSITION_X				5
-#define IX_POSITION_Y				6
-#define IX_POSITION_Z				7
-#define IX_PRIMARY_CHANNEL			8
-#define IX_MIN_CH_ALLOWED			9
-#define IX_MAX_CH_ALLOWED			10
-#define IX_CW_MIN					11
-#define IX_CW_STAGE_MAX				12
-#define IX_TX_POWER_MIN				13
-#define IX_TX_POWER_DEFAULT			14
-#define IX_TX_POWER_MAX				15
-#define IX_PD_MIN					16
-#define IX_PD_DEFAULT				17
-#define IX_PD_MAX					18
-#define IX_TX_GAIN					19
-#define IX_RX_GAIN					20
-#define IX_CHANNEL_BONDING_MODEL	21
-#define IX_MODULATION_DEFAULT		22
-#define IX_CENTRAL_FREQ				23
-#define IX_LAMBDA					24
-#define IX_IEEE_PROTOCOL_TYPE		25
-#define IX_TRAFFIC_LOAD				26
-#define IX_BSS_COLOR				27
-#define IX_SRG						28
-#define IX_NON_SRG_OBSS_PD			29
-#define IX_SRG_OBSS_PD				30
+#define IX_POSITION_X				4
+#define IX_POSITION_Y				5
+#define IX_POSITION_Z				6
+#define IX_CENTRAL_FREQ				7
+#define IX_CHANNEL_BONDING_MODEL	8
+#define IX_PRIMARY_CHANNEL			9
+#define IX_MIN_CH_ALLOWED			10
+#define IX_MAX_CH_ALLOWED			11
+#define IX_TX_POWER_DEFAULT			12
+#define IX_PD_DEFAULT				13
+#define IX_TRAFFIC_MODEL			14
+#define IX_TRAFFIC_LOAD				15
+#define IX_PACKET_LENGTH			16
+#define IX_NUM_PACKETS_AGG			17
+#define IX_CAPTURE_EFFECT_MODEL		18
+#define IX_CAPTURE_EFFECT_THR		19
+#define IX_CONSTANT_PER				20
+#define IX_PIFS_ACTIVATED			21
+#define IX_CW_ADAPTATION_FLAG		22
+#define IX_CW_MIN					23
+#define IX_CW_STAGE_MAX				24
+#define IX_BSS_COLOR				25
+#define IX_SRG						26
+#define IX_NON_SRG_OBSS_PD			27
+#define IX_SRG_OBSS_PD				28
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1

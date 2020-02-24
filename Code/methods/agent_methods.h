@@ -59,9 +59,9 @@
 * @param "current_performance" [type Performance]: performance obtained by the corresponding WLAN
 * @param "sim_time" [type double]: simulation time at the moment of calling the function (for logging purposes)
 */
-void RestartPerformanceMetrics(Performance *current_performance, double sim_time) {
+void RestartPerformanceMetrics(Performance *current_performance, double sim_time, int num_channels_allowed) {
 
-	current_performance->last_time_measured = sim_time;
+	current_performance->timestamp = sim_time;
 	current_performance->throughput = 0;
 	current_performance->max_bound_throughput = 0;
 	current_performance->data_packets_sent = 0;
@@ -71,6 +71,30 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 	current_performance->num_packets_generated = 0;
 	current_performance->num_packets_dropped = 0;
 
+	for(int n = 0; n < num_channels_allowed; ++n){
+		current_performance->total_time_transmitting_in_num_channels[n] = 0;
+		current_performance->total_time_lost_in_num_channels[n] = 0;
+	}
+
+}
+
+/**
+ * Check the validity of the current information held by the agent, based on the timestamp and the maximum expiration time
+ * @return "data_still_valid" [type int]: boolean indicating whether data is still valid or not
+ */
+bool CheckValidityOfData(Configuration configuration, Performance performance,
+		double sim_time, double max_time_validity_information) {
+
+//	printf("sim_time = %f / max_time_validity_information = %f\n",sim_time,max_time_validity_information);
+
+	bool data_still_valid(false);
+	if ( (sim_time - performance.timestamp > max_time_validity_information)
+			|| (sim_time - configuration.timestamp > max_time_validity_information) ) {
+		data_still_valid = false;
+	} else {
+		data_still_valid = true;
+	}
+	return data_still_valid;
 }
 
 #endif
