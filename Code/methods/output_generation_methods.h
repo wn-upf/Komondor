@@ -395,19 +395,61 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		// Regression test (scenarios paper Komondor - Wireless Days 2019)
 		case 10:{
-			if (total_nodes_number == 2 || total_nodes_number == 3) {
-				// Basic scenarios (1 WLAN)
-				fprintf(logger_script.file, ";%.2f\n",
-					performance_report[0].throughput * pow(10,-6));
-			} else if (total_nodes_number == 6) {
-				// Complex scenarios (3 WLANs)
-				fprintf(logger_script.file, ";%.2f;%.2f;%.2f\n",
-					performance_report[0].throughput * pow(10,-6),
-					performance_report[2].throughput * pow(10,-6),
-					performance_report[4].throughput * pow(10,-6));
-			} else {
-				printf("Error in 'Komondor :: Stop()' ---> be careful of the desired generated logs (script)\n");
-			}
+//			if (total_nodes_number == 2 || total_nodes_number == 3) {
+//				// Basic scenarios (1 WLAN)
+//				fprintf(logger_script.file, ";%.2f\n",
+//					performance_report[0].throughput * pow(10,-6));
+//			} else if (total_nodes_number == 6) {
+//				// Complex scenarios (3 WLANs)
+//				fprintf(logger_script.file, ";%.2f;%.2f;%.2f\n",
+//					performance_report[0].throughput * pow(10,-6),
+//					performance_report[2].throughput * pow(10,-6),
+//					performance_report[4].throughput * pow(10,-6));
+//			} else {
+//				printf("Error in 'Komondor :: Stop()' ---> be careful of the desired generated logs (script)\n");
+//			}
+
+            //  - Throughput experienced/allocated for each device (AP and STAs)
+            char tpt_per_device[250] = "{";
+            char aux_tpt_per_device[50];
+            // - RSSI in STAs from the associated AP
+            char rssi_per_device[250] = "{";
+            char aux_rssi_per_device[50];
+            int counter_nodes_visited = 0;
+            for(int i = 0; i < total_nodes_number; i ++) {
+                if(configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+                    // Throughput (Mbps)
+                    if(i > 0 && counter_nodes_visited < total_nodes_number) strcat(tpt_per_device, ",");
+                    sprintf(aux_tpt_per_device, "%.2f", performance_report[i].throughput * pow(10,-6));
+                    strcat(tpt_per_device, aux_tpt_per_device);
+                    // RSSI received from the AP (dBm)
+                    //strcat(rssi_per_device, "Inf,");
+                    // Increase the number of visited nodes
+                    ++counter_nodes_visited;
+                    for(int w = 0; w < total_wlans_number; w ++) {
+                        if(wlan_container[w].ap_id == configuration_per_node[i].capabilities.node_id) {
+                            for(int s = 0; s < wlan_container[w].num_stas; s ++) {
+                                // Array to store all details of STA
+                                char sta_details[250] = "";
+                                // RSSI received from the AP
+                                sprintf(aux_rssi_per_device, "%.2f", ConvertPower(PW_TO_DBM, performance_report[counter_nodes_visited].received_power_array[i]));
+                                strcat(rssi_per_device, aux_rssi_per_device);
+                                strcat(sta_details, aux_rssi_per_device);
+                                strcat(sta_details, ";");
+                                // Increase the number of visited nodes
+                                ++counter_nodes_visited;
+                                if(counter_nodes_visited < total_nodes_number) {
+                                    strcat(rssi_per_device, ",");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            strcat(tpt_per_device, "}");
+            strcat(rssi_per_device, "}");
+            // STEP 2: Print the data to the output .csv file
+            fprintf(logger_script.file, ";%s;%s\n", tpt_per_device,rssi_per_device);
 			break;
 		}
 
