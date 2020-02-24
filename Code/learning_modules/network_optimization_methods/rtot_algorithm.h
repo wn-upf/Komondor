@@ -80,20 +80,6 @@ class RtotAlgorithm {
 		/******************/
 		/******************/
 
-//		/**
-//		* Updates the configuration to be used by each WLAN
-//		* @param "configuration_array" [type Configuration*]: array of configurations of each AP (to be updated by this method)
-//		*/
-//		void UpdateObssPdAllStas(Performance performance, double *obss_pd_per_sta) {
-//
-//			// Update the RSSI received at each STA and compute the OBSS/PD to be used for each STA
-//			for (int i = 0; i < num_stas; ++ i) {
-//				rssi_per_sta[i] = performance.rssi_list[i];
-//				obss_pd_per_sta[i] = ComputeObssPdRtotAlgorithm(rssi_per_sta[i], margin);
-//			}
-//
-//		}
-
 		/**
 		* Updates the configuration to be used by each WLAN
 		* @param "configuration_array" [type Configuration*]: array of configurations of each AP (to be updated by this method)

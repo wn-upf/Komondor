@@ -68,8 +68,6 @@
 #include "../methods/auxiliary_methods.h"
 #include "../methods/agent_methods.h"
 
-#include "../learning_modules//network_optimization_methods/centralized_graph_coloring.h"
-
 #include "../learning_modules/pre_processor.h"
 #include "../learning_modules/ml_model.h"
 
@@ -501,11 +499,6 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 		case CENTRALIZED_ACTION_BANNING: {
 			// Forward the output to agents
 			SendCommandToAllAgents(BAN_CONFIGURATION, configuration_array);
-			break;
-		}
-		case GRAPH_COLORING: {
-            // Send the updated configuration to agents
-			SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
 			break;
 		}
 		// Unknown controller mode

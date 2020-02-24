@@ -324,10 +324,11 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 		WriteAllWlansInfo(logger_simulation, header_str);
 		fprintf(logger_simulation.file, "%s Nodes generated!\n", LOG_LVL2);
 		WriteAllNodesInfo(logger_simulation, INFO_DETAIL_LEVEL_0, header_str);
-		if(agents_enabled) fprintf(logger_simulation.file, "%s Agents generated!\n", LOG_LVL2);
-		WriteAllAgentsInfo(logger_simulation, header_str);
+		if(agents_enabled) {
+		    fprintf(logger_simulation.file, "%s Agents generated!\n", LOG_LVL2);
+            WriteAllAgentsInfo(logger_simulation, header_str);
+        }
 	}
-
 	// Set connections among nodes
 	for(int n = 0; n < total_nodes_number; ++n){
 
@@ -380,7 +381,6 @@ void Komondor :: Setup(double sim_time_console, int save_system_logs_console, in
 			}
 		}
 	}
-
 };
 
 /**
@@ -1116,9 +1116,6 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
 	} else {
 		printf("%s WARNING: THE CENTRAL CONTROLLER DOES NOT HAVE ANY ATTACHED AGENT! CHECK YOUR AGENTS' INPUT FILE\n", LOG_LVL2);
 		central_controller[0].controller_on = FALSE;
-//		for (int agent_ix = 0; agent_ix < total_controlled_agents_number; ++agent_ix) {
-//			agent_container[agent_ix].controller_on = FALSE;
-//		}
 	}
 
 	central_controller[0].PrintControllerInfo();

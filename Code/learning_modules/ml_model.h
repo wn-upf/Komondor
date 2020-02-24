@@ -47,7 +47,7 @@
  * ml_model.h: this file contains functions related to the agents' operation
  *
  *  - This file contains the methods used by the ML Model in the Machine Learning (ML) pipeline.
- * 	 In particular, this module manages the ML operation
+ * 	 In particular, this module applies the actual ML operation
  */
 
 #include "../list_of_macros.h"
@@ -56,7 +56,6 @@
 #include "../structures/performance.h"
 #include "../structures/controller_report.h"
 
-#include "/network_optimization_methods/centralized_graph_coloring.h"
 #include "/network_optimization_methods/centralized_action_banning.h"
 #include "/network_optimization_methods/multi_armed_bandits.h"
 #include "/network_optimization_methods/rtot_algorithm.h"
@@ -97,7 +96,6 @@ class MlModel {
 		MultiArmedBandit mab_agent;				///> Multi-Armed Bandit
 		RtotAlgorithm rtot_alg;					///> RTOT algorithm
 		CentralizedActionBanning action_banner;	///> Centralized action-banning
-		GraphColoring graph_coloring;			///> Graph coloring
 
 	// Methods
 	public:
@@ -123,14 +121,6 @@ class MlModel {
 					// Ban configurations based on the observed performance
 					action_banner.UpdateConfiguration(configuration_array, controller_report, central_controller_logger, sim_time);
 //					controller_report.PrintOrWriteAvailableActions(PRINT_LOG, central_controller_logger, save_logs, sim_time);
-					break;
-				}
-				/* GRAPH COLORING */
-				// TODO: to be improved (right now, it is not fully operative)
-				case GRAPH_COLORING: {
-					// Apply Hminmax to decide the new channels configuration
-					graph_coloring.UpdateConfiguration(controller_report.last_configuration_array,
-						controller_report.last_performance_array, central_controller_logger, sim_time);
 					break;
 				}
 				default: {
@@ -210,17 +200,6 @@ class MlModel {
 					action_banner.InitializeVariables();
 					break;
 				}
-				/* Graph coloring */
-				case GRAPH_COLORING: {
-					graph_coloring.save_logs = save_logs;
-					graph_coloring.print_logs = print_logs;
-					graph_coloring.agents_number = agents_number;
-					graph_coloring.wlans_number = wlans_number;
-					graph_coloring.num_channels = num_channels;
-					graph_coloring.total_nodes_number = total_nodes_number;
-					graph_coloring.InitializeVariables();
-					break;
-				}
 				/* Multi-Armed Bandits */
 				case MULTI_ARMED_BANDITS: {
 					mab_agent.agent_id = agent_id;
@@ -241,6 +220,7 @@ class MlModel {
 				//  TODO: provide more learning mechanisms
 				// case Q_LEARNING:
 				// ...
+
 				/* UNKNOWN */
 				default: {
 					printf("[ML MODEL] ERROR: '%d' is not a correct learning mechanism\n", learning_mechanism);
@@ -271,31 +251,17 @@ class MlModel {
 					// DO NOTHING
 					break;
 				}
-				/* GRAPH COLORING */
-				case GRAPH_COLORING: {
-					graph_coloring.PrintOrWriteStatistics(write_or_print, logger);
-					break;
-				}
 				/* Multi-Armed Bandits */
 				case MULTI_ARMED_BANDITS: {
 					mab_agent.PrintOrWriteStatistics(write_or_print, logger, sim_time);
 					break;
 				}
 				case RTOT_ALGORITHM: {
-//					rtot_alg.PrintOrWriteInformation(write_or_print, logger);
-//					rtot_alg.PrintOrWriteStatistics(write_or_print, logger);
+					rtot_alg.PrintOrWriteStatistics(write_or_print, logger);
 					break;
 				}
 				case CENTRALIZED_ACTION_BANNING: {
-					if (write_or_print == PRINT_LOG) {
-//						printf("Available actions (%d agents with %d actions):\n", agents_number, num_arms);
-//						for (int i = 0; i < agents_number; ++i) {
-//							for (int j = 0; j < num_arms; ++j) {
-//								printf("%d ", available_actions_per_agent[i][j]);
-//							}
-//							printf("\n");
-//						}
-					}
+                    action_banner.PrintOrWriteStatistics(write_or_print, logger);
 					break;
 				}
 				/* UNKNOWN */
@@ -315,7 +281,6 @@ class MlModel {
 		void PrintAvailableLearningMechanisms(){
 			printf("%s Available types of learning mechanisms:\n", LOG_LVL2);
 			printf("%s MULTI_ARMED_BANDITS (#%d)\n", LOG_LVL3, MULTI_ARMED_BANDITS);
-			printf("%s GRAPH_COLORING (#%d)\n", LOG_LVL3, GRAPH_COLORING);
 			printf("%s ACTION_BANNING (#%d)\n", LOG_LVL3, ACTION_BANNING);
 			printf("%s RTOT_ALGORITHM (#%d)\n", LOG_LVL3, RTOT_ALGORITHM);
 		}

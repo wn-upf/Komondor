@@ -123,7 +123,6 @@ class CentralizedActionBanning {
 
 		}
 
-
 		/**
 		* Method for banning actions (configurations) based on different criteria. Edits the "configuration_array".
 		* @param "controller_report" [type ControllerReport]: report with the statistics gathered by the controller
@@ -135,21 +134,15 @@ class CentralizedActionBanning {
 
 			// Check which agents have been the affected - they obtained less than a minimum amount of resources
 			for(int i = 0; i < agents_number; ++i) {
-//                printf("Affectation of A%d to the environment (obtained %.2f):\n", i, average_performance_per_agent[i]);
                 // Check the performance of each other agent in the same cluster (i.e., affectation to the environment)
 				for(int j = 0; j < agents_number; ++j) {
 					if(i != j && clusters_per_wlan[i][j] == 1) {
 //					    if (average_performance_per_agent[j] + MARGIN_THRESHOLD_BANNING < current_banning_threshold[i]) {
                         if (average_performance_per_agent[j] < current_banning_threshold[i]) {
-//                            printf("   * Agent %d:\n", j);
-//                            printf("         - Average performance = %.2f (+ Margin = %.2f)\n",
-//                                   average_performance_per_agent[j], average_performance_per_agent[j] + MARGIN_THRESHOLD_BANNING);
-//                            printf("         - Current banning threshold of %d = %.2f\n", i, current_banning_threshold[i]);
 							// Assess whether the agent in the cluster affected negatively to the others
 							if(AssessActionNegativeImpact(i)) {
                                 LOGS(save_logs, central_controller_logger.file, "%.15f;CC;%s;%s Banned action %d of A%d\n",
                                      sim_time, LOG_C00, LOG_LVL1, most_played_action_per_agent[i], i);
-//								printf("Banned action %d of A%d\n", most_played_action_per_agent[i], i);
 								list_of_available_actions_per_agent[i][most_played_action_per_agent[i]] = 0;
 								configuration_array[i].agent_capabilities.available_actions[most_played_action_per_agent[i]] = 0;
                                 previously_banned_action_per_agent[i] = most_played_action_per_agent[i];
@@ -182,7 +175,6 @@ class CentralizedActionBanning {
                         if(i != j && clusters_per_wlan[i][j] == 1 && previously_banned_action_per_agent[j] >= 0) {
                             LOGS(save_logs, central_controller_logger.file, "%.15f;CC;%s;%s Restored action %d of A%d\n",
                                  sim_time, LOG_C00, LOG_LVL1, previously_banned_action_per_agent[j], j);
-//                            printf("Restored action %d of A%d\n", previously_banned_action_per_agent[j], j);
                             list_of_available_actions_per_agent[j][previously_banned_action_per_agent[j]] = 1;
                             configuration_array[j].agent_capabilities.available_actions[previously_banned_action_per_agent[j]] = 1;
                             // Reset the banning threshold for the BSSs that caused action-banning in node "j"
@@ -219,7 +211,6 @@ class CentralizedActionBanning {
 			}
 			// BAN the most popular action(s) if played a minimum number of times
             int  times_played_most_popular_action = times_action_played_per_agent[agent_id][most_played_action_per_agent[agent_id]];
-//            printf("min_num_times_action_is_played = %d (%d, %d)\n", min_num_times_action_is_played, times_played_most_popular_action, total_num_arms_played);
 			if (sum_available_actions > 1 && times_played_most_popular_action >= min_num_times_action_is_played) {
 				banned_in_last_iteration = TRUE;
 				return TRUE;
@@ -372,8 +363,40 @@ class CentralizedActionBanning {
 		/*************************/
 		/*************************/
 
-		// TODO
-		// ...
+        /**
+        * Print or write the statistics of Centralized Action-Banning
+        * @param "write_or_print" [type int]: variable to indicate whether to print on the  console or to write on the the output logs file
+        * @param "logger" [type Logger]: logger object to write on the output file
+        */
+        void PrintOrWriteStatistics(int write_or_print, Logger &logger) {
+            // Write or print according the input parameter "write_or_print"
+            switch(write_or_print){
+                // Print logs in console
+                case PRINT_LOG:{
+                    printf("%s Centralized action-banning statistics...\n", LOG_LVL1);
+                    printf("%s Available actions (%d agents):\n", LOG_LVL2, agents_number);
+                    for (int i = 0; i < agents_number; ++i) {
+                        for (int j = 0; j < num_arms_per_agent[i]; ++j) {
+                            printf("%d ", list_of_available_actions_per_agent[i][j]);
+                        }
+                        printf("\n");
+                    }
+                    break;
+                }
+                // Write logs in agent's output file
+                case WRITE_LOG:{
+                    fprintf(logger.file, "%s Centralized action-banning statistics...\n", LOG_LVL1);
+                    fprintf(logger.file, "%s Available actions (%d agents):\n", LOG_LVL2, agents_number);
+                    for (int i = 0; i < agents_number; ++i) {
+                        for (int j = 0; j < num_arms_per_agent[i]; ++j) {
+                            fprintf(logger.file, "%d ", list_of_available_actions_per_agent[i][j]);
+                        }
+                        fprintf(logger.file, "\n");
+                    }
+                    break;
+                }
+            }
+        }
 
 		/***********************/
 		/***********************/

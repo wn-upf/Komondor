@@ -46,7 +46,7 @@
  /**
  * agent.h: this file defines the agent component
  *
- * - This file contains the methods and functionalities held by the agent, including the communication with the APs of the controlled networks.
+ * - This file contains the methods and functionalities used by the agent, including the communication with the APs of the controlled networks.
  *
  * - The agent includes functionalities held by the "Collector" (C) and the "Distributor" (D) nodes in the ML pipeline
  */
@@ -565,11 +565,6 @@ void Agent :: ComputeNewConfiguration(){
 			// Send the configuration to the AP
 			SendNewConfigurationToAp(new_configuration);
 
-//            if(agent_id == 0) {
-//                int output_ix = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, new_configuration);
-//                printf("Agent 0 selected action %d\n", output_ix);
-//            }
-
 		} else {
 			// Generate the first request to be triggered after "time_between_requests"
 			// *** We generate here the first request in order to obtain the AP's configuration
@@ -651,8 +646,6 @@ void Agent :: InitializeMlPipeline() {
  */
 void Agent :: InitializePreProcessor() {
 
-//	pre_processor.type_of_reward = type_of_reward;
-
 	pre_processor.num_arms = num_arms;
 	pre_processor.num_arms_channel = num_arms_channel;
 	pre_processor.num_arms_sensitivity = num_arms_sensitivity;
@@ -675,7 +668,7 @@ void Agent :: InitializePreProcessor() {
  * Initialize the ML Model
  */
 void Agent :: InitializeMlModel() {
-	// WLAN-agent information
+	// Agent information
 	ml_model.agent_id = agent_id;
 	ml_model.num_stas = num_stas;
 	// ML model information

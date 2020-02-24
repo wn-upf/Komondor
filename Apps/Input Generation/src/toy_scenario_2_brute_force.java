@@ -444,7 +444,7 @@ public class toy_scenario_2_brute_force {
         int[] sensitvity_list = new int[3];  
         sensitvity_list[0] = -82;
         sensitvity_list[1] = -72;
-        sensitvity_list[2] = -62;
+        sensitvity_list[2] = -65;
         
         int[] tx_power_list = new int[3];  
         tx_power_list[0] = 1;

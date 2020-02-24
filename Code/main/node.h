@@ -5139,19 +5139,16 @@ void Node :: InitializeVariables() {
 	/******************************
 	 *  SPATIAL REUSE
 	 *****************************/
-
 	// Detect whether the SR is enabled or not
 	if (node_type == NODE_TYPE_AP && bss_color >= 0) {
 		spatial_reuse_enabled = TRUE;
 	} else {
 		spatial_reuse_enabled = FALSE;
 	}
-
 //	// Hardcoded: indicate that WLANs other than WLAN A do not apply SR
 //	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
 //		spatial_reuse_enabled = FALSE;
 //	}
-
 //	// Hardcoded: Randomly decide whether an WLAN different than WLAN_A applies SR or not
 //	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
 //		double r = ((double) rand() / (RAND_MAX));
@@ -5159,15 +5156,12 @@ void Node :: InitializeVariables() {
 //			spatial_reuse_enabled = FALSE;
 //		}
 //	}
-
 	// In case of being an STA, request the SR configuration to the AP
 	if (node_type == NODE_TYPE_STA) {
 		outportRequestSpatialReuseConfiguration();
 	}
-
 	// Initialize the TXOP identified to false
 	txop_sr_identified = FALSE;
-
 	// Initialize the type of ongoing transmissions to 0
 	for (int i = 0; i < 3; i ++) {
 		type_ongoing_transmissions_sr[i] = 0;
