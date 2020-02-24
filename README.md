@@ -17,7 +17,7 @@
 * [Sergio Barrachina-Muñoz](https://github.com/sergiobarra)
 * [Francesc Wilhelmi](https://github.com/fwilhelmi)
 
-Both authors have the same contribution in this project.
+Both authors have the same contribution to this project.
 
 ## Introduction
 
