@@ -72,11 +72,10 @@ $ ./build_local
 STEP 2: Run Komondor simulator for the given input information (basic simulation)
 
 ```
-$ ./komondor_main INPUT_FILE_SYSTEM_CONFIGURATION INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_SYSTEM_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
+$ ./komondor_main INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_SYSTEM_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
 ```
 
 The inputs are further described next:
-* ```INPUT_FILE_SYSTEM_CONFIGURATION```: file containing system information (e.g., number of channels available, traffic model, etc.). The file must be a .csv with semicolons as separators.
 * ```INPUT_FILE_NODES```: file containing nodes information (e.g., position, channels allowed, etc.).The file must be a .csv with semicolons as separators.
 * ```OUTPUT_FILE_LOGS```: path to the output file to which write results at the end of the execution (if the file does not exist, the system will create it).
 * ```FLAG_SAVE_SYSTEM_LOGS```: flag to indicate whether to save the system logs into a file (1) or not (0).
@@ -93,24 +92,19 @@ STEP 2-1: Run Komondor simulator with intelligent agents
 Alternatively, and in order to indicate the usage of agents, the console input must add the following extra information:
 
 ```
-$ ./komondor_main INPUT_FILE_SYSTEM_CONFIGURATION INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_SYSTEM_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
+$ ./komondor_main INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_SYSTEM_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
 ```
 
-The new inputs are described next:
-* ```INPUT_FILE_AGENTS```: file containing agents information (e.g., wlan code, allowed actions, etc.).The file must be a .csv with semicolons as separators.
-* ```FLAG_SAVE_AGENT_LOGS``` :flag to indicate whether to save the agent logs into separate files (1) or not (0). If this flag is activated, one file per agent will be created.
-* ```FLAG_PRINT_AGENT_LOGS```: flag to indicate whether to print the agent logs (1) or not (0). 
+The agents operation has been summarized at [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
 
 ### Input files
 
-There are two types of input files that are required for basic Komondor's execution. These files are located at the "input" folder, and which allow to configure system and nodes parameters, respectively:
-* ```input_system_conf.csv```: define parameters such as the number of total available channels, the CW...
-* ```input_nodes_conf.csv```: define parameters such as the node id, the node location, etc.
+There is an input file that is required for basic Komondor's execution. Input files are located at the "input" folder:
 
-Additionally, the agents operation is ruled by the agents input file. The most important inputs refer to:
-1) WLAN code: a code that must match with WLAN codes provided in node input files
-2) Time between requests: an agent is supposed to request data to the AP every inputted period
-3) Allowed actions as lists: for each type of modifiable parameter, the user must introduce a list of possible values (e.g. CCA = {-70, -75, -80, -82})
+* ```input_nodes_conf.csv```: define parameters such as the node id, the node location, etc.
+* ```agents.csv```: define parameters used by the agents operation. Refer to [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
+
+Apart from the input nodes file, different models are loaded through the "config_models" file (located [here](https://github.com/wn-upf/Komondor/blob/master/Code/config_models)).
 
 Regarding the output ("output" folder), some logs and statistics are created at the end of the execution.
 
@@ -139,7 +133,7 @@ The output of the regression test will be displayed by console. In case of succe
 <img src="https://github.com/wn-upf/Komondor/blob/master/Documentation/Other/Images and resources/example_execution_regression_test.png">
 </p>
 
-Before executing the regression test, it is important to ensure that "simulation_index" in komondor_main.cc is set to 10.
+Before executing the regression test, it is important to ensure that "simulation_ix_output_script" in config_models is set to 10 and "path_loss_model" to 4.
 
 ## Academic/Education projects
 One of the main purposes of Komondor is to serve as an academic/educational tool. In what follows, we list the projects in which Komondor has been used as a simulation tool:
