@@ -3,6 +3,8 @@
 </p>
 
 # Komondor: An IEEE 802.11ax Simulator
+| Agent-related content available [here](https://github.com/wn-upf/Komondor/blob/master/README_agents.md). |
+| ----- |
 
 ### Authors
 * [Sergio Barrachina-Muñoz](https://github.com/sergiobarra)
