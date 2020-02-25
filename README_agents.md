@@ -9,9 +9,6 @@
 - [Introduction](#introduction)
 - [Overview](#overview)
 - [Usage](#usage)
-- [Validation](#validation)
-- [Contribute](#contribute)
-- [Acknowledgements](#acknowledgements)
 
 ## Authors
 * [Sergio Barrachina-Muñoz](https://github.com/sergiobarra)
