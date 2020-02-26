@@ -1,0 +1,45 @@
+<map id="compcxx_Node_23" name="compcxx_Node_23">
+<area shape="rect" id="node4" href="$classcompcxx__Timer__13.html" title="compcxx_Timer_13" alt="" coords="1511,553,1647,580"/>
+<area shape="rect" id="node10" href="$classcompcxx__Timer__14.html" title="compcxx_Timer_14" alt="" coords="1511,1469,1647,1496"/>
+<area shape="rect" id="node13" href="$classcompcxx__Timer__15.html" title="compcxx_Timer_15" alt="" coords="1511,2193,1647,2220"/>
+<area shape="rect" id="node14" href="$classcompcxx__Timer__16.html" title="compcxx_Timer_16" alt="" coords="1511,2248,1647,2274"/>
+<area shape="rect" id="node15" href="$classcompcxx__Timer__17.html" title="compcxx_Timer_17" alt="" coords="1511,253,1647,280"/>
+<area shape="rect" id="node16" href="$classcompcxx__Timer__18.html" title="compcxx_Timer_18" alt="" coords="1511,410,1647,437"/>
+<area shape="rect" id="node19" href="$classcompcxx__Timer__2.html" title="compcxx_Timer_2" alt="" coords="1514,1170,1643,1197"/>
+<area shape="rect" id="node20" href="$classcompcxx__Timer__3.html" title="compcxx_Timer_3" alt="" coords="1514,692,1643,718"/>
+<area shape="rect" id="node21" href="$classcompcxx__Timer__4.html" title="compcxx_Timer_4" alt="" coords="1514,958,1643,985"/>
+<area shape="rect" id="node24" href="$classcompcxx__Timer__5.html" title="compcxx_Timer_5" alt="" coords="1514,1022,1643,1049"/>
+<area shape="rect" id="node28" href="$classcompcxx__Timer__6.html" title="compcxx_Timer_6" alt="" coords="1514,1249,1643,1276"/>
+<area shape="rect" id="node31" href="$classcompcxx__Timer__10.html" title="compcxx_Timer_10" alt="" coords="1511,1638,1647,1665"/>
+<area shape="rect" id="node32" href="$classcompcxx__Timer__7.html" title="compcxx_Timer_7" alt="" coords="1514,1788,1643,1814"/>
+<area shape="rect" id="node35" href="$classcompcxx__Timer__11.html" title="compcxx_Timer_11" alt="" coords="1511,2306,1647,2333"/>
+<area shape="rect" id="node36" href="$classcompcxx__Timer__8.html" title="compcxx_Timer_8" alt="" coords="1514,2373,1643,2400"/>
+<area shape="rect" id="node42" href="$classcompcxx__Timer__12.html" title="compcxx_Timer_12" alt="" coords="1511,2456,1647,2482"/>
+<area shape="rect" id="node43" href="$classcompcxx__Timer__9.html" title="compcxx_Timer_9" alt="" coords="1514,112,1643,138"/>
+<area shape="rect" id="node2" href="$classcompcxx__component.html" title="compcxx_component" alt="" coords="676,1265,823,1292"/>
+<area shape="rect" id="node3" href="$classTypeII.html" title="TypeII" alt="" coords="720,440,779,466"/>
+<area shape="rect" id="node5" href="$classTimerBase.html" title="TimerBase" alt="" coords="1201,2158,1286,2185"/>
+<area shape="rect" id="node6" href="$classcompcxx__Node__23_1_1my__Node__outportAskForTxModulation__f__t.html" title="compcxx_Node_23::my\l_Node_outportAskForTxModulation_f_t" alt="" coords="625,491,874,532"/>
+<area shape="rect" id="node7" href="$classcompcxx__functor.html" title="compcxx_functor\&lt; Node\l_outportAskForTxModulation_f_t \&gt;" alt="" coords="207,486,430,527"/>
+<area shape="rect" id="node8" href="$structWlan.html" title="Wlan" alt="" coords="509,609,561,636"/>
+<area shape="rect" id="node40" href="$structCapabilities.html" title="Capabilities" alt="" coords="273,665,364,692"/>
+<area shape="rect" id="node11" href="$classcompcxx__Node__23_1_1my__Node__outportNewSpatialReuseConfiguration__f__t.html" title="compcxx_Node_23::my\l_Node_outportNewSpatialReuse\lConfiguration_f_t" alt="" coords="643,721,855,777"/>
+<area shape="rect" id="node12" href="$classcompcxx__functor.html" title="compcxx_functor\&lt; Node\l_outportNewSpatialReuseConfiguration_f_t \&gt;" alt="" coords="176,728,461,770"/>
+<area shape="rect" id="node17" href="$classcompcxx__Node__23_1_1my__Node__outportSelfStartTX__f__t.html" title="compcxx_Node_23::my\l_Node_outportSelfStartTX_f_t" alt="" coords="651,802,848,843"/>
+<area shape="rect" id="node18" href="$classcompcxx__functor.html" title="compcxx_functor\&lt; Node\l_outportSelfStartTX_f_t \&gt;" alt="" coords="233,802,404,843"/>
+<area shape="rect" id="node22" href="$classcompcxx__Node__23_1_1my__Node__outportRequestSpatialReuseConfiguration__f__t.html" title="compcxx_Node_23::my\l_Node_outportRequestSpatial\lReuseConfiguration_f_t" alt="" coords="651,868,847,924"/>
+<area shape="rect" id="node23" href="$classcompcxx__functor.html" title="compcxx_functor\&lt; Node\l_outportRequestSpatialReuse\lConfiguration_f_t \&gt;" alt="" coords="221,868,417,924"/>
+<area shape="rect" id="node25" href="$classcompcxx__Node__23_1_1my__Node__outportSelfFinishTX__f__t.html" title="compcxx_Node_23::my\l_Node_outportSelfFinishTX_f_t" alt="" coords="647,948,851,990"/>
+<area shape="rect" id="node26" href="$classcompcxx__functor.html" title="compcxx_functor\&lt; Node\l_outportSelfFinishTX_f_t \&gt;" alt="" coords="229,948,408,990"/>
+<area shape="rect" id="node27" href="$structFIFO.html" title="FIFO" alt="" coords="723,1014,775,1041"/>
+<area shape="rect" id="node29" href="$classcompcxx__Node__23_1_1my__Node__outportAnswerTxModulation__f__t.html" title="compcxx_Node_23::my\l_Node_outportAnswerTxModulation_f_t" alt="" coords="624,1066,875,1107"/>
+<area shape="rect" id="node30" href="$classcompcxx__functor.html" title="compcxx_functor\&lt; Node\l_outportAnswerTxModulation_f_t \&gt;" alt="" coords="206,1066,431,1107"/>
+<area shape="rect" id="node33" href="$classcompcxx__Node__23_1_1my__Node__outportSendLogicalNack__f__t.html" title="compcxx_Node_23::my\l_Node_outportSendLogicalNack_f_t" alt="" coords="634,1131,865,1172"/>
+<area shape="rect" id="node34" href="$classcompcxx__functor.html" title="compcxx_functor\&lt; Node\l_outportSendLogicalNack_f_t \&gt;" alt="" coords="216,1131,421,1172"/>
+<area shape="rect" id="node37" href="$classcompcxx__Node__23_1_1my__Node__outportSetNewWlanConfiguration__f__t.html" title="compcxx_Node_23::my\l_Node_outportSetNewWlanConfiguration_f_t" alt="" coords="608,1196,891,1238"/>
+<area shape="rect" id="node38" href="$classcompcxx__functor.html" title="compcxx_functor\&lt; Node\l_outportSetNewWlanConfiguration_f_t \&gt;" alt="" coords="190,1196,447,1238"/>
+<area shape="rect" id="node39" href="$structConfiguration.html" title="Configuration" alt="" coords="700,670,799,697"/>
+<area shape="rect" id="node41" href="$structPerformance.html" title="Performance" alt="" coords="701,322,797,349"/>
+<area shape="rect" id="node44" href="$classcompcxx__Node__23_1_1my__Node__outportAnswerToAgent__f__t.html" title="compcxx_Node_23::my\l_Node_outportAnswerToAgent_f_t" alt="" coords="638,374,861,415"/>
+<area shape="rect" id="node45" href="$classcompcxx__functor.html" title="compcxx_functor\&lt; Node\l_outportAnswerToAgent_f_t \&gt;" alt="" coords="221,374,417,415"/>
+</map>

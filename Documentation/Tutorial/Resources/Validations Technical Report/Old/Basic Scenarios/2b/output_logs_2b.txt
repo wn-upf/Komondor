@@ -1,0 +1,58 @@
+ KOMONDOR SIMULATION 'test' (seed 1992) Generating nodes...
+------------------------------------
+ Node #0 (AP_A)  - Throughput [Mbps] = 50.99
+  - RTS/CTS sent = 828873 - RTS/CTS lost = 88688  (10.70 % lost)
+    · RTS lost due to slotted BO = 88661 (10.696572 %)
+  - Data packets sent = 740178 - Data packets lost = 76237  (10.299820 % lost)
+  - num_tx_init_tried = 828873 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    ·  Time EFFECTIVELY transmitting in N channels:
+    · - 1: 4340.049100 s (43.40 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 4341.27 s (43.41 %)
+    · - 1 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+  - num_tx_init_not_possible = 0
+ Node #2 (AP_B)  - Throughput [Mbps] = 50.97
+  - RTS/CTS sent = 828613 - RTS/CTS lost = 88892  (10.73 % lost)
+    · RTS lost due to slotted BO = 88866 (10.724669 %)
+  - Data packets sent = 739710 - Data packets lost = 76006  (10.275108 % lost)
+  - num_tx_init_tried = 828613 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    ·  Time EFFECTIVELY transmitting in N channels:
+    · - 1: 4338.508504 s (43.39 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 0.00 s (0.00 %)
+    · - 1 = 4339.72 s (43.40 %)
+    · Number of tx trials per number of channels:
+  - num_tx_init_not_possible = 0
+ Node #4 (AP_C)  - Throughput [Mbps] = 51.00
+  - RTS/CTS sent = 828634 - RTS/CTS lost = 88687  (10.70 % lost)
+    · RTS lost due to slotted BO = 88661 (10.699658 %)
+  - Data packets sent = 739936 - Data packets lost = 75855  (10.251562 % lost)
+  - num_tx_init_tried = 828634 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    ·  Time EFFECTIVELY transmitting in N channels:
+    · - 1: 4340.970220 s (43.41 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 4342.18 s (43.42 %)
+    · - 1 = 0.00 s (0.00 %)
+    · Number of tx trials per number of channels:
+  - num_tx_init_not_possible = 0
+ Node #6 (AP_D)  - Throughput [Mbps] = 51.02
+  - RTS/CTS sent = 829424 - RTS/CTS lost = 89017  (10.73 % lost)
+    · RTS lost due to slotted BO = 88866 (10.714182 %)
+  - Data packets sent = 740391 - Data packets lost = 76091  (10.277137 % lost)
+  - num_tx_init_tried = 829424 - num_tx_init_not_possible = 0 (0.000000 % failed)
+    ·  Time EFFECTIVELY transmitting in N channels:
+    · - 1: 4342.412788 s (43.42 %)
+    · Time EFFECTIVELY transmitting in each channel:
+    · - 0 = 0.00 s (0.00 %)
+    · - 1 = 4343.63 s (43.44 %)
+    · Number of tx trials per number of channels:
+  - num_tx_init_not_possible = 0
+- Average throughput per WLAN = 51.00 Mbps
+- Proportional Fairness = 30.83
+- Jain's Fairness = 1.00
+- Average number of data packets successfully sent per WLAN = 740053.75
+- Average number of RTS packets lost due to slotted BO = 88763.50 (10.71 % loss)
+- Prob. collision by slotted BO = 0.107088
+- Aggregate throughput = 203.982797 Mbps
+- Aggregate number of transmission not possible = 0

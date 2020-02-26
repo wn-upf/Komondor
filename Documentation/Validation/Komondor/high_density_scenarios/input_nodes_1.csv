@@ -1,0 +1,3 @@
+node+AF8-code	node+AF8-type	wlan+AF8-code	destination+AF8-id	x(m)	y(m)	z(m)	primary+AF8-channel	min+AF8-channel+AF8-allowed	max+AF8-channel+AF8-allowed	cw	cw+AF8-stage	tpc+AF8-min(dBm)	tpc+AF8-default(dBm)	tpc+AF8-max(dBm)	cca+AF8-min(dBm)	cca+AF8-default(dBm)	cca+AF8-max(dBm)	tx+AF8-antenna+AF8-gain	rx+AF8-antenna+AF8-gain	channel+AF8-bonding+AF8-model	modulation+AF8-default	central+AF8-freq (GHz)	lambda	ieee+AF8-protocol	traffic+AF8-load(pkts/s)
+AP+AF8-A	0	A	+AC0-1	2	2	0	0	0	0	16	5	20	20	20	+AC0-68	+AC0-68	+AC0-68	0	0	0	0	5	10000	1	10000
+STA+AF8-A1	1	A	+AC0-1	0	0	0	0	0	0	16	5	20	20	20	+AC0-68	+AC0-68	+AC0-68	0	0	0	0	5	10000	1	0

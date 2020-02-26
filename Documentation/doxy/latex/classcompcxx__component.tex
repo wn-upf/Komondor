@@ -1,0 +1,64 @@
+\hypertarget{classcompcxx__component}{}\section{compcxx\+\_\+component Class Reference}
+\label{classcompcxx__component}\index{compcxx\+\_\+component@{compcxx\+\_\+component}}
+
+
+Inheritance diagram for compcxx\+\_\+component\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=550pt]{classcompcxx__component__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classcompcxx__component_ae77339bcc9d37cfd73c7e86d83543c61}\label{classcompcxx__component_ae77339bcc9d37cfd73c7e86d83543c61}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Agent\+\_\+outport\+Request\+Information\+To\+Ap\+\_\+f\+\_\+t}) ()
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a2e6fd05abf2108270e0dc36fb77b8a2d}\label{classcompcxx__component_a2e6fd05abf2108270e0dc36fb77b8a2d}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Agent\+\_\+outport\+Send\+Configuration\+To\+Ap\+\_\+f\+\_\+t}) (\hyperlink{structConfiguration}{Configuration} \&new\+\_\+configuration)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a8be04622edac273e160bc18b3c8ebadc}\label{classcompcxx__component_a8be04622edac273e160bc18b3c8ebadc}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Agent\+\_\+outport\+Answer\+To\+Controller\+\_\+f\+\_\+t}) (\hyperlink{structConfiguration}{Configuration} \&configuration, \hyperlink{structPerformance}{Performance} \&performance, int agent\+\_\+id)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a96f2070a90e7f2b6b51ad972c5f58f38}\label{classcompcxx__component_a96f2070a90e7f2b6b51ad972c5f58f38}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Central\+Controller\+\_\+outport\+Request\+Information\+To\+Agent\+\_\+f\+\_\+t}) (int destination\+\_\+agent\+\_\+id)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a7db4fd9662f71cf4ad302d6e9eec1efd}\label{classcompcxx__component_a7db4fd9662f71cf4ad302d6e9eec1efd}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Central\+Controller\+\_\+outport\+Send\+Configuration\+To\+Agent\+\_\+f\+\_\+t}) (int destination\+\_\+agent\+\_\+id, \hyperlink{structConfiguration}{Configuration} \&new\+\_\+configuration, int controller\+\_\+mode)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a5bc681af4779c999f76e3cfa9bd446b1}\label{classcompcxx__component_a5bc681af4779c999f76e3cfa9bd446b1}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Node\+\_\+outport\+Self\+Start\+T\+X\+\_\+f\+\_\+t}) (\hyperlink{structNotification}{Notification} \&notification)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a862b0c9aa0a29f8db0e7fa5c9d30f627}\label{classcompcxx__component_a862b0c9aa0a29f8db0e7fa5c9d30f627}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Node\+\_\+outport\+Self\+Finish\+T\+X\+\_\+f\+\_\+t}) (\hyperlink{structNotification}{Notification} \&notification)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a089908d5367f9c1ae42739e55cf3b25a}\label{classcompcxx__component_a089908d5367f9c1ae42739e55cf3b25a}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Node\+\_\+outport\+Send\+Logical\+Nack\+\_\+f\+\_\+t}) (\hyperlink{structLogicalNack}{Logical\+Nack} \&logical\+\_\+nack\+\_\+info)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_aadb97834bcb0f5bc3b8cd79713f62944}\label{classcompcxx__component_aadb97834bcb0f5bc3b8cd79713f62944}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Node\+\_\+outport\+Ask\+For\+Tx\+Modulation\+\_\+f\+\_\+t}) (\hyperlink{structNotification}{Notification} \&notification)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_af69a02618a8d2f8f6c1c9792a92c459f}\label{classcompcxx__component_af69a02618a8d2f8f6c1c9792a92c459f}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Node\+\_\+outport\+Answer\+Tx\+Modulation\+\_\+f\+\_\+t}) (\hyperlink{structNotification}{Notification} \&notification)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a0eb11913f26856b9ceb28385f299fa7e}\label{classcompcxx__component_a0eb11913f26856b9ceb28385f299fa7e}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Node\+\_\+outport\+Answer\+To\+Agent\+\_\+f\+\_\+t}) (\hyperlink{structConfiguration}{Configuration} \&configuration, \hyperlink{structPerformance}{Performance} \&performance)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a0e928bd77e9c27615ff88f8b49f7b68b}\label{classcompcxx__component_a0e928bd77e9c27615ff88f8b49f7b68b}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Node\+\_\+outport\+Set\+New\+Wlan\+Configuration\+\_\+f\+\_\+t}) (\hyperlink{structConfiguration}{Configuration} \&new\+\_\+configuration)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a1adf2972a45d9b9e3bc296cde6bebe98}\label{classcompcxx__component_a1adf2972a45d9b9e3bc296cde6bebe98}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Node\+\_\+outport\+Request\+Spatial\+Reuse\+Configuration\+\_\+f\+\_\+t}) ()
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a5f94013d79c964e4357a3b0fe6bc6b5e}\label{classcompcxx__component_a5f94013d79c964e4357a3b0fe6bc6b5e}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Node\+\_\+outport\+New\+Spatial\+Reuse\+Configuration\+\_\+f\+\_\+t}) (\hyperlink{structConfiguration}{Configuration} \&new\+\_\+configuration)
+\item 
+\mbox{\Hypertarget{classcompcxx__component_a51b3469f64029d17b27e951265aa146b}\label{classcompcxx__component_a51b3469f64029d17b27e951265aa146b}} 
+typedef void(compcxx\+\_\+component\+::$\ast$ {\bfseries Traffic\+Generator\+\_\+outport\+New\+Packet\+Generated\+\_\+f\+\_\+t}) ()
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/compcxx\+\_\+komondor\+\_\+main.\+h\end{DoxyCompactItemize}

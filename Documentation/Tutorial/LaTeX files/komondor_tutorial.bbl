@@ -1,0 +1,59 @@
+\begin{thebibliography}{10}
+
+\bibitem{barrachina2017komondor}
+Sergio Barrachina-Mu\~noz and Francesc Wilhelmi.
+\newblock Komondor: An {IEEE} 802.11ax simulator.
+\newblock \url{https://github.com/wn-upf/Komondor}, 2017.
+
+\bibitem{chen2002reusing}
+G.~Chen and B.~K. Szymanski.
+\newblock {Reusing simulation components: cost: a component-oriented discrete
+  event simulator}.
+\newblock In {\em Proceedings of the 34th conference on Winter simulation:
+  exploring new frontiers}, pages 776--782. Winter Simulation Conference, 2002.
+
+\bibitem{tgax2017draft}
+{IEEE} p802.11ax/d2.0, November 2017.
+
+\bibitem{hata1980empirical}
+Masaharu Hata.
+\newblock Empirical formula for propagation loss in land mobile radio services.
+\newblock {\em IEEE transactions on Vehicular Technology}, 29(3):317--325,
+  1980.
+
+\bibitem{wilhelmi2017implications}
+Francesc Wilhelmi, Boris Bellalta, Cristina Cano, and Anders Jonsson.
+\newblock Implications of decentralized q-learning resource allocation in
+  wireless networks.
+\newblock {\em arXiv preprint arXiv:1705.10508}, 2017.
+
+\bibitem{wilhelmi2017collaborative}
+Francesc Wilhelmi, Boris Bellalta, Jonsson Anders Neu~Gergely Cano, Cristina,
+  and Sergio Barrachina.
+\newblock Collaborative spatial reuse in wireless networks via selfish bandits.
+\newblock {\em arXiv preprint arXiv:1705.10508}, 2017.
+
+\bibitem{wilhelmi2018potential}
+Francesc Wilhelmi, Sergio Barrachina-Mu{\~n}oz, Cristina Cano, Boris Bellalta,
+  Anders Jonsson, and Gergely Neu.
+\newblock Potential and pitfalls of multi-armed bandits for decentralized
+  spatial reuse in wlans.
+\newblock {\em arXiv preprint arXiv:1805.11083}, 2018.
+
+\bibitem{auer2002finite}
+Peter Auer, Nicol\'o Cesa-Bianchi, and Paul Fischer.
+\newblock Finite-time analysis of the multiarmed bandit problem.
+\newblock {\em Machine learning}, 47(2-3):235--256, 2002.
+
+\bibitem{sutton1998reinforcement}
+Richard~S Sutton and Andrew~G Barto.
+\newblock {\em Reinforcement learning: An introduction}, volume~1.
+\newblock MIT press Cambridge, 1998.
+
+\bibitem{thompson1933likelihood}
+William~R Thompson.
+\newblock On the likelihood that one unknown probability exceeds another in
+  view of the evidence of two samples.
+\newblock {\em Biometrika}, 25(3/4):285--294, 1933.
+
+\end{thebibliography}

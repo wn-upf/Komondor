@@ -1,0 +1,326 @@
+\hypertarget{classPreProcessor}{}\section{Pre\+Processor Class Reference}
+\label{classPreProcessor}\index{Pre\+Processor@{Pre\+Processor}}
+
+
+{\ttfamily \#include $<$pre\+\_\+processor.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPreProcessor_af3e7c8f2449e69b553106203314903f0}\label{classPreProcessor_af3e7c8f2449e69b553106203314903f0}} 
+int {\bfseries Process\+Wlan\+Configuration} (int learning\+\_\+mechanism, \hyperlink{structConfiguration}{Configuration} configuration)
+\item 
+\mbox{\Hypertarget{classPreProcessor_a2abd608c09942dfa2885e8815907f3cc}\label{classPreProcessor_a2abd608c09942dfa2885e8815907f3cc}} 
+double {\bfseries Process\+Wlan\+Performance} (int learning\+\_\+mechanism, \hyperlink{structPerformance}{Performance} performance, int \hyperlink{classPreProcessor_a6b837daa4f40e20f9d7bbdbd1b2ef1d2}{type\+\_\+of\+\_\+reward})
+\item 
+\mbox{\Hypertarget{classPreProcessor_ab5d4746e7a0360611e5ef492db5ceec0}\label{classPreProcessor_ab5d4746e7a0360611e5ef492db5ceec0}} 
+double {\bfseries Generate\+Reward} (int \hyperlink{classPreProcessor_a6b837daa4f40e20f9d7bbdbd1b2ef1d2}{type\+\_\+of\+\_\+reward}, \hyperlink{structPerformance}{Performance} performance)
+\item 
+\mbox{\Hypertarget{classPreProcessor_aa24ca9b6d851941b0654b72520fb5a81}\label{classPreProcessor_aa24ca9b6d851941b0654b72520fb5a81}} 
+\hyperlink{structConfiguration}{Configuration} {\bfseries Process\+M\+L\+Output} (int learning\+\_\+mechanism, \hyperlink{structConfiguration}{Configuration} configuration, int ml\+\_\+output)
+\item 
+\mbox{\Hypertarget{classPreProcessor_a1314ba4c5f3e17cdcf2f11d49f40c148}\label{classPreProcessor_a1314ba4c5f3e17cdcf2f11d49f40c148}} 
+\hyperlink{structConfiguration}{Configuration} {\bfseries Generate\+New\+Configuration\+Bandits} (\hyperlink{structConfiguration}{Configuration} configuration, int ml\+\_\+output)
+\item 
+\mbox{\Hypertarget{classPreProcessor_a484b126cf65d3a2afda4eb0770276c5b}\label{classPreProcessor_a484b126cf65d3a2afda4eb0770276c5b}} 
+int {\bfseries Find\+Action\+Index\+From\+Configuration\+Bandits} (\hyperlink{structConfiguration}{Configuration} configuration, int $\ast$\&\hyperlink{classPreProcessor_a1976003ebd08bbee7836fe0bbe2d7be9}{indexes\+\_\+selected\+\_\+arm})
+\item 
+\mbox{\Hypertarget{classPreProcessor_a498d0b26c66a2fd2c20a19afe491c5d6}\label{classPreProcessor_a498d0b26c66a2fd2c20a19afe491c5d6}} 
+void {\bfseries Print\+Action\+Bandits} (int action\+\_\+ix)
+\item 
+\mbox{\Hypertarget{classPreProcessor_a675a191d53d9e095138881eabbebba7b}\label{classPreProcessor_a675a191d53d9e095138881eabbebba7b}} 
+void {\bfseries Print\+Available\+Reward\+Types} ()
+\item 
+\mbox{\Hypertarget{classPreProcessor_aadb7f0d35267038245fa9482da146f70}\label{classPreProcessor_aadb7f0d35267038245fa9482da146f70}} 
+void {\bfseries Print\+Available\+Learning\+Mechanisms} ()
+\item 
+\mbox{\Hypertarget{classPreProcessor_a11800dabafafd6de4cd1129ebb56cab2}\label{classPreProcessor_a11800dabafafd6de4cd1129ebb56cab2}} 
+void {\bfseries index2values} (int $\ast$indexes, int action\+\_\+ix, int size\+\_\+channels, int size\+\_\+pd, int size\+\_\+tx\+\_\+power, int size\+\_\+dcb\+\_\+policy)
+\item 
+\mbox{\Hypertarget{classPreProcessor_a818563f4556239d78eb3874318fc33ba}\label{classPreProcessor_a818563f4556239d78eb3874318fc33ba}} 
+int {\bfseries values2index} (int $\ast$indexes, int size\+\_\+channels, int size\+\_\+pd, int size\+\_\+tx\+\_\+power, int size\+\_\+dcb\+\_\+policy)
+\item 
+\mbox{\Hypertarget{classPreProcessor_a3a865e8349e7eabfa968eea7075386c2}\label{classPreProcessor_a3a865e8349e7eabfa968eea7075386c2}} 
+void {\bfseries Initialize\+Variables} ()
+\item 
+int \hyperlink{classPreProcessor_af3e7c8f2449e69b553106203314903f0}{Process\+Wlan\+Configuration} (int learning\+\_\+mechanism, \hyperlink{structConfiguration}{Configuration} configuration)
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Indexes for each parameter that conform the current selected arm \end{quote}
+\end{DoxyCompactList}\item 
+double \hyperlink{classPreProcessor_a2abd608c09942dfa2885e8815907f3cc}{Process\+Wlan\+Performance} (int learning\+\_\+mechanism, \hyperlink{structPerformance}{Performance} performance, int \hyperlink{classPreProcessor_a6b837daa4f40e20f9d7bbdbd1b2ef1d2}{type\+\_\+of\+\_\+reward})
+\item 
+double \hyperlink{classPreProcessor_ab5d4746e7a0360611e5ef492db5ceec0}{Generate\+Reward} (int \hyperlink{classPreProcessor_a6b837daa4f40e20f9d7bbdbd1b2ef1d2}{type\+\_\+of\+\_\+reward}, \hyperlink{structPerformance}{Performance} performance)
+\item 
+\hyperlink{structConfiguration}{Configuration} \hyperlink{classPreProcessor_aa24ca9b6d851941b0654b72520fb5a81}{Process\+M\+L\+Output} (int learning\+\_\+mechanism, \hyperlink{structConfiguration}{Configuration} configuration, int ml\+\_\+output)
+\item 
+\hyperlink{structConfiguration}{Configuration} \hyperlink{classPreProcessor_a1314ba4c5f3e17cdcf2f11d49f40c148}{Generate\+New\+Configuration\+Bandits} (\hyperlink{structConfiguration}{Configuration} configuration, int ml\+\_\+output)
+\item 
+int \hyperlink{classPreProcessor_a484b126cf65d3a2afda4eb0770276c5b}{Find\+Action\+Index\+From\+Configuration\+Bandits} (\hyperlink{structConfiguration}{Configuration} configuration, int $\ast$\&\hyperlink{classPreProcessor_a1976003ebd08bbee7836fe0bbe2d7be9}{indexes\+\_\+selected\+\_\+arm})
+\item 
+void \hyperlink{classPreProcessor_a498d0b26c66a2fd2c20a19afe491c5d6}{Print\+Action\+Bandits} (int action\+\_\+ix)
+\item 
+void \hyperlink{classPreProcessor_a675a191d53d9e095138881eabbebba7b}{Print\+Available\+Reward\+Types} ()
+\item 
+void \hyperlink{classPreProcessor_aadb7f0d35267038245fa9482da146f70}{Print\+Available\+Learning\+Mechanisms} ()
+\item 
+void \hyperlink{classPreProcessor_a11800dabafafd6de4cd1129ebb56cab2}{index2values} (int $\ast$indexes, int action\+\_\+ix, int size\+\_\+channels, int size\+\_\+pd, int size\+\_\+tx\+\_\+power, int size\+\_\+dcb\+\_\+policy)
+\item 
+int \hyperlink{classPreProcessor_a818563f4556239d78eb3874318fc33ba}{values2index} (int $\ast$indexes, int size\+\_\+channels, int size\+\_\+pd, int size\+\_\+tx\+\_\+power, int size\+\_\+dcb\+\_\+policy)
+\item 
+void \hyperlink{classPreProcessor_a3a865e8349e7eabfa968eea7075386c2}{Initialize\+Variables} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPreProcessor_a9375bc3b2f6304d96aa0423a63ad7efc}\label{classPreProcessor_a9375bc3b2f6304d96aa0423a63ad7efc}} 
+int {\bfseries agent\+\_\+id}
+\item 
+\mbox{\Hypertarget{classPreProcessor_a52fcb7d5b9ca9538faecf1f488cd751b}\label{classPreProcessor_a52fcb7d5b9ca9538faecf1f488cd751b}} 
+int \hyperlink{classPreProcessor_a52fcb7d5b9ca9538faecf1f488cd751b}{num\+\_\+actions}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Identified of the agent instantiating the PP \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a6b837daa4f40e20f9d7bbdbd1b2ef1d2}\label{classPreProcessor_a6b837daa4f40e20f9d7bbdbd1b2ef1d2}} 
+int \hyperlink{classPreProcessor_a6b837daa4f40e20f9d7bbdbd1b2ef1d2}{type\+\_\+of\+\_\+reward}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of actions \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a0202a8a49330622820f37961fb013506}\label{classPreProcessor_a0202a8a49330622820f37961fb013506}} 
+int \hyperlink{classPreProcessor_a0202a8a49330622820f37961fb013506}{selected\+\_\+strategy}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Index indicating the type of reward \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a6b101dc1a43b2164637d096384e6fcb6}\label{classPreProcessor_a6b101dc1a43b2164637d096384e6fcb6}} 
+int \hyperlink{classPreProcessor_a6b101dc1a43b2164637d096384e6fcb6}{num\+\_\+actions\+\_\+channel}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Index of the chosen action-\/selection strategy \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a193258f74ceca3cb13792b3c2f6cd02b}\label{classPreProcessor_a193258f74ceca3cb13792b3c2f6cd02b}} 
+int \hyperlink{classPreProcessor_a193258f74ceca3cb13792b3c2f6cd02b}{num\+\_\+actions\+\_\+sensitivity}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of channel actions \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a70a572176b774eddc9604a2b6599fd18}\label{classPreProcessor_a70a572176b774eddc9604a2b6599fd18}} 
+int \hyperlink{classPreProcessor_a70a572176b774eddc9604a2b6599fd18}{num\+\_\+actions\+\_\+tx\+\_\+power}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of sensitivity actions \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a3db20d3f3df95ea17ee8eecee86cbc8a}\label{classPreProcessor_a3db20d3f3df95ea17ee8eecee86cbc8a}} 
+int \hyperlink{classPreProcessor_a3db20d3f3df95ea17ee8eecee86cbc8a}{num\+\_\+actions\+\_\+dcb\+\_\+policy}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of transmission power actions \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_aa3e9a7d8a29645341f4cf0eda7e2e476}\label{classPreProcessor_aa3e9a7d8a29645341f4cf0eda7e2e476}} 
+int $\ast$ \hyperlink{classPreProcessor_aa3e9a7d8a29645341f4cf0eda7e2e476}{list\+\_\+of\+\_\+channels}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of D\+CB policy actions \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a2ecbea9deb3fc158eb2c6295be7e7d02}\label{classPreProcessor_a2ecbea9deb3fc158eb2c6295be7e7d02}} 
+double $\ast$ \hyperlink{classPreProcessor_a2ecbea9deb3fc158eb2c6295be7e7d02}{list\+\_\+of\+\_\+pd\+\_\+values}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+List of channels to be selected \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a259cff86416840f4517084c7806c4faa}\label{classPreProcessor_a259cff86416840f4517084c7806c4faa}} 
+double $\ast$ \hyperlink{classPreProcessor_a259cff86416840f4517084c7806c4faa}{list\+\_\+of\+\_\+tx\+\_\+power\+\_\+values}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+List of PD values to be selected \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a6981d3b83b6d8173e305cb409108921e}\label{classPreProcessor_a6981d3b83b6d8173e305cb409108921e}} 
+int $\ast$ \hyperlink{classPreProcessor_a6981d3b83b6d8173e305cb409108921e}{list\+\_\+of\+\_\+dcb\+\_\+policy}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+List of Tx Power values to be selected \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPreProcessor_a1976003ebd08bbee7836fe0bbe2d7be9}\label{classPreProcessor_a1976003ebd08bbee7836fe0bbe2d7be9}} 
+int $\ast$ \hyperlink{classPreProcessor_a1976003ebd08bbee7836fe0bbe2d7be9}{indexes\+\_\+selected\+\_\+arm}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+List of D\+CB policies to be selected \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{pre__processor_8h_source}{pre\+\_\+processor.\+h}\+: this file contains functions related to the agents\textquotesingle{} operation
+
+
+\begin{DoxyItemize}
+\item This file contains the methods used by the pre-\/processor (PP) in the Machine Learning (ML) pipeline. In particular, this module prepares data extracted from the network simulation for applying a given ML method 
+\end{DoxyItemize}
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classPreProcessor_a484b126cf65d3a2afda4eb0770276c5b}\label{classPreProcessor_a484b126cf65d3a2afda4eb0770276c5b}} 
+\index{Pre\+Processor@{Pre\+Processor}!Find\+Action\+Index\+From\+Configuration\+Bandits@{Find\+Action\+Index\+From\+Configuration\+Bandits}}
+\index{Find\+Action\+Index\+From\+Configuration\+Bandits@{Find\+Action\+Index\+From\+Configuration\+Bandits}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Find\+Action\+Index\+From\+Configuration\+Bandits()}{FindActionIndexFromConfigurationBandits()}}
+{\footnotesize\ttfamily int Pre\+Processor\+::\+Find\+Action\+Index\+From\+Configuration\+Bandits (\begin{DoxyParamCaption}\item[{\hyperlink{structConfiguration}{Configuration}}]{configuration,  }\item[{int $\ast$\&}]{indexes\+\_\+selected\+\_\+arm }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Find the action index according to the global configuration report 
+\begin{DoxyParams}{Parameters}
+{\em configuration} & \mbox{[}type \hyperlink{structConfiguration}{Configuration}\mbox{]}\+: configuration report including all the parameters currently selected \\
+\hline
+{\em indexes\+\_\+selected\+\_\+arm} & \mbox{[}type int$\ast$\mbox{]}\+: array containing the index of each parameter chosen by the W\+L\+AN \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\char`\"{}action\+\_\+ix\char`\"{} \mbox{[}type \hyperlink{structConfiguration}{Configuration}\mbox{]}\+: index of the action that corresponds to the input configuration 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPreProcessor_a1314ba4c5f3e17cdcf2f11d49f40c148}\label{classPreProcessor_a1314ba4c5f3e17cdcf2f11d49f40c148}} 
+\index{Pre\+Processor@{Pre\+Processor}!Generate\+New\+Configuration\+Bandits@{Generate\+New\+Configuration\+Bandits}}
+\index{Generate\+New\+Configuration\+Bandits@{Generate\+New\+Configuration\+Bandits}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Generate\+New\+Configuration\+Bandits()}{GenerateNewConfigurationBandits()}}
+{\footnotesize\ttfamily \hyperlink{structConfiguration}{Configuration} Pre\+Processor\+::\+Generate\+New\+Configuration\+Bandits (\begin{DoxyParamCaption}\item[{\hyperlink{structConfiguration}{Configuration}}]{configuration,  }\item[{int}]{ml\+\_\+output }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Encapsulate the configuration of a node to be sent 
+\begin{DoxyParams}{Parameters}
+{\em configuration} & \mbox{[}type \hyperlink{structConfiguration}{Configuration}\mbox{]}\+: current configuration report from the AP \\
+\hline
+{\em action\+\_\+ix} & \mbox{[}type int\mbox{]}\+: index of the action that corresponds to the new configuration \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\char`\"{}new\+\_\+configuration\char`\"{} \mbox{[}type \hyperlink{structConfiguration}{Configuration}\mbox{]}\+: configuration report, corresponding to the new action 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPreProcessor_ab5d4746e7a0360611e5ef492db5ceec0}\label{classPreProcessor_ab5d4746e7a0360611e5ef492db5ceec0}} 
+\index{Pre\+Processor@{Pre\+Processor}!Generate\+Reward@{Generate\+Reward}}
+\index{Generate\+Reward@{Generate\+Reward}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Generate\+Reward()}{GenerateReward()}}
+{\footnotesize\ttfamily double Pre\+Processor\+::\+Generate\+Reward (\begin{DoxyParamCaption}\item[{int}]{type\+\_\+of\+\_\+reward,  }\item[{\hyperlink{structPerformance}{Performance}}]{performance }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Based on the performance report of the W\+L\+AN, generate the reward to be passed to the ML method 
+\begin{DoxyParams}{Parameters}
+{\em type\+\_\+of\+\_\+reward} & \mbox{[}type int\mbox{]}\+: type of performance metric to be used as a reward \\
+\hline
+{\em performance} & \mbox{[}type \hyperlink{structPerformance}{Performance}\mbox{]}\+: current performance report from the AP \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\char`\"{}reward\char`\"{} \mbox{[}type double\mbox{]}\+: reward to be passed to the ML method 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPreProcessor_a11800dabafafd6de4cd1129ebb56cab2}\label{classPreProcessor_a11800dabafafd6de4cd1129ebb56cab2}} 
+\index{Pre\+Processor@{Pre\+Processor}!index2values@{index2values}}
+\index{index2values@{index2values}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{index2values()}{index2values()}}
+{\footnotesize\ttfamily void Pre\+Processor\+::index2values (\begin{DoxyParamCaption}\item[{int $\ast$}]{indexes,  }\item[{int}]{action\+\_\+ix,  }\item[{int}]{size\+\_\+channels,  }\item[{int}]{size\+\_\+pd,  }\item[{int}]{size\+\_\+tx\+\_\+power,  }\item[{int}]{size\+\_\+dcb\+\_\+policy }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Given different lists of parameters, generate the index in each list according to the index of the joint action (which considers each parameter) 
+\begin{DoxyParams}{Parameters}
+{\em indexes} & \mbox{[}type int$\ast$\mbox{]}\+: array we want to fill (3 positions, one for each parameter -\/ channel, PD, Tx power) (to be updated by this method) \\
+\hline
+{\em action\+\_\+ix} & \mbox{[}type int\mbox{]}\+: index of the action, which represents a combination of channel, PD and tx power \\
+\hline
+{\em size\+\_\+channels} & \mbox{[}type int\mbox{]}\+: size of channels possibilities \\
+\hline
+{\em size\+\_\+pd} & \mbox{[}type int\mbox{]}\+: size of pd possibilities \\
+\hline
+{\em size\+\_\+tx\+\_\+power} & \mbox{[}type int\mbox{]}\+: size of Tx power possibilities \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPreProcessor_a3a865e8349e7eabfa968eea7075386c2}\label{classPreProcessor_a3a865e8349e7eabfa968eea7075386c2}} 
+\index{Pre\+Processor@{Pre\+Processor}!Initialize\+Variables@{Initialize\+Variables}}
+\index{Initialize\+Variables@{Initialize\+Variables}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Initialize\+Variables()}{InitializeVariables()}}
+{\footnotesize\ttfamily void Pre\+Processor\+::\+Initialize\+Variables (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Initialize the variables used by the PP \mbox{\Hypertarget{classPreProcessor_a498d0b26c66a2fd2c20a19afe491c5d6}\label{classPreProcessor_a498d0b26c66a2fd2c20a19afe491c5d6}} 
+\index{Pre\+Processor@{Pre\+Processor}!Print\+Action\+Bandits@{Print\+Action\+Bandits}}
+\index{Print\+Action\+Bandits@{Print\+Action\+Bandits}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Print\+Action\+Bandits()}{PrintActionBandits()}}
+{\footnotesize\ttfamily void Pre\+Processor\+::\+Print\+Action\+Bandits (\begin{DoxyParamCaption}\item[{int}]{action\+\_\+ix }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print a given action 
+\begin{DoxyParams}{Parameters}
+{\em action\+\_\+ix} & \mbox{[}type int\mbox{]}\+: index of the action to be printed \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPreProcessor_aadb7f0d35267038245fa9482da146f70}\label{classPreProcessor_aadb7f0d35267038245fa9482da146f70}} 
+\index{Pre\+Processor@{Pre\+Processor}!Print\+Available\+Learning\+Mechanisms@{Print\+Available\+Learning\+Mechanisms}}
+\index{Print\+Available\+Learning\+Mechanisms@{Print\+Available\+Learning\+Mechanisms}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Print\+Available\+Learning\+Mechanisms()}{PrintAvailableLearningMechanisms()}}
+{\footnotesize\ttfamily void Pre\+Processor\+::\+Print\+Available\+Learning\+Mechanisms (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print the available ML mechanisms types \mbox{\Hypertarget{classPreProcessor_a675a191d53d9e095138881eabbebba7b}\label{classPreProcessor_a675a191d53d9e095138881eabbebba7b}} 
+\index{Pre\+Processor@{Pre\+Processor}!Print\+Available\+Reward\+Types@{Print\+Available\+Reward\+Types}}
+\index{Print\+Available\+Reward\+Types@{Print\+Available\+Reward\+Types}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Print\+Available\+Reward\+Types()}{PrintAvailableRewardTypes()}}
+{\footnotesize\ttfamily void Pre\+Processor\+::\+Print\+Available\+Reward\+Types (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print the available reward types \mbox{\Hypertarget{classPreProcessor_aa24ca9b6d851941b0654b72520fb5a81}\label{classPreProcessor_aa24ca9b6d851941b0654b72520fb5a81}} 
+\index{Pre\+Processor@{Pre\+Processor}!Process\+M\+L\+Output@{Process\+M\+L\+Output}}
+\index{Process\+M\+L\+Output@{Process\+M\+L\+Output}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Process\+M\+L\+Output()}{ProcessMLOutput()}}
+{\footnotesize\ttfamily \hyperlink{structConfiguration}{Configuration} Pre\+Processor\+::\+Process\+M\+L\+Output (\begin{DoxyParamCaption}\item[{int}]{learning\+\_\+mechanism,  }\item[{\hyperlink{structConfiguration}{Configuration}}]{configuration,  }\item[{int}]{ml\+\_\+output }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Process the output of the ML method and return a configuration struct 
+\begin{DoxyParams}{Parameters}
+{\em learning\+\_\+mechanism} & \mbox{[}type int\mbox{]}\+: learning method employed \\
+\hline
+{\em configuration} & \mbox{[}type \hyperlink{structConfiguration}{Configuration}\mbox{]}\+: current configuration report from the AP \\
+\hline
+{\em ml\+\_\+output} & \mbox{[}type int\mbox{]}\+: output of the ML method \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\char`\"{}suggested\+\_\+configuration\char`\"{} \mbox{[}type \hyperlink{structConfiguration}{Configuration}\mbox{]}\+: new configuration to be sent to the W\+L\+AN 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPreProcessor_af3e7c8f2449e69b553106203314903f0}\label{classPreProcessor_af3e7c8f2449e69b553106203314903f0}} 
+\index{Pre\+Processor@{Pre\+Processor}!Process\+Wlan\+Configuration@{Process\+Wlan\+Configuration}}
+\index{Process\+Wlan\+Configuration@{Process\+Wlan\+Configuration}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Process\+Wlan\+Configuration()}{ProcessWlanConfiguration()}}
+{\footnotesize\ttfamily int Pre\+Processor\+::\+Process\+Wlan\+Configuration (\begin{DoxyParamCaption}\item[{int}]{learning\+\_\+mechanism,  }\item[{\hyperlink{structConfiguration}{Configuration}}]{configuration }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Indexes for each parameter that conform the current selected arm \end{quote}
+
+
+Adapt the W\+L\+AN\textquotesingle{}s configuration to be passed to the ML method 
+\begin{DoxyParams}{Parameters}
+{\em learning\+\_\+mechanism} & \mbox{[}type int\mbox{]}\+: learning method employed \\
+\hline
+{\em configuration} & \mbox{[}type \hyperlink{structConfiguration}{Configuration}\mbox{]}\+: current configuration report from the AP \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\char`\"{}processed\+\_\+configuration\char`\"{} \mbox{[}type int\mbox{]}\+: configuration to be introduced directly to the ML method 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPreProcessor_a2abd608c09942dfa2885e8815907f3cc}\label{classPreProcessor_a2abd608c09942dfa2885e8815907f3cc}} 
+\index{Pre\+Processor@{Pre\+Processor}!Process\+Wlan\+Performance@{Process\+Wlan\+Performance}}
+\index{Process\+Wlan\+Performance@{Process\+Wlan\+Performance}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{Process\+Wlan\+Performance()}{ProcessWlanPerformance()}}
+{\footnotesize\ttfamily double Pre\+Processor\+::\+Process\+Wlan\+Performance (\begin{DoxyParamCaption}\item[{int}]{learning\+\_\+mechanism,  }\item[{\hyperlink{structPerformance}{Performance}}]{performance,  }\item[{int}]{type\+\_\+of\+\_\+reward }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Adapt the W\+L\+AN\textquotesingle{}s configuration to be passed to the ML method 
+\begin{DoxyParams}{Parameters}
+{\em learning\+\_\+mechanism} & \mbox{[}type int\mbox{]}\+: learning method employed \\
+\hline
+{\em performance} & \mbox{[}type \hyperlink{structPerformance}{Performance}\mbox{]}\+: current performance report from the AP \\
+\hline
+{\em type\+\_\+of\+\_\+reward} & \mbox{[}type int\mbox{]}\+: type of performance metric to be used as a reward \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\char`\"{}processed\+\_\+performance\char`\"{} \mbox{[}type double\mbox{]}\+: performance indicator to be passed to the ML method 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPreProcessor_a818563f4556239d78eb3874318fc33ba}\label{classPreProcessor_a818563f4556239d78eb3874318fc33ba}} 
+\index{Pre\+Processor@{Pre\+Processor}!values2index@{values2index}}
+\index{values2index@{values2index}!Pre\+Processor@{Pre\+Processor}}
+\subsubsection{\texorpdfstring{values2index()}{values2index()}}
+{\footnotesize\ttfamily int Pre\+Processor\+::values2index (\begin{DoxyParamCaption}\item[{int $\ast$}]{indexes,  }\item[{int}]{size\+\_\+channels,  }\item[{int}]{size\+\_\+pd,  }\item[{int}]{size\+\_\+tx\+\_\+power,  }\item[{int}]{size\+\_\+dcb\+\_\+policy }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Given different indexes of actions, generate the index of the joint action (which represents a combination of each parameter) 
+\begin{DoxyParams}{Parameters}
+{\em indexes} & \mbox{[}type int$\ast$\mbox{]}\+: array we want to fill (3 positions, one for each parameter -\/ channel, PD, Tx power) \\
+\hline
+{\em size\+\_\+channels} & \mbox{[}type int\mbox{]}\+: size of channels possibilities \\
+\hline
+{\em size\+\_\+pd} & \mbox{[}type int\mbox{]}\+: size of pd possibilities N\+O\+TE\+: size of tx power elements is not necessary \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\char`\"{}index\char`\"{} \mbox{[}type int\mbox{]}\+: index of the action, which represents a combination of channel, pd and tx power 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/network\+\_\+optimization/learning\+\_\+modules/pre\+\_\+processor.\+h\end{DoxyCompactItemize}

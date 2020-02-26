@@ -1,0 +1,30 @@
+\babel@toc {english}{}
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}
+\contentsline {section}{\numberline {2}Project Overview}{3}{section.2}
+\contentsline {subsection}{\numberline {2.1}COST}{4}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}Files Organization}{4}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Komondor Main Features}{5}{subsection.2.3}
+\contentsline {section}{\numberline {3}Komondor Design Principles}{5}{section.3}
+\contentsline {subsection}{\numberline {3.1}Main entities}{6}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}States-based operation}{6}{subsection.3.2}
+\contentsline {section}{\numberline {4}Komondor's IEEE 802.11 Core Operation}{7}{section.4}
+\contentsline {subsection}{\numberline {4.1}PHY}{7}{subsection.4.1}
+\contentsline {subsubsection}{\numberline {4.1.1}Channel representation and signal transmission}{7}{subsubsection.4.1.1}
+\contentsline {subsubsection}{\numberline {4.1.2}Interference management and packet losses}{7}{subsubsection.4.1.2}
+\contentsline {subsection}{\numberline {4.2}MAC}{8}{subsection.4.2}
+\contentsline {subsubsection}{\numberline {4.2.1}Channel access}{8}{subsubsection.4.2.1}
+\contentsline {subsubsection}{\numberline {4.2.2}Virtual carrier sensing}{9}{subsubsection.4.2.2}
+\contentsline {subsubsection}{\numberline {4.2.3}Frames formats}{10}{subsubsection.4.2.3}
+\contentsline {subsubsection}{\numberline {4.2.4}Transmission times}{10}{subsubsection.4.2.4}
+\contentsline {subsection}{\numberline {4.3}Upper communication layers}{12}{subsection.4.3}
+\contentsline {subsubsection}{\numberline {4.3.1}Traffic generator}{12}{subsubsection.4.3.1}
+\contentsline {section}{\numberline {5}Modules and Models Available in Komondor}{12}{section.5}
+\contentsline {subsection}{\numberline {5.1}Signal Propagation module}{12}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}Traffic generation module}{13}{subsection.5.2}
+\contentsline {subsection}{\numberline {5.3}Backoff generation module}{14}{subsection.5.3}
+\contentsline {subsection}{\numberline {5.4}Dynamic Channel Bonding module}{14}{subsection.5.4}
+\contentsline {section}{\numberline {6}Agents in Komondor}{15}{section.6}
+\contentsline {section}{\numberline {7}Development Notes}{16}{section.7}
+\contentsline {subsection}{\numberline {7.1}Main considerations}{16}{subsection.7.1}
+\contentsline {subsection}{\numberline {7.2}Miscellaneous}{16}{subsection.7.2}
+\contentsline {section}{\numberline {8}Conclusions Future Development Notes}{17}{section.8}

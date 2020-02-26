@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['nav_5ftime',['nav_time',['../structTxInfo.html#a30db59d14a4f0033b2bab525a07236fa',1,'TxInfo']]],
+  ['node_5fid',['node_id',['../structCapabilities.html#ac324f6406f7cb8de038c02f1fb24b3d0',1,'Capabilities']]],
+  ['node_5fid_5fa',['node_id_a',['../structLogicalNack.html#ab15730eaefd1ab0a6771af3859473eda',1,'LogicalNack']]],
+  ['node_5fid_5fb',['node_id_b',['../structLogicalNack.html#ac83ef69cd2771c11bfaeb63eaf3462ef',1,'LogicalNack']]],
+  ['node_5ftype',['node_type',['../structCapabilities.html#a1193f0213dfc1a0efd15eaf65b0ea45c',1,'Capabilities']]],
+  ['non_5fsrg_5fobss_5fpd',['non_srg_obss_pd',['../structConfiguration.html#ad626957d7ff75b7a49f6b8f99242c249',1,'Configuration']]],
+  ['notification',['Notification',['../structNotification.html',1,'']]],
+  ['num_5factions',['num_actions',['../classPreProcessor.html#a52fcb7d5b9ca9538faecf1f488cd751b',1,'PreProcessor::num_actions()'],['../classMultiArmedBandit.html#a8806e1f73ec7dca2def562d31a202456',1,'MultiArmedBandit::num_actions()'],['../classMlModel.html#af95e012035256910b23ffc83cb737534',1,'MlModel::num_actions()']]],
+  ['num_5factions_5fchannel',['num_actions_channel',['../classPreProcessor.html#a6b101dc1a43b2164637d096384e6fcb6',1,'PreProcessor']]],
+  ['num_5factions_5fdcb_5fpolicy',['num_actions_dcb_policy',['../classPreProcessor.html#a3db20d3f3df95ea17ee8eecee86cbc8a',1,'PreProcessor']]],
+  ['num_5factions_5fsensitivity',['num_actions_sensitivity',['../classPreProcessor.html#a193258f74ceca3cb13792b3c2f6cd02b',1,'PreProcessor']]],
+  ['num_5factions_5ftx_5fpower',['num_actions_tx_power',['../classPreProcessor.html#a70a572176b774eddc9604a2b6599fd18',1,'PreProcessor']]],
+  ['num_5fchannels',['num_channels',['../classGraphColoring.html#a032754b6cbb82cdedf5fdfb92e79ea68',1,'GraphColoring::num_channels()'],['../classMlModel.html#a22c7d2da393a2c6570f98ed9fdf021d5',1,'MlModel::num_channels()']]],
+  ['num_5fchannels_5fallowed',['num_channels_allowed',['../structCapabilities.html#a7bbbcd7bbe2fce0b9d3a3237376759af',1,'Capabilities']]],
+  ['num_5fdelay_5fmeasurements',['num_delay_measurements',['../structPerformance.html#afaf90bc5a1093739efd20b1b05106b71',1,'Performance']]],
+  ['num_5fiterations',['num_iterations',['../classMultiArmedBandit.html#a0ddfdfc3b16fa8111c3646170b4be51e',1,'MultiArmedBandit']]],
+  ['num_5fnew_5fbackoff_5fcomputations',['num_new_backoff_computations',['../structPerformance.html#adcbc911a8cb8dbcbdd56843aa736cf68',1,'Performance']]],
+  ['num_5fpackets_5fdropped',['num_packets_dropped',['../structPerformance.html#ab806f0bc1ff7587ff083d17742c82463',1,'Performance']]],
+  ['num_5fpackets_5fgenerated',['num_packets_generated',['../structPerformance.html#a3414f7e23dbcc80f97a610d1282485e7',1,'Performance']]],
+  ['num_5fstas',['num_stas',['../structWlan.html#a53c3246a5649acd9a764e9b2ef8a76a1',1,'Wlan']]],
+  ['num_5ftrials_5ftx_5fper_5fnum_5fchannels',['num_trials_tx_per_num_channels',['../structPerformance.html#ae51e39428cd09575e24782ae3d83e40a',1,'Performance']]],
+  ['num_5ftx_5finit_5fnot_5fpossible',['num_tx_init_not_possible',['../structPerformance.html#a035360f620233fd80e0e3962244fb336',1,'Performance']]],
+  ['num_5ftx_5finit_5ftried',['num_tx_init_tried',['../structPerformance.html#a75c2f3d7375600e81bafbf89410ab046',1,'Performance']]]
+];

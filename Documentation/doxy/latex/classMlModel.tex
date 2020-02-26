@@ -1,0 +1,203 @@
+\hypertarget{classMlModel}{}\section{Ml\+Model Class Reference}
+\label{classMlModel}\index{Ml\+Model@{Ml\+Model}}
+
+
+{\ttfamily \#include $<$ml\+\_\+model.\+h$>$}
+
+
+
+Collaboration diagram for Ml\+Model\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=284pt]{classMlModel__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMlModel_a97c9a74675555fd0d6e4442d555ce409}\label{classMlModel_a97c9a74675555fd0d6e4442d555ce409}} 
+void {\bfseries Compute\+Global\+Configuration} (\hyperlink{structConfiguration}{Configuration} $\ast$configuration\+\_\+array, \hyperlink{structPerformance}{Performance} $\ast$performance\+\_\+array, \hyperlink{structLogger}{Logger} \&central\+\_\+controller\+\_\+logger, double sim\+\_\+time)
+\item 
+\mbox{\Hypertarget{classMlModel_aa2657a607e53c8bdc65769885343cabd}\label{classMlModel_aa2657a607e53c8bdc65769885343cabd}} 
+int {\bfseries Compute\+Individual\+Configuration} (int arm\+\_\+ix, double reward, \hyperlink{structLogger}{Logger} \&agent\+\_\+logger, double sim\+\_\+time)
+\item 
+\mbox{\Hypertarget{classMlModel_ae9244d394c50fe87831a83231d549779}\label{classMlModel_ae9244d394c50fe87831a83231d549779}} 
+void {\bfseries Initialize\+Variables} ()
+\item 
+\mbox{\Hypertarget{classMlModel_a4ae9bc5815eb417053be5355762574c1}\label{classMlModel_a4ae9bc5815eb417053be5355762574c1}} 
+void {\bfseries Print\+Or\+Write\+Statistics} (int write\+\_\+or\+\_\+print, \hyperlink{structLogger}{Logger} \&logger, double sim\+\_\+time)
+\item 
+\mbox{\Hypertarget{classMlModel_a4e1825000d0d74d900181c031a95e927}\label{classMlModel_a4e1825000d0d74d900181c031a95e927}} 
+void {\bfseries Print\+Available\+Learning\+Mechanisms} ()
+\item 
+void \hyperlink{classMlModel_a97c9a74675555fd0d6e4442d555ce409}{Compute\+Global\+Configuration} (\hyperlink{structConfiguration}{Configuration} $\ast$configuration\+\_\+array, \hyperlink{structPerformance}{Performance} $\ast$performance\+\_\+array, \hyperlink{structLogger}{Logger} \&central\+\_\+controller\+\_\+logger, double sim\+\_\+time)
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of actions (Bandits) \end{quote}
+\end{DoxyCompactList}\item 
+int \hyperlink{classMlModel_aa2657a607e53c8bdc65769885343cabd}{Compute\+Individual\+Configuration} (int arm\+\_\+ix, double reward, \hyperlink{structLogger}{Logger} \&agent\+\_\+logger, double sim\+\_\+time)
+\item 
+void \hyperlink{classMlModel_ae9244d394c50fe87831a83231d549779}{Initialize\+Variables} ()
+\item 
+void \hyperlink{classMlModel_a4ae9bc5815eb417053be5355762574c1}{Print\+Or\+Write\+Statistics} (int write\+\_\+or\+\_\+print, \hyperlink{structLogger}{Logger} \&logger, double sim\+\_\+time)
+\item 
+void \hyperlink{classMlModel_a4e1825000d0d74d900181c031a95e927}{Print\+Available\+Learning\+Mechanisms} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMlModel_ac7cb74d76e218c110e1f3ce2e5deefd6}\label{classMlModel_ac7cb74d76e218c110e1f3ce2e5deefd6}} 
+int {\bfseries learning\+\_\+mechanism}
+\item 
+\mbox{\Hypertarget{classMlModel_a7d8ffc19c56910599e73ad05f8e09dd1}\label{classMlModel_a7d8ffc19c56910599e73ad05f8e09dd1}} 
+int \hyperlink{classMlModel_a7d8ffc19c56910599e73ad05f8e09dd1}{agents\+\_\+number}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Index of the learning mechanism employed \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_a257f8657ded84ed7ca81b4d3ca8372dd}\label{classMlModel_a257f8657ded84ed7ca81b4d3ca8372dd}} 
+int \hyperlink{classMlModel_a257f8657ded84ed7ca81b4d3ca8372dd}{wlans\+\_\+number}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of agents \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_a24e95021ab99aae6e8759e33e7e81ff4}\label{classMlModel_a24e95021ab99aae6e8759e33e7e81ff4}} 
+int \hyperlink{classMlModel_a24e95021ab99aae6e8759e33e7e81ff4}{total\+\_\+nodes\+\_\+number}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of W\+L\+A\+Ns \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_a22c7d2da393a2c6570f98ed9fdf021d5}\label{classMlModel_a22c7d2da393a2c6570f98ed9fdf021d5}} 
+int \hyperlink{classMlModel_a22c7d2da393a2c6570f98ed9fdf021d5}{num\+\_\+channels}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of nodes \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_a6fd79e984bf235c412d313768e1cb279}\label{classMlModel_a6fd79e984bf235c412d313768e1cb279}} 
+int \hyperlink{classMlModel_a6fd79e984bf235c412d313768e1cb279}{save\+\_\+controller\+\_\+logs}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of channels \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_a6bf26ea5168a4f6ba4f2ee4239349a61}\label{classMlModel_a6bf26ea5168a4f6ba4f2ee4239349a61}} 
+int \hyperlink{classMlModel_a6bf26ea5168a4f6ba4f2ee4239349a61}{print\+\_\+controller\+\_\+logs}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Flag to indicate whether to save the controller logs or not \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_a43dd70b84841ba941319a62a9c0992b4}\label{classMlModel_a43dd70b84841ba941319a62a9c0992b4}} 
+int \hyperlink{classMlModel_a43dd70b84841ba941319a62a9c0992b4}{save\+\_\+agent\+\_\+logs}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Flag to indicate whether to print the controller logs or not \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_ae8d3568496b274b42f778e46ccd1b1f8}\label{classMlModel_ae8d3568496b274b42f778e46ccd1b1f8}} 
+int \hyperlink{classMlModel_ae8d3568496b274b42f778e46ccd1b1f8}{print\+\_\+agent\+\_\+logs}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Flag to indicate whether to save the agents logs or not \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_a3661d0ceeb731a506b28886cddd23e03}\label{classMlModel_a3661d0ceeb731a506b28886cddd23e03}} 
+\hyperlink{classGraphColoring}{Graph\+Coloring} \hyperlink{classMlModel_a3661d0ceeb731a506b28886cddd23e03}{graph\+\_\+coloring}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Flag to indicate whether to print the agents logs or not \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_adf07a8bdeaffaa6f7a59f2b1ac3beaca}\label{classMlModel_adf07a8bdeaffaa6f7a59f2b1ac3beaca}} 
+int \hyperlink{classMlModel_adf07a8bdeaffaa6f7a59f2b1ac3beaca}{agent\+\_\+id}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Graph coloring object \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_a2275d5999058ae5a3b1b90b979692a73}\label{classMlModel_a2275d5999058ae5a3b1b90b979692a73}} 
+\hyperlink{classMultiArmedBandit}{Multi\+Armed\+Bandit} \hyperlink{classMlModel_a2275d5999058ae5a3b1b90b979692a73}{mab\+\_\+agent}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+ID of the agent calling the ML method \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_a5936fbf7e2ebf1676ac8fd53eb9283c7}\label{classMlModel_a5936fbf7e2ebf1676ac8fd53eb9283c7}} 
+int \hyperlink{classMlModel_a5936fbf7e2ebf1676ac8fd53eb9283c7}{action\+\_\+selection\+\_\+strategy}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Multi-\/\+Armed Bandit object \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMlModel_af95e012035256910b23ffc83cb737534}\label{classMlModel_af95e012035256910b23ffc83cb737534}} 
+int \hyperlink{classMlModel_af95e012035256910b23ffc83cb737534}{num\+\_\+actions}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Index of the chosen action-\/selection strategy \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{ml__model_8h_source}{ml\+\_\+model.\+h}\+: this file contains functions related to the agents\textquotesingle{} operation
+
+
+\begin{DoxyItemize}
+\item This file contains the methods used by the ML Model in the Machine Learning (ML) pipeline. In particular, this module manages the ML operation 
+\end{DoxyItemize}
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classMlModel_a97c9a74675555fd0d6e4442d555ce409}\label{classMlModel_a97c9a74675555fd0d6e4442d555ce409}} 
+\index{Ml\+Model@{Ml\+Model}!Compute\+Global\+Configuration@{Compute\+Global\+Configuration}}
+\index{Compute\+Global\+Configuration@{Compute\+Global\+Configuration}!Ml\+Model@{Ml\+Model}}
+\subsubsection{\texorpdfstring{Compute\+Global\+Configuration()}{ComputeGlobalConfiguration()}}
+{\footnotesize\ttfamily void Ml\+Model\+::\+Compute\+Global\+Configuration (\begin{DoxyParamCaption}\item[{\hyperlink{structConfiguration}{Configuration} $\ast$}]{configuration\+\_\+array,  }\item[{\hyperlink{structPerformance}{Performance} $\ast$}]{performance\+\_\+array,  }\item[{\hyperlink{structLogger}{Logger} \&}]{central\+\_\+controller\+\_\+logger,  }\item[{double}]{sim\+\_\+time }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Number of actions (Bandits) \end{quote}
+
+
+Method for computing the global configuration 
+\begin{DoxyParams}{Parameters}
+{\em configuration\+\_\+array} & \mbox{[}type Configuration$\ast$\mbox{]}\+: array of configurations of each AP (to be updated by this method) \\
+\hline
+{\em performance\+\_\+array} & \mbox{[}type Performance$\ast$\mbox{]}\+: array of performances of each AP \\
+\hline
+{\em central\+\_\+controller\+\_\+logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger object to write logs \\
+\hline
+{\em sim\+\_\+time} & \mbox{[}type double\mbox{]}\+: simulation time at the moment of calling the function (for logging purposes) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMlModel_aa2657a607e53c8bdc65769885343cabd}\label{classMlModel_aa2657a607e53c8bdc65769885343cabd}} 
+\index{Ml\+Model@{Ml\+Model}!Compute\+Individual\+Configuration@{Compute\+Individual\+Configuration}}
+\index{Compute\+Individual\+Configuration@{Compute\+Individual\+Configuration}!Ml\+Model@{Ml\+Model}}
+\subsubsection{\texorpdfstring{Compute\+Individual\+Configuration()}{ComputeIndividualConfiguration()}}
+{\footnotesize\ttfamily int Ml\+Model\+::\+Compute\+Individual\+Configuration (\begin{DoxyParamCaption}\item[{int}]{arm\+\_\+ix,  }\item[{double}]{reward,  }\item[{\hyperlink{structLogger}{Logger} \&}]{agent\+\_\+logger,  }\item[{double}]{sim\+\_\+time }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method for computing an individual configuration (decentralized case) 
+\begin{DoxyParams}{Parameters}
+{\em arm\+\_\+ix} & \mbox{[}type int\mbox{]}\+: index of the current selected arm (bandits) \\
+\hline
+{\em reward} & \mbox{[}type Performance$\ast$\mbox{]}\+: array of performances of each AP \\
+\hline
+{\em agent\+\_\+logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger object to write logs \\
+\hline
+{\em sim\+\_\+time} & \mbox{[}type double\mbox{]}\+: simulation time at the moment of calling the function (for logging purposes) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\char`\"{}new\+\_\+action\char`\"{} \mbox{[}type int\mbox{]}\+: index of the new selected action 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMlModel_ae9244d394c50fe87831a83231d549779}\label{classMlModel_ae9244d394c50fe87831a83231d549779}} 
+\index{Ml\+Model@{Ml\+Model}!Initialize\+Variables@{Initialize\+Variables}}
+\index{Initialize\+Variables@{Initialize\+Variables}!Ml\+Model@{Ml\+Model}}
+\subsubsection{\texorpdfstring{Initialize\+Variables()}{InitializeVariables()}}
+{\footnotesize\ttfamily void Ml\+Model\+::\+Initialize\+Variables (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Initialize variables in the ML model \mbox{\Hypertarget{classMlModel_a4e1825000d0d74d900181c031a95e927}\label{classMlModel_a4e1825000d0d74d900181c031a95e927}} 
+\index{Ml\+Model@{Ml\+Model}!Print\+Available\+Learning\+Mechanisms@{Print\+Available\+Learning\+Mechanisms}}
+\index{Print\+Available\+Learning\+Mechanisms@{Print\+Available\+Learning\+Mechanisms}!Ml\+Model@{Ml\+Model}}
+\subsubsection{\texorpdfstring{Print\+Available\+Learning\+Mechanisms()}{PrintAvailableLearningMechanisms()}}
+{\footnotesize\ttfamily void Ml\+Model\+::\+Print\+Available\+Learning\+Mechanisms (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print the available ML mechanisms types \mbox{\Hypertarget{classMlModel_a4ae9bc5815eb417053be5355762574c1}\label{classMlModel_a4ae9bc5815eb417053be5355762574c1}} 
+\index{Ml\+Model@{Ml\+Model}!Print\+Or\+Write\+Statistics@{Print\+Or\+Write\+Statistics}}
+\index{Print\+Or\+Write\+Statistics@{Print\+Or\+Write\+Statistics}!Ml\+Model@{Ml\+Model}}
+\subsubsection{\texorpdfstring{Print\+Or\+Write\+Statistics()}{PrintOrWriteStatistics()}}
+{\footnotesize\ttfamily void Ml\+Model\+::\+Print\+Or\+Write\+Statistics (\begin{DoxyParamCaption}\item[{int}]{write\+\_\+or\+\_\+print,  }\item[{\hyperlink{structLogger}{Logger} \&}]{logger,  }\item[{double}]{sim\+\_\+time }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print or write statistics of the ML Model 
+\begin{DoxyParams}{Parameters}
+{\em write\+\_\+or\+\_\+print} & \mbox{[}type int\mbox{]}\+: variable to indicate whether to print on the console or to write on the the output logs file \\
+\hline
+{\em logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger object to write logs \\
+\hline
+{\em sim\+\_\+time} & \mbox{[}type double\mbox{]}\+: simulation time at the moment of calling the function (for logging purposes) \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/network\+\_\+optimization/learning\+\_\+modules/ml\+\_\+model.\+h\end{DoxyCompactItemize}

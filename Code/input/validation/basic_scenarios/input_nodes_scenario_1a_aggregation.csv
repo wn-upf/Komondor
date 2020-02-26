@@ -1,0 +1,3 @@
+node_code;node_type;wlan_code;x(m);y(m);z(m);central_freq (GHz);channel_bonding_model;primary_channel;min_channel_allowed;max_channel_allowed;tx_power;sensitivity;traffic_model;traffic_load(pkts/s);packet_length;num_packets_aggregated;capture_effect_model;capture_effect_thr;constant PER;pifs_activated;cw_adaptation;cw;cw_stage
+AP_A;0;A;0;2;2;5;0;0;0;0;20;-68;99;1000;11728;64;1;100;0;0;0;16;5
+STA_A1;1;A;0;0;0;5;0;0;0;0;20;-68;99;0;11728;64;1;100;0;0;0;16;5

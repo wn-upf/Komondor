@@ -1,0 +1,188 @@
+\hypertarget{structCapabilities}{}\section{Capabilities Struct Reference}
+\label{structCapabilities}\index{Capabilities@{Capabilities}}
+
+
+{\ttfamily \#include $<$node\+\_\+configuration.\+h$>$}
+
+
+
+Collaboration diagram for Capabilities\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=165pt]{structCapabilities__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structCapabilities_a1a12dfd9ffe75c5bf62b2e5b526cb0d1}\label{structCapabilities_a1a12dfd9ffe75c5bf62b2e5b526cb0d1}} 
+void {\bfseries Print\+Capabilities} ()
+\item 
+\mbox{\Hypertarget{structCapabilities_ab89f31c181ad2ec790b4c7f8dde21609}\label{structCapabilities_ab89f31c181ad2ec790b4c7f8dde21609}} 
+void {\bfseries Write\+Capabilities} (\hyperlink{structLogger}{Logger} logger, double sim\+\_\+time)
+\item 
+void \hyperlink{structCapabilities_a1a12dfd9ffe75c5bf62b2e5b526cb0d1}{Print\+Capabilities} ()
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Default modulation \end{quote}
+\end{DoxyCompactList}\item 
+void \hyperlink{structCapabilities_ab89f31c181ad2ec790b4c7f8dde21609}{Write\+Capabilities} (\hyperlink{structLogger}{Logger} logger, double sim\+\_\+time)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structCapabilities_a7edd9b5f5915c8c47b7e0a30ee080c6a}\label{structCapabilities_a7edd9b5f5915c8c47b7e0a30ee080c6a}} 
+std\+::string {\bfseries node\+\_\+code}
+\item 
+\mbox{\Hypertarget{structCapabilities_ac324f6406f7cb8de038c02f1fb24b3d0}\label{structCapabilities_ac324f6406f7cb8de038c02f1fb24b3d0}} 
+int \hyperlink{structCapabilities_ac324f6406f7cb8de038c02f1fb24b3d0}{node\+\_\+id}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Node code \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a1e7477140acd509bcc68d9afdccdd2fe}\label{structCapabilities_a1e7477140acd509bcc68d9afdccdd2fe}} 
+double \hyperlink{structCapabilities_a1e7477140acd509bcc68d9afdccdd2fe}{x}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Node id \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a4c7e942cf637661f4f39ba0a979fac6a}\label{structCapabilities_a4c7e942cf637661f4f39ba0a979fac6a}} 
+double \hyperlink{structCapabilities_a4c7e942cf637661f4f39ba0a979fac6a}{y}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+X position coordinate \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_af2c88b2fa6b6209c3ee04a5e5c211f5b}\label{structCapabilities_af2c88b2fa6b6209c3ee04a5e5c211f5b}} 
+double \hyperlink{structCapabilities_af2c88b2fa6b6209c3ee04a5e5c211f5b}{z}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Y position coordinate \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a1193f0213dfc1a0efd15eaf65b0ea45c}\label{structCapabilities_a1193f0213dfc1a0efd15eaf65b0ea45c}} 
+int \hyperlink{structCapabilities_a1193f0213dfc1a0efd15eaf65b0ea45c}{node\+\_\+type}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Z position coordinate \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_ab551c86dab551aa25bd42a5230b456c2}\label{structCapabilities_ab551c86dab551aa25bd42a5230b456c2}} 
+int \hyperlink{structCapabilities_ab551c86dab551aa25bd42a5230b456c2}{destination\+\_\+id}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Node type (e.\+g., AP, S\+TA, ...) \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a7d819ae08c2d5100ae73976f3ad2026e}\label{structCapabilities_a7d819ae08c2d5100ae73976f3ad2026e}} 
+double \hyperlink{structCapabilities_a7d819ae08c2d5100ae73976f3ad2026e}{lambda}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Destination node id (for nodes not belonging to any W\+L\+AN) \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a8c1dc96e13e54efefbaed6e0218a4e30}\label{structCapabilities_a8c1dc96e13e54efefbaed6e0218a4e30}} 
+double \hyperlink{structCapabilities_a8c1dc96e13e54efefbaed6e0218a4e30}{traffic\+\_\+load}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Average notification generation rate (related to exponential BO) \mbox{[}notification/s\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a619b798b45dc3bfcb0456b663918e534}\label{structCapabilities_a619b798b45dc3bfcb0456b663918e534}} 
+int \hyperlink{structCapabilities_a619b798b45dc3bfcb0456b663918e534}{ieee\+\_\+protocol}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Average traffic load of the AP \mbox{[}packets/s\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_acef3010e3cc7c8031e00824c20fce068}\label{structCapabilities_acef3010e3cc7c8031e00824c20fce068}} 
+int \hyperlink{structCapabilities_acef3010e3cc7c8031e00824c20fce068}{primary\+\_\+channel}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+I\+E\+EE protocol type \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a5f4060c7db110398fd90c25f13599535}\label{structCapabilities_a5f4060c7db110398fd90c25f13599535}} 
+int \hyperlink{structCapabilities_a5f4060c7db110398fd90c25f13599535}{min\+\_\+channel\+\_\+allowed}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Primary channel \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_ade2db61b6d5cfa458e31b56810a7a7ee}\label{structCapabilities_ade2db61b6d5cfa458e31b56810a7a7ee}} 
+int \hyperlink{structCapabilities_ade2db61b6d5cfa458e31b56810a7a7ee}{max\+\_\+channel\+\_\+allowed}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Min. allowed channel \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a7bbbcd7bbe2fce0b9d3a3237376759af}\label{structCapabilities_a7bbbcd7bbe2fce0b9d3a3237376759af}} 
+int \hyperlink{structCapabilities_a7bbbcd7bbe2fce0b9d3a3237376759af}{num\+\_\+channels\+\_\+allowed}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Max. allowed channel \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_abda141935667404464ef0a637db1ba2a}\label{structCapabilities_abda141935667404464ef0a637db1ba2a}} 
+double \hyperlink{structCapabilities_abda141935667404464ef0a637db1ba2a}{tx\+\_\+power\+\_\+min}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Maximum number of channels allowed to TX in \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a1d452f9b15fb03b25d40bb92f455b6b5}\label{structCapabilities_a1d452f9b15fb03b25d40bb92f455b6b5}} 
+double \hyperlink{structCapabilities_a1d452f9b15fb03b25d40bb92f455b6b5}{tx\+\_\+power\+\_\+default}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Min. power transmission \mbox{[}pW\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_ab8290a1aacc4a64c2c3033bd4ea5034f}\label{structCapabilities_ab8290a1aacc4a64c2c3033bd4ea5034f}} 
+double \hyperlink{structCapabilities_ab8290a1aacc4a64c2c3033bd4ea5034f}{tx\+\_\+power\+\_\+max}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Default power transmission \mbox{[}pW\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a4477344b4ebea51cac5b63b14e20d50a}\label{structCapabilities_a4477344b4ebea51cac5b63b14e20d50a}} 
+double \hyperlink{structCapabilities_a4477344b4ebea51cac5b63b14e20d50a}{sensitivity\+\_\+min}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Max. power transmission \mbox{[}pW\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a2c5fb9de1c43c79cee6798c016211cb2}\label{structCapabilities_a2c5fb9de1c43c79cee6798c016211cb2}} 
+double \hyperlink{structCapabilities_a2c5fb9de1c43c79cee6798c016211cb2}{sensitivity\+\_\+default}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Min. pd (\char`\"{}sensitivity\char`\"{} threshold) \mbox{[}pW\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_aee6c344ee3bcd10f43cf0cbc10b2a498}\label{structCapabilities_aee6c344ee3bcd10f43cf0cbc10b2a498}} 
+double \hyperlink{structCapabilities_aee6c344ee3bcd10f43cf0cbc10b2a498}{sensitivity\+\_\+max}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Default pd (\char`\"{}sensitivity\char`\"{} threshold) \mbox{[}pW\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_a4196e85f00573d428b1e9007331d2ce7}\label{structCapabilities_a4196e85f00573d428b1e9007331d2ce7}} 
+double \hyperlink{structCapabilities_a4196e85f00573d428b1e9007331d2ce7}{tx\+\_\+gain}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Max. pd (\char`\"{}sensitivity\char`\"{} threshold) \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_ad35c7f2ceb255db88cf27b8b09cb24bd}\label{structCapabilities_ad35c7f2ceb255db88cf27b8b09cb24bd}} 
+double \hyperlink{structCapabilities_ad35c7f2ceb255db88cf27b8b09cb24bd}{rx\+\_\+gain}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Antenna transmission gain \mbox{[}linear\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_ae05428c083582018c872bd8d6da04638}\label{structCapabilities_ae05428c083582018c872bd8d6da04638}} 
+int \hyperlink{structCapabilities_ae05428c083582018c872bd8d6da04638}{current\+\_\+dcb\+\_\+policy}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Antenna reception gain \mbox{[}linear\mbox{]} \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structCapabilities_aed928b77fc111cde1845dc9df3df8696}\label{structCapabilities_aed928b77fc111cde1845dc9df3df8696}} 
+int \hyperlink{structCapabilities_aed928b77fc111cde1845dc9df3df8696}{modulation\+\_\+default}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Selected D\+CB policy \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{node__configuration_8h_source}{node\+\_\+configuration.\+h}\+: this file defines a C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+ON and provides basic displaying methods 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{structCapabilities_a1a12dfd9ffe75c5bf62b2e5b526cb0d1}\label{structCapabilities_a1a12dfd9ffe75c5bf62b2e5b526cb0d1}} 
+\index{Capabilities@{Capabilities}!Print\+Capabilities@{Print\+Capabilities}}
+\index{Print\+Capabilities@{Print\+Capabilities}!Capabilities@{Capabilities}}
+\subsubsection{\texorpdfstring{Print\+Capabilities()}{PrintCapabilities()}}
+{\footnotesize\ttfamily void Capabilities\+::\+Print\+Capabilities (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Default modulation \end{quote}
+
+
+Function to print the node\textquotesingle{}s capabilities \mbox{\Hypertarget{structCapabilities_ab89f31c181ad2ec790b4c7f8dde21609}\label{structCapabilities_ab89f31c181ad2ec790b4c7f8dde21609}} 
+\index{Capabilities@{Capabilities}!Write\+Capabilities@{Write\+Capabilities}}
+\index{Write\+Capabilities@{Write\+Capabilities}!Capabilities@{Capabilities}}
+\subsubsection{\texorpdfstring{Write\+Capabilities()}{WriteCapabilities()}}
+{\footnotesize\ttfamily void Capabilities\+::\+Write\+Capabilities (\begin{DoxyParamCaption}\item[{\hyperlink{structLogger}{Logger}}]{logger,  }\item[{double}]{sim\+\_\+time }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Function to write the node\textquotesingle{}s capabilities 
+\begin{DoxyParams}{Parameters}
+{\em logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger object for printing logs into a file \\
+\hline
+{\em sim\+\_\+time} & \mbox{[}type double\mbox{]}\+: current simulation time \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/structures/node\+\_\+configuration.\+h\end{DoxyCompactItemize}

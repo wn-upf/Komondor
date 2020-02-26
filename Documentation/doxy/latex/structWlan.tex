@@ -1,0 +1,141 @@
+\hypertarget{structWlan}{}\section{Wlan Struct Reference}
+\label{structWlan}\index{Wlan@{Wlan}}
+
+
+{\ttfamily \#include $<$wlan.\+h$>$}
+
+
+
+Collaboration diagram for Wlan\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=151pt]{structWlan__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structWlan_a2e8b797ec5404eb24afef8e61ac5ab12}\label{structWlan_a2e8b797ec5404eb24afef8e61ac5ab12}} 
+void {\bfseries Set\+Size\+Of\+S\+T\+As\+Array} (int \hyperlink{structWlan_a53c3246a5649acd9a764e9b2ef8a76a1}{num\+\_\+stas})
+\item 
+\mbox{\Hypertarget{structWlan_af4e4a70fe79d50c26429879d57fa1b95}\label{structWlan_af4e4a70fe79d50c26429879d57fa1b95}} 
+void {\bfseries Print\+Sta\+Ids} ()
+\item 
+\mbox{\Hypertarget{structWlan_ab61a4af9882ac2df280ac073f6164521}\label{structWlan_ab61a4af9882ac2df280ac073f6164521}} 
+void {\bfseries Write\+Sta\+Ids} (\hyperlink{structLogger}{Logger} logger)
+\item 
+\mbox{\Hypertarget{structWlan_a93adab5b705fd56386e625e6cad0ccfd}\label{structWlan_a93adab5b705fd56386e625e6cad0ccfd}} 
+void {\bfseries Print\+Wlan\+Info} ()
+\item 
+\mbox{\Hypertarget{structWlan_a8a999685a03c0c478ae95b9dfb98dd01}\label{structWlan_a8a999685a03c0c478ae95b9dfb98dd01}} 
+void {\bfseries Write\+Wlan\+Info} (\hyperlink{structLogger}{Logger} logger, std\+::string header\+\_\+str)
+\item 
+void \hyperlink{structWlan_a2e8b797ec5404eb24afef8e61ac5ab12}{Set\+Size\+Of\+S\+T\+As\+Array} (int \hyperlink{structWlan_a53c3246a5649acd9a764e9b2ef8a76a1}{num\+\_\+stas})
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Indicates whether the SR operation is enabled or not \end{quote}
+\end{DoxyCompactList}\item 
+void \hyperlink{structWlan_af4e4a70fe79d50c26429879d57fa1b95}{Print\+Sta\+Ids} ()
+\item 
+void \hyperlink{structWlan_ab61a4af9882ac2df280ac073f6164521}{Write\+Sta\+Ids} (\hyperlink{structLogger}{Logger} logger)
+\item 
+void \hyperlink{structWlan_a93adab5b705fd56386e625e6cad0ccfd}{Print\+Wlan\+Info} ()
+\item 
+void \hyperlink{structWlan_a8a999685a03c0c478ae95b9dfb98dd01}{Write\+Wlan\+Info} (\hyperlink{structLogger}{Logger} logger, std\+::string header\+\_\+str)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structWlan_acd1e50de6042019d702a9fdd633165fa}\label{structWlan_acd1e50de6042019d702a9fdd633165fa}} 
+int {\bfseries wlan\+\_\+id}
+\item 
+\mbox{\Hypertarget{structWlan_a47755b592c1fe6fb53b990fef19eabbd}\label{structWlan_a47755b592c1fe6fb53b990fef19eabbd}} 
+std\+::string \hyperlink{structWlan_a47755b592c1fe6fb53b990fef19eabbd}{wlan\+\_\+code}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+W\+L\+AN ID \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structWlan_a53c3246a5649acd9a764e9b2ef8a76a1}\label{structWlan_a53c3246a5649acd9a764e9b2ef8a76a1}} 
+int \hyperlink{structWlan_a53c3246a5649acd9a764e9b2ef8a76a1}{num\+\_\+stas}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Code of the W\+L\+AN (string) \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structWlan_a54cceb143026348c8852ea1a01710f72}\label{structWlan_a54cceb143026348c8852ea1a01710f72}} 
+int \hyperlink{structWlan_a54cceb143026348c8852ea1a01710f72}{ap\+\_\+id}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of S\+T\+As in the W\+L\+AN (AP not included) \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structWlan_a3535bb787965119676d3b5341800f520}\label{structWlan_a3535bb787965119676d3b5341800f520}} 
+int $\ast$ \hyperlink{structWlan_a3535bb787965119676d3b5341800f520}{list\+\_\+sta\+\_\+id}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Id of the Access Point \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structWlan_a8a4341ee1859a7fe80a22e5ed9b4d89e}\label{structWlan_a8a4341ee1859a7fe80a22e5ed9b4d89e}} 
+int \hyperlink{structWlan_a8a4341ee1859a7fe80a22e5ed9b4d89e}{spatial\+\_\+reuse\+\_\+enabled}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+List of S\+T\+As I\+Ds belonging to the W\+L\+AN \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{performance__metrics_8h_source}{performance\+\_\+metrics.\+h}\+: this file defines a W\+L\+AN and provides basic displaying methods 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{structWlan_af4e4a70fe79d50c26429879d57fa1b95}\label{structWlan_af4e4a70fe79d50c26429879d57fa1b95}} 
+\index{Wlan@{Wlan}!Print\+Sta\+Ids@{Print\+Sta\+Ids}}
+\index{Print\+Sta\+Ids@{Print\+Sta\+Ids}!Wlan@{Wlan}}
+\subsubsection{\texorpdfstring{Print\+Sta\+Ids()}{PrintStaIds()}}
+{\footnotesize\ttfamily void Wlan\+::\+Print\+Sta\+Ids (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print the list of S\+T\+As I\+Ds belonging to the W\+L\+AN \mbox{\Hypertarget{structWlan_a93adab5b705fd56386e625e6cad0ccfd}\label{structWlan_a93adab5b705fd56386e625e6cad0ccfd}} 
+\index{Wlan@{Wlan}!Print\+Wlan\+Info@{Print\+Wlan\+Info}}
+\index{Print\+Wlan\+Info@{Print\+Wlan\+Info}!Wlan@{Wlan}}
+\subsubsection{\texorpdfstring{Print\+Wlan\+Info()}{PrintWlanInfo()}}
+{\footnotesize\ttfamily void Wlan\+::\+Print\+Wlan\+Info (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Print general W\+L\+AN\textquotesingle{}s information \mbox{\Hypertarget{structWlan_a2e8b797ec5404eb24afef8e61ac5ab12}\label{structWlan_a2e8b797ec5404eb24afef8e61ac5ab12}} 
+\index{Wlan@{Wlan}!Set\+Size\+Of\+S\+T\+As\+Array@{Set\+Size\+Of\+S\+T\+As\+Array}}
+\index{Set\+Size\+Of\+S\+T\+As\+Array@{Set\+Size\+Of\+S\+T\+As\+Array}!Wlan@{Wlan}}
+\subsubsection{\texorpdfstring{Set\+Size\+Of\+S\+T\+As\+Array()}{SetSizeOfSTAsArray()}}
+{\footnotesize\ttfamily void Wlan\+::\+Set\+Size\+Of\+S\+T\+As\+Array (\begin{DoxyParamCaption}\item[{int}]{num\+\_\+stas }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Indicates whether the SR operation is enabled or not \end{quote}
+
+
+Set the size of the array list\+\_\+sta\+\_\+id 
+\begin{DoxyParams}{Parameters}
+{\em num\+\_\+stas} & \mbox{[}type int\mbox{]}\+: total number of S\+T\+As \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{structWlan_ab61a4af9882ac2df280ac073f6164521}\label{structWlan_ab61a4af9882ac2df280ac073f6164521}} 
+\index{Wlan@{Wlan}!Write\+Sta\+Ids@{Write\+Sta\+Ids}}
+\index{Write\+Sta\+Ids@{Write\+Sta\+Ids}!Wlan@{Wlan}}
+\subsubsection{\texorpdfstring{Write\+Sta\+Ids()}{WriteStaIds()}}
+{\footnotesize\ttfamily void Wlan\+::\+Write\+Sta\+Ids (\begin{DoxyParamCaption}\item[{\hyperlink{structLogger}{Logger}}]{logger }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Write S\+T\+As list of I\+Ds in a given file 
+\begin{DoxyParams}{Parameters}
+{\em logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger containing the file to write on \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{structWlan_a8a999685a03c0c478ae95b9dfb98dd01}\label{structWlan_a8a999685a03c0c478ae95b9dfb98dd01}} 
+\index{Wlan@{Wlan}!Write\+Wlan\+Info@{Write\+Wlan\+Info}}
+\index{Write\+Wlan\+Info@{Write\+Wlan\+Info}!Wlan@{Wlan}}
+\subsubsection{\texorpdfstring{Write\+Wlan\+Info()}{WriteWlanInfo()}}
+{\footnotesize\ttfamily void Wlan\+::\+Write\+Wlan\+Info (\begin{DoxyParamCaption}\item[{\hyperlink{structLogger}{Logger}}]{logger,  }\item[{std\+::string}]{header\+\_\+str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Write general W\+L\+AN info in a given file 
+\begin{DoxyParams}{Parameters}
+{\em logger} & \mbox{[}type \hyperlink{structLogger}{Logger}\mbox{]}\+: logger containing the file to write on \\
+\hline
+{\em header\+\_\+string} & \mbox{[}type std\+::string\mbox{]}\+: header string \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/structures/wlan.\+h\end{DoxyCompactItemize}

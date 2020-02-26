@@ -27,7 +27,7 @@ in IEEE 802.11ax: Analysis, Challenges and Opportunities"
  *  - Adapted by Francesc Wilhelmi (francisco.wilhelmi@upf.edu)
  */
 
-public class random_scenarios {
+public class random_scenarios_students_projects_fgml5g {
 
     static Wlan[] wlan_container = null;
 
@@ -147,7 +147,7 @@ public class random_scenarios {
         }
     }
 
-    public static void generate_wlans(Point2D.Double[] aps_position_list, Point2D.Double[] stas_position_list) {
+    public static void generate_wlans(Point2D.Double[] aps_position_list, Point2D.Double[][] stas_position_list) {
         
         int wlan_counter = 0;
         Wlan wlan_aux;
@@ -185,7 +185,7 @@ public class random_scenarios {
             
             // IEEE 802.11ax or legacy device
             wlan_80211ax = new Random().nextDouble() <= (1 - legacy_ratio);
-                        
+                                   
             wlan_aux = new Wlan(wlan_id, wlan_code, num_stas, ap_code,
                 list_sta_code, primary_channel, min_ch_allowed,
                 max_ch_allowed, wlan_80211ax, x, y, z, channel_bonding_model, traffic_load);
@@ -196,13 +196,14 @@ public class random_scenarios {
             wlan_aux.z = 0;
                           
             // Set STAs location
-            Point2D.Double point = new Point2D.Double();
-            point.setLocation(stas_position_list[w].x, stas_position_list[w].y);
-           
             Point2D.Double[] stas_position_list_aux = new Point2D.Double[wlan_aux.num_stas];
-            stas_position_list_aux[0] = point;  
-            wlan_aux.set_stas_positions(stas_position_list_aux);
-            
+            for (int n = 0; n < num_stas; n++) {
+                Point2D.Double point = new Point2D.Double();
+                point.setLocation(stas_position_list[w][n].x, stas_position_list[w][n].y);
+                stas_position_list_aux[n] = point;  
+                wlan_aux.set_stas_positions(stas_position_list_aux);
+            }
+                        
             // Default sensitivity & transmit power
             wlan_aux.cca_default = cca_default_input;
             wlan_aux.tpc_default = tpc_default_input;
@@ -284,22 +285,12 @@ public class random_scenarios {
             node_type = 1;
 
             // Set STAs location
-            for (int n = 0; n < wlan.num_stas; n++) {
-                
-                if (w==1) { // Change Z of STA in WLAN A
-                    line = getCompleteLine(wlan.list_sta_code[n], node_type,
-                        wlan.wlan_code, wlan.stas_position_list[n].x, 
-                        wlan.stas_position_list[n].y, 0, wlan.primary_channel,
-                        wlan.min_ch_allowed, wlan.max_ch_allowed,
-                        wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default);
-                } else {
-                    line = getCompleteLine(wlan.list_sta_code[n], node_type,
-                    wlan.wlan_code, wlan.stas_position_list[n].x, 
-                    wlan.stas_position_list[n].y, 0, wlan.primary_channel,
-                    wlan.min_ch_allowed, wlan.max_ch_allowed,
-                    wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default);    
-                }
-
+            for (int n = 0; n < wlan.num_stas; n++) {                
+                line = getCompleteLine(wlan.list_sta_code[n], node_type,
+                wlan.wlan_code, wlan.stas_position_list[n].x, 
+                wlan.stas_position_list[n].y, 0, wlan.primary_channel,
+                wlan.min_ch_allowed, wlan.max_ch_allowed,
+                wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default);    
                 // System.out.println(line);
                 out.println(line);
             }
@@ -314,8 +305,7 @@ public class random_scenarios {
     static String getCompleteLine(String node_code, int node_type,
             String wlan_code, double x, double y, double z, int primary_channel,
             int min_channel_allowed, int max_channel_allowed, int channel_bonding_model,
-            int tpc_default, int cca_default, int bss_color, int spatial_reuse_group,
-            int non_srg_obss_pd, int srg_obss_pd) {
+            int tpc_default, int cca_default) {
 
         // Round position coordinates to limited number of decimals
         NumberFormat nf = NumberFormat.getNumberInstance(Locale.UK);
@@ -377,7 +367,7 @@ public class random_scenarios {
     public static void main(String args[]) throws IOException {
 
         // Complete path building
-        String input_path = "./input_constructor/input_template_random_students_projects_fgml5g.csv" 
+        String input_path = "./input_constructor/input_template_random_students_projects_fgml5g.csv";
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";
 
@@ -386,10 +376,13 @@ public class random_scenarios {
         Random r = new Random();
         
         int num_wlans = 5;
-        int num_scenarios = 50;
+        int num_stas = 3;
+        int num_scenarios = 100;
         double x = 0;
         double y = 0;
         double z = 0;
+        double x_sta = 0;
+        double y_sta = 0;
         double angle = 0;
         double rand_value = 0;
         double d_ap_sta = 0;
@@ -399,55 +392,51 @@ public class random_scenarios {
         // AP position
         Point2D.Double[] aps_position_list = new Point2D.Double[num_wlans];
         // WLAN A
-        aps_position_list[0].x = 0;
-        aps_position_list[0].y = 0;
+        Point2D.Double point1 = new Point2D.Double();
+        point1.setLocation(0, 0);
+        aps_position_list[0] = point1;  
         // WLAN B
-        aps_position_list[1].x = 3;
-        aps_position_list[1].y = 8;
+        Point2D.Double point2 = new Point2D.Double();
+        point2.setLocation(3, 8);
+        aps_position_list[1] = point2;  
         // WLAN C
-        aps_position_list[2].x = 0;
-        aps_position_list[2].y = 9;
+        Point2D.Double point3 = new Point2D.Double();
+        point3.setLocation(0, 9);
+        aps_position_list[2] = point3;  
         // WLAN D
-        aps_position_list[3].x = 11;
-        aps_position_list[3].y = 8;
+        Point2D.Double point4 = new Point2D.Double();
+        point4.setLocation(11, 8);
+        aps_position_list[3] = point4;  
         // WLAN E
-        aps_position_list[4].x = -5;
-        aps_position_list[4].y = 8; 
-
-        // Update the "aps_position_list" array
-        //Point2D.Double point = new Point2D.Double();
-        //point.setLocation(x, y);
-        //aps_position_list[i] = point;     
+        Point2D.Double point5 = new Point2D.Double();
+        point5.setLocation(-5, 8);
+        aps_position_list[4] = point5;  
+       
+        // 3 STA per WLAN
+        Point2D.Double[][] stas_position_list = new Point2D.Double[num_wlans][num_stas];       
         
-        for (int n = 0 ; n < num_scenarios; n ++) {               
-
-            // 1 STA per WLAN
-            Point2D.Double[] stas_position_list = new Point2D.Double[num_wlans];
+        for (int n = 0 ; n < num_scenarios; n ++) {    
             // Set STAs location
-            for (int i = 0; i < num_wlans; i++) {
-                /* Choose the angle uniformly but for the radius an 
-                 intermediate value z is generated uniformly between 0 and 1 
-                 and then r is calculated as r = sqrt(z)*R.
-                 */
-
-                angle = 360 * new Random().nextDouble();
-                rand_value = new Random().nextDouble();
-                d_ap_sta = d_min_AP_STA
-                    + Math.sqrt(rand_value) * (d_max_AP_STA - d_min_AP_STA);
-                x = aps_position_list[i].x + Math.cos(Math.toRadians(angle)) * d_ap_sta;
-                y = aps_position_list[i].y + Math.sin(Math.toRadians(angle)) * d_ap_sta;
-
-                Point2D.Double point = new Point2D.Double();
-                point.setLocation(x, y);
-                stas_position_list[i] = point;                
-                                
-                double distance = getDistance(aps_position_list[i].x, 
-                    stas_position_list[i].x, aps_position_list[i].y, stas_position_list[i].y, z, z);
-                
-                System.out.println("Distance = " + distance);
-                
+            for (int i = 0; i < num_wlans; i++) {      
+                for (int j = 0; j < num_stas; j++) {
+                    /* Choose the angle uniformly but for the radius an 
+                    intermediate value z is generated uniformly between 0 and 1 
+                    and then r is calculated as r = sqrt(z)*R.
+                    */
+                    angle = 360 * new Random().nextDouble();
+                    rand_value = new Random().nextDouble();
+                    d_ap_sta = d_min_AP_STA + Math.sqrt(rand_value) * (d_max_AP_STA - d_min_AP_STA);
+                    x_sta = aps_position_list[i].x + Math.cos(Math.toRadians(angle)) * d_ap_sta;
+                    y_sta = aps_position_list[i].y + Math.sin(Math.toRadians(angle)) * d_ap_sta;
+                    Point2D.Double point_sta = new Point2D.Double();
+                    point_sta.setLocation(x_sta, y_sta);
+                    stas_position_list[i][j] = point_sta;     
+                    double distance = getDistance(aps_position_list[i].x, 
+                        stas_position_list[i][j].x, aps_position_list[i].y, stas_position_list[i][j].y, z, z);
+                    System.out.println("Distance = " + distance);
+                }
             }
-
+            
             // GENERATE EACH .CSV FILE
             for (int out_ix = 1; out_ix <= num_outputs; out_ix++) {
                 generate_wlans(aps_position_list, stas_position_list);
@@ -459,4 +448,5 @@ public class random_scenarios {
         }
         
     }
+        
 }

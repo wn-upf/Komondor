@@ -1,0 +1,307 @@
+\hypertarget{structPerformance}{}\section{Performance Struct Reference}
+\label{structPerformance}\index{Performance@{Performance}}
+
+
+{\ttfamily \#include $<$performance\+\_\+metrics.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structPerformance_a4f671d1de3d10b181cf308b66805da58}\label{structPerformance_a4f671d1de3d10b181cf308b66805da58}} 
+void {\bfseries Set\+Size\+Of\+Channel\+Lists} (int total\+\_\+channels\+\_\+number)
+\item 
+\mbox{\Hypertarget{structPerformance_af6b92719f1a286afe9973304b8ecf445}\label{structPerformance_af6b92719f1a286afe9973304b8ecf445}} 
+void {\bfseries Set\+Size\+Of\+Sta\+List} (int num\+\_\+stas)
+\item 
+\mbox{\Hypertarget{structPerformance_afed78fdc35bd07dd576a5235389f15ed}\label{structPerformance_afed78fdc35bd07dd576a5235389f15ed}} 
+void {\bfseries Set\+Size\+Of\+Rssi\+List} (int total\+\_\+wlans\+\_\+number)
+\item 
+\mbox{\Hypertarget{structPerformance_a4478d24cc24761d24a8bb0d628c8664e}\label{structPerformance_a4478d24cc24761d24a8bb0d628c8664e}} 
+void {\bfseries Set\+Size\+Of\+Rx\+Power\+List} (int total\+\_\+nodes\+\_\+number)
+\item 
+void \hyperlink{structPerformance_a4f671d1de3d10b181cf308b66805da58}{Set\+Size\+Of\+Channel\+Lists} (int total\+\_\+channels\+\_\+number)
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the power received by each node \end{quote}
+\end{DoxyCompactList}\item 
+void \hyperlink{structPerformance_af6b92719f1a286afe9973304b8ecf445}{Set\+Size\+Of\+Sta\+List} (int num\+\_\+stas)
+\item 
+void \hyperlink{structPerformance_afed78fdc35bd07dd576a5235389f15ed}{Set\+Size\+Of\+Rssi\+List} (int total\+\_\+wlans\+\_\+number)
+\item 
+void \hyperlink{structPerformance_a4478d24cc24761d24a8bb0d628c8664e}{Set\+Size\+Of\+Rx\+Power\+List} (int total\+\_\+nodes\+\_\+number)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structPerformance_a9d13a742de56d0319a7e374849e3f76e}\label{structPerformance_a9d13a742de56d0319a7e374849e3f76e}} 
+double {\bfseries last\+\_\+time\+\_\+measured}
+\item 
+\mbox{\Hypertarget{structPerformance_a19af102ae270340143c633357abd64a7}\label{structPerformance_a19af102ae270340143c633357abd64a7}} 
+double \hyperlink{structPerformance_a19af102ae270340143c633357abd64a7}{sum\+\_\+time\+\_\+channel\+\_\+idle}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Timestampt of the last measurement \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a620b1cd3e1f8258c41363816a99e8e80}\label{structPerformance_a620b1cd3e1f8258c41363816a99e8e80}} 
+double \hyperlink{structPerformance_a620b1cd3e1f8258c41363816a99e8e80}{throughput}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Sum time the channel has been idle \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a4d5736665c769c16c800e1f1370dd30f}\label{structPerformance_a4d5736665c769c16c800e1f1370dd30f}} 
+double \hyperlink{structPerformance_a4d5736665c769c16c800e1f1370dd30f}{throughput\+\_\+loss}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Throughput \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a8c7c0b2d5b16f0d926625c6eba52bb47}\label{structPerformance_a8c7c0b2d5b16f0d926625c6eba52bb47}} 
+double \hyperlink{structPerformance_a8c7c0b2d5b16f0d926625c6eba52bb47}{max\+\_\+bound\+\_\+throughput}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Throughput lost \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a6c1392cd482b2060fc3f9ed425bdae17}\label{structPerformance_a6c1392cd482b2060fc3f9ed425bdae17}} 
+int \hyperlink{structPerformance_a6c1392cd482b2060fc3f9ed425bdae17}{data\+\_\+packets\+\_\+acked}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Maximum bound throughput (if no one transmits) \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a35448373ecf3be1963b582492d11898e}\label{structPerformance_a35448373ecf3be1963b582492d11898e}} 
+int \hyperlink{structPerformance_a35448373ecf3be1963b582492d11898e}{data\+\_\+frames\+\_\+acked}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of data packets acknowledged \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a19e957e31dec21a43f654b5344f2f7f3}\label{structPerformance_a19e957e31dec21a43f654b5344f2f7f3}} 
+int \hyperlink{structPerformance_a19e957e31dec21a43f654b5344f2f7f3}{data\+\_\+packets\+\_\+sent}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of frames acknowledged \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a2352a448fc59f0042527f63806ee3601}\label{structPerformance_a2352a448fc59f0042527f63806ee3601}} 
+int \hyperlink{structPerformance_a2352a448fc59f0042527f63806ee3601}{data\+\_\+packets\+\_\+lost}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of data packets sent \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a9f80fa31726ff34bb6cf7cd2e4a98c8f}\label{structPerformance_a9f80fa31726ff34bb6cf7cd2e4a98c8f}} 
+int \hyperlink{structPerformance_a9f80fa31726ff34bb6cf7cd2e4a98c8f}{rts\+\_\+cts\+\_\+sent}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of data packets lost \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a8a09dfa591827207d4d730d80ae46db4}\label{structPerformance_a8a09dfa591827207d4d730d80ae46db4}} 
+int \hyperlink{structPerformance_a8a09dfa591827207d4d730d80ae46db4}{rts\+\_\+cts\+\_\+lost}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of R\+T\+S/\+C\+TS packets sent \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a0270bd0815b7c9bdec81c64ca133b770}\label{structPerformance_a0270bd0815b7c9bdec81c64ca133b770}} 
+int \hyperlink{structPerformance_a0270bd0815b7c9bdec81c64ca133b770}{rts\+\_\+lost\+\_\+slotted\+\_\+bo}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of R\+T\+S/\+C\+TS packets lost \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a3414f7e23dbcc80f97a610d1282485e7}\label{structPerformance_a3414f7e23dbcc80f97a610d1282485e7}} 
+int \hyperlink{structPerformance_a3414f7e23dbcc80f97a610d1282485e7}{num\+\_\+packets\+\_\+generated}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of R\+T\+S/\+C\+TS packets lost by slotted BO \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_ab806f0bc1ff7587ff083d17742c82463}\label{structPerformance_ab806f0bc1ff7587ff083d17742c82463}} 
+int \hyperlink{structPerformance_ab806f0bc1ff7587ff083d17742c82463}{num\+\_\+packets\+\_\+dropped}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of packets generated \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_afaf90bc5a1093739efd20b1b05106b71}\label{structPerformance_afaf90bc5a1093739efd20b1b05106b71}} 
+int \hyperlink{structPerformance_afaf90bc5a1093739efd20b1b05106b71}{num\+\_\+delay\+\_\+measurements}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of packets dropped \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a845475d174ef89092529d1ce4a3d6a73}\label{structPerformance_a845475d174ef89092529d1ce4a3d6a73}} 
+double \hyperlink{structPerformance_a845475d174ef89092529d1ce4a3d6a73}{sum\+\_\+delays}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of delay measurements \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a3e50bb7a05e9ae3d1667cce561bc6ae0}\label{structPerformance_a3e50bb7a05e9ae3d1667cce561bc6ae0}} 
+double \hyperlink{structPerformance_a3e50bb7a05e9ae3d1667cce561bc6ae0}{average\+\_\+delay}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Sum of the delays \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_acaffa58af760daa9dcb1db490d0c1ade}\label{structPerformance_acaffa58af760daa9dcb1db490d0c1ade}} 
+double \hyperlink{structPerformance_acaffa58af760daa9dcb1db490d0c1ade}{average\+\_\+rho}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Average delay \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_adaea5a5d4981593333e8954c937a4434}\label{structPerformance_adaea5a5d4981593333e8954c937a4434}} 
+double \hyperlink{structPerformance_adaea5a5d4981593333e8954c937a4434}{average\+\_\+utilization}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Average rho \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a82509648ab7ab5b0e195f671be9001a3}\label{structPerformance_a82509648ab7ab5b0e195f671be9001a3}} 
+double \hyperlink{structPerformance_a82509648ab7ab5b0e195f671be9001a3}{generation\+\_\+drop\+\_\+ratio}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Average utilization \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a8557816bbadeda8077ebaf1622560e6b}\label{structPerformance_a8557816bbadeda8077ebaf1622560e6b}} 
+double \hyperlink{structPerformance_a8557816bbadeda8077ebaf1622560e6b}{expected\+\_\+backoff}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Average drop ratio \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_adcbc911a8cb8dbcbdd56843aa736cf68}\label{structPerformance_adcbc911a8cb8dbcbdd56843aa736cf68}} 
+int \hyperlink{structPerformance_adcbc911a8cb8dbcbdd56843aa736cf68}{num\+\_\+new\+\_\+backoff\+\_\+computations}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Expected BO \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_ae51e39428cd09575e24782ae3d83e40a}\label{structPerformance_ae51e39428cd09575e24782ae3d83e40a}} 
+int $\ast$ \hyperlink{structPerformance_ae51e39428cd09575e24782ae3d83e40a}{num\+\_\+trials\+\_\+tx\+\_\+per\+\_\+num\+\_\+channels}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of times a new backoff was computed \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a63378aa6b18ee60ef89ac0f16711440c}\label{structPerformance_a63378aa6b18ee60ef89ac0f16711440c}} 
+double \hyperlink{structPerformance_a63378aa6b18ee60ef89ac0f16711440c}{average\+\_\+waiting\+\_\+time}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of attempts for transmitting to each number of channels \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_aa376625e310e24deb0b20230fbf2492f}\label{structPerformance_aa376625e310e24deb0b20230fbf2492f}} 
+double \hyperlink{structPerformance_aa376625e310e24deb0b20230fbf2492f}{bandwidth\+\_\+used\+\_\+txing}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Average waiting time \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a323ea602625baf4c22f2ff8a2f73a115}\label{structPerformance_a323ea602625baf4c22f2ff8a2f73a115}} 
+double $\ast$ \hyperlink{structPerformance_a323ea602625baf4c22f2ff8a2f73a115}{total\+\_\+time\+\_\+transmitting\+\_\+per\+\_\+channel}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Bandwidth used during transmissions \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a785a294ee3a3dbef4b918a1acafb088b}\label{structPerformance_a785a294ee3a3dbef4b918a1acafb088b}} 
+double $\ast$ \hyperlink{structPerformance_a785a294ee3a3dbef4b918a1acafb088b}{total\+\_\+time\+\_\+transmitting\+\_\+in\+\_\+num\+\_\+channels}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Total time transmitting in each channel \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_ab6e43a8058bf2c409a2bad06b72befef}\label{structPerformance_ab6e43a8058bf2c409a2bad06b72befef}} 
+double $\ast$ \hyperlink{structPerformance_ab6e43a8058bf2c409a2bad06b72befef}{total\+\_\+time\+\_\+lost\+\_\+per\+\_\+channel}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Total time transmitting per each channel width \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_abee8bdf8e12a825171d2aaca4754dd57}\label{structPerformance_abee8bdf8e12a825171d2aaca4754dd57}} 
+double $\ast$ \hyperlink{structPerformance_abee8bdf8e12a825171d2aaca4754dd57}{total\+\_\+time\+\_\+lost\+\_\+in\+\_\+num\+\_\+channels}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Total time lost in each channel (e.\+g. collisions) \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_aa9beca5b594dc6d77d477cdbd5d380dc}\label{structPerformance_aa9beca5b594dc6d77d477cdbd5d380dc}} 
+double $\ast$ \hyperlink{structPerformance_aa9beca5b594dc6d77d477cdbd5d380dc}{total\+\_\+time\+\_\+spectrum\+\_\+per\+\_\+channel}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Total time lost per each channel width \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a8dcbe2912d18cccf50d9aa9ed1a6b2a5}\label{structPerformance_a8dcbe2912d18cccf50d9aa9ed1a6b2a5}} 
+double \hyperlink{structPerformance_a8dcbe2912d18cccf50d9aa9ed1a6b2a5}{time\+\_\+in\+\_\+nav}
+\begin{DoxyCompactList}\small\item\em $>$ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_acc204ea568287cc6c0dfd9193f9f512c}\label{structPerformance_acc204ea568287cc6c0dfd9193f9f512c}} 
+double $\ast$ \hyperlink{structPerformance_acc204ea568287cc6c0dfd9193f9f512c}{throughput\+\_\+per\+\_\+sta}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Time spent in N\+AV state \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a6ed7cb5a6aa0c4e1e40fc3db635b4a80}\label{structPerformance_a6ed7cb5a6aa0c4e1e40fc3db635b4a80}} 
+int $\ast$ \hyperlink{structPerformance_a6ed7cb5a6aa0c4e1e40fc3db635b4a80}{data\+\_\+packets\+\_\+sent\+\_\+per\+\_\+sta}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the throughput delivered to each S\+TA \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_ab19cf7e4509329136c677b17d2df399b}\label{structPerformance_ab19cf7e4509329136c677b17d2df399b}} 
+int $\ast$ \hyperlink{structPerformance_ab19cf7e4509329136c677b17d2df399b}{rts\+\_\+cts\+\_\+sent\+\_\+per\+\_\+sta}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the number of packets sent to each S\+TA \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a5cc1026974998d12e0a2ce829a7979ee}\label{structPerformance_a5cc1026974998d12e0a2ce829a7979ee}} 
+int $\ast$ \hyperlink{structPerformance_a5cc1026974998d12e0a2ce829a7979ee}{data\+\_\+packets\+\_\+lost\+\_\+per\+\_\+sta}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the number of R\+T\+S/\+C\+TS sent to each S\+TA \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a841ce73c4b7e543acaf7252c552e15a4}\label{structPerformance_a841ce73c4b7e543acaf7252c552e15a4}} 
+int $\ast$ \hyperlink{structPerformance_a841ce73c4b7e543acaf7252c552e15a4}{rts\+\_\+cts\+\_\+lost\+\_\+per\+\_\+sta}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the number of packets lost when sent to each S\+TA \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a1e1dcc708327d9203646a3f345e0c087}\label{structPerformance_a1e1dcc708327d9203646a3f345e0c087}} 
+int $\ast$ \hyperlink{structPerformance_a1e1dcc708327d9203646a3f345e0c087}{data\+\_\+packets\+\_\+acked\+\_\+per\+\_\+sta}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the number of R\+T\+S/\+C\+TS lost when sent to each S\+TA \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a66f1a941381d0af31acfdd04adc8268f}\label{structPerformance_a66f1a941381d0af31acfdd04adc8268f}} 
+int $\ast$ \hyperlink{structPerformance_a66f1a941381d0af31acfdd04adc8268f}{data\+\_\+frames\+\_\+acked\+\_\+per\+\_\+sta}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the number of acknowledged packets by each S\+TA \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a75c2f3d7375600e81bafbf89410ab046}\label{structPerformance_a75c2f3d7375600e81bafbf89410ab046}} 
+int \hyperlink{structPerformance_a75c2f3d7375600e81bafbf89410ab046}{num\+\_\+tx\+\_\+init\+\_\+tried}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Array containing the number of acknowledged frames by each S\+TA \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a035360f620233fd80e0e3962244fb336}\label{structPerformance_a035360f620233fd80e0e3962244fb336}} 
+int \hyperlink{structPerformance_a035360f620233fd80e0e3962244fb336}{num\+\_\+tx\+\_\+init\+\_\+not\+\_\+possible}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of transmissions initiated \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a0f7c4223e3b24f4d7a03cc3965daf075}\label{structPerformance_a0f7c4223e3b24f4d7a03cc3965daf075}} 
+double \hyperlink{structPerformance_a0f7c4223e3b24f4d7a03cc3965daf075}{prob\+\_\+slotted\+\_\+bo\+\_\+collision}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Number of initiated transmissions that were not possible \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_a61fde91dd935786945b62645f9d8c9bd}\label{structPerformance_a61fde91dd935786945b62645f9d8c9bd}} 
+double $\ast$ \hyperlink{structPerformance_a61fde91dd935786945b62645f9d8c9bd}{rssi\+\_\+list}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Probability of suffering collisions by slotted BO \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structPerformance_ac60375f894208a3353709dd5dbcb1244}\label{structPerformance_ac60375f894208a3353709dd5dbcb1244}} 
+double $\ast$ \hyperlink{structPerformance_ac60375f894208a3353709dd5dbcb1244}{received\+\_\+power\+\_\+array}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+List of R\+S\+SI \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{performance__metrics_8h_source}{performance\+\_\+metrics.\+h}\+: this file defines the performance object used for statistics and the agents operation 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{structPerformance_a4f671d1de3d10b181cf308b66805da58}\label{structPerformance_a4f671d1de3d10b181cf308b66805da58}} 
+\index{Performance@{Performance}!Set\+Size\+Of\+Channel\+Lists@{Set\+Size\+Of\+Channel\+Lists}}
+\index{Set\+Size\+Of\+Channel\+Lists@{Set\+Size\+Of\+Channel\+Lists}!Performance@{Performance}}
+\subsubsection{\texorpdfstring{Set\+Size\+Of\+Channel\+Lists()}{SetSizeOfChannelLists()}}
+{\footnotesize\ttfamily void Performance\+::\+Set\+Size\+Of\+Channel\+Lists (\begin{DoxyParamCaption}\item[{int}]{total\+\_\+channels\+\_\+number }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\begin{quote}
+Array containing the power received by each node \end{quote}
+
+
+Set the size of the arrays in which channel-\/related information is stored 
+\begin{DoxyParams}{Parameters}
+{\em total\+\_\+channels\+\_\+number} & \mbox{[}type int\mbox{]}\+: total number of channels \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{structPerformance_afed78fdc35bd07dd576a5235389f15ed}\label{structPerformance_afed78fdc35bd07dd576a5235389f15ed}} 
+\index{Performance@{Performance}!Set\+Size\+Of\+Rssi\+List@{Set\+Size\+Of\+Rssi\+List}}
+\index{Set\+Size\+Of\+Rssi\+List@{Set\+Size\+Of\+Rssi\+List}!Performance@{Performance}}
+\subsubsection{\texorpdfstring{Set\+Size\+Of\+Rssi\+List()}{SetSizeOfRssiList()}}
+{\footnotesize\ttfamily void Performance\+::\+Set\+Size\+Of\+Rssi\+List (\begin{DoxyParamCaption}\item[{int}]{total\+\_\+wlans\+\_\+number }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Set the size of the array R\+S\+SI list 
+\begin{DoxyParams}{Parameters}
+{\em total\+\_\+wlans\+\_\+number} & \mbox{[}type int\mbox{]}\+: total number of W\+L\+A\+Ns \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{structPerformance_a4478d24cc24761d24a8bb0d628c8664e}\label{structPerformance_a4478d24cc24761d24a8bb0d628c8664e}} 
+\index{Performance@{Performance}!Set\+Size\+Of\+Rx\+Power\+List@{Set\+Size\+Of\+Rx\+Power\+List}}
+\index{Set\+Size\+Of\+Rx\+Power\+List@{Set\+Size\+Of\+Rx\+Power\+List}!Performance@{Performance}}
+\subsubsection{\texorpdfstring{Set\+Size\+Of\+Rx\+Power\+List()}{SetSizeOfRxPowerList()}}
+{\footnotesize\ttfamily void Performance\+::\+Set\+Size\+Of\+Rx\+Power\+List (\begin{DoxyParamCaption}\item[{int}]{total\+\_\+nodes\+\_\+number }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Set the size of the array containing the received power from each node 
+\begin{DoxyParams}{Parameters}
+{\em total\+\_\+nodes\+\_\+number} & \mbox{[}type int\mbox{]}\+: total number of nodes \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{structPerformance_af6b92719f1a286afe9973304b8ecf445}\label{structPerformance_af6b92719f1a286afe9973304b8ecf445}} 
+\index{Performance@{Performance}!Set\+Size\+Of\+Sta\+List@{Set\+Size\+Of\+Sta\+List}}
+\index{Set\+Size\+Of\+Sta\+List@{Set\+Size\+Of\+Sta\+List}!Performance@{Performance}}
+\subsubsection{\texorpdfstring{Set\+Size\+Of\+Sta\+List()}{SetSizeOfStaList()}}
+{\footnotesize\ttfamily void Performance\+::\+Set\+Size\+Of\+Sta\+List (\begin{DoxyParamCaption}\item[{int}]{num\+\_\+stas }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Set the size of the arrays in which S\+T\+A-\/related information is stored 
+\begin{DoxyParams}{Parameters}
+{\em num\+\_\+stas} & \mbox{[}type int\mbox{]}\+: total number of S\+T\+As in a W\+L\+AN \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Code/main/komondor\+\_\+main.\+cxx\item 
+Code/structures/performance\+\_\+metrics.\+h\end{DoxyCompactItemize}

@@ -1,0 +1,14 @@
+\babel@toc {english}{}
+\contentsline {figure}{\numberline {1}{\ignorespaces Komondor flowchart\relax }}{3}{figure.caption.4}
+\contentsline {figure}{\numberline {2}{\ignorespaces COST component. While inports and outports allow to directly communicate with other components, timers trigger events specific to the component.\relax }}{4}{figure.caption.5}
+\contentsline {figure}{\numberline {3}{\ignorespaces Komondor files organization\relax }}{5}{figure.caption.6}
+\contentsline {figure}{\numberline {4}{\ignorespaces States diagram for Komondor nodes.\relax }}{6}{figure.caption.7}
+\contentsline {figure}{\numberline {5}{\ignorespaces Capture effect condition for a frame transmission.\relax }}{8}{figure.caption.8}
+\contentsline {figure}{\numberline {6}{\ignorespaces DCF operation in a WLAN. STA2 wins the channel access because its initial BO timer is the lowest one. During the packet transmission, STA1 listens the channel busy and stops its BO operation. Once data transmission is finished and the channel has been idle for a DIFS interval, the BO procedure is activated in all the devices that have a packet to be transmitted and sense the channel idle.\relax }}{9}{figure.caption.10}
+\contentsline {figure}{\numberline {7}{\ignorespaces Example of RTS/CTS implementation. The transmitter (STA2) sends an RTS packet before starting a transmission. The receiver (AP) answers with a CTS as it senses the channel free. The other coexisting devices (STA1) that listen either the RTS and/or the CTS, set their NAV accordingly.\relax }}{10}{figure.caption.11}
+\contentsline {figure}{\numberline {8}{\ignorespaces Example of packet aggregation in which N MPDUs are concatenated to be sent during the same packet transmission.\relax }}{11}{figure.caption.13}
+\contentsline {figure}{\numberline {9}{\ignorespaces Channel models with and without ACI\relax }}{13}{figure.caption.15}
+\contentsline {figure}{\numberline {10}{\ignorespaces Traffic models used in Komondor\relax }}{14}{figure.caption.16}
+\contentsline {figure}{\numberline {11}{\ignorespaces CSMA/CA temporal evolution of a node operating under AM and the IEEE 802.11ax channelization scheme.\relax }}{15}{figure.caption.17}
+\contentsline {figure}{\numberline {12}{\ignorespaces Flowchart of the transmission channel selection. In this example channel 5 is the primary channel and AM is applied.\relax }}{15}{figure.caption.18}
+\contentsline {figure}{\numberline {13}{\ignorespaces AP-agent communication-based operation in Komondor.\relax }}{16}{figure.caption.19}

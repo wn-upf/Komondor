@@ -1,3 +1,0 @@
-clear
-.././COST/cxx komondor.cc
-g++ -Wall -Werror -g -o komondor komondor.cxx

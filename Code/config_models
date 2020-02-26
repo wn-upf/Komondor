@@ -1,0 +1,14 @@
+# Path-loss model to be used
+path_loss_model=4
+# Co-channel interference model to be used
+adjacent_channel_model=0
+# Collisions model
+collisions_model=0
+# Type of backoff - 0=slotted (recommended) or 1=continuous
+backoff_type=0
+# PDF for generating the backoff - 0=deterministic or 1=exponential
+pdf_backoff=0
+# [DEPRECATED] PDF for generating the transmission time of packets - 0=deterministic or 1=exponential
+pdf_tx_time=0
+# Simulation index for the script's output
+simulation_ix_output_script=10
