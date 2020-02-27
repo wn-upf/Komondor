@@ -50,7 +50,6 @@ The inputs are further described next:
 * ```INPUT_FILE_NODES```: file containing nodes information (e.g., position, channels allowed, etc.).The file must be a .csv with semicolons as separators.
 * ```INPUT_FILE_AGENTS```: file containing agents information (e.g., ID of the BSS to which the agent is associated, ML mechanism, inter-request interval, etc.).The file must be a .csv with semicolons as separators.
 * ```OUTPUT_FILE_LOGS```: path to the output file to which write results at the end of the execution (if the file does not exist, the system will create it).
-* ```FLAG_SAVE_SYSTEM_LOGS```: flag to indicate whether to save the system logs into a file (1) or not (0).
 * ```FLAG_SAVE_NODE_LOGS```: flag to indicate whether to save the nodes logs into separate files (1) or not (0). If this flag is activated, one file per node will be created.
 * ```FLAG_SAVE_AGENT_LOGS```: flag to indicate whether to save the agents logs into separate files (1) or not (0). If this flag is activated, one file per node will be created.
 * ```FLAG_PRINT_SYSTEM_LOGS```: flag to indicate whether to print the system logs (1) or not (0).
@@ -59,7 +58,7 @@ The inputs are further described next:
 * ```SIM_TIME```: simulation time
 * ```SEED```: random seed the user wishes to use
 
-IMPORTANT NOTE (!): Setting ```FLAG_SAVE_SYSTEM_LOGS```, ```FLAG_SAVE_NODE_LOGS```, and ```FLAG_SAVE_AGENT_LOGS``` to TRUE (1) entails a larger execution time. 
+IMPORTANT NOTE (!): Setting ```FLAG_SAVE_NODE_LOGS``` and ```FLAG_SAVE_AGENT_LOGS``` to TRUE (1) entails a larger execution time. 
 
 ### Agents Input Files
 
