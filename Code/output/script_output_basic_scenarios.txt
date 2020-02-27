@@ -1,0 +1,1 @@
+ KOMONDOR SIMULATION 'sim99' (seed 1992);{88.19};{-54.07}
