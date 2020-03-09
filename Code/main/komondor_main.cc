@@ -1338,7 +1338,7 @@ int main(int argc, char *argv[]){
 
 	printf("\n");
 	printf("*************************************************************************************\n");
-	printf("%s KOMONDOR Wireless Network Simulator\n", LOG_LVL1);
+	printf("%s XXX KOMONDOR Wireless Network Simulator\n", LOG_LVL1);
 	printf("%s Copyright (C) 2017-2022, and GNU GPL'd, by Sergio Barrachina & Francesc Wilhelmi\n", LOG_LVL1);
 	printf("%s GitHub repository: https://github.com/wn-upf/Komondor\n", LOG_LVL2);
 	printf("*************************************************************************************\n");
@@ -1464,8 +1464,6 @@ int main(int argc, char *argv[]){
 	}
 
 
-
-
 	// Generate a Komondor component to start the simulation
 	Komondor komondor_simulation;
 	komondor_simulation.Seed = seed;
@@ -1476,7 +1474,7 @@ int main(int argc, char *argv[]){
 		simulation_code.c_str(), seed, agents_enabled, agents_input_filename);
 
 	printf("------------------------------------------\n");
-	printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());
+	printf("%s SIMULATION '%s' STARTED EEEE\n", LOG_LVL1, simulation_code.c_str());
 
 	komondor_simulation.Run();
 

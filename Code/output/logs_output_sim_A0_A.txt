@@ -1,0 +1,2391 @@
+0.000000000000000000;A0;B00; Start()
+0.000000000000000;A0;F00; ComputeNewConfiguration()
+1.000000000000000;A0;F00; RequestInformationToAp() (request #0)
+1.000000000000000;A0;F00; InportReceivingInformationFromAp()
+1.000000000000000;A0;C03;  - Action (0):
+1.000000000000000;A0;C03;    · channel = 0
+1.000000000000000;A0;C03;    · cca = -82.000000 dBm
+1.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+1.000000000000000;A0;C03;    · dcb_policy = 4
+1.000000000000000;A0;C03;  - Performance:
+1.000000000000000;A0;C03;    · Average throughput = 82.94 Mbps
+1.000000000000000;A0;F00; ComputeNewConfiguration()
+1.000000000000000;A0;F00; SendNewConfigurationToAp()
+1.000000000000000;A0;C00;  - Next request to be sent at 2.000000
+2.000000000000000;A0;F00; RequestInformationToAp() (request #1)
+2.000000000000000;A0;F00; InportReceivingInformationFromAp()
+2.000000000000000;A0;C03;  - Action (2):
+2.000000000000000;A0;C03;    · channel = 2
+2.000000000000000;A0;C03;    · cca = -82.000000 dBm
+2.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+2.000000000000000;A0;C03;    · dcb_policy = 4
+2.000000000000000;A0;C03;  - Performance:
+2.000000000000000;A0;C03;    · Average throughput = 43.78 Mbps
+2.000000000000000;A0;F00; ComputeNewConfiguration()
+2.000000000000000;A0;F00; SendNewConfigurationToAp()
+2.000000000000000;A0;C00;  - Next request to be sent at 3.000000
+3.000000000000000;A0;F00; RequestInformationToAp() (request #2)
+3.000000000000000;A0;F00; InportReceivingInformationFromAp()
+3.000000000000000;A0;C03;  - Action (3):
+3.000000000000000;A0;C03;    · channel = 3
+3.000000000000000;A0;C03;    · cca = -82.000000 dBm
+3.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+3.000000000000000;A0;C03;    · dcb_policy = 4
+3.000000000000000;A0;C03;  - Performance:
+3.000000000000000;A0;C03;    · Average throughput = 62.98 Mbps
+3.000000000000000;A0;F00; ComputeNewConfiguration()
+3.000000000000000;A0;F00; SendNewConfigurationToAp()
+3.000000000000000;A0;C00;  - Next request to be sent at 4.000000
+4.000000000000000;A0;F00; RequestInformationToAp() (request #3)
+4.000000000000000;A0;F00; InportReceivingInformationFromAp()
+4.000000000000000;A0;C03;  - Action (4):
+4.000000000000000;A0;C03;    · channel = 4
+4.000000000000000;A0;C03;    · cca = -82.000000 dBm
+4.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+4.000000000000000;A0;C03;    · dcb_policy = 4
+4.000000000000000;A0;C03;  - Performance:
+4.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+4.000000000000000;A0;F00; ComputeNewConfiguration()
+4.000000000000000;A0;F00; SendNewConfigurationToAp()
+4.000000000000000;A0;C00;  - Next request to be sent at 5.000000
+5.000000000000000;A0;F00; RequestInformationToAp() (request #4)
+5.000000000000000;A0;F00; InportReceivingInformationFromAp()
+5.000000000000000;A0;C03;  - Action (4):
+5.000000000000000;A0;C03;    · channel = 4
+5.000000000000000;A0;C03;    · cca = -82.000000 dBm
+5.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+5.000000000000000;A0;C03;    · dcb_policy = 4
+5.000000000000000;A0;C03;  - Performance:
+5.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+5.000000000000000;A0;F00; ComputeNewConfiguration()
+5.000000000000000;A0;F00; SendNewConfigurationToAp()
+5.000000000000000;A0;C00;  - Next request to be sent at 6.000000
+6.000000000000000;A0;F00; RequestInformationToAp() (request #5)
+6.000000000000000;A0;F00; InportReceivingInformationFromAp()
+6.000000000000000;A0;C03;  - Action (0):
+6.000000000000000;A0;C03;    · channel = 0
+6.000000000000000;A0;C03;    · cca = -82.000000 dBm
+6.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+6.000000000000000;A0;C03;    · dcb_policy = 4
+6.000000000000000;A0;C03;  - Performance:
+6.000000000000000;A0;C03;    · Average throughput = 80.64 Mbps
+6.000000000000000;A0;F00; ComputeNewConfiguration()
+6.000000000000000;A0;F00; SendNewConfigurationToAp()
+6.000000000000000;A0;C00;  - Next request to be sent at 7.000000
+7.000000000000000;A0;F00; RequestInformationToAp() (request #6)
+7.000000000000000;A0;F00; InportReceivingInformationFromAp()
+7.000000000000000;A0;C03;  - Action (1):
+7.000000000000000;A0;C03;    · channel = 1
+7.000000000000000;A0;C03;    · cca = -82.000000 dBm
+7.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+7.000000000000000;A0;C03;    · dcb_policy = 4
+7.000000000000000;A0;C03;  - Performance:
+7.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+7.000000000000000;A0;F00; ComputeNewConfiguration()
+7.000000000000000;A0;F00; SendNewConfigurationToAp()
+7.000000000000000;A0;C00;  - Next request to be sent at 8.000000
+8.000000000000000;A0;F00; RequestInformationToAp() (request #7)
+8.000000000000000;A0;F00; InportReceivingInformationFromAp()
+8.000000000000000;A0;C03;  - Action (4):
+8.000000000000000;A0;C03;    · channel = 4
+8.000000000000000;A0;C03;    · cca = -82.000000 dBm
+8.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+8.000000000000000;A0;C03;    · dcb_policy = 4
+8.000000000000000;A0;C03;  - Performance:
+8.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+8.000000000000000;A0;F00; ComputeNewConfiguration()
+8.000000000000000;A0;F00; SendNewConfigurationToAp()
+8.000000000000000;A0;C00;  - Next request to be sent at 9.000000
+9.000000000000000;A0;F00; RequestInformationToAp() (request #8)
+9.000000000000000;A0;F00; InportReceivingInformationFromAp()
+9.000000000000000;A0;C03;  - Action (4):
+9.000000000000000;A0;C03;    · channel = 4
+9.000000000000000;A0;C03;    · cca = -82.000000 dBm
+9.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+9.000000000000000;A0;C03;    · dcb_policy = 4
+9.000000000000000;A0;C03;  - Performance:
+9.000000000000000;A0;C03;    · Average throughput = 110.03 Mbps
+9.000000000000000;A0;F00; ComputeNewConfiguration()
+9.000000000000000;A0;F00; SendNewConfigurationToAp()
+9.000000000000000;A0;C00;  - Next request to be sent at 10.000000
+10.000000000000000;A0;F00; RequestInformationToAp() (request #9)
+10.000000000000000;A0;F00; InportReceivingInformationFromAp()
+10.000000000000000;A0;C03;  - Action (1):
+10.000000000000000;A0;C03;    · channel = 1
+10.000000000000000;A0;C03;    · cca = -82.000000 dBm
+10.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+10.000000000000000;A0;C03;    · dcb_policy = 4
+10.000000000000000;A0;C03;  - Performance:
+10.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+10.000000000000000;A0;F00; ComputeNewConfiguration()
+10.000000000000000;A0;F00; SendNewConfigurationToAp()
+10.000000000000000;A0;C00;  - Next request to be sent at 11.000000
+11.000000000000000;A0;F00; RequestInformationToAp() (request #10)
+11.000000000000000;A0;F00; InportReceivingInformationFromAp()
+11.000000000000000;A0;C03;  - Action (1):
+11.000000000000000;A0;C03;    · channel = 1
+11.000000000000000;A0;C03;    · cca = -82.000000 dBm
+11.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+11.000000000000000;A0;C03;    · dcb_policy = 4
+11.000000000000000;A0;C03;  - Performance:
+11.000000000000000;A0;C03;    · Average throughput = 110.03 Mbps
+11.000000000000000;A0;F00; ComputeNewConfiguration()
+11.000000000000000;A0;F00; SendNewConfigurationToAp()
+11.000000000000000;A0;C00;  - Next request to be sent at 12.000000
+12.000000000000000;A0;F00; RequestInformationToAp() (request #11)
+12.000000000000000;A0;F00; InportReceivingInformationFromAp()
+12.000000000000000;A0;C03;  - Action (4):
+12.000000000000000;A0;C03;    · channel = 4
+12.000000000000000;A0;C03;    · cca = -82.000000 dBm
+12.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+12.000000000000000;A0;C03;    · dcb_policy = 4
+12.000000000000000;A0;C03;  - Performance:
+12.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+12.000000000000000;A0;F00; ComputeNewConfiguration()
+12.000000000000000;A0;F00; SendNewConfigurationToAp()
+12.000000000000000;A0;C00;  - Next request to be sent at 13.000000
+13.000000000000000;A0;F00; RequestInformationToAp() (request #12)
+13.000000000000000;A0;F00; InportReceivingInformationFromAp()
+13.000000000000000;A0;C03;  - Action (4):
+13.000000000000000;A0;C03;    · channel = 4
+13.000000000000000;A0;C03;    · cca = -82.000000 dBm
+13.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+13.000000000000000;A0;C03;    · dcb_policy = 4
+13.000000000000000;A0;C03;  - Performance:
+13.000000000000000;A0;C03;    · Average throughput = 110.03 Mbps
+13.000000000000000;A0;F00; ComputeNewConfiguration()
+13.000000000000000;A0;F00; SendNewConfigurationToAp()
+13.000000000000000;A0;C00;  - Next request to be sent at 14.000000
+14.000000000000000;A0;F00; RequestInformationToAp() (request #13)
+14.000000000000000;A0;F00; InportReceivingInformationFromAp()
+14.000000000000000;A0;C03;  - Action (1):
+14.000000000000000;A0;C03;    · channel = 1
+14.000000000000000;A0;C03;    · cca = -82.000000 dBm
+14.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+14.000000000000000;A0;C03;    · dcb_policy = 4
+14.000000000000000;A0;C03;  - Performance:
+14.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+14.000000000000000;A0;F00; ComputeNewConfiguration()
+14.000000000000000;A0;F00; SendNewConfigurationToAp()
+14.000000000000000;A0;C00;  - Next request to be sent at 15.000000
+15.000000000000000;A0;F00; RequestInformationToAp() (request #14)
+15.000000000000000;A0;F00; InportReceivingInformationFromAp()
+15.000000000000000;A0;C03;  - Action (1):
+15.000000000000000;A0;C03;    · channel = 1
+15.000000000000000;A0;C03;    · cca = -82.000000 dBm
+15.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+15.000000000000000;A0;C03;    · dcb_policy = 4
+15.000000000000000;A0;C03;  - Performance:
+15.000000000000000;A0;C03;    · Average throughput = 110.03 Mbps
+15.000000000000000;A0;F00; ComputeNewConfiguration()
+15.000000000000000;A0;F00; SendNewConfigurationToAp()
+15.000000000000000;A0;C00;  - Next request to be sent at 16.000000
+16.000000000000000;A0;F00; RequestInformationToAp() (request #15)
+16.000000000000000;A0;F00; InportReceivingInformationFromAp()
+16.000000000000000;A0;C03;  - Action (4):
+16.000000000000000;A0;C03;    · channel = 4
+16.000000000000000;A0;C03;    · cca = -82.000000 dBm
+16.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+16.000000000000000;A0;C03;    · dcb_policy = 4
+16.000000000000000;A0;C03;  - Performance:
+16.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+16.000000000000000;A0;F00; ComputeNewConfiguration()
+16.000000000000000;A0;F00; SendNewConfigurationToAp()
+16.000000000000000;A0;C00;  - Next request to be sent at 17.000000
+17.000000000000000;A0;F00; RequestInformationToAp() (request #16)
+17.000000000000000;A0;F00; InportReceivingInformationFromAp()
+17.000000000000000;A0;C03;  - Action (5):
+17.000000000000000;A0;C03;    · channel = 5
+17.000000000000000;A0;C03;    · cca = -82.000000 dBm
+17.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+17.000000000000000;A0;C03;    · dcb_policy = 4
+17.000000000000000;A0;C03;  - Performance:
+17.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+17.000000000000000;A0;F00; ComputeNewConfiguration()
+17.000000000000000;A0;F00; SendNewConfigurationToAp()
+17.000000000000000;A0;C00;  - Next request to be sent at 18.000000
+18.000000000000000;A0;F00; RequestInformationToAp() (request #17)
+18.000000000000000;A0;F00; InportReceivingInformationFromAp()
+18.000000000000000;A0;C03;  - Action (5):
+18.000000000000000;A0;C03;    · channel = 5
+18.000000000000000;A0;C03;    · cca = -82.000000 dBm
+18.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+18.000000000000000;A0;C03;    · dcb_policy = 4
+18.000000000000000;A0;C03;  - Performance:
+18.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+18.000000000000000;A0;F00; ComputeNewConfiguration()
+18.000000000000000;A0;F00; SendNewConfigurationToAp()
+18.000000000000000;A0;C00;  - Next request to be sent at 19.000000
+19.000000000000000;A0;F00; RequestInformationToAp() (request #18)
+19.000000000000000;A0;F00; InportReceivingInformationFromAp()
+19.000000000000000;A0;C03;  - Action (5):
+19.000000000000000;A0;C03;    · channel = 5
+19.000000000000000;A0;C03;    · cca = -82.000000 dBm
+19.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+19.000000000000000;A0;C03;    · dcb_policy = 4
+19.000000000000000;A0;C03;  - Performance:
+19.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+19.000000000000000;A0;F00; ComputeNewConfiguration()
+19.000000000000000;A0;F00; SendNewConfigurationToAp()
+19.000000000000000;A0;C00;  - Next request to be sent at 20.000000
+20.000000000000000;A0;F00; RequestInformationToAp() (request #19)
+20.000000000000000;A0;F00; InportReceivingInformationFromAp()
+20.000000000000000;A0;C03;  - Action (5):
+20.000000000000000;A0;C03;    · channel = 5
+20.000000000000000;A0;C03;    · cca = -82.000000 dBm
+20.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+20.000000000000000;A0;C03;    · dcb_policy = 4
+20.000000000000000;A0;C03;  - Performance:
+20.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+20.000000000000000;A0;F00; ComputeNewConfiguration()
+20.000000000000000;A0;F00; SendNewConfigurationToAp()
+20.000000000000000;A0;C00;  - Next request to be sent at 21.000000
+21.000000000000000;A0;F00; RequestInformationToAp() (request #20)
+21.000000000000000;A0;F00; InportReceivingInformationFromAp()
+21.000000000000000;A0;C03;  - Action (5):
+21.000000000000000;A0;C03;    · channel = 5
+21.000000000000000;A0;C03;    · cca = -82.000000 dBm
+21.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+21.000000000000000;A0;C03;    · dcb_policy = 4
+21.000000000000000;A0;C03;  - Performance:
+21.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+21.000000000000000;A0;F00; ComputeNewConfiguration()
+21.000000000000000;A0;F00; SendNewConfigurationToAp()
+21.000000000000000;A0;C00;  - Next request to be sent at 22.000000
+22.000000000000000;A0;F00; RequestInformationToAp() (request #21)
+22.000000000000000;A0;F00; InportReceivingInformationFromAp()
+22.000000000000000;A0;C03;  - Action (5):
+22.000000000000000;A0;C03;    · channel = 5
+22.000000000000000;A0;C03;    · cca = -82.000000 dBm
+22.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+22.000000000000000;A0;C03;    · dcb_policy = 4
+22.000000000000000;A0;C03;  - Performance:
+22.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+22.000000000000000;A0;F00; ComputeNewConfiguration()
+22.000000000000000;A0;F00; SendNewConfigurationToAp()
+22.000000000000000;A0;C00;  - Next request to be sent at 23.000000
+23.000000000000000;A0;F00; RequestInformationToAp() (request #22)
+23.000000000000000;A0;F00; InportReceivingInformationFromAp()
+23.000000000000000;A0;C03;  - Action (6):
+23.000000000000000;A0;C03;    · channel = 6
+23.000000000000000;A0;C03;    · cca = -82.000000 dBm
+23.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+23.000000000000000;A0;C03;    · dcb_policy = 4
+23.000000000000000;A0;C03;  - Performance:
+23.000000000000000;A0;C03;    · Average throughput = 115.97 Mbps
+23.000000000000000;A0;F00; ComputeNewConfiguration()
+23.000000000000000;A0;F00; SendNewConfigurationToAp()
+23.000000000000000;A0;C00;  - Next request to be sent at 24.000000
+24.000000000000000;A0;F00; RequestInformationToAp() (request #23)
+24.000000000000000;A0;F00; InportReceivingInformationFromAp()
+24.000000000000000;A0;C03;  - Action (5):
+24.000000000000000;A0;C03;    · channel = 5
+24.000000000000000;A0;C03;    · cca = -82.000000 dBm
+24.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+24.000000000000000;A0;C03;    · dcb_policy = 4
+24.000000000000000;A0;C03;  - Performance:
+24.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+24.000000000000000;A0;F00; ComputeNewConfiguration()
+24.000000000000000;A0;F00; SendNewConfigurationToAp()
+24.000000000000000;A0;C00;  - Next request to be sent at 25.000000
+25.000000000000000;A0;F00; RequestInformationToAp() (request #24)
+25.000000000000000;A0;F00; InportReceivingInformationFromAp()
+25.000000000000000;A0;C03;  - Action (5):
+25.000000000000000;A0;C03;    · channel = 5
+25.000000000000000;A0;C03;    · cca = -82.000000 dBm
+25.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+25.000000000000000;A0;C03;    · dcb_policy = 4
+25.000000000000000;A0;C03;  - Performance:
+25.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+25.000000000000000;A0;F00; ComputeNewConfiguration()
+25.000000000000000;A0;F00; SendNewConfigurationToAp()
+25.000000000000000;A0;C00;  - Next request to be sent at 26.000000
+26.000000000000000;A0;F00; RequestInformationToAp() (request #25)
+26.000000000000000;A0;F00; InportReceivingInformationFromAp()
+26.000000000000000;A0;C03;  - Action (5):
+26.000000000000000;A0;C03;    · channel = 5
+26.000000000000000;A0;C03;    · cca = -82.000000 dBm
+26.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+26.000000000000000;A0;C03;    · dcb_policy = 4
+26.000000000000000;A0;C03;  - Performance:
+26.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+26.000000000000000;A0;F00; ComputeNewConfiguration()
+26.000000000000000;A0;F00; SendNewConfigurationToAp()
+26.000000000000000;A0;C00;  - Next request to be sent at 27.000000
+27.000000000000000;A0;F00; RequestInformationToAp() (request #26)
+27.000000000000000;A0;F00; InportReceivingInformationFromAp()
+27.000000000000000;A0;C03;  - Action (5):
+27.000000000000000;A0;C03;    · channel = 5
+27.000000000000000;A0;C03;    · cca = -82.000000 dBm
+27.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+27.000000000000000;A0;C03;    · dcb_policy = 4
+27.000000000000000;A0;C03;  - Performance:
+27.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+27.000000000000000;A0;F00; ComputeNewConfiguration()
+27.000000000000000;A0;F00; SendNewConfigurationToAp()
+27.000000000000000;A0;C00;  - Next request to be sent at 28.000000
+28.000000000000000;A0;F00; RequestInformationToAp() (request #27)
+28.000000000000000;A0;F00; InportReceivingInformationFromAp()
+28.000000000000000;A0;C03;  - Action (5):
+28.000000000000000;A0;C03;    · channel = 5
+28.000000000000000;A0;C03;    · cca = -82.000000 dBm
+28.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+28.000000000000000;A0;C03;    · dcb_policy = 4
+28.000000000000000;A0;C03;  - Performance:
+28.000000000000000;A0;C03;    · Average throughput = 211.97 Mbps
+28.000000000000000;A0;F00; ComputeNewConfiguration()
+28.000000000000000;A0;F00; SendNewConfigurationToAp()
+28.000000000000000;A0;C00;  - Next request to be sent at 29.000000
+29.000000000000000;A0;F00; RequestInformationToAp() (request #28)
+29.000000000000000;A0;F00; InportReceivingInformationFromAp()
+29.000000000000000;A0;C03;  - Action (5):
+29.000000000000000;A0;C03;    · channel = 5
+29.000000000000000;A0;C03;    · cca = -82.000000 dBm
+29.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+29.000000000000000;A0;C03;    · dcb_policy = 4
+29.000000000000000;A0;C03;  - Performance:
+29.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+29.000000000000000;A0;F00; ComputeNewConfiguration()
+29.000000000000000;A0;F00; SendNewConfigurationToAp()
+29.000000000000000;A0;C00;  - Next request to be sent at 30.000000
+30.000000000000000;A0;F00; RequestInformationToAp() (request #29)
+30.000000000000000;A0;F00; InportReceivingInformationFromAp()
+30.000000000000000;A0;C03;  - Action (6):
+30.000000000000000;A0;C03;    · channel = 6
+30.000000000000000;A0;C03;    · cca = -82.000000 dBm
+30.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+30.000000000000000;A0;C03;    · dcb_policy = 4
+30.000000000000000;A0;C03;  - Performance:
+30.000000000000000;A0;C03;    · Average throughput = 108.29 Mbps
+30.000000000000000;A0;F00; ComputeNewConfiguration()
+30.000000000000000;A0;F00; SendNewConfigurationToAp()
+30.000000000000000;A0;C00;  - Next request to be sent at 31.000000
+31.000000000000000;A0;F00; RequestInformationToAp() (request #30)
+31.000000000000000;A0;F00; InportReceivingInformationFromAp()
+31.000000000000000;A0;C03;  - Action (5):
+31.000000000000000;A0;C03;    · channel = 5
+31.000000000000000;A0;C03;    · cca = -82.000000 dBm
+31.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+31.000000000000000;A0;C03;    · dcb_policy = 4
+31.000000000000000;A0;C03;  - Performance:
+31.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+31.000000000000000;A0;F00; ComputeNewConfiguration()
+31.000000000000000;A0;F00; SendNewConfigurationToAp()
+31.000000000000000;A0;C00;  - Next request to be sent at 32.000000
+32.000000000000000;A0;F00; RequestInformationToAp() (request #31)
+32.000000000000000;A0;F00; InportReceivingInformationFromAp()
+32.000000000000000;A0;C03;  - Action (5):
+32.000000000000000;A0;C03;    · channel = 5
+32.000000000000000;A0;C03;    · cca = -82.000000 dBm
+32.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+32.000000000000000;A0;C03;    · dcb_policy = 4
+32.000000000000000;A0;C03;  - Performance:
+32.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+32.000000000000000;A0;F00; ComputeNewConfiguration()
+32.000000000000000;A0;F00; SendNewConfigurationToAp()
+32.000000000000000;A0;C00;  - Next request to be sent at 33.000000
+33.000000000000000;A0;F00; RequestInformationToAp() (request #32)
+33.000000000000000;A0;F00; InportReceivingInformationFromAp()
+33.000000000000000;A0;C03;  - Action (5):
+33.000000000000000;A0;C03;    · channel = 5
+33.000000000000000;A0;C03;    · cca = -82.000000 dBm
+33.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+33.000000000000000;A0;C03;    · dcb_policy = 4
+33.000000000000000;A0;C03;  - Performance:
+33.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+33.000000000000000;A0;F00; ComputeNewConfiguration()
+33.000000000000000;A0;F00; SendNewConfigurationToAp()
+33.000000000000000;A0;C00;  - Next request to be sent at 34.000000
+34.000000000000000;A0;F00; RequestInformationToAp() (request #33)
+34.000000000000000;A0;F00; InportReceivingInformationFromAp()
+34.000000000000000;A0;C03;  - Action (2):
+34.000000000000000;A0;C03;    · channel = 2
+34.000000000000000;A0;C03;    · cca = -82.000000 dBm
+34.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+34.000000000000000;A0;C03;    · dcb_policy = 4
+34.000000000000000;A0;C03;  - Performance:
+34.000000000000000;A0;C03;    · Average throughput = 38.40 Mbps
+34.000000000000000;A0;F00; ComputeNewConfiguration()
+34.000000000000000;A0;F00; SendNewConfigurationToAp()
+34.000000000000000;A0;C00;  - Next request to be sent at 35.000000
+35.000000000000000;A0;F00; RequestInformationToAp() (request #34)
+35.000000000000000;A0;F00; InportReceivingInformationFromAp()
+35.000000000000000;A0;C03;  - Action (5):
+35.000000000000000;A0;C03;    · channel = 5
+35.000000000000000;A0;C03;    · cca = -82.000000 dBm
+35.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+35.000000000000000;A0;C03;    · dcb_policy = 4
+35.000000000000000;A0;C03;  - Performance:
+35.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+35.000000000000000;A0;F00; ComputeNewConfiguration()
+35.000000000000000;A0;F00; SendNewConfigurationToAp()
+35.000000000000000;A0;C00;  - Next request to be sent at 36.000000
+36.000000000000000;A0;F00; RequestInformationToAp() (request #35)
+36.000000000000000;A0;F00; InportReceivingInformationFromAp()
+36.000000000000000;A0;C03;  - Action (5):
+36.000000000000000;A0;C03;    · channel = 5
+36.000000000000000;A0;C03;    · cca = -82.000000 dBm
+36.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+36.000000000000000;A0;C03;    · dcb_policy = 4
+36.000000000000000;A0;C03;  - Performance:
+36.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+36.000000000000000;A0;F00; ComputeNewConfiguration()
+36.000000000000000;A0;F00; SendNewConfigurationToAp()
+36.000000000000000;A0;C00;  - Next request to be sent at 37.000000
+37.000000000000000;A0;F00; RequestInformationToAp() (request #36)
+37.000000000000000;A0;F00; InportReceivingInformationFromAp()
+37.000000000000000;A0;C03;  - Action (5):
+37.000000000000000;A0;C03;    · channel = 5
+37.000000000000000;A0;C03;    · cca = -82.000000 dBm
+37.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+37.000000000000000;A0;C03;    · dcb_policy = 4
+37.000000000000000;A0;C03;  - Performance:
+37.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+37.000000000000000;A0;F00; ComputeNewConfiguration()
+37.000000000000000;A0;F00; SendNewConfigurationToAp()
+37.000000000000000;A0;C00;  - Next request to be sent at 38.000000
+38.000000000000000;A0;F00; RequestInformationToAp() (request #37)
+38.000000000000000;A0;F00; InportReceivingInformationFromAp()
+38.000000000000000;A0;C03;  - Action (5):
+38.000000000000000;A0;C03;    · channel = 5
+38.000000000000000;A0;C03;    · cca = -82.000000 dBm
+38.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+38.000000000000000;A0;C03;    · dcb_policy = 4
+38.000000000000000;A0;C03;  - Performance:
+38.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+38.000000000000000;A0;F00; ComputeNewConfiguration()
+38.000000000000000;A0;F00; SendNewConfigurationToAp()
+38.000000000000000;A0;C00;  - Next request to be sent at 39.000000
+39.000000000000000;A0;F00; RequestInformationToAp() (request #38)
+39.000000000000000;A0;F00; InportReceivingInformationFromAp()
+39.000000000000000;A0;C03;  - Action (2):
+39.000000000000000;A0;C03;    · channel = 2
+39.000000000000000;A0;C03;    · cca = -82.000000 dBm
+39.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+39.000000000000000;A0;C03;    · dcb_policy = 4
+39.000000000000000;A0;C03;  - Performance:
+39.000000000000000;A0;C03;    · Average throughput = 28.42 Mbps
+39.000000000000000;A0;F00; ComputeNewConfiguration()
+39.000000000000000;A0;F00; SendNewConfigurationToAp()
+39.000000000000000;A0;C00;  - Next request to be sent at 40.000000
+40.000000000000000;A0;F00; RequestInformationToAp() (request #39)
+40.000000000000000;A0;F00; InportReceivingInformationFromAp()
+40.000000000000000;A0;C03;  - Action (0):
+40.000000000000000;A0;C03;    · channel = 0
+40.000000000000000;A0;C03;    · cca = -82.000000 dBm
+40.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+40.000000000000000;A0;C03;    · dcb_policy = 4
+40.000000000000000;A0;C03;  - Performance:
+40.000000000000000;A0;C03;    · Average throughput = 78.34 Mbps
+40.000000000000000;A0;F00; ComputeNewConfiguration()
+40.000000000000000;A0;F00; SendNewConfigurationToAp()
+40.000000000000000;A0;C00;  - Next request to be sent at 41.000000
+41.000000000000000;A0;F00; RequestInformationToAp() (request #40)
+41.000000000000000;A0;F00; InportReceivingInformationFromAp()
+41.000000000000000;A0;C03;  - Action (6):
+41.000000000000000;A0;C03;    · channel = 6
+41.000000000000000;A0;C03;    · cca = -82.000000 dBm
+41.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+41.000000000000000;A0;C03;    · dcb_policy = 4
+41.000000000000000;A0;C03;  - Performance:
+41.000000000000000;A0;C03;    · Average throughput = 110.59 Mbps
+41.000000000000000;A0;F00; ComputeNewConfiguration()
+41.000000000000000;A0;F00; SendNewConfigurationToAp()
+41.000000000000000;A0;C00;  - Next request to be sent at 42.000000
+42.000000000000000;A0;F00; RequestInformationToAp() (request #41)
+42.000000000000000;A0;F00; InportReceivingInformationFromAp()
+42.000000000000000;A0;C03;  - Action (4):
+42.000000000000000;A0;C03;    · channel = 4
+42.000000000000000;A0;C03;    · cca = -82.000000 dBm
+42.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+42.000000000000000;A0;C03;    · dcb_policy = 4
+42.000000000000000;A0;C03;  - Performance:
+42.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+42.000000000000000;A0;F00; ComputeNewConfiguration()
+42.000000000000000;A0;F00; SendNewConfigurationToAp()
+42.000000000000000;A0;C00;  - Next request to be sent at 43.000000
+43.000000000000000;A0;F00; RequestInformationToAp() (request #42)
+43.000000000000000;A0;F00; InportReceivingInformationFromAp()
+43.000000000000000;A0;C03;  - Action (5):
+43.000000000000000;A0;C03;    · channel = 5
+43.000000000000000;A0;C03;    · cca = -82.000000 dBm
+43.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+43.000000000000000;A0;C03;    · dcb_policy = 4
+43.000000000000000;A0;C03;  - Performance:
+43.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+43.000000000000000;A0;F00; ComputeNewConfiguration()
+43.000000000000000;A0;F00; SendNewConfigurationToAp()
+43.000000000000000;A0;C00;  - Next request to be sent at 44.000000
+44.000000000000000;A0;F00; RequestInformationToAp() (request #43)
+44.000000000000000;A0;F00; InportReceivingInformationFromAp()
+44.000000000000000;A0;C03;  - Action (5):
+44.000000000000000;A0;C03;    · channel = 5
+44.000000000000000;A0;C03;    · cca = -82.000000 dBm
+44.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+44.000000000000000;A0;C03;    · dcb_policy = 4
+44.000000000000000;A0;C03;  - Performance:
+44.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+44.000000000000000;A0;F00; ComputeNewConfiguration()
+44.000000000000000;A0;F00; SendNewConfigurationToAp()
+44.000000000000000;A0;C00;  - Next request to be sent at 45.000000
+45.000000000000000;A0;F00; RequestInformationToAp() (request #44)
+45.000000000000000;A0;F00; InportReceivingInformationFromAp()
+45.000000000000000;A0;C03;  - Action (5):
+45.000000000000000;A0;C03;    · channel = 5
+45.000000000000000;A0;C03;    · cca = -82.000000 dBm
+45.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+45.000000000000000;A0;C03;    · dcb_policy = 4
+45.000000000000000;A0;C03;  - Performance:
+45.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+45.000000000000000;A0;F00; ComputeNewConfiguration()
+45.000000000000000;A0;F00; SendNewConfigurationToAp()
+45.000000000000000;A0;C00;  - Next request to be sent at 46.000000
+46.000000000000000;A0;F00; RequestInformationToAp() (request #45)
+46.000000000000000;A0;F00; InportReceivingInformationFromAp()
+46.000000000000000;A0;C03;  - Action (5):
+46.000000000000000;A0;C03;    · channel = 5
+46.000000000000000;A0;C03;    · cca = -82.000000 dBm
+46.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+46.000000000000000;A0;C03;    · dcb_policy = 4
+46.000000000000000;A0;C03;  - Performance:
+46.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+46.000000000000000;A0;F00; ComputeNewConfiguration()
+46.000000000000000;A0;F00; SendNewConfigurationToAp()
+46.000000000000000;A0;C00;  - Next request to be sent at 47.000000
+47.000000000000000;A0;F00; RequestInformationToAp() (request #46)
+47.000000000000000;A0;F00; InportReceivingInformationFromAp()
+47.000000000000000;A0;C03;  - Action (5):
+47.000000000000000;A0;C03;    · channel = 5
+47.000000000000000;A0;C03;    · cca = -82.000000 dBm
+47.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+47.000000000000000;A0;C03;    · dcb_policy = 4
+47.000000000000000;A0;C03;  - Performance:
+47.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+47.000000000000000;A0;F00; ComputeNewConfiguration()
+47.000000000000000;A0;F00; SendNewConfigurationToAp()
+47.000000000000000;A0;C00;  - Next request to be sent at 48.000000
+48.000000000000000;A0;F00; RequestInformationToAp() (request #47)
+48.000000000000000;A0;F00; InportReceivingInformationFromAp()
+48.000000000000000;A0;C03;  - Action (5):
+48.000000000000000;A0;C03;    · channel = 5
+48.000000000000000;A0;C03;    · cca = -82.000000 dBm
+48.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+48.000000000000000;A0;C03;    · dcb_policy = 4
+48.000000000000000;A0;C03;  - Performance:
+48.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+48.000000000000000;A0;F00; ComputeNewConfiguration()
+48.000000000000000;A0;F00; SendNewConfigurationToAp()
+48.000000000000000;A0;C00;  - Next request to be sent at 49.000000
+49.000000000000000;A0;F00; RequestInformationToAp() (request #48)
+49.000000000000000;A0;F00; InportReceivingInformationFromAp()
+49.000000000000000;A0;C03;  - Action (7):
+49.000000000000000;A0;C03;    · channel = 7
+49.000000000000000;A0;C03;    · cca = -82.000000 dBm
+49.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+49.000000000000000;A0;C03;    · dcb_policy = 4
+49.000000000000000;A0;C03;  - Performance:
+49.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+49.000000000000000;A0;F00; ComputeNewConfiguration()
+49.000000000000000;A0;F00; SendNewConfigurationToAp()
+49.000000000000000;A0;C00;  - Next request to be sent at 50.000000
+50.000000000000000;A0;F00; RequestInformationToAp() (request #49)
+50.000000000000000;A0;F00; InportReceivingInformationFromAp()
+50.000000000000000;A0;C03;  - Action (5):
+50.000000000000000;A0;C03;    · channel = 5
+50.000000000000000;A0;C03;    · cca = -82.000000 dBm
+50.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+50.000000000000000;A0;C03;    · dcb_policy = 4
+50.000000000000000;A0;C03;  - Performance:
+50.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+50.000000000000000;A0;F00; ComputeNewConfiguration()
+50.000000000000000;A0;F00; SendNewConfigurationToAp()
+50.000000000000000;A0;C00;  - Next request to be sent at 51.000000
+51.000000000000000;A0;F00; RequestInformationToAp() (request #50)
+51.000000000000000;A0;F00; InportReceivingInformationFromAp()
+51.000000000000000;A0;C03;  - Action (4):
+51.000000000000000;A0;C03;    · channel = 4
+51.000000000000000;A0;C03;    · cca = -82.000000 dBm
+51.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+51.000000000000000;A0;C03;    · dcb_policy = 4
+51.000000000000000;A0;C03;  - Performance:
+51.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+51.000000000000000;A0;F00; ComputeNewConfiguration()
+51.000000000000000;A0;F00; SendNewConfigurationToAp()
+51.000000000000000;A0;C00;  - Next request to be sent at 52.000000
+52.000000000000000;A0;F00; RequestInformationToAp() (request #51)
+52.000000000000000;A0;F00; InportReceivingInformationFromAp()
+52.000000000000000;A0;C03;  - Action (5):
+52.000000000000000;A0;C03;    · channel = 5
+52.000000000000000;A0;C03;    · cca = -82.000000 dBm
+52.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+52.000000000000000;A0;C03;    · dcb_policy = 4
+52.000000000000000;A0;C03;  - Performance:
+52.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+52.000000000000000;A0;F00; ComputeNewConfiguration()
+52.000000000000000;A0;F00; SendNewConfigurationToAp()
+52.000000000000000;A0;C00;  - Next request to be sent at 53.000000
+53.000000000000000;A0;F00; RequestInformationToAp() (request #52)
+53.000000000000000;A0;F00; InportReceivingInformationFromAp()
+53.000000000000000;A0;C03;  - Action (3):
+53.000000000000000;A0;C03;    · channel = 3
+53.000000000000000;A0;C03;    · cca = -82.000000 dBm
+53.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+53.000000000000000;A0;C03;    · dcb_policy = 4
+53.000000000000000;A0;C03;  - Performance:
+53.000000000000000;A0;C03;    · Average throughput = 47.70 Mbps
+53.000000000000000;A0;F00; ComputeNewConfiguration()
+53.000000000000000;A0;F00; SendNewConfigurationToAp()
+53.000000000000000;A0;C00;  - Next request to be sent at 54.000000
+54.000000000000000;A0;F00; RequestInformationToAp() (request #53)
+54.000000000000000;A0;F00; InportReceivingInformationFromAp()
+54.000000000000000;A0;C03;  - Action (5):
+54.000000000000000;A0;C03;    · channel = 5
+54.000000000000000;A0;C03;    · cca = -82.000000 dBm
+54.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+54.000000000000000;A0;C03;    · dcb_policy = 4
+54.000000000000000;A0;C03;  - Performance:
+54.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+54.000000000000000;A0;F00; ComputeNewConfiguration()
+54.000000000000000;A0;F00; SendNewConfigurationToAp()
+54.000000000000000;A0;C00;  - Next request to be sent at 55.000000
+55.000000000000000;A0;F00; RequestInformationToAp() (request #54)
+55.000000000000000;A0;F00; InportReceivingInformationFromAp()
+55.000000000000000;A0;C03;  - Action (5):
+55.000000000000000;A0;C03;    · channel = 5
+55.000000000000000;A0;C03;    · cca = -82.000000 dBm
+55.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+55.000000000000000;A0;C03;    · dcb_policy = 4
+55.000000000000000;A0;C03;  - Performance:
+55.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+55.000000000000000;A0;F00; ComputeNewConfiguration()
+55.000000000000000;A0;F00; SendNewConfigurationToAp()
+55.000000000000000;A0;C00;  - Next request to be sent at 56.000000
+56.000000000000000;A0;F00; RequestInformationToAp() (request #55)
+56.000000000000000;A0;F00; InportReceivingInformationFromAp()
+56.000000000000000;A0;C03;  - Action (3):
+56.000000000000000;A0;C03;    · channel = 3
+56.000000000000000;A0;C03;    · cca = -82.000000 dBm
+56.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+56.000000000000000;A0;C03;    · dcb_policy = 4
+56.000000000000000;A0;C03;  - Performance:
+56.000000000000000;A0;C03;    · Average throughput = 53.42 Mbps
+56.000000000000000;A0;F00; ComputeNewConfiguration()
+56.000000000000000;A0;F00; SendNewConfigurationToAp()
+56.000000000000000;A0;C00;  - Next request to be sent at 57.000000
+57.000000000000000;A0;F00; RequestInformationToAp() (request #56)
+57.000000000000000;A0;F00; InportReceivingInformationFromAp()
+57.000000000000000;A0;C03;  - Action (5):
+57.000000000000000;A0;C03;    · channel = 5
+57.000000000000000;A0;C03;    · cca = -82.000000 dBm
+57.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+57.000000000000000;A0;C03;    · dcb_policy = 4
+57.000000000000000;A0;C03;  - Performance:
+57.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+57.000000000000000;A0;F00; ComputeNewConfiguration()
+57.000000000000000;A0;F00; SendNewConfigurationToAp()
+57.000000000000000;A0;C00;  - Next request to be sent at 58.000000
+58.000000000000000;A0;F00; RequestInformationToAp() (request #57)
+58.000000000000000;A0;F00; InportReceivingInformationFromAp()
+58.000000000000000;A0;C03;  - Action (5):
+58.000000000000000;A0;C03;    · channel = 5
+58.000000000000000;A0;C03;    · cca = -82.000000 dBm
+58.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+58.000000000000000;A0;C03;    · dcb_policy = 4
+58.000000000000000;A0;C03;  - Performance:
+58.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+58.000000000000000;A0;F00; ComputeNewConfiguration()
+58.000000000000000;A0;F00; SendNewConfigurationToAp()
+58.000000000000000;A0;C00;  - Next request to be sent at 59.000000
+59.000000000000000;A0;F00; RequestInformationToAp() (request #58)
+59.000000000000000;A0;F00; InportReceivingInformationFromAp()
+59.000000000000000;A0;C03;  - Action (5):
+59.000000000000000;A0;C03;    · channel = 5
+59.000000000000000;A0;C03;    · cca = -82.000000 dBm
+59.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+59.000000000000000;A0;C03;    · dcb_policy = 4
+59.000000000000000;A0;C03;  - Performance:
+59.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+59.000000000000000;A0;F00; ComputeNewConfiguration()
+59.000000000000000;A0;F00; SendNewConfigurationToAp()
+59.000000000000000;A0;C00;  - Next request to be sent at 60.000000
+60.000000000000000;A0;F00; RequestInformationToAp() (request #59)
+60.000000000000000;A0;F00; InportReceivingInformationFromAp()
+60.000000000000000;A0;C03;  - Action (5):
+60.000000000000000;A0;C03;    · channel = 5
+60.000000000000000;A0;C03;    · cca = -82.000000 dBm
+60.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+60.000000000000000;A0;C03;    · dcb_policy = 4
+60.000000000000000;A0;C03;  - Performance:
+60.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+60.000000000000000;A0;F00; ComputeNewConfiguration()
+60.000000000000000;A0;F00; SendNewConfigurationToAp()
+60.000000000000000;A0;C00;  - Next request to be sent at 61.000000
+61.000000000000000;A0;F00; RequestInformationToAp() (request #60)
+61.000000000000000;A0;F00; InportReceivingInformationFromAp()
+61.000000000000000;A0;C03;  - Action (5):
+61.000000000000000;A0;C03;    · channel = 5
+61.000000000000000;A0;C03;    · cca = -82.000000 dBm
+61.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+61.000000000000000;A0;C03;    · dcb_policy = 4
+61.000000000000000;A0;C03;  - Performance:
+61.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+61.000000000000000;A0;F00; ComputeNewConfiguration()
+61.000000000000000;A0;F00; SendNewConfigurationToAp()
+61.000000000000000;A0;C00;  - Next request to be sent at 62.000000
+62.000000000000000;A0;F00; RequestInformationToAp() (request #61)
+62.000000000000000;A0;F00; InportReceivingInformationFromAp()
+62.000000000000000;A0;C03;  - Action (5):
+62.000000000000000;A0;C03;    · channel = 5
+62.000000000000000;A0;C03;    · cca = -82.000000 dBm
+62.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+62.000000000000000;A0;C03;    · dcb_policy = 4
+62.000000000000000;A0;C03;  - Performance:
+62.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+62.000000000000000;A0;F00; ComputeNewConfiguration()
+62.000000000000000;A0;F00; SendNewConfigurationToAp()
+62.000000000000000;A0;C00;  - Next request to be sent at 63.000000
+63.000000000000000;A0;F00; RequestInformationToAp() (request #62)
+63.000000000000000;A0;F00; InportReceivingInformationFromAp()
+63.000000000000000;A0;C03;  - Action (5):
+63.000000000000000;A0;C03;    · channel = 5
+63.000000000000000;A0;C03;    · cca = -82.000000 dBm
+63.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+63.000000000000000;A0;C03;    · dcb_policy = 4
+63.000000000000000;A0;C03;  - Performance:
+63.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+63.000000000000000;A0;F00; ComputeNewConfiguration()
+63.000000000000000;A0;F00; SendNewConfigurationToAp()
+63.000000000000000;A0;C00;  - Next request to be sent at 64.000000
+64.000000000000000;A0;F00; RequestInformationToAp() (request #63)
+64.000000000000000;A0;F00; InportReceivingInformationFromAp()
+64.000000000000000;A0;C03;  - Action (5):
+64.000000000000000;A0;C03;    · channel = 5
+64.000000000000000;A0;C03;    · cca = -82.000000 dBm
+64.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+64.000000000000000;A0;C03;    · dcb_policy = 4
+64.000000000000000;A0;C03;  - Performance:
+64.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+64.000000000000000;A0;F00; ComputeNewConfiguration()
+64.000000000000000;A0;F00; SendNewConfigurationToAp()
+64.000000000000000;A0;C00;  - Next request to be sent at 65.000000
+65.000000000000000;A0;F00; RequestInformationToAp() (request #64)
+65.000000000000000;A0;F00; InportReceivingInformationFromAp()
+65.000000000000000;A0;C03;  - Action (5):
+65.000000000000000;A0;C03;    · channel = 5
+65.000000000000000;A0;C03;    · cca = -82.000000 dBm
+65.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+65.000000000000000;A0;C03;    · dcb_policy = 4
+65.000000000000000;A0;C03;  - Performance:
+65.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+65.000000000000000;A0;F00; ComputeNewConfiguration()
+65.000000000000000;A0;F00; SendNewConfigurationToAp()
+65.000000000000000;A0;C00;  - Next request to be sent at 66.000000
+66.000000000000000;A0;F00; RequestInformationToAp() (request #65)
+66.000000000000000;A0;F00; InportReceivingInformationFromAp()
+66.000000000000000;A0;C03;  - Action (5):
+66.000000000000000;A0;C03;    · channel = 5
+66.000000000000000;A0;C03;    · cca = -82.000000 dBm
+66.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+66.000000000000000;A0;C03;    · dcb_policy = 4
+66.000000000000000;A0;C03;  - Performance:
+66.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+66.000000000000000;A0;F00; ComputeNewConfiguration()
+66.000000000000000;A0;F00; SendNewConfigurationToAp()
+66.000000000000000;A0;C00;  - Next request to be sent at 67.000000
+67.000000000000000;A0;F00; RequestInformationToAp() (request #66)
+67.000000000000000;A0;F00; InportReceivingInformationFromAp()
+67.000000000000000;A0;C03;  - Action (5):
+67.000000000000000;A0;C03;    · channel = 5
+67.000000000000000;A0;C03;    · cca = -82.000000 dBm
+67.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+67.000000000000000;A0;C03;    · dcb_policy = 4
+67.000000000000000;A0;C03;  - Performance:
+67.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+67.000000000000000;A0;F00; ComputeNewConfiguration()
+67.000000000000000;A0;F00; SendNewConfigurationToAp()
+67.000000000000000;A0;C00;  - Next request to be sent at 68.000000
+68.000000000000000;A0;F00; RequestInformationToAp() (request #67)
+68.000000000000000;A0;F00; InportReceivingInformationFromAp()
+68.000000000000000;A0;C03;  - Action (5):
+68.000000000000000;A0;C03;    · channel = 5
+68.000000000000000;A0;C03;    · cca = -82.000000 dBm
+68.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+68.000000000000000;A0;C03;    · dcb_policy = 4
+68.000000000000000;A0;C03;  - Performance:
+68.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+68.000000000000000;A0;F00; ComputeNewConfiguration()
+68.000000000000000;A0;F00; SendNewConfigurationToAp()
+68.000000000000000;A0;C00;  - Next request to be sent at 69.000000
+69.000000000000000;A0;F00; RequestInformationToAp() (request #68)
+69.000000000000000;A0;F00; InportReceivingInformationFromAp()
+69.000000000000000;A0;C03;  - Action (3):
+69.000000000000000;A0;C03;    · channel = 3
+69.000000000000000;A0;C03;    · cca = -82.000000 dBm
+69.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+69.000000000000000;A0;C03;    · dcb_policy = 4
+69.000000000000000;A0;C03;  - Performance:
+69.000000000000000;A0;C03;    · Average throughput = 55.33 Mbps
+69.000000000000000;A0;F00; ComputeNewConfiguration()
+69.000000000000000;A0;F00; SendNewConfigurationToAp()
+69.000000000000000;A0;C00;  - Next request to be sent at 70.000000
+70.000000000000000;A0;F00; RequestInformationToAp() (request #69)
+70.000000000000000;A0;F00; InportReceivingInformationFromAp()
+70.000000000000000;A0;C03;  - Action (5):
+70.000000000000000;A0;C03;    · channel = 5
+70.000000000000000;A0;C03;    · cca = -82.000000 dBm
+70.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+70.000000000000000;A0;C03;    · dcb_policy = 4
+70.000000000000000;A0;C03;  - Performance:
+70.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+70.000000000000000;A0;F00; ComputeNewConfiguration()
+70.000000000000000;A0;F00; SendNewConfigurationToAp()
+70.000000000000000;A0;C00;  - Next request to be sent at 71.000000
+71.000000000000000;A0;F00; RequestInformationToAp() (request #70)
+71.000000000000000;A0;F00; InportReceivingInformationFromAp()
+71.000000000000000;A0;C03;  - Action (5):
+71.000000000000000;A0;C03;    · channel = 5
+71.000000000000000;A0;C03;    · cca = -82.000000 dBm
+71.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+71.000000000000000;A0;C03;    · dcb_policy = 4
+71.000000000000000;A0;C03;  - Performance:
+71.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+71.000000000000000;A0;F00; ComputeNewConfiguration()
+71.000000000000000;A0;F00; SendNewConfigurationToAp()
+71.000000000000000;A0;C00;  - Next request to be sent at 72.000000
+72.000000000000000;A0;F00; RequestInformationToAp() (request #71)
+72.000000000000000;A0;F00; InportReceivingInformationFromAp()
+72.000000000000000;A0;C03;  - Action (5):
+72.000000000000000;A0;C03;    · channel = 5
+72.000000000000000;A0;C03;    · cca = -82.000000 dBm
+72.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+72.000000000000000;A0;C03;    · dcb_policy = 4
+72.000000000000000;A0;C03;  - Performance:
+72.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+72.000000000000000;A0;F00; ComputeNewConfiguration()
+72.000000000000000;A0;F00; SendNewConfigurationToAp()
+72.000000000000000;A0;C00;  - Next request to be sent at 73.000000
+73.000000000000000;A0;F00; RequestInformationToAp() (request #72)
+73.000000000000000;A0;F00; InportReceivingInformationFromAp()
+73.000000000000000;A0;C03;  - Action (5):
+73.000000000000000;A0;C03;    · channel = 5
+73.000000000000000;A0;C03;    · cca = -82.000000 dBm
+73.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+73.000000000000000;A0;C03;    · dcb_policy = 4
+73.000000000000000;A0;C03;  - Performance:
+73.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+73.000000000000000;A0;F00; ComputeNewConfiguration()
+73.000000000000000;A0;F00; SendNewConfigurationToAp()
+73.000000000000000;A0;C00;  - Next request to be sent at 74.000000
+74.000000000000000;A0;F00; RequestInformationToAp() (request #73)
+74.000000000000000;A0;F00; InportReceivingInformationFromAp()
+74.000000000000000;A0;C03;  - Action (5):
+74.000000000000000;A0;C03;    · channel = 5
+74.000000000000000;A0;C03;    · cca = -82.000000 dBm
+74.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+74.000000000000000;A0;C03;    · dcb_policy = 4
+74.000000000000000;A0;C03;  - Performance:
+74.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+74.000000000000000;A0;F00; ComputeNewConfiguration()
+74.000000000000000;A0;F00; SendNewConfigurationToAp()
+74.000000000000000;A0;C00;  - Next request to be sent at 75.000000
+75.000000000000000;A0;F00; RequestInformationToAp() (request #74)
+75.000000000000000;A0;F00; InportReceivingInformationFromAp()
+75.000000000000000;A0;C03;  - Action (5):
+75.000000000000000;A0;C03;    · channel = 5
+75.000000000000000;A0;C03;    · cca = -82.000000 dBm
+75.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+75.000000000000000;A0;C03;    · dcb_policy = 4
+75.000000000000000;A0;C03;  - Performance:
+75.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+75.000000000000000;A0;F00; ComputeNewConfiguration()
+75.000000000000000;A0;F00; SendNewConfigurationToAp()
+75.000000000000000;A0;C00;  - Next request to be sent at 76.000000
+76.000000000000000;A0;F00; RequestInformationToAp() (request #75)
+76.000000000000000;A0;F00; InportReceivingInformationFromAp()
+76.000000000000000;A0;C03;  - Action (5):
+76.000000000000000;A0;C03;    · channel = 5
+76.000000000000000;A0;C03;    · cca = -82.000000 dBm
+76.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+76.000000000000000;A0;C03;    · dcb_policy = 4
+76.000000000000000;A0;C03;  - Performance:
+76.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+76.000000000000000;A0;F00; ComputeNewConfiguration()
+76.000000000000000;A0;F00; SendNewConfigurationToAp()
+76.000000000000000;A0;C00;  - Next request to be sent at 77.000000
+77.000000000000000;A0;F00; RequestInformationToAp() (request #76)
+77.000000000000000;A0;F00; InportReceivingInformationFromAp()
+77.000000000000000;A0;C03;  - Action (5):
+77.000000000000000;A0;C03;    · channel = 5
+77.000000000000000;A0;C03;    · cca = -82.000000 dBm
+77.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+77.000000000000000;A0;C03;    · dcb_policy = 4
+77.000000000000000;A0;C03;  - Performance:
+77.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+77.000000000000000;A0;F00; ComputeNewConfiguration()
+77.000000000000000;A0;F00; SendNewConfigurationToAp()
+77.000000000000000;A0;C00;  - Next request to be sent at 78.000000
+78.000000000000000;A0;F00; RequestInformationToAp() (request #77)
+78.000000000000000;A0;F00; InportReceivingInformationFromAp()
+78.000000000000000;A0;C03;  - Action (5):
+78.000000000000000;A0;C03;    · channel = 5
+78.000000000000000;A0;C03;    · cca = -82.000000 dBm
+78.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+78.000000000000000;A0;C03;    · dcb_policy = 4
+78.000000000000000;A0;C03;  - Performance:
+78.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+78.000000000000000;A0;F00; ComputeNewConfiguration()
+78.000000000000000;A0;F00; SendNewConfigurationToAp()
+78.000000000000000;A0;C00;  - Next request to be sent at 79.000000
+79.000000000000000;A0;F00; RequestInformationToAp() (request #78)
+79.000000000000000;A0;F00; InportReceivingInformationFromAp()
+79.000000000000000;A0;C03;  - Action (5):
+79.000000000000000;A0;C03;    · channel = 5
+79.000000000000000;A0;C03;    · cca = -82.000000 dBm
+79.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+79.000000000000000;A0;C03;    · dcb_policy = 4
+79.000000000000000;A0;C03;  - Performance:
+79.000000000000000;A0;C03;    · Average throughput = 218.88 Mbps
+79.000000000000000;A0;F00; ComputeNewConfiguration()
+79.000000000000000;A0;F00; SendNewConfigurationToAp()
+79.000000000000000;A0;C00;  - Next request to be sent at 80.000000
+80.000000000000000;A0;F00; RequestInformationToAp() (request #79)
+80.000000000000000;A0;F00; InportReceivingInformationFromAp()
+80.000000000000000;A0;C03;  - Action (5):
+80.000000000000000;A0;C03;    · channel = 5
+80.000000000000000;A0;C03;    · cca = -82.000000 dBm
+80.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+80.000000000000000;A0;C03;    · dcb_policy = 4
+80.000000000000000;A0;C03;  - Performance:
+80.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+80.000000000000000;A0;F00; ComputeNewConfiguration()
+80.000000000000000;A0;F00; SendNewConfigurationToAp()
+80.000000000000000;A0;C00;  - Next request to be sent at 81.000000
+81.000000000000000;A0;F00; RequestInformationToAp() (request #80)
+81.000000000000000;A0;F00; InportReceivingInformationFromAp()
+81.000000000000000;A0;C03;  - Action (5):
+81.000000000000000;A0;C03;    · channel = 5
+81.000000000000000;A0;C03;    · cca = -82.000000 dBm
+81.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+81.000000000000000;A0;C03;    · dcb_policy = 4
+81.000000000000000;A0;C03;  - Performance:
+81.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+81.000000000000000;A0;F00; ComputeNewConfiguration()
+81.000000000000000;A0;F00; SendNewConfigurationToAp()
+81.000000000000000;A0;C00;  - Next request to be sent at 82.000000
+82.000000000000000;A0;F00; RequestInformationToAp() (request #81)
+82.000000000000000;A0;F00; InportReceivingInformationFromAp()
+82.000000000000000;A0;C03;  - Action (5):
+82.000000000000000;A0;C03;    · channel = 5
+82.000000000000000;A0;C03;    · cca = -82.000000 dBm
+82.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+82.000000000000000;A0;C03;    · dcb_policy = 4
+82.000000000000000;A0;C03;  - Performance:
+82.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+82.000000000000000;A0;F00; ComputeNewConfiguration()
+82.000000000000000;A0;F00; SendNewConfigurationToAp()
+82.000000000000000;A0;C00;  - Next request to be sent at 83.000000
+83.000000000000000;A0;F00; RequestInformationToAp() (request #82)
+83.000000000000000;A0;F00; InportReceivingInformationFromAp()
+83.000000000000000;A0;C03;  - Action (5):
+83.000000000000000;A0;C03;    · channel = 5
+83.000000000000000;A0;C03;    · cca = -82.000000 dBm
+83.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+83.000000000000000;A0;C03;    · dcb_policy = 4
+83.000000000000000;A0;C03;  - Performance:
+83.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+83.000000000000000;A0;F00; ComputeNewConfiguration()
+83.000000000000000;A0;F00; SendNewConfigurationToAp()
+83.000000000000000;A0;C00;  - Next request to be sent at 84.000000
+84.000000000000000;A0;F00; RequestInformationToAp() (request #83)
+84.000000000000000;A0;F00; InportReceivingInformationFromAp()
+84.000000000000000;A0;C03;  - Action (5):
+84.000000000000000;A0;C03;    · channel = 5
+84.000000000000000;A0;C03;    · cca = -82.000000 dBm
+84.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+84.000000000000000;A0;C03;    · dcb_policy = 4
+84.000000000000000;A0;C03;  - Performance:
+84.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+84.000000000000000;A0;F00; ComputeNewConfiguration()
+84.000000000000000;A0;F00; SendNewConfigurationToAp()
+84.000000000000000;A0;C00;  - Next request to be sent at 85.000000
+85.000000000000000;A0;F00; RequestInformationToAp() (request #84)
+85.000000000000000;A0;F00; InportReceivingInformationFromAp()
+85.000000000000000;A0;C03;  - Action (5):
+85.000000000000000;A0;C03;    · channel = 5
+85.000000000000000;A0;C03;    · cca = -82.000000 dBm
+85.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+85.000000000000000;A0;C03;    · dcb_policy = 4
+85.000000000000000;A0;C03;  - Performance:
+85.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+85.000000000000000;A0;F00; ComputeNewConfiguration()
+85.000000000000000;A0;F00; SendNewConfigurationToAp()
+85.000000000000000;A0;C00;  - Next request to be sent at 86.000000
+86.000000000000000;A0;F00; RequestInformationToAp() (request #85)
+86.000000000000000;A0;F00; InportReceivingInformationFromAp()
+86.000000000000000;A0;C03;  - Action (5):
+86.000000000000000;A0;C03;    · channel = 5
+86.000000000000000;A0;C03;    · cca = -82.000000 dBm
+86.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+86.000000000000000;A0;C03;    · dcb_policy = 4
+86.000000000000000;A0;C03;  - Performance:
+86.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+86.000000000000000;A0;F00; ComputeNewConfiguration()
+86.000000000000000;A0;F00; SendNewConfigurationToAp()
+86.000000000000000;A0;C00;  - Next request to be sent at 87.000000
+87.000000000000000;A0;F00; RequestInformationToAp() (request #86)
+87.000000000000000;A0;F00; InportReceivingInformationFromAp()
+87.000000000000000;A0;C03;  - Action (5):
+87.000000000000000;A0;C03;    · channel = 5
+87.000000000000000;A0;C03;    · cca = -82.000000 dBm
+87.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+87.000000000000000;A0;C03;    · dcb_policy = 4
+87.000000000000000;A0;C03;  - Performance:
+87.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+87.000000000000000;A0;F00; ComputeNewConfiguration()
+87.000000000000000;A0;F00; SendNewConfigurationToAp()
+87.000000000000000;A0;C00;  - Next request to be sent at 88.000000
+88.000000000000000;A0;F00; RequestInformationToAp() (request #87)
+88.000000000000000;A0;F00; InportReceivingInformationFromAp()
+88.000000000000000;A0;C03;  - Action (5):
+88.000000000000000;A0;C03;    · channel = 5
+88.000000000000000;A0;C03;    · cca = -82.000000 dBm
+88.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+88.000000000000000;A0;C03;    · dcb_policy = 4
+88.000000000000000;A0;C03;  - Performance:
+88.000000000000000;A0;C03;    · Average throughput = 218.11 Mbps
+88.000000000000000;A0;F00; ComputeNewConfiguration()
+88.000000000000000;A0;F00; SendNewConfigurationToAp()
+88.000000000000000;A0;C00;  - Next request to be sent at 89.000000
+89.000000000000000;A0;F00; RequestInformationToAp() (request #88)
+89.000000000000000;A0;F00; InportReceivingInformationFromAp()
+89.000000000000000;A0;C03;  - Action (5):
+89.000000000000000;A0;C03;    · channel = 5
+89.000000000000000;A0;C03;    · cca = -82.000000 dBm
+89.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+89.000000000000000;A0;C03;    · dcb_policy = 4
+89.000000000000000;A0;C03;  - Performance:
+89.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+89.000000000000000;A0;F00; ComputeNewConfiguration()
+89.000000000000000;A0;F00; SendNewConfigurationToAp()
+89.000000000000000;A0;C00;  - Next request to be sent at 90.000000
+90.000000000000000;A0;F00; RequestInformationToAp() (request #89)
+90.000000000000000;A0;F00; InportReceivingInformationFromAp()
+90.000000000000000;A0;C03;  - Action (5):
+90.000000000000000;A0;C03;    · channel = 5
+90.000000000000000;A0;C03;    · cca = -82.000000 dBm
+90.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+90.000000000000000;A0;C03;    · dcb_policy = 4
+90.000000000000000;A0;C03;  - Performance:
+90.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+90.000000000000000;A0;F00; ComputeNewConfiguration()
+90.000000000000000;A0;F00; SendNewConfigurationToAp()
+90.000000000000000;A0;C00;  - Next request to be sent at 91.000000
+91.000000000000000;A0;F00; RequestInformationToAp() (request #90)
+91.000000000000000;A0;F00; InportReceivingInformationFromAp()
+91.000000000000000;A0;C03;  - Action (5):
+91.000000000000000;A0;C03;    · channel = 5
+91.000000000000000;A0;C03;    · cca = -82.000000 dBm
+91.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+91.000000000000000;A0;C03;    · dcb_policy = 4
+91.000000000000000;A0;C03;  - Performance:
+91.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+91.000000000000000;A0;F00; ComputeNewConfiguration()
+91.000000000000000;A0;F00; SendNewConfigurationToAp()
+91.000000000000000;A0;C00;  - Next request to be sent at 92.000000
+92.000000000000000;A0;F00; RequestInformationToAp() (request #91)
+92.000000000000000;A0;F00; InportReceivingInformationFromAp()
+92.000000000000000;A0;C03;  - Action (5):
+92.000000000000000;A0;C03;    · channel = 5
+92.000000000000000;A0;C03;    · cca = -82.000000 dBm
+92.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+92.000000000000000;A0;C03;    · dcb_policy = 4
+92.000000000000000;A0;C03;  - Performance:
+92.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+92.000000000000000;A0;F00; ComputeNewConfiguration()
+92.000000000000000;A0;F00; SendNewConfigurationToAp()
+92.000000000000000;A0;C00;  - Next request to be sent at 93.000000
+93.000000000000000;A0;F00; RequestInformationToAp() (request #92)
+93.000000000000000;A0;F00; InportReceivingInformationFromAp()
+93.000000000000000;A0;C03;  - Action (5):
+93.000000000000000;A0;C03;    · channel = 5
+93.000000000000000;A0;C03;    · cca = -82.000000 dBm
+93.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+93.000000000000000;A0;C03;    · dcb_policy = 4
+93.000000000000000;A0;C03;  - Performance:
+93.000000000000000;A0;C03;    · Average throughput = 218.11 Mbps
+93.000000000000000;A0;F00; ComputeNewConfiguration()
+93.000000000000000;A0;F00; SendNewConfigurationToAp()
+93.000000000000000;A0;C00;  - Next request to be sent at 94.000000
+94.000000000000000;A0;F00; RequestInformationToAp() (request #93)
+94.000000000000000;A0;F00; InportReceivingInformationFromAp()
+94.000000000000000;A0;C03;  - Action (5):
+94.000000000000000;A0;C03;    · channel = 5
+94.000000000000000;A0;C03;    · cca = -82.000000 dBm
+94.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+94.000000000000000;A0;C03;    · dcb_policy = 4
+94.000000000000000;A0;C03;  - Performance:
+94.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+94.000000000000000;A0;F00; ComputeNewConfiguration()
+94.000000000000000;A0;F00; SendNewConfigurationToAp()
+94.000000000000000;A0;C00;  - Next request to be sent at 95.000000
+95.000000000000000;A0;F00; RequestInformationToAp() (request #94)
+95.000000000000000;A0;F00; InportReceivingInformationFromAp()
+95.000000000000000;A0;C03;  - Action (5):
+95.000000000000000;A0;C03;    · channel = 5
+95.000000000000000;A0;C03;    · cca = -82.000000 dBm
+95.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+95.000000000000000;A0;C03;    · dcb_policy = 4
+95.000000000000000;A0;C03;  - Performance:
+95.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+95.000000000000000;A0;F00; ComputeNewConfiguration()
+95.000000000000000;A0;F00; SendNewConfigurationToAp()
+95.000000000000000;A0;C00;  - Next request to be sent at 96.000000
+96.000000000000000;A0;F00; RequestInformationToAp() (request #95)
+96.000000000000000;A0;F00; InportReceivingInformationFromAp()
+96.000000000000000;A0;C03;  - Action (7):
+96.000000000000000;A0;C03;    · channel = 7
+96.000000000000000;A0;C03;    · cca = -82.000000 dBm
+96.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+96.000000000000000;A0;C03;    · dcb_policy = 4
+96.000000000000000;A0;C03;  - Performance:
+96.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+96.000000000000000;A0;F00; ComputeNewConfiguration()
+96.000000000000000;A0;F00; SendNewConfigurationToAp()
+96.000000000000000;A0;C00;  - Next request to be sent at 97.000000
+97.000000000000000;A0;F00; RequestInformationToAp() (request #96)
+97.000000000000000;A0;F00; InportReceivingInformationFromAp()
+97.000000000000000;A0;C03;  - Action (0):
+97.000000000000000;A0;C03;    · channel = 0
+97.000000000000000;A0;C03;    · cca = -82.000000 dBm
+97.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+97.000000000000000;A0;C03;    · dcb_policy = 4
+97.000000000000000;A0;C03;  - Performance:
+97.000000000000000;A0;C03;    · Average throughput = 75.26 Mbps
+97.000000000000000;A0;F00; ComputeNewConfiguration()
+97.000000000000000;A0;F00; SendNewConfigurationToAp()
+97.000000000000000;A0;C00;  - Next request to be sent at 98.000000
+98.000000000000000;A0;F00; RequestInformationToAp() (request #97)
+98.000000000000000;A0;F00; InportReceivingInformationFromAp()
+98.000000000000000;A0;C03;  - Action (5):
+98.000000000000000;A0;C03;    · channel = 5
+98.000000000000000;A0;C03;    · cca = -82.000000 dBm
+98.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+98.000000000000000;A0;C03;    · dcb_policy = 4
+98.000000000000000;A0;C03;  - Performance:
+98.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+98.000000000000000;A0;F00; ComputeNewConfiguration()
+98.000000000000000;A0;F00; SendNewConfigurationToAp()
+98.000000000000000;A0;C00;  - Next request to be sent at 99.000000
+99.000000000000000;A0;F00; RequestInformationToAp() (request #98)
+99.000000000000000;A0;F00; InportReceivingInformationFromAp()
+99.000000000000000;A0;C03;  - Action (5):
+99.000000000000000;A0;C03;    · channel = 5
+99.000000000000000;A0;C03;    · cca = -82.000000 dBm
+99.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+99.000000000000000;A0;C03;    · dcb_policy = 4
+99.000000000000000;A0;C03;  - Performance:
+99.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+99.000000000000000;A0;F00; ComputeNewConfiguration()
+99.000000000000000;A0;F00; SendNewConfigurationToAp()
+99.000000000000000;A0;C00;  - Next request to be sent at 100.000000
+100.000000000000000;A0;F00; RequestInformationToAp() (request #99)
+100.000000000000000;A0;F00; InportReceivingInformationFromAp()
+100.000000000000000;A0;C03;  - Action (5):
+100.000000000000000;A0;C03;    · channel = 5
+100.000000000000000;A0;C03;    · cca = -82.000000 dBm
+100.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+100.000000000000000;A0;C03;    · dcb_policy = 4
+100.000000000000000;A0;C03;  - Performance:
+100.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+100.000000000000000;A0;F00; ComputeNewConfiguration()
+100.000000000000000;A0;F00; SendNewConfigurationToAp()
+100.000000000000000;A0;C00;  - Next request to be sent at 101.000000
+101.000000000000000;A0;F00; RequestInformationToAp() (request #100)
+101.000000000000000;A0;F00; InportReceivingInformationFromAp()
+101.000000000000000;A0;C03;  - Action (5):
+101.000000000000000;A0;C03;    · channel = 5
+101.000000000000000;A0;C03;    · cca = -82.000000 dBm
+101.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+101.000000000000000;A0;C03;    · dcb_policy = 4
+101.000000000000000;A0;C03;  - Performance:
+101.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+101.000000000000000;A0;F00; ComputeNewConfiguration()
+101.000000000000000;A0;F00; SendNewConfigurationToAp()
+101.000000000000000;A0;C00;  - Next request to be sent at 102.000000
+102.000000000000000;A0;F00; RequestInformationToAp() (request #101)
+102.000000000000000;A0;F00; InportReceivingInformationFromAp()
+102.000000000000000;A0;C03;  - Action (5):
+102.000000000000000;A0;C03;    · channel = 5
+102.000000000000000;A0;C03;    · cca = -82.000000 dBm
+102.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+102.000000000000000;A0;C03;    · dcb_policy = 4
+102.000000000000000;A0;C03;  - Performance:
+102.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+102.000000000000000;A0;F00; ComputeNewConfiguration()
+102.000000000000000;A0;F00; SendNewConfigurationToAp()
+102.000000000000000;A0;C00;  - Next request to be sent at 103.000000
+103.000000000000000;A0;F00; RequestInformationToAp() (request #102)
+103.000000000000000;A0;F00; InportReceivingInformationFromAp()
+103.000000000000000;A0;C03;  - Action (5):
+103.000000000000000;A0;C03;    · channel = 5
+103.000000000000000;A0;C03;    · cca = -82.000000 dBm
+103.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+103.000000000000000;A0;C03;    · dcb_policy = 4
+103.000000000000000;A0;C03;  - Performance:
+103.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+103.000000000000000;A0;F00; ComputeNewConfiguration()
+103.000000000000000;A0;F00; SendNewConfigurationToAp()
+103.000000000000000;A0;C00;  - Next request to be sent at 104.000000
+104.000000000000000;A0;F00; RequestInformationToAp() (request #103)
+104.000000000000000;A0;F00; InportReceivingInformationFromAp()
+104.000000000000000;A0;C03;  - Action (5):
+104.000000000000000;A0;C03;    · channel = 5
+104.000000000000000;A0;C03;    · cca = -82.000000 dBm
+104.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+104.000000000000000;A0;C03;    · dcb_policy = 4
+104.000000000000000;A0;C03;  - Performance:
+104.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+104.000000000000000;A0;F00; ComputeNewConfiguration()
+104.000000000000000;A0;F00; SendNewConfigurationToAp()
+104.000000000000000;A0;C00;  - Next request to be sent at 105.000000
+105.000000000000000;A0;F00; RequestInformationToAp() (request #104)
+105.000000000000000;A0;F00; InportReceivingInformationFromAp()
+105.000000000000000;A0;C03;  - Action (5):
+105.000000000000000;A0;C03;    · channel = 5
+105.000000000000000;A0;C03;    · cca = -82.000000 dBm
+105.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+105.000000000000000;A0;C03;    · dcb_policy = 4
+105.000000000000000;A0;C03;  - Performance:
+105.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+105.000000000000000;A0;F00; ComputeNewConfiguration()
+105.000000000000000;A0;F00; SendNewConfigurationToAp()
+105.000000000000000;A0;C00;  - Next request to be sent at 106.000000
+106.000000000000000;A0;F00; RequestInformationToAp() (request #105)
+106.000000000000000;A0;F00; InportReceivingInformationFromAp()
+106.000000000000000;A0;C03;  - Action (6):
+106.000000000000000;A0;C03;    · channel = 6
+106.000000000000000;A0;C03;    · cca = -82.000000 dBm
+106.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+106.000000000000000;A0;C03;    · dcb_policy = 4
+106.000000000000000;A0;C03;  - Performance:
+106.000000000000000;A0;C03;    · Average throughput = 111.36 Mbps
+106.000000000000000;A0;F00; ComputeNewConfiguration()
+106.000000000000000;A0;F00; SendNewConfigurationToAp()
+106.000000000000000;A0;C00;  - Next request to be sent at 107.000000
+107.000000000000000;A0;F00; RequestInformationToAp() (request #106)
+107.000000000000000;A0;F00; InportReceivingInformationFromAp()
+107.000000000000000;A0;C03;  - Action (5):
+107.000000000000000;A0;C03;    · channel = 5
+107.000000000000000;A0;C03;    · cca = -82.000000 dBm
+107.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+107.000000000000000;A0;C03;    · dcb_policy = 4
+107.000000000000000;A0;C03;  - Performance:
+107.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+107.000000000000000;A0;F00; ComputeNewConfiguration()
+107.000000000000000;A0;F00; SendNewConfigurationToAp()
+107.000000000000000;A0;C00;  - Next request to be sent at 108.000000
+108.000000000000000;A0;F00; RequestInformationToAp() (request #107)
+108.000000000000000;A0;F00; InportReceivingInformationFromAp()
+108.000000000000000;A0;C03;  - Action (5):
+108.000000000000000;A0;C03;    · channel = 5
+108.000000000000000;A0;C03;    · cca = -82.000000 dBm
+108.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+108.000000000000000;A0;C03;    · dcb_policy = 4
+108.000000000000000;A0;C03;  - Performance:
+108.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+108.000000000000000;A0;F00; ComputeNewConfiguration()
+108.000000000000000;A0;F00; SendNewConfigurationToAp()
+108.000000000000000;A0;C00;  - Next request to be sent at 109.000000
+109.000000000000000;A0;F00; RequestInformationToAp() (request #108)
+109.000000000000000;A0;F00; InportReceivingInformationFromAp()
+109.000000000000000;A0;C03;  - Action (5):
+109.000000000000000;A0;C03;    · channel = 5
+109.000000000000000;A0;C03;    · cca = -82.000000 dBm
+109.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+109.000000000000000;A0;C03;    · dcb_policy = 4
+109.000000000000000;A0;C03;  - Performance:
+109.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+109.000000000000000;A0;F00; ComputeNewConfiguration()
+109.000000000000000;A0;F00; SendNewConfigurationToAp()
+109.000000000000000;A0;C00;  - Next request to be sent at 110.000000
+110.000000000000000;A0;F00; RequestInformationToAp() (request #109)
+110.000000000000000;A0;F00; InportReceivingInformationFromAp()
+110.000000000000000;A0;C03;  - Action (0):
+110.000000000000000;A0;C03;    · channel = 0
+110.000000000000000;A0;C03;    · cca = -82.000000 dBm
+110.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+110.000000000000000;A0;C03;    · dcb_policy = 4
+110.000000000000000;A0;C03;  - Performance:
+110.000000000000000;A0;C03;    · Average throughput = 72.96 Mbps
+110.000000000000000;A0;F00; ComputeNewConfiguration()
+110.000000000000000;A0;F00; SendNewConfigurationToAp()
+110.000000000000000;A0;C00;  - Next request to be sent at 111.000000
+111.000000000000000;A0;F00; RequestInformationToAp() (request #110)
+111.000000000000000;A0;F00; InportReceivingInformationFromAp()
+111.000000000000000;A0;C03;  - Action (5):
+111.000000000000000;A0;C03;    · channel = 5
+111.000000000000000;A0;C03;    · cca = -82.000000 dBm
+111.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+111.000000000000000;A0;C03;    · dcb_policy = 4
+111.000000000000000;A0;C03;  - Performance:
+111.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+111.000000000000000;A0;F00; ComputeNewConfiguration()
+111.000000000000000;A0;F00; SendNewConfigurationToAp()
+111.000000000000000;A0;C00;  - Next request to be sent at 112.000000
+112.000000000000000;A0;F00; RequestInformationToAp() (request #111)
+112.000000000000000;A0;F00; InportReceivingInformationFromAp()
+112.000000000000000;A0;C03;  - Action (5):
+112.000000000000000;A0;C03;    · channel = 5
+112.000000000000000;A0;C03;    · cca = -82.000000 dBm
+112.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+112.000000000000000;A0;C03;    · dcb_policy = 4
+112.000000000000000;A0;C03;  - Performance:
+112.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+112.000000000000000;A0;F00; ComputeNewConfiguration()
+112.000000000000000;A0;F00; SendNewConfigurationToAp()
+112.000000000000000;A0;C00;  - Next request to be sent at 113.000000
+113.000000000000000;A0;F00; RequestInformationToAp() (request #112)
+113.000000000000000;A0;F00; InportReceivingInformationFromAp()
+113.000000000000000;A0;C03;  - Action (5):
+113.000000000000000;A0;C03;    · channel = 5
+113.000000000000000;A0;C03;    · cca = -82.000000 dBm
+113.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+113.000000000000000;A0;C03;    · dcb_policy = 4
+113.000000000000000;A0;C03;  - Performance:
+113.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+113.000000000000000;A0;F00; ComputeNewConfiguration()
+113.000000000000000;A0;F00; SendNewConfigurationToAp()
+113.000000000000000;A0;C00;  - Next request to be sent at 114.000000
+114.000000000000000;A0;F00; RequestInformationToAp() (request #113)
+114.000000000000000;A0;F00; InportReceivingInformationFromAp()
+114.000000000000000;A0;C03;  - Action (5):
+114.000000000000000;A0;C03;    · channel = 5
+114.000000000000000;A0;C03;    · cca = -82.000000 dBm
+114.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+114.000000000000000;A0;C03;    · dcb_policy = 4
+114.000000000000000;A0;C03;  - Performance:
+114.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+114.000000000000000;A0;F00; ComputeNewConfiguration()
+114.000000000000000;A0;F00; SendNewConfigurationToAp()
+114.000000000000000;A0;C00;  - Next request to be sent at 115.000000
+115.000000000000000;A0;F00; RequestInformationToAp() (request #114)
+115.000000000000000;A0;F00; InportReceivingInformationFromAp()
+115.000000000000000;A0;C03;  - Action (5):
+115.000000000000000;A0;C03;    · channel = 5
+115.000000000000000;A0;C03;    · cca = -82.000000 dBm
+115.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+115.000000000000000;A0;C03;    · dcb_policy = 4
+115.000000000000000;A0;C03;  - Performance:
+115.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+115.000000000000000;A0;F00; ComputeNewConfiguration()
+115.000000000000000;A0;F00; SendNewConfigurationToAp()
+115.000000000000000;A0;C00;  - Next request to be sent at 116.000000
+116.000000000000000;A0;F00; RequestInformationToAp() (request #115)
+116.000000000000000;A0;F00; InportReceivingInformationFromAp()
+116.000000000000000;A0;C03;  - Action (5):
+116.000000000000000;A0;C03;    · channel = 5
+116.000000000000000;A0;C03;    · cca = -82.000000 dBm
+116.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+116.000000000000000;A0;C03;    · dcb_policy = 4
+116.000000000000000;A0;C03;  - Performance:
+116.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+116.000000000000000;A0;F00; ComputeNewConfiguration()
+116.000000000000000;A0;F00; SendNewConfigurationToAp()
+116.000000000000000;A0;C00;  - Next request to be sent at 117.000000
+117.000000000000000;A0;F00; RequestInformationToAp() (request #116)
+117.000000000000000;A0;F00; InportReceivingInformationFromAp()
+117.000000000000000;A0;C03;  - Action (5):
+117.000000000000000;A0;C03;    · channel = 5
+117.000000000000000;A0;C03;    · cca = -82.000000 dBm
+117.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+117.000000000000000;A0;C03;    · dcb_policy = 4
+117.000000000000000;A0;C03;  - Performance:
+117.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+117.000000000000000;A0;F00; ComputeNewConfiguration()
+117.000000000000000;A0;F00; SendNewConfigurationToAp()
+117.000000000000000;A0;C00;  - Next request to be sent at 118.000000
+118.000000000000000;A0;F00; RequestInformationToAp() (request #117)
+118.000000000000000;A0;F00; InportReceivingInformationFromAp()
+118.000000000000000;A0;C03;  - Action (5):
+118.000000000000000;A0;C03;    · channel = 5
+118.000000000000000;A0;C03;    · cca = -82.000000 dBm
+118.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+118.000000000000000;A0;C03;    · dcb_policy = 4
+118.000000000000000;A0;C03;  - Performance:
+118.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+118.000000000000000;A0;F00; ComputeNewConfiguration()
+118.000000000000000;A0;F00; SendNewConfigurationToAp()
+118.000000000000000;A0;C00;  - Next request to be sent at 119.000000
+119.000000000000000;A0;F00; RequestInformationToAp() (request #118)
+119.000000000000000;A0;F00; InportReceivingInformationFromAp()
+119.000000000000000;A0;C03;  - Action (5):
+119.000000000000000;A0;C03;    · channel = 5
+119.000000000000000;A0;C03;    · cca = -82.000000 dBm
+119.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+119.000000000000000;A0;C03;    · dcb_policy = 4
+119.000000000000000;A0;C03;  - Performance:
+119.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+119.000000000000000;A0;F00; ComputeNewConfiguration()
+119.000000000000000;A0;F00; SendNewConfigurationToAp()
+119.000000000000000;A0;C00;  - Next request to be sent at 120.000000
+120.000000000000000;A0;F00; RequestInformationToAp() (request #119)
+120.000000000000000;A0;F00; InportReceivingInformationFromAp()
+120.000000000000000;A0;C03;  - Action (5):
+120.000000000000000;A0;C03;    · channel = 5
+120.000000000000000;A0;C03;    · cca = -82.000000 dBm
+120.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+120.000000000000000;A0;C03;    · dcb_policy = 4
+120.000000000000000;A0;C03;  - Performance:
+120.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+120.000000000000000;A0;F00; ComputeNewConfiguration()
+120.000000000000000;A0;F00; SendNewConfigurationToAp()
+120.000000000000000;A0;C00;  - Next request to be sent at 121.000000
+121.000000000000000;A0;F00; RequestInformationToAp() (request #120)
+121.000000000000000;A0;F00; InportReceivingInformationFromAp()
+121.000000000000000;A0;C03;  - Action (5):
+121.000000000000000;A0;C03;    · channel = 5
+121.000000000000000;A0;C03;    · cca = -82.000000 dBm
+121.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+121.000000000000000;A0;C03;    · dcb_policy = 4
+121.000000000000000;A0;C03;  - Performance:
+121.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+121.000000000000000;A0;F00; ComputeNewConfiguration()
+121.000000000000000;A0;F00; SendNewConfigurationToAp()
+121.000000000000000;A0;C00;  - Next request to be sent at 122.000000
+122.000000000000000;A0;F00; RequestInformationToAp() (request #121)
+122.000000000000000;A0;F00; InportReceivingInformationFromAp()
+122.000000000000000;A0;C03;  - Action (7):
+122.000000000000000;A0;C03;    · channel = 7
+122.000000000000000;A0;C03;    · cca = -82.000000 dBm
+122.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+122.000000000000000;A0;C03;    · dcb_policy = 4
+122.000000000000000;A0;C03;  - Performance:
+122.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+122.000000000000000;A0;F00; ComputeNewConfiguration()
+122.000000000000000;A0;F00; SendNewConfigurationToAp()
+122.000000000000000;A0;C00;  - Next request to be sent at 123.000000
+123.000000000000000;A0;F00; RequestInformationToAp() (request #122)
+123.000000000000000;A0;F00; InportReceivingInformationFromAp()
+123.000000000000000;A0;C03;  - Action (5):
+123.000000000000000;A0;C03;    · channel = 5
+123.000000000000000;A0;C03;    · cca = -82.000000 dBm
+123.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+123.000000000000000;A0;C03;    · dcb_policy = 4
+123.000000000000000;A0;C03;  - Performance:
+123.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+123.000000000000000;A0;F00; ComputeNewConfiguration()
+123.000000000000000;A0;F00; SendNewConfigurationToAp()
+123.000000000000000;A0;C00;  - Next request to be sent at 124.000000
+124.000000000000000;A0;F00; RequestInformationToAp() (request #123)
+124.000000000000000;A0;F00; InportReceivingInformationFromAp()
+124.000000000000000;A0;C03;  - Action (5):
+124.000000000000000;A0;C03;    · channel = 5
+124.000000000000000;A0;C03;    · cca = -82.000000 dBm
+124.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+124.000000000000000;A0;C03;    · dcb_policy = 4
+124.000000000000000;A0;C03;  - Performance:
+124.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+124.000000000000000;A0;F00; ComputeNewConfiguration()
+124.000000000000000;A0;F00; SendNewConfigurationToAp()
+124.000000000000000;A0;C00;  - Next request to be sent at 125.000000
+125.000000000000000;A0;F00; RequestInformationToAp() (request #124)
+125.000000000000000;A0;F00; InportReceivingInformationFromAp()
+125.000000000000000;A0;C03;  - Action (5):
+125.000000000000000;A0;C03;    · channel = 5
+125.000000000000000;A0;C03;    · cca = -82.000000 dBm
+125.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+125.000000000000000;A0;C03;    · dcb_policy = 4
+125.000000000000000;A0;C03;  - Performance:
+125.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+125.000000000000000;A0;F00; ComputeNewConfiguration()
+125.000000000000000;A0;F00; SendNewConfigurationToAp()
+125.000000000000000;A0;C00;  - Next request to be sent at 126.000000
+126.000000000000000;A0;F00; RequestInformationToAp() (request #125)
+126.000000000000000;A0;F00; InportReceivingInformationFromAp()
+126.000000000000000;A0;C03;  - Action (5):
+126.000000000000000;A0;C03;    · channel = 5
+126.000000000000000;A0;C03;    · cca = -82.000000 dBm
+126.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+126.000000000000000;A0;C03;    · dcb_policy = 4
+126.000000000000000;A0;C03;  - Performance:
+126.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+126.000000000000000;A0;F00; ComputeNewConfiguration()
+126.000000000000000;A0;F00; SendNewConfigurationToAp()
+126.000000000000000;A0;C00;  - Next request to be sent at 127.000000
+127.000000000000000;A0;F00; RequestInformationToAp() (request #126)
+127.000000000000000;A0;F00; InportReceivingInformationFromAp()
+127.000000000000000;A0;C03;  - Action (5):
+127.000000000000000;A0;C03;    · channel = 5
+127.000000000000000;A0;C03;    · cca = -82.000000 dBm
+127.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+127.000000000000000;A0;C03;    · dcb_policy = 4
+127.000000000000000;A0;C03;  - Performance:
+127.000000000000000;A0;C03;    · Average throughput = 218.11 Mbps
+127.000000000000000;A0;F00; ComputeNewConfiguration()
+127.000000000000000;A0;F00; SendNewConfigurationToAp()
+127.000000000000000;A0;C00;  - Next request to be sent at 128.000000
+128.000000000000000;A0;F00; RequestInformationToAp() (request #127)
+128.000000000000000;A0;F00; InportReceivingInformationFromAp()
+128.000000000000000;A0;C03;  - Action (5):
+128.000000000000000;A0;C03;    · channel = 5
+128.000000000000000;A0;C03;    · cca = -82.000000 dBm
+128.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+128.000000000000000;A0;C03;    · dcb_policy = 4
+128.000000000000000;A0;C03;  - Performance:
+128.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+128.000000000000000;A0;F00; ComputeNewConfiguration()
+128.000000000000000;A0;F00; SendNewConfigurationToAp()
+128.000000000000000;A0;C00;  - Next request to be sent at 129.000000
+129.000000000000000;A0;F00; RequestInformationToAp() (request #128)
+129.000000000000000;A0;F00; InportReceivingInformationFromAp()
+129.000000000000000;A0;C03;  - Action (5):
+129.000000000000000;A0;C03;    · channel = 5
+129.000000000000000;A0;C03;    · cca = -82.000000 dBm
+129.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+129.000000000000000;A0;C03;    · dcb_policy = 4
+129.000000000000000;A0;C03;  - Performance:
+129.000000000000000;A0;C03;    · Average throughput = 211.97 Mbps
+129.000000000000000;A0;F00; ComputeNewConfiguration()
+129.000000000000000;A0;F00; SendNewConfigurationToAp()
+129.000000000000000;A0;C00;  - Next request to be sent at 130.000000
+130.000000000000000;A0;F00; RequestInformationToAp() (request #129)
+130.000000000000000;A0;F00; InportReceivingInformationFromAp()
+130.000000000000000;A0;C03;  - Action (4):
+130.000000000000000;A0;C03;    · channel = 4
+130.000000000000000;A0;C03;    · cca = -82.000000 dBm
+130.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+130.000000000000000;A0;C03;    · dcb_policy = 4
+130.000000000000000;A0;C03;  - Performance:
+130.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+130.000000000000000;A0;F00; ComputeNewConfiguration()
+130.000000000000000;A0;F00; SendNewConfigurationToAp()
+130.000000000000000;A0;C00;  - Next request to be sent at 131.000000
+131.000000000000000;A0;F00; RequestInformationToAp() (request #130)
+131.000000000000000;A0;F00; InportReceivingInformationFromAp()
+131.000000000000000;A0;C03;  - Action (3):
+131.000000000000000;A0;C03;    · channel = 3
+131.000000000000000;A0;C03;    · cca = -82.000000 dBm
+131.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+131.000000000000000;A0;C03;    · dcb_policy = 4
+131.000000000000000;A0;C03;  - Performance:
+131.000000000000000;A0;C03;    · Average throughput = 52.15 Mbps
+131.000000000000000;A0;F00; ComputeNewConfiguration()
+131.000000000000000;A0;F00; SendNewConfigurationToAp()
+131.000000000000000;A0;C00;  - Next request to be sent at 132.000000
+132.000000000000000;A0;F00; RequestInformationToAp() (request #131)
+132.000000000000000;A0;F00; InportReceivingInformationFromAp()
+132.000000000000000;A0;C03;  - Action (5):
+132.000000000000000;A0;C03;    · channel = 5
+132.000000000000000;A0;C03;    · cca = -82.000000 dBm
+132.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+132.000000000000000;A0;C03;    · dcb_policy = 4
+132.000000000000000;A0;C03;  - Performance:
+132.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+132.000000000000000;A0;F00; ComputeNewConfiguration()
+132.000000000000000;A0;F00; SendNewConfigurationToAp()
+132.000000000000000;A0;C00;  - Next request to be sent at 133.000000
+133.000000000000000;A0;F00; RequestInformationToAp() (request #132)
+133.000000000000000;A0;F00; InportReceivingInformationFromAp()
+133.000000000000000;A0;C03;  - Action (5):
+133.000000000000000;A0;C03;    · channel = 5
+133.000000000000000;A0;C03;    · cca = -82.000000 dBm
+133.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+133.000000000000000;A0;C03;    · dcb_policy = 4
+133.000000000000000;A0;C03;  - Performance:
+133.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+133.000000000000000;A0;F00; ComputeNewConfiguration()
+133.000000000000000;A0;F00; SendNewConfigurationToAp()
+133.000000000000000;A0;C00;  - Next request to be sent at 134.000000
+134.000000000000000;A0;F00; RequestInformationToAp() (request #133)
+134.000000000000000;A0;F00; InportReceivingInformationFromAp()
+134.000000000000000;A0;C03;  - Action (5):
+134.000000000000000;A0;C03;    · channel = 5
+134.000000000000000;A0;C03;    · cca = -82.000000 dBm
+134.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+134.000000000000000;A0;C03;    · dcb_policy = 4
+134.000000000000000;A0;C03;  - Performance:
+134.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+134.000000000000000;A0;F00; ComputeNewConfiguration()
+134.000000000000000;A0;F00; SendNewConfigurationToAp()
+134.000000000000000;A0;C00;  - Next request to be sent at 135.000000
+135.000000000000000;A0;F00; RequestInformationToAp() (request #134)
+135.000000000000000;A0;F00; InportReceivingInformationFromAp()
+135.000000000000000;A0;C03;  - Action (0):
+135.000000000000000;A0;C03;    · channel = 0
+135.000000000000000;A0;C03;    · cca = -82.000000 dBm
+135.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+135.000000000000000;A0;C03;    · dcb_policy = 4
+135.000000000000000;A0;C03;  - Performance:
+135.000000000000000;A0;C03;    · Average throughput = 76.03 Mbps
+135.000000000000000;A0;F00; ComputeNewConfiguration()
+135.000000000000000;A0;F00; SendNewConfigurationToAp()
+135.000000000000000;A0;C00;  - Next request to be sent at 136.000000
+136.000000000000000;A0;F00; RequestInformationToAp() (request #135)
+136.000000000000000;A0;F00; InportReceivingInformationFromAp()
+136.000000000000000;A0;C03;  - Action (5):
+136.000000000000000;A0;C03;    · channel = 5
+136.000000000000000;A0;C03;    · cca = -82.000000 dBm
+136.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+136.000000000000000;A0;C03;    · dcb_policy = 4
+136.000000000000000;A0;C03;  - Performance:
+136.000000000000000;A0;C03;    · Average throughput = 211.97 Mbps
+136.000000000000000;A0;F00; ComputeNewConfiguration()
+136.000000000000000;A0;F00; SendNewConfigurationToAp()
+136.000000000000000;A0;C00;  - Next request to be sent at 137.000000
+137.000000000000000;A0;F00; RequestInformationToAp() (request #136)
+137.000000000000000;A0;F00; InportReceivingInformationFromAp()
+137.000000000000000;A0;C03;  - Action (5):
+137.000000000000000;A0;C03;    · channel = 5
+137.000000000000000;A0;C03;    · cca = -82.000000 dBm
+137.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+137.000000000000000;A0;C03;    · dcb_policy = 4
+137.000000000000000;A0;C03;  - Performance:
+137.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+137.000000000000000;A0;F00; ComputeNewConfiguration()
+137.000000000000000;A0;F00; SendNewConfigurationToAp()
+137.000000000000000;A0;C00;  - Next request to be sent at 138.000000
+138.000000000000000;A0;F00; RequestInformationToAp() (request #137)
+138.000000000000000;A0;F00; InportReceivingInformationFromAp()
+138.000000000000000;A0;C03;  - Action (5):
+138.000000000000000;A0;C03;    · channel = 5
+138.000000000000000;A0;C03;    · cca = -82.000000 dBm
+138.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+138.000000000000000;A0;C03;    · dcb_policy = 4
+138.000000000000000;A0;C03;  - Performance:
+138.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+138.000000000000000;A0;F00; ComputeNewConfiguration()
+138.000000000000000;A0;F00; SendNewConfigurationToAp()
+138.000000000000000;A0;C00;  - Next request to be sent at 139.000000
+139.000000000000000;A0;F00; RequestInformationToAp() (request #138)
+139.000000000000000;A0;F00; InportReceivingInformationFromAp()
+139.000000000000000;A0;C03;  - Action (5):
+139.000000000000000;A0;C03;    · channel = 5
+139.000000000000000;A0;C03;    · cca = -82.000000 dBm
+139.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+139.000000000000000;A0;C03;    · dcb_policy = 4
+139.000000000000000;A0;C03;  - Performance:
+139.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+139.000000000000000;A0;F00; ComputeNewConfiguration()
+139.000000000000000;A0;F00; SendNewConfigurationToAp()
+139.000000000000000;A0;C00;  - Next request to be sent at 140.000000
+140.000000000000000;A0;F00; RequestInformationToAp() (request #139)
+140.000000000000000;A0;F00; InportReceivingInformationFromAp()
+140.000000000000000;A0;C03;  - Action (5):
+140.000000000000000;A0;C03;    · channel = 5
+140.000000000000000;A0;C03;    · cca = -82.000000 dBm
+140.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+140.000000000000000;A0;C03;    · dcb_policy = 4
+140.000000000000000;A0;C03;  - Performance:
+140.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+140.000000000000000;A0;F00; ComputeNewConfiguration()
+140.000000000000000;A0;F00; SendNewConfigurationToAp()
+140.000000000000000;A0;C00;  - Next request to be sent at 141.000000
+141.000000000000000;A0;F00; RequestInformationToAp() (request #140)
+141.000000000000000;A0;F00; InportReceivingInformationFromAp()
+141.000000000000000;A0;C03;  - Action (5):
+141.000000000000000;A0;C03;    · channel = 5
+141.000000000000000;A0;C03;    · cca = -82.000000 dBm
+141.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+141.000000000000000;A0;C03;    · dcb_policy = 4
+141.000000000000000;A0;C03;  - Performance:
+141.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+141.000000000000000;A0;F00; ComputeNewConfiguration()
+141.000000000000000;A0;F00; SendNewConfigurationToAp()
+141.000000000000000;A0;C00;  - Next request to be sent at 142.000000
+142.000000000000000;A0;F00; RequestInformationToAp() (request #141)
+142.000000000000000;A0;F00; InportReceivingInformationFromAp()
+142.000000000000000;A0;C03;  - Action (5):
+142.000000000000000;A0;C03;    · channel = 5
+142.000000000000000;A0;C03;    · cca = -82.000000 dBm
+142.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+142.000000000000000;A0;C03;    · dcb_policy = 4
+142.000000000000000;A0;C03;  - Performance:
+142.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+142.000000000000000;A0;F00; ComputeNewConfiguration()
+142.000000000000000;A0;F00; SendNewConfigurationToAp()
+142.000000000000000;A0;C00;  - Next request to be sent at 143.000000
+143.000000000000000;A0;F00; RequestInformationToAp() (request #142)
+143.000000000000000;A0;F00; InportReceivingInformationFromAp()
+143.000000000000000;A0;C03;  - Action (5):
+143.000000000000000;A0;C03;    · channel = 5
+143.000000000000000;A0;C03;    · cca = -82.000000 dBm
+143.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+143.000000000000000;A0;C03;    · dcb_policy = 4
+143.000000000000000;A0;C03;  - Performance:
+143.000000000000000;A0;C03;    · Average throughput = 218.11 Mbps
+143.000000000000000;A0;F00; ComputeNewConfiguration()
+143.000000000000000;A0;F00; SendNewConfigurationToAp()
+143.000000000000000;A0;C00;  - Next request to be sent at 144.000000
+144.000000000000000;A0;F00; RequestInformationToAp() (request #143)
+144.000000000000000;A0;F00; InportReceivingInformationFromAp()
+144.000000000000000;A0;C03;  - Action (5):
+144.000000000000000;A0;C03;    · channel = 5
+144.000000000000000;A0;C03;    · cca = -82.000000 dBm
+144.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+144.000000000000000;A0;C03;    · dcb_policy = 4
+144.000000000000000;A0;C03;  - Performance:
+144.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+144.000000000000000;A0;F00; ComputeNewConfiguration()
+144.000000000000000;A0;F00; SendNewConfigurationToAp()
+144.000000000000000;A0;C00;  - Next request to be sent at 145.000000
+145.000000000000000;A0;F00; RequestInformationToAp() (request #144)
+145.000000000000000;A0;F00; InportReceivingInformationFromAp()
+145.000000000000000;A0;C03;  - Action (5):
+145.000000000000000;A0;C03;    · channel = 5
+145.000000000000000;A0;C03;    · cca = -82.000000 dBm
+145.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+145.000000000000000;A0;C03;    · dcb_policy = 4
+145.000000000000000;A0;C03;  - Performance:
+145.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+145.000000000000000;A0;F00; ComputeNewConfiguration()
+145.000000000000000;A0;F00; SendNewConfigurationToAp()
+145.000000000000000;A0;C00;  - Next request to be sent at 146.000000
+146.000000000000000;A0;F00; RequestInformationToAp() (request #145)
+146.000000000000000;A0;F00; InportReceivingInformationFromAp()
+146.000000000000000;A0;C03;  - Action (5):
+146.000000000000000;A0;C03;    · channel = 5
+146.000000000000000;A0;C03;    · cca = -82.000000 dBm
+146.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+146.000000000000000;A0;C03;    · dcb_policy = 4
+146.000000000000000;A0;C03;  - Performance:
+146.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+146.000000000000000;A0;F00; ComputeNewConfiguration()
+146.000000000000000;A0;F00; SendNewConfigurationToAp()
+146.000000000000000;A0;C00;  - Next request to be sent at 147.000000
+147.000000000000000;A0;F00; RequestInformationToAp() (request #146)
+147.000000000000000;A0;F00; InportReceivingInformationFromAp()
+147.000000000000000;A0;C03;  - Action (5):
+147.000000000000000;A0;C03;    · channel = 5
+147.000000000000000;A0;C03;    · cca = -82.000000 dBm
+147.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+147.000000000000000;A0;C03;    · dcb_policy = 4
+147.000000000000000;A0;C03;  - Performance:
+147.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+147.000000000000000;A0;F00; ComputeNewConfiguration()
+147.000000000000000;A0;F00; SendNewConfigurationToAp()
+147.000000000000000;A0;C00;  - Next request to be sent at 148.000000
+148.000000000000000;A0;F00; RequestInformationToAp() (request #147)
+148.000000000000000;A0;F00; InportReceivingInformationFromAp()
+148.000000000000000;A0;C03;  - Action (5):
+148.000000000000000;A0;C03;    · channel = 5
+148.000000000000000;A0;C03;    · cca = -82.000000 dBm
+148.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+148.000000000000000;A0;C03;    · dcb_policy = 4
+148.000000000000000;A0;C03;  - Performance:
+148.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+148.000000000000000;A0;F00; ComputeNewConfiguration()
+148.000000000000000;A0;F00; SendNewConfigurationToAp()
+148.000000000000000;A0;C00;  - Next request to be sent at 149.000000
+149.000000000000000;A0;F00; RequestInformationToAp() (request #148)
+149.000000000000000;A0;F00; InportReceivingInformationFromAp()
+149.000000000000000;A0;C03;  - Action (5):
+149.000000000000000;A0;C03;    · channel = 5
+149.000000000000000;A0;C03;    · cca = -82.000000 dBm
+149.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+149.000000000000000;A0;C03;    · dcb_policy = 4
+149.000000000000000;A0;C03;  - Performance:
+149.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+149.000000000000000;A0;F00; ComputeNewConfiguration()
+149.000000000000000;A0;F00; SendNewConfigurationToAp()
+149.000000000000000;A0;C00;  - Next request to be sent at 150.000000
+150.000000000000000;A0;F00; RequestInformationToAp() (request #149)
+150.000000000000000;A0;F00; InportReceivingInformationFromAp()
+150.000000000000000;A0;C03;  - Action (6):
+150.000000000000000;A0;C03;    · channel = 6
+150.000000000000000;A0;C03;    · cca = -82.000000 dBm
+150.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+150.000000000000000;A0;C03;    · dcb_policy = 4
+150.000000000000000;A0;C03;  - Performance:
+150.000000000000000;A0;C03;    · Average throughput = 122.88 Mbps
+150.000000000000000;A0;F00; ComputeNewConfiguration()
+150.000000000000000;A0;F00; SendNewConfigurationToAp()
+150.000000000000000;A0;C00;  - Next request to be sent at 151.000000
+151.000000000000000;A0;F00; RequestInformationToAp() (request #150)
+151.000000000000000;A0;F00; InportReceivingInformationFromAp()
+151.000000000000000;A0;C03;  - Action (5):
+151.000000000000000;A0;C03;    · channel = 5
+151.000000000000000;A0;C03;    · cca = -82.000000 dBm
+151.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+151.000000000000000;A0;C03;    · dcb_policy = 4
+151.000000000000000;A0;C03;  - Performance:
+151.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+151.000000000000000;A0;F00; ComputeNewConfiguration()
+151.000000000000000;A0;F00; SendNewConfigurationToAp()
+151.000000000000000;A0;C00;  - Next request to be sent at 152.000000
+152.000000000000000;A0;F00; RequestInformationToAp() (request #151)
+152.000000000000000;A0;F00; InportReceivingInformationFromAp()
+152.000000000000000;A0;C03;  - Action (5):
+152.000000000000000;A0;C03;    · channel = 5
+152.000000000000000;A0;C03;    · cca = -82.000000 dBm
+152.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+152.000000000000000;A0;C03;    · dcb_policy = 4
+152.000000000000000;A0;C03;  - Performance:
+152.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+152.000000000000000;A0;F00; ComputeNewConfiguration()
+152.000000000000000;A0;F00; SendNewConfigurationToAp()
+152.000000000000000;A0;C00;  - Next request to be sent at 153.000000
+153.000000000000000;A0;F00; RequestInformationToAp() (request #152)
+153.000000000000000;A0;F00; InportReceivingInformationFromAp()
+153.000000000000000;A0;C03;  - Action (0):
+153.000000000000000;A0;C03;    · channel = 0
+153.000000000000000;A0;C03;    · cca = -82.000000 dBm
+153.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+153.000000000000000;A0;C03;    · dcb_policy = 4
+153.000000000000000;A0;C03;  - Performance:
+153.000000000000000;A0;C03;    · Average throughput = 78.34 Mbps
+153.000000000000000;A0;F00; ComputeNewConfiguration()
+153.000000000000000;A0;F00; SendNewConfigurationToAp()
+153.000000000000000;A0;C00;  - Next request to be sent at 154.000000
+154.000000000000000;A0;F00; RequestInformationToAp() (request #153)
+154.000000000000000;A0;F00; InportReceivingInformationFromAp()
+154.000000000000000;A0;C03;  - Action (1):
+154.000000000000000;A0;C03;    · channel = 1
+154.000000000000000;A0;C03;    · cca = -82.000000 dBm
+154.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+154.000000000000000;A0;C03;    · dcb_policy = 4
+154.000000000000000;A0;C03;  - Performance:
+154.000000000000000;A0;C03;    · Average throughput = 110.66 Mbps
+154.000000000000000;A0;F00; ComputeNewConfiguration()
+154.000000000000000;A0;F00; SendNewConfigurationToAp()
+154.000000000000000;A0;C00;  - Next request to be sent at 155.000000
+155.000000000000000;A0;F00; RequestInformationToAp() (request #154)
+155.000000000000000;A0;F00; InportReceivingInformationFromAp()
+155.000000000000000;A0;C03;  - Action (5):
+155.000000000000000;A0;C03;    · channel = 5
+155.000000000000000;A0;C03;    · cca = -82.000000 dBm
+155.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+155.000000000000000;A0;C03;    · dcb_policy = 4
+155.000000000000000;A0;C03;  - Performance:
+155.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+155.000000000000000;A0;F00; ComputeNewConfiguration()
+155.000000000000000;A0;F00; SendNewConfigurationToAp()
+155.000000000000000;A0;C00;  - Next request to be sent at 156.000000
+156.000000000000000;A0;F00; RequestInformationToAp() (request #155)
+156.000000000000000;A0;F00; InportReceivingInformationFromAp()
+156.000000000000000;A0;C03;  - Action (5):
+156.000000000000000;A0;C03;    · channel = 5
+156.000000000000000;A0;C03;    · cca = -82.000000 dBm
+156.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+156.000000000000000;A0;C03;    · dcb_policy = 4
+156.000000000000000;A0;C03;  - Performance:
+156.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+156.000000000000000;A0;F00; ComputeNewConfiguration()
+156.000000000000000;A0;F00; SendNewConfigurationToAp()
+156.000000000000000;A0;C00;  - Next request to be sent at 157.000000
+157.000000000000000;A0;F00; RequestInformationToAp() (request #156)
+157.000000000000000;A0;F00; InportReceivingInformationFromAp()
+157.000000000000000;A0;C03;  - Action (5):
+157.000000000000000;A0;C03;    · channel = 5
+157.000000000000000;A0;C03;    · cca = -82.000000 dBm
+157.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+157.000000000000000;A0;C03;    · dcb_policy = 4
+157.000000000000000;A0;C03;  - Performance:
+157.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+157.000000000000000;A0;F00; ComputeNewConfiguration()
+157.000000000000000;A0;F00; SendNewConfigurationToAp()
+157.000000000000000;A0;C00;  - Next request to be sent at 158.000000
+158.000000000000000;A0;F00; RequestInformationToAp() (request #157)
+158.000000000000000;A0;F00; InportReceivingInformationFromAp()
+158.000000000000000;A0;C03;  - Action (5):
+158.000000000000000;A0;C03;    · channel = 5
+158.000000000000000;A0;C03;    · cca = -82.000000 dBm
+158.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+158.000000000000000;A0;C03;    · dcb_policy = 4
+158.000000000000000;A0;C03;  - Performance:
+158.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+158.000000000000000;A0;F00; ComputeNewConfiguration()
+158.000000000000000;A0;F00; SendNewConfigurationToAp()
+158.000000000000000;A0;C00;  - Next request to be sent at 159.000000
+159.000000000000000;A0;F00; RequestInformationToAp() (request #158)
+159.000000000000000;A0;F00; InportReceivingInformationFromAp()
+159.000000000000000;A0;C03;  - Action (5):
+159.000000000000000;A0;C03;    · channel = 5
+159.000000000000000;A0;C03;    · cca = -82.000000 dBm
+159.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+159.000000000000000;A0;C03;    · dcb_policy = 4
+159.000000000000000;A0;C03;  - Performance:
+159.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+159.000000000000000;A0;F00; ComputeNewConfiguration()
+159.000000000000000;A0;F00; SendNewConfigurationToAp()
+159.000000000000000;A0;C00;  - Next request to be sent at 160.000000
+160.000000000000000;A0;F00; RequestInformationToAp() (request #159)
+160.000000000000000;A0;F00; InportReceivingInformationFromAp()
+160.000000000000000;A0;C03;  - Action (5):
+160.000000000000000;A0;C03;    · channel = 5
+160.000000000000000;A0;C03;    · cca = -82.000000 dBm
+160.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+160.000000000000000;A0;C03;    · dcb_policy = 4
+160.000000000000000;A0;C03;  - Performance:
+160.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+160.000000000000000;A0;F00; ComputeNewConfiguration()
+160.000000000000000;A0;F00; SendNewConfigurationToAp()
+160.000000000000000;A0;C00;  - Next request to be sent at 161.000000
+161.000000000000000;A0;F00; RequestInformationToAp() (request #160)
+161.000000000000000;A0;F00; InportReceivingInformationFromAp()
+161.000000000000000;A0;C03;  - Action (5):
+161.000000000000000;A0;C03;    · channel = 5
+161.000000000000000;A0;C03;    · cca = -82.000000 dBm
+161.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+161.000000000000000;A0;C03;    · dcb_policy = 4
+161.000000000000000;A0;C03;  - Performance:
+161.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+161.000000000000000;A0;F00; ComputeNewConfiguration()
+161.000000000000000;A0;F00; SendNewConfigurationToAp()
+161.000000000000000;A0;C00;  - Next request to be sent at 162.000000
+162.000000000000000;A0;F00; RequestInformationToAp() (request #161)
+162.000000000000000;A0;F00; InportReceivingInformationFromAp()
+162.000000000000000;A0;C03;  - Action (5):
+162.000000000000000;A0;C03;    · channel = 5
+162.000000000000000;A0;C03;    · cca = -82.000000 dBm
+162.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+162.000000000000000;A0;C03;    · dcb_policy = 4
+162.000000000000000;A0;C03;  - Performance:
+162.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+162.000000000000000;A0;F00; ComputeNewConfiguration()
+162.000000000000000;A0;F00; SendNewConfigurationToAp()
+162.000000000000000;A0;C00;  - Next request to be sent at 163.000000
+163.000000000000000;A0;F00; RequestInformationToAp() (request #162)
+163.000000000000000;A0;F00; InportReceivingInformationFromAp()
+163.000000000000000;A0;C03;  - Action (5):
+163.000000000000000;A0;C03;    · channel = 5
+163.000000000000000;A0;C03;    · cca = -82.000000 dBm
+163.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+163.000000000000000;A0;C03;    · dcb_policy = 4
+163.000000000000000;A0;C03;  - Performance:
+163.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+163.000000000000000;A0;F00; ComputeNewConfiguration()
+163.000000000000000;A0;F00; SendNewConfigurationToAp()
+163.000000000000000;A0;C00;  - Next request to be sent at 164.000000
+164.000000000000000;A0;F00; RequestInformationToAp() (request #163)
+164.000000000000000;A0;F00; InportReceivingInformationFromAp()
+164.000000000000000;A0;C03;  - Action (5):
+164.000000000000000;A0;C03;    · channel = 5
+164.000000000000000;A0;C03;    · cca = -82.000000 dBm
+164.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+164.000000000000000;A0;C03;    · dcb_policy = 4
+164.000000000000000;A0;C03;  - Performance:
+164.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+164.000000000000000;A0;F00; ComputeNewConfiguration()
+164.000000000000000;A0;F00; SendNewConfigurationToAp()
+164.000000000000000;A0;C00;  - Next request to be sent at 165.000000
+165.000000000000000;A0;F00; RequestInformationToAp() (request #164)
+165.000000000000000;A0;F00; InportReceivingInformationFromAp()
+165.000000000000000;A0;C03;  - Action (5):
+165.000000000000000;A0;C03;    · channel = 5
+165.000000000000000;A0;C03;    · cca = -82.000000 dBm
+165.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+165.000000000000000;A0;C03;    · dcb_policy = 4
+165.000000000000000;A0;C03;  - Performance:
+165.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+165.000000000000000;A0;F00; ComputeNewConfiguration()
+165.000000000000000;A0;F00; SendNewConfigurationToAp()
+165.000000000000000;A0;C00;  - Next request to be sent at 166.000000
+166.000000000000000;A0;F00; RequestInformationToAp() (request #165)
+166.000000000000000;A0;F00; InportReceivingInformationFromAp()
+166.000000000000000;A0;C03;  - Action (5):
+166.000000000000000;A0;C03;    · channel = 5
+166.000000000000000;A0;C03;    · cca = -82.000000 dBm
+166.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+166.000000000000000;A0;C03;    · dcb_policy = 4
+166.000000000000000;A0;C03;  - Performance:
+166.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+166.000000000000000;A0;F00; ComputeNewConfiguration()
+166.000000000000000;A0;F00; SendNewConfigurationToAp()
+166.000000000000000;A0;C00;  - Next request to be sent at 167.000000
+167.000000000000000;A0;F00; RequestInformationToAp() (request #166)
+167.000000000000000;A0;F00; InportReceivingInformationFromAp()
+167.000000000000000;A0;C03;  - Action (5):
+167.000000000000000;A0;C03;    · channel = 5
+167.000000000000000;A0;C03;    · cca = -82.000000 dBm
+167.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+167.000000000000000;A0;C03;    · dcb_policy = 4
+167.000000000000000;A0;C03;  - Performance:
+167.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+167.000000000000000;A0;F00; ComputeNewConfiguration()
+167.000000000000000;A0;F00; SendNewConfigurationToAp()
+167.000000000000000;A0;C00;  - Next request to be sent at 168.000000
+168.000000000000000;A0;F00; RequestInformationToAp() (request #167)
+168.000000000000000;A0;F00; InportReceivingInformationFromAp()
+168.000000000000000;A0;C03;  - Action (5):
+168.000000000000000;A0;C03;    · channel = 5
+168.000000000000000;A0;C03;    · cca = -82.000000 dBm
+168.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+168.000000000000000;A0;C03;    · dcb_policy = 4
+168.000000000000000;A0;C03;  - Performance:
+168.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+168.000000000000000;A0;F00; ComputeNewConfiguration()
+168.000000000000000;A0;F00; SendNewConfigurationToAp()
+168.000000000000000;A0;C00;  - Next request to be sent at 169.000000
+169.000000000000000;A0;F00; RequestInformationToAp() (request #168)
+169.000000000000000;A0;F00; InportReceivingInformationFromAp()
+169.000000000000000;A0;C03;  - Action (5):
+169.000000000000000;A0;C03;    · channel = 5
+169.000000000000000;A0;C03;    · cca = -82.000000 dBm
+169.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+169.000000000000000;A0;C03;    · dcb_policy = 4
+169.000000000000000;A0;C03;  - Performance:
+169.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+169.000000000000000;A0;F00; ComputeNewConfiguration()
+169.000000000000000;A0;F00; SendNewConfigurationToAp()
+169.000000000000000;A0;C00;  - Next request to be sent at 170.000000
+170.000000000000000;A0;F00; RequestInformationToAp() (request #169)
+170.000000000000000;A0;F00; InportReceivingInformationFromAp()
+170.000000000000000;A0;C03;  - Action (5):
+170.000000000000000;A0;C03;    · channel = 5
+170.000000000000000;A0;C03;    · cca = -82.000000 dBm
+170.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+170.000000000000000;A0;C03;    · dcb_policy = 4
+170.000000000000000;A0;C03;  - Performance:
+170.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+170.000000000000000;A0;F00; ComputeNewConfiguration()
+170.000000000000000;A0;F00; SendNewConfigurationToAp()
+170.000000000000000;A0;C00;  - Next request to be sent at 171.000000
+171.000000000000000;A0;F00; RequestInformationToAp() (request #170)
+171.000000000000000;A0;F00; InportReceivingInformationFromAp()
+171.000000000000000;A0;C03;  - Action (5):
+171.000000000000000;A0;C03;    · channel = 5
+171.000000000000000;A0;C03;    · cca = -82.000000 dBm
+171.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+171.000000000000000;A0;C03;    · dcb_policy = 4
+171.000000000000000;A0;C03;  - Performance:
+171.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+171.000000000000000;A0;F00; ComputeNewConfiguration()
+171.000000000000000;A0;F00; SendNewConfigurationToAp()
+171.000000000000000;A0;C00;  - Next request to be sent at 172.000000
+172.000000000000000;A0;F00; RequestInformationToAp() (request #171)
+172.000000000000000;A0;F00; InportReceivingInformationFromAp()
+172.000000000000000;A0;C03;  - Action (5):
+172.000000000000000;A0;C03;    · channel = 5
+172.000000000000000;A0;C03;    · cca = -82.000000 dBm
+172.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+172.000000000000000;A0;C03;    · dcb_policy = 4
+172.000000000000000;A0;C03;  - Performance:
+172.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+172.000000000000000;A0;F00; ComputeNewConfiguration()
+172.000000000000000;A0;F00; SendNewConfigurationToAp()
+172.000000000000000;A0;C00;  - Next request to be sent at 173.000000
+173.000000000000000;A0;F00; RequestInformationToAp() (request #172)
+173.000000000000000;A0;F00; InportReceivingInformationFromAp()
+173.000000000000000;A0;C03;  - Action (5):
+173.000000000000000;A0;C03;    · channel = 5
+173.000000000000000;A0;C03;    · cca = -82.000000 dBm
+173.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+173.000000000000000;A0;C03;    · dcb_policy = 4
+173.000000000000000;A0;C03;  - Performance:
+173.000000000000000;A0;C03;    · Average throughput = 211.97 Mbps
+173.000000000000000;A0;F00; ComputeNewConfiguration()
+173.000000000000000;A0;F00; SendNewConfigurationToAp()
+173.000000000000000;A0;C00;  - Next request to be sent at 174.000000
+174.000000000000000;A0;F00; RequestInformationToAp() (request #173)
+174.000000000000000;A0;F00; InportReceivingInformationFromAp()
+174.000000000000000;A0;C03;  - Action (5):
+174.000000000000000;A0;C03;    · channel = 5
+174.000000000000000;A0;C03;    · cca = -82.000000 dBm
+174.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+174.000000000000000;A0;C03;    · dcb_policy = 4
+174.000000000000000;A0;C03;  - Performance:
+174.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+174.000000000000000;A0;F00; ComputeNewConfiguration()
+174.000000000000000;A0;F00; SendNewConfigurationToAp()
+174.000000000000000;A0;C00;  - Next request to be sent at 175.000000
+175.000000000000000;A0;F00; RequestInformationToAp() (request #174)
+175.000000000000000;A0;F00; InportReceivingInformationFromAp()
+175.000000000000000;A0;C03;  - Action (5):
+175.000000000000000;A0;C03;    · channel = 5
+175.000000000000000;A0;C03;    · cca = -82.000000 dBm
+175.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+175.000000000000000;A0;C03;    · dcb_policy = 4
+175.000000000000000;A0;C03;  - Performance:
+175.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+175.000000000000000;A0;F00; ComputeNewConfiguration()
+175.000000000000000;A0;F00; SendNewConfigurationToAp()
+175.000000000000000;A0;C00;  - Next request to be sent at 176.000000
+176.000000000000000;A0;F00; RequestInformationToAp() (request #175)
+176.000000000000000;A0;F00; InportReceivingInformationFromAp()
+176.000000000000000;A0;C03;  - Action (5):
+176.000000000000000;A0;C03;    · channel = 5
+176.000000000000000;A0;C03;    · cca = -82.000000 dBm
+176.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+176.000000000000000;A0;C03;    · dcb_policy = 4
+176.000000000000000;A0;C03;  - Performance:
+176.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+176.000000000000000;A0;F00; ComputeNewConfiguration()
+176.000000000000000;A0;F00; SendNewConfigurationToAp()
+176.000000000000000;A0;C00;  - Next request to be sent at 177.000000
+177.000000000000000;A0;F00; RequestInformationToAp() (request #176)
+177.000000000000000;A0;F00; InportReceivingInformationFromAp()
+177.000000000000000;A0;C03;  - Action (5):
+177.000000000000000;A0;C03;    · channel = 5
+177.000000000000000;A0;C03;    · cca = -82.000000 dBm
+177.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+177.000000000000000;A0;C03;    · dcb_policy = 4
+177.000000000000000;A0;C03;  - Performance:
+177.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+177.000000000000000;A0;F00; ComputeNewConfiguration()
+177.000000000000000;A0;F00; SendNewConfigurationToAp()
+177.000000000000000;A0;C00;  - Next request to be sent at 178.000000
+178.000000000000000;A0;F00; RequestInformationToAp() (request #177)
+178.000000000000000;A0;F00; InportReceivingInformationFromAp()
+178.000000000000000;A0;C03;  - Action (5):
+178.000000000000000;A0;C03;    · channel = 5
+178.000000000000000;A0;C03;    · cca = -82.000000 dBm
+178.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+178.000000000000000;A0;C03;    · dcb_policy = 4
+178.000000000000000;A0;C03;  - Performance:
+178.000000000000000;A0;C03;    · Average throughput = 218.88 Mbps
+178.000000000000000;A0;F00; ComputeNewConfiguration()
+178.000000000000000;A0;F00; SendNewConfigurationToAp()
+178.000000000000000;A0;C00;  - Next request to be sent at 179.000000
+179.000000000000000;A0;F00; RequestInformationToAp() (request #178)
+179.000000000000000;A0;F00; InportReceivingInformationFromAp()
+179.000000000000000;A0;C03;  - Action (0):
+179.000000000000000;A0;C03;    · channel = 0
+179.000000000000000;A0;C03;    · cca = -82.000000 dBm
+179.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+179.000000000000000;A0;C03;    · dcb_policy = 4
+179.000000000000000;A0;C03;  - Performance:
+179.000000000000000;A0;C03;    · Average throughput = 79.87 Mbps
+179.000000000000000;A0;F00; ComputeNewConfiguration()
+179.000000000000000;A0;F00; SendNewConfigurationToAp()
+179.000000000000000;A0;C00;  - Next request to be sent at 180.000000
+180.000000000000000;A0;F00; RequestInformationToAp() (request #179)
+180.000000000000000;A0;F00; InportReceivingInformationFromAp()
+180.000000000000000;A0;C03;  - Action (5):
+180.000000000000000;A0;C03;    · channel = 5
+180.000000000000000;A0;C03;    · cca = -82.000000 dBm
+180.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+180.000000000000000;A0;C03;    · dcb_policy = 4
+180.000000000000000;A0;C03;  - Performance:
+180.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+180.000000000000000;A0;F00; ComputeNewConfiguration()
+180.000000000000000;A0;F00; SendNewConfigurationToAp()
+180.000000000000000;A0;C00;  - Next request to be sent at 181.000000
+181.000000000000000;A0;F00; RequestInformationToAp() (request #180)
+181.000000000000000;A0;F00; InportReceivingInformationFromAp()
+181.000000000000000;A0;C03;  - Action (5):
+181.000000000000000;A0;C03;    · channel = 5
+181.000000000000000;A0;C03;    · cca = -82.000000 dBm
+181.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+181.000000000000000;A0;C03;    · dcb_policy = 4
+181.000000000000000;A0;C03;  - Performance:
+181.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+181.000000000000000;A0;F00; ComputeNewConfiguration()
+181.000000000000000;A0;F00; SendNewConfigurationToAp()
+181.000000000000000;A0;C00;  - Next request to be sent at 182.000000
+182.000000000000000;A0;F00; RequestInformationToAp() (request #181)
+182.000000000000000;A0;F00; InportReceivingInformationFromAp()
+182.000000000000000;A0;C03;  - Action (5):
+182.000000000000000;A0;C03;    · channel = 5
+182.000000000000000;A0;C03;    · cca = -82.000000 dBm
+182.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+182.000000000000000;A0;C03;    · dcb_policy = 4
+182.000000000000000;A0;C03;  - Performance:
+182.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+182.000000000000000;A0;F00; ComputeNewConfiguration()
+182.000000000000000;A0;F00; SendNewConfigurationToAp()
+182.000000000000000;A0;C00;  - Next request to be sent at 183.000000
+183.000000000000000;A0;F00; RequestInformationToAp() (request #182)
+183.000000000000000;A0;F00; InportReceivingInformationFromAp()
+183.000000000000000;A0;C03;  - Action (5):
+183.000000000000000;A0;C03;    · channel = 5
+183.000000000000000;A0;C03;    · cca = -82.000000 dBm
+183.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+183.000000000000000;A0;C03;    · dcb_policy = 4
+183.000000000000000;A0;C03;  - Performance:
+183.000000000000000;A0;C03;    · Average throughput = 217.34 Mbps
+183.000000000000000;A0;F00; ComputeNewConfiguration()
+183.000000000000000;A0;F00; SendNewConfigurationToAp()
+183.000000000000000;A0;C00;  - Next request to be sent at 184.000000
+184.000000000000000;A0;F00; RequestInformationToAp() (request #183)
+184.000000000000000;A0;F00; InportReceivingInformationFromAp()
+184.000000000000000;A0;C03;  - Action (5):
+184.000000000000000;A0;C03;    · channel = 5
+184.000000000000000;A0;C03;    · cca = -82.000000 dBm
+184.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+184.000000000000000;A0;C03;    · dcb_policy = 4
+184.000000000000000;A0;C03;  - Performance:
+184.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+184.000000000000000;A0;F00; ComputeNewConfiguration()
+184.000000000000000;A0;F00; SendNewConfigurationToAp()
+184.000000000000000;A0;C00;  - Next request to be sent at 185.000000
+185.000000000000000;A0;F00; RequestInformationToAp() (request #184)
+185.000000000000000;A0;F00; InportReceivingInformationFromAp()
+185.000000000000000;A0;C03;  - Action (5):
+185.000000000000000;A0;C03;    · channel = 5
+185.000000000000000;A0;C03;    · cca = -82.000000 dBm
+185.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+185.000000000000000;A0;C03;    · dcb_policy = 4
+185.000000000000000;A0;C03;  - Performance:
+185.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+185.000000000000000;A0;F00; ComputeNewConfiguration()
+185.000000000000000;A0;F00; SendNewConfigurationToAp()
+185.000000000000000;A0;C00;  - Next request to be sent at 186.000000
+186.000000000000000;A0;F00; RequestInformationToAp() (request #185)
+186.000000000000000;A0;F00; InportReceivingInformationFromAp()
+186.000000000000000;A0;C03;  - Action (5):
+186.000000000000000;A0;C03;    · channel = 5
+186.000000000000000;A0;C03;    · cca = -82.000000 dBm
+186.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+186.000000000000000;A0;C03;    · dcb_policy = 4
+186.000000000000000;A0;C03;  - Performance:
+186.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+186.000000000000000;A0;F00; ComputeNewConfiguration()
+186.000000000000000;A0;F00; SendNewConfigurationToAp()
+186.000000000000000;A0;C00;  - Next request to be sent at 187.000000
+187.000000000000000;A0;F00; RequestInformationToAp() (request #186)
+187.000000000000000;A0;F00; InportReceivingInformationFromAp()
+187.000000000000000;A0;C03;  - Action (5):
+187.000000000000000;A0;C03;    · channel = 5
+187.000000000000000;A0;C03;    · cca = -82.000000 dBm
+187.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+187.000000000000000;A0;C03;    · dcb_policy = 4
+187.000000000000000;A0;C03;  - Performance:
+187.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+187.000000000000000;A0;F00; ComputeNewConfiguration()
+187.000000000000000;A0;F00; SendNewConfigurationToAp()
+187.000000000000000;A0;C00;  - Next request to be sent at 188.000000
+188.000000000000000;A0;F00; RequestInformationToAp() (request #187)
+188.000000000000000;A0;F00; InportReceivingInformationFromAp()
+188.000000000000000;A0;C03;  - Action (5):
+188.000000000000000;A0;C03;    · channel = 5
+188.000000000000000;A0;C03;    · cca = -82.000000 dBm
+188.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+188.000000000000000;A0;C03;    · dcb_policy = 4
+188.000000000000000;A0;C03;  - Performance:
+188.000000000000000;A0;C03;    · Average throughput = 215.81 Mbps
+188.000000000000000;A0;F00; ComputeNewConfiguration()
+188.000000000000000;A0;F00; SendNewConfigurationToAp()
+188.000000000000000;A0;C00;  - Next request to be sent at 189.000000
+189.000000000000000;A0;F00; RequestInformationToAp() (request #188)
+189.000000000000000;A0;F00; InportReceivingInformationFromAp()
+189.000000000000000;A0;C03;  - Action (5):
+189.000000000000000;A0;C03;    · channel = 5
+189.000000000000000;A0;C03;    · cca = -82.000000 dBm
+189.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+189.000000000000000;A0;C03;    · dcb_policy = 4
+189.000000000000000;A0;C03;  - Performance:
+189.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+189.000000000000000;A0;F00; ComputeNewConfiguration()
+189.000000000000000;A0;F00; SendNewConfigurationToAp()
+189.000000000000000;A0;C00;  - Next request to be sent at 190.000000
+190.000000000000000;A0;F00; RequestInformationToAp() (request #189)
+190.000000000000000;A0;F00; InportReceivingInformationFromAp()
+190.000000000000000;A0;C03;  - Action (5):
+190.000000000000000;A0;C03;    · channel = 5
+190.000000000000000;A0;C03;    · cca = -82.000000 dBm
+190.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+190.000000000000000;A0;C03;    · dcb_policy = 4
+190.000000000000000;A0;C03;  - Performance:
+190.000000000000000;A0;C03;    · Average throughput = 212.74 Mbps
+190.000000000000000;A0;F00; ComputeNewConfiguration()
+190.000000000000000;A0;F00; SendNewConfigurationToAp()
+190.000000000000000;A0;C00;  - Next request to be sent at 191.000000
+191.000000000000000;A0;F00; RequestInformationToAp() (request #190)
+191.000000000000000;A0;F00; InportReceivingInformationFromAp()
+191.000000000000000;A0;C03;  - Action (5):
+191.000000000000000;A0;C03;    · channel = 5
+191.000000000000000;A0;C03;    · cca = -82.000000 dBm
+191.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+191.000000000000000;A0;C03;    · dcb_policy = 4
+191.000000000000000;A0;C03;  - Performance:
+191.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+191.000000000000000;A0;F00; ComputeNewConfiguration()
+191.000000000000000;A0;F00; SendNewConfigurationToAp()
+191.000000000000000;A0;C00;  - Next request to be sent at 192.000000
+192.000000000000000;A0;F00; RequestInformationToAp() (request #191)
+192.000000000000000;A0;F00; InportReceivingInformationFromAp()
+192.000000000000000;A0;C03;  - Action (5):
+192.000000000000000;A0;C03;    · channel = 5
+192.000000000000000;A0;C03;    · cca = -82.000000 dBm
+192.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+192.000000000000000;A0;C03;    · dcb_policy = 4
+192.000000000000000;A0;C03;  - Performance:
+192.000000000000000;A0;C03;    · Average throughput = 213.50 Mbps
+192.000000000000000;A0;F00; ComputeNewConfiguration()
+192.000000000000000;A0;F00; SendNewConfigurationToAp()
+192.000000000000000;A0;C00;  - Next request to be sent at 193.000000
+193.000000000000000;A0;F00; RequestInformationToAp() (request #192)
+193.000000000000000;A0;F00; InportReceivingInformationFromAp()
+193.000000000000000;A0;C03;  - Action (5):
+193.000000000000000;A0;C03;    · channel = 5
+193.000000000000000;A0;C03;    · cca = -82.000000 dBm
+193.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+193.000000000000000;A0;C03;    · dcb_policy = 4
+193.000000000000000;A0;C03;  - Performance:
+193.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+193.000000000000000;A0;F00; ComputeNewConfiguration()
+193.000000000000000;A0;F00; SendNewConfigurationToAp()
+193.000000000000000;A0;C00;  - Next request to be sent at 194.000000
+194.000000000000000;A0;F00; RequestInformationToAp() (request #193)
+194.000000000000000;A0;F00; InportReceivingInformationFromAp()
+194.000000000000000;A0;C03;  - Action (5):
+194.000000000000000;A0;C03;    · channel = 5
+194.000000000000000;A0;C03;    · cca = -82.000000 dBm
+194.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+194.000000000000000;A0;C03;    · dcb_policy = 4
+194.000000000000000;A0;C03;  - Performance:
+194.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+194.000000000000000;A0;F00; ComputeNewConfiguration()
+194.000000000000000;A0;F00; SendNewConfigurationToAp()
+194.000000000000000;A0;C00;  - Next request to be sent at 195.000000
+195.000000000000000;A0;F00; RequestInformationToAp() (request #194)
+195.000000000000000;A0;F00; InportReceivingInformationFromAp()
+195.000000000000000;A0;C03;  - Action (5):
+195.000000000000000;A0;C03;    · channel = 5
+195.000000000000000;A0;C03;    · cca = -82.000000 dBm
+195.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+195.000000000000000;A0;C03;    · dcb_policy = 4
+195.000000000000000;A0;C03;  - Performance:
+195.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+195.000000000000000;A0;F00; ComputeNewConfiguration()
+195.000000000000000;A0;F00; SendNewConfigurationToAp()
+195.000000000000000;A0;C00;  - Next request to be sent at 196.000000
+196.000000000000000;A0;F00; RequestInformationToAp() (request #195)
+196.000000000000000;A0;F00; InportReceivingInformationFromAp()
+196.000000000000000;A0;C03;  - Action (5):
+196.000000000000000;A0;C03;    · channel = 5
+196.000000000000000;A0;C03;    · cca = -82.000000 dBm
+196.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+196.000000000000000;A0;C03;    · dcb_policy = 4
+196.000000000000000;A0;C03;  - Performance:
+196.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+196.000000000000000;A0;F00; ComputeNewConfiguration()
+196.000000000000000;A0;F00; SendNewConfigurationToAp()
+196.000000000000000;A0;C00;  - Next request to be sent at 197.000000
+197.000000000000000;A0;F00; RequestInformationToAp() (request #196)
+197.000000000000000;A0;F00; InportReceivingInformationFromAp()
+197.000000000000000;A0;C03;  - Action (5):
+197.000000000000000;A0;C03;    · channel = 5
+197.000000000000000;A0;C03;    · cca = -82.000000 dBm
+197.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+197.000000000000000;A0;C03;    · dcb_policy = 4
+197.000000000000000;A0;C03;  - Performance:
+197.000000000000000;A0;C03;    · Average throughput = 215.04 Mbps
+197.000000000000000;A0;F00; ComputeNewConfiguration()
+197.000000000000000;A0;F00; SendNewConfigurationToAp()
+197.000000000000000;A0;C00;  - Next request to be sent at 198.000000
+198.000000000000000;A0;F00; RequestInformationToAp() (request #197)
+198.000000000000000;A0;F00; InportReceivingInformationFromAp()
+198.000000000000000;A0;C03;  - Action (5):
+198.000000000000000;A0;C03;    · channel = 5
+198.000000000000000;A0;C03;    · cca = -82.000000 dBm
+198.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+198.000000000000000;A0;C03;    · dcb_policy = 4
+198.000000000000000;A0;C03;  - Performance:
+198.000000000000000;A0;C03;    · Average throughput = 214.27 Mbps
+198.000000000000000;A0;F00; ComputeNewConfiguration()
+198.000000000000000;A0;F00; SendNewConfigurationToAp()
+198.000000000000000;A0;C00;  - Next request to be sent at 199.000000
+199.000000000000000;A0;F00; RequestInformationToAp() (request #198)
+199.000000000000000;A0;F00; InportReceivingInformationFromAp()
+199.000000000000000;A0;C03;  - Action (5):
+199.000000000000000;A0;C03;    · channel = 5
+199.000000000000000;A0;C03;    · cca = -82.000000 dBm
+199.000000000000000;A0;C03;    · tx_power = 15.000000 dBm
+199.000000000000000;A0;C03;    · dcb_policy = 4
+199.000000000000000;A0;C03;  - Performance:
+199.000000000000000;A0;C03;    · Average throughput = 216.58 Mbps
+199.000000000000000;A0;F00; ComputeNewConfiguration()
+199.000000000000000;A0;F00; SendNewConfigurationToAp()
+199.000000000000000;A0;C00;  - Next request to be sent at 200.000000
+200.000000000000000;A0;C00; Agent Stop()

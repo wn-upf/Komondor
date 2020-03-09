@@ -50,7 +50,6 @@ The inputs are further described next:
 * ```INPUT_FILE_NODES```: file containing nodes information (e.g., position, channels allowed, etc.).The file must be a .csv with semicolons as separators.
 * ```INPUT_FILE_AGENTS```: file containing agents information (e.g., ID of the BSS to which the agent is associated, ML mechanism, inter-request interval, etc.).The file must be a .csv with semicolons as separators.
 * ```OUTPUT_FILE_LOGS```: path to the output file to which write results at the end of the execution (if the file does not exist, the system will create it).
-* ```FLAG_SAVE_SYSTEM_LOGS```: flag to indicate whether to save the system logs into a file (1) or not (0).
 * ```FLAG_SAVE_NODE_LOGS```: flag to indicate whether to save the nodes logs into separate files (1) or not (0). If this flag is activated, one file per node will be created.
 * ```FLAG_SAVE_AGENT_LOGS```: flag to indicate whether to save the agents logs into separate files (1) or not (0). If this flag is activated, one file per node will be created.
 * ```FLAG_PRINT_SYSTEM_LOGS```: flag to indicate whether to print the system logs (1) or not (0).
@@ -59,7 +58,7 @@ The inputs are further described next:
 * ```SIM_TIME```: simulation time
 * ```SEED```: random seed the user wishes to use
 
-IMPORTANT NOTE (!): Setting ```FLAG_SAVE_SYSTEM_LOGS```, ```FLAG_SAVE_NODE_LOGS```, and ```FLAG_SAVE_AGENT_LOGS``` to TRUE (1) entails a larger execution time. 
+IMPORTANT NOTE (!): Setting ```FLAG_SAVE_NODE_LOGS``` and ```FLAG_SAVE_AGENT_LOGS``` to TRUE (1) entails a larger execution time. 
 
 ### Agents Input Files
 
@@ -76,4 +75,18 @@ See an example of agents input file [here](https://github.com/wn-upf/Komondor/bl
 
 Regarding the output ("output" folder), some logs and statistics are created at the end of the execution.
 
+------
+### An example with agents: finding the best primary channel
+
+Assume that an AP implementing dynamic channel bonding wants to find the best primary channel defined as the primary resulting in the highest throughput. Consider the deployment below, where all the BSS's implement single-channel transmissions but AP A, which is allowed to bond channels. Assume also a fully-overlapping setup, where every node listens any transmission falling within its primary channel, and where all APs are fully backlogged. In such a situation, what would be the best primary channel for AP A?
+
+Well, since channels 4 and 5 are always free, thus providing the largest interference-free bondable combination (40 MHz) permitted by IEEE 802.11ac/ax, A should select either 4 or 5 as primary. How would A *learn* that? In this example, we propose a simple combination of the MAB mechanism together with the epsilon-greedy learning strategy. In the charts below, we observe that the agent successfully tends to pick primary 5 since it results in the highest reward (defined as normalized throughput). Notice, that 5 is selected rather than 4 due to pure randomness in the algorithm initialization.
+
+<p align="center"> 
+<img src="https://github.com/wn-upf/Komondor/blob/master/Documentation/Other/Images and resources/example_primary_channel_eps_greedy.png">
+</p>
+
+You may find the input files for the nodes and the agent of the example [here](https://github.com/wn-upf/Komondor/blob/master/Code/input/input_mab_example).
+
 [GO BACK TO MAIN PAGE](https://github.com/wn-upf/Komondor)
+

@@ -74,27 +74,26 @@ $ ./build_local
 STEP 2: Run Komondor simulator for the given input information (basic simulation)
 
 ```
-$ ./komondor_main INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_SYSTEM_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
+$ ./komondor_main INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
 ```
 
 The inputs are further described next:
 * ```INPUT_FILE_NODES```: file containing nodes information (e.g., position, channels allowed, etc.).The file must be a .csv with semicolons as separators.
 * ```OUTPUT_FILE_LOGS```: path to the output file to which write results at the end of the execution (if the file does not exist, the system will create it).
-* ```FLAG_SAVE_SYSTEM_LOGS```: flag to indicate whether to save the system logs into a file (1) or not (0).
 * ```FLAG_SAVE_NODE_LOGS```: flag to indicate whether to save the nodes logs into separate files (1) or not (0). If this flag is activated, one file per node will be created.
 * ```FLAG_PRINT_SYSTEM_LOGS```: flag to indicate whether to print the system logs (1) or not (0).
 * ```FLAG_PRINT_NODE_LOGS```: flag to indicate whether to print the nodes logs (1) or not (0). 
 * ```SIM_TIME```: simulation time
 * ```SEED```: random seed the user wishes to use
 
-IMPORTANT NOTE (!): Setting ```FLAG_SAVE_SYSTEM_LOGS``` and ```FLAG_SAVE_NODE_LOGS``` to TRUE (1) entails a larger execution time. 
+IMPORTANT NOTE (!): Setting ```FLAG_SAVE_NODE_LOGS``` to TRUE (1) entails a larger execution time. 
 
 STEP 2-1: Run Komondor simulator with intelligent agents
 
 Alternatively, and in order to indicate the usage of agents, the console input must add the following extra information:
 
 ```
-$ ./komondor_main INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_SYSTEM_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
+$ ./komondor_main INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
 ```
 
 The agents operation has been summarized at [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
