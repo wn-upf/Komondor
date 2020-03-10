@@ -61,7 +61,7 @@
 * @param "mcs_response" [type int*]: array containing the MCS to be used for each number of channels
 * @param "power_rx_interest" [type double]: power received of interest
 */
-void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
+void SelectMcsResponse(int *mcs_response, double power_rx_interest) {
 
 	double pw_rx_intereset_dbm (ConvertPower(PW_TO_DBM, power_rx_interest));
 

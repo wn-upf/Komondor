@@ -115,7 +115,7 @@ component Node : public TypeII{
 		void CtsTimeout();
 		void DataTimeout();
 		void NavTimeout();
-		void RequestMCS();
+		void RequestMcs();
 		void StartTransmission();
 		void AbortRtsTransmission();
 
@@ -339,9 +339,11 @@ component Node : public TypeII{
 		double rts_duration;		///> Duration of the RTS packet
 		double cts_duration;		///> Duration of the CTS packet
 
-		int **mcs_per_node;				///> Modulation selected for each of the nodes (only transmitting nodes)
+		int **mcs_per_sta;				///> Modulation selected for each of the nodes (only transmitting nodes)
 		int *change_modulation_flag;	///> Flag for changing the MCS of any of the potential receivers
 		int *mcs_response;				///> MCS response received from receiver
+
+        double current_data_rate;       ///> Current data rate, based on the MCS
 
 		// Sensing and Reception parameters
 		LogicalNack logical_nack;					///> NACK to be filled in case node is the destination of tx loss
@@ -404,8 +406,8 @@ component Node : public TypeII{
 		inport void inline InportSomeNodeFinishTX(Notification &notification);
 		inport void inline InportNackReceived(LogicalNack &logical_nack_info);
 
-		inport void inline InportMCSRequestReceived(Notification &notification);
-		inport void inline InportMCSResponseReceived(Notification &notification);
+		inport void inline InportMcsRequestReceived(Notification &notification);
+		inport void inline InportMcsResponseReceived(Notification &notification);
 
 		inport void inline InportReceivingRequestFromAgent();
 		inport void inline InportReceiveConfigurationFromAgent(Configuration &new_configuration);
@@ -2239,7 +2241,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						&& !trigger_end_backoff.Active()){	// BO was paused and DIFS not initiated
 
 						LOGS(save_node_logs,node_logger.file,
-							"%.15f;N%d;S%d;%s;%s UNEXPECTED ERROR IN THE BACKOFF!\n",
+							"%.15f;N%d;S%d;%s;%s The backoff counter ended but channel is still busy!\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
 
 						int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_pd,
@@ -2749,20 +2751,12 @@ void Node :: InportNackReceived(LogicalNack &logical_nack){
  * Called when some node asks (logically) the receiver for the possible MCS configurations to be used based on the power sensed at the receiver
  * @param "notification" [type Notification]: notification containing the MCS request
  */
-void Node :: InportMCSRequestReceived(Notification &notification){
+void Node :: InportMcsRequestReceived(Notification &notification){
 
 	if(notification.destination_id == node_id) {	// If node IS THE DESTINATION
 
 		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s MCS request received from N%d\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL1, notification.source_id);
-
-//		// Compute distance and power received from transmitter
-//		double distance = ComputeDistance(x, y, z, notification.tx_info.x,
-//			notification.tx_info.y, notification.tx_info.z);
-
-//		double power_rx_interest (ComputePowerReceived(distances_array[notification.source_id],
-//			notification.tx_info.tx_power, rx_gain,
-//			central_frequency, path_loss_model));
 
 		// Update 'power received' array in case a new tx power is used
 		if (notification.tx_info.flag_change_in_tx_power) {
@@ -2777,7 +2771,7 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 			received_power_array[notification.source_id]));
 
 		// Select the modulation according to the SINR perceived corresponding to incoming transmitter
-		SelectMCSResponse(mcs_response, received_power_array[notification.source_id]);
+		SelectMcsResponse(mcs_response, received_power_array[notification.source_id]);
 
 		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s mcs_response for 1, 2, 4 and 8 channels: ",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3);
@@ -2800,11 +2794,11 @@ void Node :: InportMCSRequestReceived(Notification &notification){
  * Called when some node answers back to a MCS request
  * @param "notification" [type Notification]: notification containing the MCS response
  */
-void Node :: InportMCSResponseReceived(Notification &notification){
+void Node :: InportMcsResponseReceived(Notification &notification){
 
 	if(notification.destination_id == node_id) {	// If node IS THE DESTINATION
 
-		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s InportMCSResponseReceived()\n",
+		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s InportMcsResponseReceived()\n",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL1);
 
 		int ix_aux (current_destination_id - wlan.list_sta_id[0]);	// Auxiliary index for correcting the node id offset
@@ -2817,39 +2811,36 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 			if (spatial_reuse_enabled && txop_sr_identified &&
 					notification.tx_info.modulation_schemes[i] == MODULATION_FORBIDDEN) {
 				// Force to use the minimum MCS in case of applying the SR operation and receiving the forbidden MCS
-				mcs_per_node[ix_aux][i] = MODULATION_BPSK_1_2;
+				mcs_per_sta[ix_aux][i] = MODULATION_BPSK_1_2;
 			} else {
-				mcs_per_node[ix_aux][i] = notification.tx_info.modulation_schemes[i];
+				mcs_per_sta[ix_aux][i] = notification.tx_info.modulation_schemes[i];
 			}
-			LOGS(save_node_logs,node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
+			LOGS(save_node_logs,node_logger.file, "%d ", mcs_per_sta[ix_aux][i]);
 		}
 
-		double max_achievable_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
-			Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
-			Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
+		double max_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
+			Mcs_array::modulation_bits[mcs_per_sta[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
+			Mcs_array::coding_rates[mcs_per_sta[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
 			IEEE_AX_SU_SPATIAL_STREAMS);
 
-		double max_achievable_throughput (max_achievable_bits_ofdm_sym / IEEE_AX_OFDM_SYMBOL_GI32_DURATION);
-
-		// Update performance measurements
-		performance_report.max_bound_throughput = max_achievable_throughput;
+		// Compute the current data rate
+		current_data_rate = max_bits_ofdm_sym / IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
 
 		LOGS(save_node_logs,node_logger.file, "\n");
-
 		LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s max_achievable_throughput (%d - %d) = %.1f Mbps "
+			"%.15f;N%d;S%d;%s;%s current_data_rate (%d - %d) = %.1f Mbps "
 			"(%d channel/s: Y_sc = %d, MCS %d: Y_m = %d, Y_c = %.2f)\n",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-			min_channel_allowed, max_channel_allowed, max_achievable_throughput * pow(10,-6),
+			min_channel_allowed, max_channel_allowed, current_data_rate * pow(10,-6),
 			max_channel_allowed - min_channel_allowed + 1,
 			getNumberSubcarriers(current_right_channel - current_left_channel + 1),
-			mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1,
-			Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1],
-			Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1]);
+			mcs_per_sta[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1,
+			Mcs_array::modulation_bits[mcs_per_sta[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1],
+			Mcs_array::coding_rates[mcs_per_sta[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1]);
 		// printf("\n");
 
 		// TODO: ADD LOGIC TO HANDLE WRONG SITUATIONS (cannot transmit over none of the channel combinations)
-		if(mcs_per_node[ix_aux][0] == -1) {
+		if(mcs_per_sta[ix_aux][0] == -1) {
 			// CANNOT TX EVEN FOR 1 CHANNEL
 			if(current_tx_power < ConvertPower(DBM_TO_PW,MAX_TX_POWER_DBM)) {
 //				current_tx_power ++;
@@ -3046,6 +3037,26 @@ void Node :: EndBackoff(trigger_t &){
 	// Cancel trigger for safety
 	trigger_recover_cts_timeout.Cancel();
 
+    // Get maximum potential throughput for each STA - Compute only the first time
+    if(node_type == NODE_TYPE_AP && first_time_requesting_mcs)  {
+        double rx_power;
+        double mcs_max = 0;
+        double distance;
+        double mcs_aux;
+        for (int i = 0; i < wlan.num_stas; ++i) {
+            distance = distances_array[wlan.list_sta_id[i]];
+            rx_power = ComputePowerReceived(distance, ConvertPower(DBM_TO_PW, MAX_TX_POWER_DBM), central_frequency, path_loss_model);
+            SelectMcsResponse(mcs_response, rx_power);
+            mcs_aux = mcs_response[(int) log2(max_channel_allowed-min_channel_allowed + 1)];
+            if (mcs_max > mcs_aux) mcs_max = mcs_aux;
+        }
+        double max_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
+            Mcs_array::modulation_bits[mcs_response[(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
+            Mcs_array::coding_rates[mcs_response[(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
+            IEEE_AX_SU_SPATIAL_STREAMS);
+        performance_report.max_bound_throughput = max_bits_ofdm_sym / IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
+    }
+
 	// Check if MCS already defined for every potential receiver
 	for(int n = 0; n < wlan.num_stas; ++n) {
 		current_destination_id = wlan.list_sta_id[n];
@@ -3053,7 +3064,7 @@ void Node :: EndBackoff(trigger_t &){
 		if (change_modulation_flag[n]) {
 			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Requesting MCS to N%d\n",
 				SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, current_destination_id);
-			RequestMCS();
+                RequestMcs();
 		}
 	}
 
@@ -3106,10 +3117,10 @@ void Node :: EndBackoff(trigger_t &){
 		channels_free);
 
 	// Identify the channel range to TX in depending on the channel bonding scheme and free channels
-	int ix_mcs_per_node (current_destination_id - wlan.list_sta_id[0]);
+	int ix_mcs_per_sta (current_destination_id - wlan.list_sta_id[0]);
 
 	GetTxChannelsByChannelBonding(channels_for_tx, current_dcb_policy, channels_free,
-		min_channel_allowed, max_channel_allowed, current_primary_channel, mcs_per_node, ix_mcs_per_node);
+		min_channel_allowed, max_channel_allowed, current_primary_channel, mcs_per_sta, ix_mcs_per_sta);
 
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting: ",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
@@ -3142,7 +3153,7 @@ void Node :: EndBackoff(trigger_t &){
         if(previous_num_channels != num_channels_tx) flag_change_in_tx_power = TRUE;
 
 		// Get the current modulation according to the channels selected for transmission
-		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
+		current_modulation = mcs_per_sta[ix_mcs_per_sta][ix_num_channels_used];
 
 		// ********************************************************
 		// Sergio on 17 July 2018: Flexible packet aggregation
@@ -3389,9 +3400,9 @@ void Node :: MyTxFinished(trigger_t &){
 /**
  * Performs a negotiation of the MCS to be used according to the power sensed by the receiver
  */
-void Node :: RequestMCS(){
+void Node :: RequestMcs(){
 
-//	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMCS() to N%d\n",
+//	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMcs() to N%d\n",
 //				SimTime(), node_id, node_state, LOG_G00, LOG_LVL1, current_destination_id);
 
 	// Only one channel required (logically!)
@@ -3411,10 +3422,8 @@ void Node :: RequestMCS(){
 	// MCS of receiver is not pending anymore
 	change_modulation_flag[ix_aux] = FALSE;
 
-	if(first_time_requesting_mcs) {
-		first_time_requesting_mcs = FALSE;
-	}
-	// LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMCS() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
+	if(first_time_requesting_mcs) first_time_requesting_mcs = FALSE;
+	// LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMcs() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
 }
 
 /**
@@ -3728,18 +3737,13 @@ void Node :: CtsTimeout(trigger_t &){
  * Handle the Data timeout. It is called when data timeout (after sending CTS) is triggered.
  */
 void Node :: DataTimeout(trigger_t &){
-
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
 		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
-
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
-
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
-
 	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
-
 	RestartNode(TRUE);
 }
 
@@ -3997,6 +4001,9 @@ void Node :: UpdatePerformanceMeasurements(){
 		(((double)(performance_report.data_packets_sent -
 		performance_report.data_packets_lost) * frame_length
 		* limited_num_packets_aggregated)) / (SimTime()-performance_report.timestamp);
+
+	// - Current data rate (depends on the MCS)
+    performance_report.current_data_rate = current_data_rate;
 
 	// - Max RSSI received per WLAN
 	for (int i = 0 ; i < total_wlans_number; ++ i) {
@@ -4481,8 +4488,10 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, std::strin
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
 		fprintf(node_logger.file, "%s - cw_min = %d\n", header_str.c_str(), cw_min);
 		fprintf(node_logger.file, "%s - cw_stage_max = %d\n", header_str.c_str(), cw_stage_max);
-		fprintf(node_logger.file, "%s - tx_power_default = %f pW\n", header_str.c_str(), tx_power_default);
-		fprintf(node_logger.file, "%s - sensitivity_default = %f pW\n", header_str.c_str(), sensitivity_default);
+		fprintf(node_logger.file, "%s - tx_power_default = %f pW (%f dBm)\n",
+		        header_str.c_str(), tx_power_default, ConvertPower(PW_TO_DBM,tx_power_default));
+		fprintf(node_logger.file, "%s - sensitivity_default = %f pW (%f dBm)\n",
+		        header_str.c_str(), sensitivity_default, ConvertPower(PW_TO_DBM,sensitivity_default));
 	}
 
 }
@@ -5054,11 +5063,11 @@ void Node :: InitializeVariables() {
 	for(int n = 0; n < wlan.num_stas; ++n){
 		change_modulation_flag[n] = TRUE;
 	}
-	mcs_per_node = new int *[wlan.num_stas] ;
-	for( int i = 0 ; i < wlan.num_stas ; ++i ) mcs_per_node[i] = new int[NUM_OPTIONS_CHANNEL_LENGTH];
+	mcs_per_sta = new int *[wlan.num_stas] ;
+	for( int i = 0 ; i < wlan.num_stas ; ++i ) mcs_per_sta[i] = new int[NUM_OPTIONS_CHANNEL_LENGTH];
 	for ( int i=0; i< wlan.num_stas; ++i) {
 		for (int j=0; j< NUM_OPTIONS_CHANNEL_LENGTH; ++j) {
-			mcs_per_node[i][j] = -1;
+			mcs_per_sta[i][j] = -1;
 		}
 	}
 

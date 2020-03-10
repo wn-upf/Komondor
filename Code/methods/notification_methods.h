@@ -357,6 +357,7 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double pd,
 	packet_lost = ((double) rand() / (RAND_MAX)) < per;
 
 	return packet_lost;
+
 }
 
 /**

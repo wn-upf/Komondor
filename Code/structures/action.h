@@ -95,7 +95,7 @@ struct Action
 	 * @param "sim_time" [type double]: simulation time
      * @param "string_device" [type *char]: code of the device writing the logs
 	 */
-	void WriteAction(Logger logger, int save_logs, double sim_time, char string_device[]) {
+	void WriteAction(Logger &logger, int save_logs, double sim_time, char string_device[]) {
 		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Action (%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
 		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s channel = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, channel);
 		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cca = %f dBm\n", sim_time, string_device, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, cca));
@@ -121,7 +121,7 @@ struct Action
      * @param "sim_time" [type double]: simulation time
      * @param "string_device" [type *char]: code of the device writing the logs
      */
-    void WriteRewardInformation(Logger logger, int save_logs, double sim_time, char string_device[]) {
+    void WriteRewardInformation(Logger &logger, int save_logs, double sim_time, char string_device[]) {
         LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Reward information (a%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
         LOGS(save_logs, logger.file, "%.15f;%s;%s;%s instantaneous_reward = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, instantaneous_reward);
         LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cumulative_reward = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, cumulative_reward);
@@ -146,7 +146,7 @@ struct Action
      * @param "sim_time" [type double]: simulation time
      * @param "string_device" [type *char]: code of the device writing the logs
      */
-    void WriteControllerStatistics(Logger logger, int save_logs, double sim_time, char string_device[]) {
+    void WriteControllerStatistics(Logger &logger, int save_logs, double sim_time, char string_device[]) {
         LOGS(save_logs, logger.file, "%.15f;%s;%s;%s Information since last CC request (a%d):\n", sim_time, string_device, LOG_C03, LOG_LVL2, id);
         LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cumulative_reward_since_last_request = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, cumulative_reward_since_last_cc_request);
         LOGS(save_logs, logger.file, "%.15f;%s;%s;%s times_played_since_last_request = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, times_played_since_last_cc_request);

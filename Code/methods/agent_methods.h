@@ -63,7 +63,7 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 
 	current_performance->timestamp = sim_time;
 	current_performance->throughput = 0;
-	current_performance->max_bound_throughput = 0;
+	//current_performance->max_bound_throughput = 0;
 	current_performance->data_packets_sent = 0;
 	current_performance->data_packets_lost = 0;
 	current_performance->rts_cts_sent = 0;

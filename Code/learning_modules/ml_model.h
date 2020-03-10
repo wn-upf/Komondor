@@ -123,8 +123,11 @@ class MlModel {
 //					controller_report.PrintOrWriteAvailableActions(PRINT_LOG, central_controller_logger, save_logs, sim_time);
 					break;
 				}
+                case CENTRALIZED_REWARD_SHARING: {
+                    break;
+                }
 				default: {
-					printf("[ML MODEL] ERROR, UNKOWN LEARNING MECHANISM ('%d')\n", learning_mechanism);
+					printf("[ML MODEL] ERROR, UNKNOWN LEARNING MECHANISM ('%d')\n", learning_mechanism);
 					exit(-1);
 				}
 			}
@@ -166,8 +169,11 @@ class MlModel {
 					printf("[ML MODEL] ERROR, Action-Banning is not a decentralized ML method. Use 'CentralizedActionBanning()' instead.\n");
 					break;
 				}
+                case CENTRALIZED_REWARD_SHARING: {
+                    break;
+                }
 				default: {
-					printf("[ML MODEL] ERROR, UNKOWN LEARNING MECHANISM ('%d')\n", learning_mechanism);
+					printf("[ML MODEL] ERROR, UNKNOWN LEARNING MECHANISM ('%d')\n", learning_mechanism);
 					exit(-1);
 				}
 			}
@@ -217,6 +223,9 @@ class MlModel {
 					rtot_alg.InitializeVariables();
 					break;
 				}
+                case CENTRALIZED_REWARD_SHARING: {
+                    break;
+                }
 				//  TODO: provide more learning mechanisms
 				// case Q_LEARNING:
 				// ...
@@ -264,6 +273,9 @@ class MlModel {
                     action_banner.PrintOrWriteStatistics(write_or_print, logger);
 					break;
 				}
+                case CENTRALIZED_REWARD_SHARING: {
+                    break;
+                }
 				/* UNKNOWN */
 				default: {
 					printf("[ML MODEL] ERROR: '%d' is not a correct learning mechanism\n", learning_mechanism);

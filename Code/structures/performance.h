@@ -61,6 +61,7 @@ struct Performance
 	double throughput;				///> Throughput
 	double throughput_loss;			///> Throughput lost
 	double max_bound_throughput;	///> Maximum bound throughput (if no one transmits)
+	double current_data_rate;       ///> Data rate being used (depends on the MCS)
 
 	// Frames statistics
 	int data_packets_acked;			///> Number of data packets acknowledged

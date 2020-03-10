@@ -149,6 +149,8 @@ component Agent : public TypeII{
 		// RTOT
 		double margin_rtot;      ///> Margin for the RTOT mechanism (see https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8319274)
 
+		int flag_shared_reward;
+
 	// Private items (just for internal agent operation)
 	private:
 
@@ -195,14 +197,17 @@ component Agent : public TypeII{
 		outport void outportRequestInformationToAp();
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
 		// INPORT & OUTPORT (centralized system only)
-        inport void inline InportReceiveCommandFromController(int destination_agent_id,
-            int command_id, Configuration &new_configuration, int type_of_reward);
+        inport void inline InportReceiveCommandFromController(int destination_agent_id, int command_id,
+            Configuration &new_configuration, int type_of_reward, ControllerReport controller_report);
 		outport void outportAnswerToController(int agent_id, Configuration &configuration, Performance &performance, Action *actions);
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap;        // Timer for requesting information to the AP
+		Timer <trigger_t> trigger_compute_new_configuration;		// Timer for computing a new configuration
 		inport inline void RequestInformationToAp(trigger_t& t1);   // Every time the timer expires execute this
+        inport inline void ComputeNewConfiguration(trigger_t& t1);   // Every time the timer expires execute this
 		Agent () { // Connect timers to methods
 			connect trigger_request_information_to_ap.to_component,RequestInformationToAp;
+			connect trigger_compute_new_configuration.to_component,ComputeNewConfiguration;
 		}
 
 };
@@ -234,8 +239,13 @@ void Agent :: Start(){
 	// Initialize the ML Pipeline
 	InitializeMlPipeline();
 
-	// Compute the new configuration by using the current ML model
-	ComputeNewConfiguration();
+    // Compute a new configuration (if necessary)
+    if (learning_mechanism == MONITORING_ONLY || flag_shared_reward) {
+        trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+    } else {
+        trigger_compute_new_configuration.Set(FixTimeOffset(SimTime(),13,12));
+        //ComputeNewConfiguration();
+    }
 
 };
 
@@ -288,6 +298,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
     // Process the performance to obtain the corresponding reward
 	processed_reward = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
+	//printf("---------------------\n%.15f A%d processed_reward = %f\n", SimTime(), agent_id, processed_reward);
     // Process the performance to obtain the corresponding reward according to the central controller
     if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
 
@@ -302,7 +313,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	if(save_agent_logs) {
         char device_code[10];
         sprintf(device_code, "A%d", agent_id);
-		actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
+        actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
 		pre_processor.WritePerformance(agent_logger, SimTime(), device_code, performance, type_of_reward);
 	}
 
@@ -317,10 +328,12 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	}
 
 	// Compute a new configuration (if necessary)
-	if (learning_mechanism == MONITORING_ONLY) {
+	if (learning_mechanism == MONITORING_ONLY || flag_shared_reward) {
+	    //printf("A%d Triggering a new request for %.12f\n", agent_id, SimTime() + time_between_requests);
 		trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
 	} else {
-		ComputeNewConfiguration();
+        trigger_compute_new_configuration.Set(FixTimeOffset(SimTime(),13,12));
+		//ComputeNewConfiguration();
 	}
 
 };
@@ -365,7 +378,7 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
  * @param "controller_mode" [type int]:
  */
 void Agent :: InportReceiveCommandFromController(int destination_agent_id, int command_id,
-		Configuration &received_configuration, int type_of_reward) {
+		Configuration &received_configuration, int type_of_reward, ControllerReport controller_report) {
 
 	if(controller_on && agent_id == destination_agent_id ) {
 
@@ -392,6 +405,17 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 				}
 				break;
 			}
+            // Update the reward with additional information provided by the CC
+            case UPDATE_REWARD:{
+                LOGS(save_agent_logs,agent_logger.file,
+                     "%.15f;A%d;%s;%s Updating the reward with cluster information...\n",
+                     SimTime(), agent_id, LOG_C00, LOG_LVL2);
+                // Update reward according to the cluster's performance (computed at the CC)
+                processed_reward -= controller_report.cluster_performance[agent_id];
+                //printf("%.15f - [UPDATE] A%d processed_reward = %f\n", SimTime(), agent_id, processed_reward);
+                trigger_compute_new_configuration.Set(FixTimeOffset(SimTime(),13,12));
+                break;
+            }
 			// Update the configuration to the one sent by the CC
 			case UPDATE_CONFIGURATION:{
 				LOGS(save_agent_logs,agent_logger.file,
@@ -456,6 +480,22 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 				automatic_forward_enabled = TRUE;
 				break;
 			}
+            // Automatic information forwarding to the CC
+            case ENABLE_SHARED_REWARD_MODE: {
+                LOGS(save_agent_logs,agent_logger.file,
+                     "%.15f;A%d;%s;%s Enabling the shared reward mode...\n",
+                     SimTime(), agent_id, LOG_C00, LOG_LVL2);
+                flag_shared_reward = TRUE;
+                break;
+            }
+            // Automatic information forwarding to the CC
+            case DISABLE_SHARED_REWARD_MODE: {
+                LOGS(save_agent_logs,agent_logger.file,
+                     "%.15f;A%d;%s;%s Disabling the shared reward mode...\n",
+                     SimTime(), agent_id, LOG_C00, LOG_LVL2);
+                flag_shared_reward = FALSE;
+                break;
+            }
 			// Unknown command id
 			default: {
 				printf("[A%d] ERROR: Undefined command id %d\n", agent_id, command_id);
@@ -525,9 +565,9 @@ void Agent :: UpdateConfigurationStatisticsController(int action_ix) {
 /**
  * Compute a new configuration to be sent to the AP. Different mechanisms can be used, which are expected to return the new configuration.
  */
-void Agent :: ComputeNewConfiguration(){
+void Agent :: ComputeNewConfiguration(trigger_t &){
 
-	// Act only if the learning procedure is allowed (to be determined by the CC, if necessary)
+    // Act only if the learning procedure is allowed (to be determined by the CC, if necessary)
 	if (learning_allowed) {
 
 		LOGS(save_agent_logs, agent_logger.file, "%.15f;A%d;%s;%s ComputeNewConfiguration()\n",
@@ -569,7 +609,7 @@ void Agent :: ComputeNewConfiguration(){
 			// Generate the first request to be triggered after "time_between_requests"
 			// *** We generate here the first request in order to obtain the AP's configuration
 			// TODO: add an activation time, to be introduced by the user in the agent's configuration file
-			double extra_wait_test = 0.005 * (double) agent_id;
+			double extra_wait_test = 0.0005 * (double) agent_id;
 			trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests + extra_wait_test,13,12));
 		}
 
@@ -612,6 +652,7 @@ void Agent :: InitializeAgent() {
 	num_requests = 0;
 	controller_on = FALSE;
 	automatic_forward_enabled = TRUE;
+    flag_shared_reward = FALSE;
 
 	flag_request_from_controller = false;
 	flag_information_available = false;

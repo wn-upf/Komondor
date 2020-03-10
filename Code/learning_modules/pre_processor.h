@@ -156,11 +156,13 @@ class PreProcessor {
 				 * 	 (e.g., consider the data rate granted by the modulation and the total time)
 				 */
 				case REWARD_TYPE_AVERAGE_THROUGHPUT:{
-					if (performance.max_bound_throughput == 0) {
-						reward = 0;
-					} else {
-						reward = (double) performance.throughput/performance.max_bound_throughput;
-					}
+                    double normalized_throughput;
+                    if (performance.max_bound_throughput == 0) {
+                        normalized_throughput = 0;
+                    } else {
+                        normalized_throughput = (double) performance.throughput/performance.max_bound_throughput;
+                    }
+                    reward = normalized_throughput;
 					break;
 				}
 				/* REWARD_TYPE_MIN_RSSI:

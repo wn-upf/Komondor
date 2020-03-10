@@ -364,6 +364,7 @@
 #define ACTION_BANNING					3
 #define RTOT_ALGORITHM					4
 #define CENTRALIZED_ACTION_BANNING		5
+#define CENTRALIZED_REWARD_SHARING      6
 
 // Types of banning threshold adaptation
 #define BANNING_THRESHOLD_STATIC        0
@@ -391,23 +392,27 @@
 
 // Types of commands that the CC can send to agents
 #define SEND_CONFIGURATION_PERFORMANCE 	0
-#define UPDATE_CONFIGURATION			1
-#define STOP_ACTING						2
-#define RESUME_ACTIVITY					3
-#define MODIFY_ITERATION_TIME			4
-#define BAN_CONFIGURATION				5
-#define UNBAN_CONFIGURATION				6
-#define COMMUNICATION_UPON_TRIGGER		7
-#define COMMUNICATION_AUTOMATIC			8
+#define UPDATE_REWARD                   1
+#define UPDATE_CONFIGURATION			2
+#define STOP_ACTING						3
+#define RESUME_ACTIVITY					4
+#define MODIFY_ITERATION_TIME			5
+#define BAN_CONFIGURATION				6
+#define UNBAN_CONFIGURATION				7
+#define COMMUNICATION_UPON_TRIGGER		8
+#define COMMUNICATION_AUTOMATIC			9
+#define ENABLE_SHARED_REWARD_MODE       10
+#define DISABLE_SHARED_REWARD_MODE      11
 
 // Clustering approaches for grouping agents / BSSs
 #define CLUSTER_BY_CCA			0
 #define CLUSTER_BY_DISTANCE		1
 
 // Shared performance metrics
-#define MAX_MIN_PERFORMANCE			0
-#define PROP_FAIRNESS_PERFORMANCE	1
-#define AVERAGE_PERFORMANCE			2
+#define SHARED_MAX_MIN_PERFORMANCE			0
+#define SHARED_PROP_FAIRNESS_PERFORMANCE	1
+#define SHARED_AVERAGE_PERFORMANCE			2
+#define SHARED_COST_THROUGHPUT              3
 
 /* ********************************************
  * * INPUT/OUTPUT FILES AND CONSOLE ARGUMENTS *

@@ -15,7 +15,7 @@ typedef void  (compcxx_component::*Agent_outportRequestInformationToAp_f_t)();
 typedef void  (compcxx_component::*Agent_outportSendConfigurationToAp_f_t)(Configuration &new_configuration);
 typedef void  (compcxx_component::*Agent_outportAnswerToController_f_t)(int agent_id, Configuration &configuration, Performance &performance, Action *actions);
 typedef void  (compcxx_component::*CentralController_outportSendCommandToAgent_f_t)(int destination_agent_id, int command_id,
-			Configuration &new_configuration, int type_of_reward);
+			Configuration &new_configuration, int type_of_reward, ControllerReport controller_report);
 typedef void  (compcxx_component::*Node_outportSelfStartTX_f_t)(Notification &notification);
 typedef void  (compcxx_component::*Node_outportSelfFinishTX_f_t)(Notification &notification);
 typedef void  (compcxx_component::*Node_outportSendLogicalNack_f_t)(LogicalNack &logical_nack_info);

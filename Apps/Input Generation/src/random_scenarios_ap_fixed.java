@@ -31,7 +31,7 @@ public class random_scenarios_ap_fixed {
 
     static Wlan[] wlan_container = null;
 
-    // USER PARAMETERS (input)
+// USER PARAMETERS (input)
     static double map_width;       // map_width [m]
     static double map_heigth;      // map_heigth [m]
     static int num_wlans;          // number of WLANs (M)
@@ -46,24 +46,22 @@ public class random_scenarios_ap_fixed {
     static int cont_wind_stage;     // CW stage 
     static int channel_bonding_model;
     static int ieee_protocol;       // IEEE protocol type
+    static int traffic_model = 99;
     static double traffic_load;
-    static int bss_color_input;
-    static int srg_input;
-    static int non_srg_obss_pd_input;
-    static int srg_obss_pd_input;    
     // -------------------
-    static final int destination_id = -1;
-    static double tpc_min;
     static int tpc_default_input;
-    static double tpc_max;
-    static double cca_min;
     static int cca_default_input;
-    static double cca_max;
-    static double tx_antenna_gain;
-    static double rx_antenna_gain;
-    static int modulation_default;
     static double central_freq;
     static double lambda;
+
+    // USER PARAMETERS (input)
+    static int cont_wind_adaptation = 0;         
+    static double constant_per = 0;
+    static int capture_effect_model = 0;
+    static int capture_effect_thr = 10;
+    static int num_pkt_agg = 64;
+    static int packet_length = 12000;
+    static int pifs_activated = 0;
     
     static final int MW_TO_DBM = 1;
     static final int DBM_TO_MW = 2;
@@ -115,24 +113,12 @@ public class random_scenarios_ap_fixed {
                     c_sys_width = Integer.parseInt(node_info[9]);
                     cont_wind = Integer.parseInt(node_info[10]);
                     cont_wind_stage = Integer.parseInt(node_info[11]);
-                    tpc_min = Double.parseDouble(node_info[12]);
-                    tpc_default_input = Integer.parseInt(node_info[13]);
-                    tpc_max = Double.parseDouble(node_info[14]);
-                    cca_min = Double.parseDouble(node_info[15]);
-                    cca_default_input = Integer.parseInt(node_info[16]);
-                    cca_max = Double.parseDouble(node_info[17]);
-                    tx_antenna_gain = Double.parseDouble(node_info[18]);
-                    rx_antenna_gain = Double.parseDouble(node_info[19]);
-                    channel_bonding_model = Integer.parseInt(node_info[20]);
-                    modulation_default = Integer.parseInt(node_info[21]);
-                    central_freq = Double.parseDouble(node_info[22]);
-                    lambda = Double.parseDouble(node_info[23]);
-                    ieee_protocol = Integer.parseInt(node_info[24]);
-                    traffic_load = Integer.parseInt(node_info[25]);                    
-                    bss_color_input = Integer.parseInt(node_info[26]);
-                    srg_input = Integer.parseInt(node_info[27]);
-                    non_srg_obss_pd_input = Integer.parseInt(node_info[28]);
-                    srg_obss_pd_input = Integer.parseInt(node_info[29]);
+                    tpc_default_input = Integer.parseInt(node_info[12]);
+                    cca_default_input = Integer.parseInt(node_info[13]);
+                    channel_bonding_model = Integer.parseInt(node_info[14]);
+                    central_freq = Double.parseDouble(node_info[15]);
+                    ieee_protocol = Integer.parseInt(node_info[16]);
+                    traffic_load = Integer.parseInt(node_info[17]);                    
 
                     System.out.println(
                         "Input:"
@@ -147,11 +133,7 @@ public class random_scenarios_ap_fixed {
                         + "\n- legacy_ratio: " + legacy_ratio
                         + "\n- c_sys_width: " + c_sys_width
                         + "\n- cca_default_input: " + cca_default_input                                
-                        + "\n- cont_wind: " + cont_wind
-                        + "\n- bss_color_input: " + bss_color_input
-                        + "\n- srg_input: " + srg_input
-                        + "\n- non_srg_obss_pd_input: " + non_srg_obss_pd_input
-                        + "\n- srg_obss_pd_input: " + srg_obss_pd_input);
+                        + "\n- cont_wind: " + cont_wind);
                 }
             }
         } catch (IOException e) {
@@ -159,7 +141,7 @@ public class random_scenarios_ap_fixed {
         }
     }
 
-    public static void generate_wlans(int non_srg_obss_pd, Point2D.Double[] aps_position_list, 
+    public static void generate_wlans(Point2D.Double[] aps_position_list, 
             Point2D.Double[] stas_position_list) {
         
         int wlan_counter = 0;
@@ -219,13 +201,7 @@ public class random_scenarios_ap_fixed {
             // Default sensitivity & transmit power
             wlan_aux.cca_default = cca_default_input;
             wlan_aux.tpc_default = tpc_default_input;
-            
-            // Spatial Reuse parameters
-            wlan_aux.bss_color = wlan_id + 1;
-            wlan_aux.spatial_reuse_group = wlan_id + 1;           
-            wlan_aux.non_srg_obss_pd = non_srg_obss_pd;
-            wlan_aux.srg_obss_pd = srg_obss_pd_input;
-                        
+                                    
             wlan_container[w] = wlan_aux;
             wlan_counter++;
             
@@ -258,40 +234,34 @@ public class random_scenarios_ap_fixed {
         
         // Generate Headers
         String csv_header_line = "node_code" + CSV_SEPARATOR
-                + "node_type" + CSV_SEPARATOR
-                + "wlan_code" + CSV_SEPARATOR
-                + "destination_id" + CSV_SEPARATOR
-                + "x(m)" + CSV_SEPARATOR
-                + "y(m)" + CSV_SEPARATOR
-                + "z(m)" + CSV_SEPARATOR
-                + "primary_channel" + CSV_SEPARATOR
-                + "min_channel_allowed" + CSV_SEPARATOR
-                + "max_channel_allowed" + CSV_SEPARATOR
-                + "cw" + CSV_SEPARATOR
-                + "cw_stage" + CSV_SEPARATOR
-                + "tpc_min(dBm)" + CSV_SEPARATOR
-                + "tpc_default(dBm)" + CSV_SEPARATOR
-                + "tpc_max(dBm)" + CSV_SEPARATOR
-                + "cca_min(dBm)" + CSV_SEPARATOR
-                + "cca_default(dBm)" + CSV_SEPARATOR
-                + "cca_max(dBm)" + CSV_SEPARATOR
-                + "tx_antenna_gain" + CSV_SEPARATOR
-                + "rx_antenna_gain" + CSV_SEPARATOR
-                + "channel_bonding_model" + CSV_SEPARATOR
-                + "modulation_default" + CSV_SEPARATOR
-                + "central_freq (GHz)" + CSV_SEPARATOR
-                + "lambda" + CSV_SEPARATOR
-                + "ieee_protocol" + CSV_SEPARATOR
-                + "traffic_load[pkt/s]" + CSV_SEPARATOR
-                + "bss_color" + CSV_SEPARATOR
-                + "spatial_reuse_group" + CSV_SEPARATOR
-                + "non_srg_obss_pd" + CSV_SEPARATOR
-                + "srg_obss_pd";
+            + "node_type" + CSV_SEPARATOR
+            + "wlan_code" + CSV_SEPARATOR
+            + "x(m)" + CSV_SEPARATOR
+            + "y(m)" + CSV_SEPARATOR
+            + "z(m)" + CSV_SEPARATOR
+            + "central_freq(GHz)" + CSV_SEPARATOR
+            + "channel_bonding_model" + CSV_SEPARATOR
+            + "primary_channel" + CSV_SEPARATOR
+            + "min_channel_allowed" + CSV_SEPARATOR
+            + "max_channel_allowed" + CSV_SEPARATOR
+            + "tpc_default(dBm)" + CSV_SEPARATOR
+            + "cca_default(dBm)" + CSV_SEPARATOR
+            + "traffic_model" + CSV_SEPARATOR
+            + "traffic_load[pkt/s]" + CSV_SEPARATOR
+            + "packet_length[bits]" + CSV_SEPARATOR
+            + "num_pkt_agg" + CSV_SEPARATOR
+            + "capture_effect_model" + CSV_SEPARATOR
+            + "capture_effect_thr" + CSV_SEPARATOR
+            + "constant_per" + CSV_SEPARATOR
+            + "pifs_activated" + CSV_SEPARATOR
+            + "cw_adaptation" + CSV_SEPARATOR
+            + "cw" + CSV_SEPARATOR
+            + "cw_stage" + CSV_SEPARATOR;
 
         // System.out.println(csv_header_line);
         out.println(csv_header_line);
 
-        for (int w = 0; w < num_wlans; w++) {
+                for (int w = 0; w < num_wlans; w++) {
 
             wlan = wlan_container[w];
             node_type = 0;
@@ -299,9 +269,7 @@ public class random_scenarios_ap_fixed {
             line = getCompleteLine(wlan.ap_code, node_type,
                 wlan.wlan_code, wlan.x, wlan.y, wlan.z, wlan.primary_channel,
                 wlan.min_ch_allowed, wlan.max_ch_allowed,
-                wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
-                wlan.bss_color, wlan.spatial_reuse_group, wlan.non_srg_obss_pd,
-                wlan.srg_obss_pd);
+                wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default);
 
             // System.out.println(line);
             out.println(line);
@@ -311,23 +279,11 @@ public class random_scenarios_ap_fixed {
             // Set STAs location
             for (int n = 0; n < wlan.num_stas; n++) {
                 
-                if (w==1) { // Change Z of STA in WLAN A
-                    line = getCompleteLine(wlan.list_sta_code[n], node_type,
-                        wlan.wlan_code, wlan.stas_position_list[n].x, 
-                        wlan.stas_position_list[n].y, 0, wlan.primary_channel,
-                        wlan.min_ch_allowed, wlan.max_ch_allowed,
-                        wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
-                        wlan.bss_color, wlan.spatial_reuse_group, wlan.non_srg_obss_pd, 
-                        wlan.srg_obss_pd);
-                } else {
-                    line = getCompleteLine(wlan.list_sta_code[n], node_type,
+                line = getCompleteLine(wlan.list_sta_code[n], node_type,
                     wlan.wlan_code, wlan.stas_position_list[n].x, 
                     wlan.stas_position_list[n].y, 0, wlan.primary_channel,
                     wlan.min_ch_allowed, wlan.max_ch_allowed,
-                    wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
-                    wlan.bss_color, wlan.spatial_reuse_group, wlan.non_srg_obss_pd,
-                    wlan.srg_obss_pd);    
-                }
+                    wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default);
 
                 // System.out.println(line);
                 out.println(line);
@@ -343,8 +299,7 @@ public class random_scenarios_ap_fixed {
     static String getCompleteLine(String node_code, int node_type,
             String wlan_code, double x, double y, double z, int primary_channel,
             int min_channel_allowed, int max_channel_allowed, int channel_bonding_model,
-            int tpc_default, int cca_default, int bss_color, int spatial_reuse_group,
-            int non_srg_obss_pd, int srg_obss_pd) {
+            int tpc_default, int cca_default) {
 
         // Round position coordinates to limited number of decimals
         NumberFormat nf = NumberFormat.getNumberInstance(Locale.UK);
@@ -352,37 +307,31 @@ public class random_scenarios_ap_fixed {
         nf.setMaximumFractionDigits(4);
 
         String line = node_code + CSV_SEPARATOR
-                + node_type + CSV_SEPARATOR
-                + wlan_code + CSV_SEPARATOR
-                + destination_id + CSV_SEPARATOR
-                + nf.format(x) + CSV_SEPARATOR
-                + nf.format(y) + CSV_SEPARATOR
-                + nf.format(z) + CSV_SEPARATOR
-                + primary_channel + CSV_SEPARATOR
-                + min_channel_allowed + CSV_SEPARATOR
-                + max_channel_allowed + CSV_SEPARATOR
-                + cont_wind + CSV_SEPARATOR // CW
-                + cont_wind_stage + CSV_SEPARATOR // CW's max stage
-                + tpc_min + CSV_SEPARATOR
-                + tpc_default + CSV_SEPARATOR
-                + tpc_max + CSV_SEPARATOR
-                + cca_min + CSV_SEPARATOR
-                + cca_default + CSV_SEPARATOR
-                + cca_max + CSV_SEPARATOR
-                + tx_antenna_gain + CSV_SEPARATOR
-                + rx_antenna_gain + CSV_SEPARATOR
-                + channel_bonding_model + CSV_SEPARATOR
-                + modulation_default + CSV_SEPARATOR
-                + central_freq + CSV_SEPARATOR
-                + lambda + CSV_SEPARATOR
-                + ieee_protocol + CSV_SEPARATOR
-                + traffic_load + CSV_SEPARATOR
-                + bss_color + CSV_SEPARATOR
-                + spatial_reuse_group + CSV_SEPARATOR
-                + non_srg_obss_pd + CSV_SEPARATOR                
-                + srg_obss_pd;
- 
+            + node_type + CSV_SEPARATOR
+            + wlan_code + CSV_SEPARATOR
+            + nf.format(x) + CSV_SEPARATOR
+            + nf.format(y) + CSV_SEPARATOR
+            + nf.format(z) + CSV_SEPARATOR
+            + central_freq + CSV_SEPARATOR
+            + channel_bonding_model + CSV_SEPARATOR
+            + primary_channel + CSV_SEPARATOR
+            + min_channel_allowed + CSV_SEPARATOR
+            + max_channel_allowed + CSV_SEPARATOR
+            + tpc_default + CSV_SEPARATOR
+            + cca_default + CSV_SEPARATOR
+            + traffic_model + CSV_SEPARATOR 
+            + traffic_load + CSV_SEPARATOR 
+            + packet_length + CSV_SEPARATOR 
+            + num_pkt_agg + CSV_SEPARATOR 
+            + capture_effect_model + CSV_SEPARATOR 
+            + capture_effect_thr + CSV_SEPARATOR 
+            + constant_per + CSV_SEPARATOR 
+            + pifs_activated + CSV_SEPARATOR 
+            + cont_wind_adaptation + CSV_SEPARATOR 
+            + cont_wind + CSV_SEPARATOR // CW
+            + cont_wind_stage + CSV_SEPARATOR; // CW's max stage
         return line;
+
     }
 
     static int log(int x, int base) {
@@ -411,19 +360,13 @@ public class random_scenarios_ap_fixed {
 
         // Parameters to be changed, according to the desired scenario type
         String type_of_scenario = "dense";
-        String traffic_type = "medium";
+        String traffic_type = "low";
         
         // Complete path building
-        String input_path = "./input_constructor/random_scenarios/input_template_random_" 
+        String input_path = "./input_constructor/random_scenarios_cost/input_template_random_" 
             + type_of_scenario + "_" + traffic_type + ".csv";
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";
-
-        // DEFINE THE CCA VALUES TO BE USED
-        int[] non_srg_obss_pd_list = new int[-62 + 82 + 1]; 
-        for (int i = 0; i < -62 + 82 + 1; i ++) {
-            non_srg_obss_pd_list[i] = -82 + i;
-        }
 
         Random r = new Random();
         
@@ -486,13 +429,10 @@ public class random_scenarios_ap_fixed {
             }
 
             // GENERATE EACH .CSV FILE
-            for (int out_ix = 0; out_ix < non_srg_obss_pd_list.length; out_ix++) {
-                generate_wlans(non_srg_obss_pd_list[out_ix], aps_position_list, stas_position_list);
-                output_path = "./output/input_nodes_" + type_of_scenario + "_sce" + String.format("%02d",n) + 
-                   "_sens_" + String.format("%03d", non_srg_obss_pd_list[out_ix]) + ".csv";
-                System.out.println("output_path: " + output_path);
-                generate_file(output_path); 
-            }
+            generate_wlans(aps_position_list, stas_position_list);
+            output_path = "./output/input_nodes_" + type_of_scenario + "_sce" + String.format("%02d",n) + ".csv";
+            System.out.println("output_path: " + output_path);
+            generate_file(output_path); 
         
         }
         

@@ -133,6 +133,7 @@ component CentralController : public TypeII{
 
 		// Reward and ML method types
 		int type_of_reward;				///> Type of reward
+		double updated_reward;          ///> Updated reward by the CC
 		int learning_mechanism;			///> Index of the chosen learning mechanism
 		int action_selection_strategy;	///> Index of the chosen action-selection strategy
 
@@ -164,6 +165,8 @@ component CentralController : public TypeII{
 		int cc_iteration; 					///> Counter that keeps track of the number of iterations at the CC
 		int counter_responses_received; 	///> Needed to determine the number of answers that the controller receives from agents
 
+		int communication_mode;
+
 	// Connections and timers
 	public:
 
@@ -173,7 +176,7 @@ component CentralController : public TypeII{
 
 		// OUTPORT connections for sending notifications
 		outport void outportSendCommandToAgent(int destination_agent_id, int command_id,
-			Configuration &new_configuration, int type_of_reward);
+			Configuration &new_configuration, int type_of_reward, ControllerReport controller_report);
 
 		// Timers
 		Timer <trigger_t> trigger_apply_ml_method;					// Timer for applying the ML method
@@ -259,10 +262,11 @@ void CentralController :: Stop() {
  * Start requesting information to agents, according to the current CC's mode
  */
 void CentralController :: StartCcActivity() {
+    // Indicate to all the agents to send information upon receiving a trigger only
+    communication_mode = COMMUNICATION_AUTOMATIC; //COMMUNICATION_UPON_TRIGGER;   // TODO: based on the intent for the CC, decide to use triggers or not (now it is hardcoded)
+    SendCommandToAllAgents(communication_mode, configuration_array);
     // According to the defined mode, start making requests by activating triggers
     if (controller_mode == CC_MODE_ACTIVE) {
-        // Indicate to all the agents to send information upon receiving a trigger only
-        SendCommandToAllAgents(COMMUNICATION_UPON_TRIGGER, configuration_array);    // TODO: based on the intent for the CC, decide to use triggers or not (now it is hardcoded)
         // Generate the time trigger for the first request
         if (time_between_requests > 0) {
             trigger_request_information_to_agents.Set(FixTimeOffset(SimTime() + time_between_requests, 13, 12));
@@ -358,6 +362,12 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
 				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
 			break;
 		}
+		case UPDATE_REWARD:{
+            LOGS(save_controller_logs,central_controller_logger.file,
+                 "%.15f;CC;%s;%s Sending Agent %d updated cluster information to update the reward\n",
+                 SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+            break;
+		}
 		case UPDATE_CONFIGURATION:{
 			LOGS(save_controller_logs,central_controller_logger.file,
 				"%.15f;CC;%s;%s Sending a new configuration to Agent %d\n",
@@ -406,6 +416,18 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
 				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
 			break;
 		}
+        case ENABLE_SHARED_REWARD_MODE: {
+            LOGS(save_controller_logs,central_controller_logger.file,
+                 "%.15f;CC;%s;%s Requesting Agent %d to enable the shared reward mode\n",
+                 SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+            break;
+        }
+        case DISABLE_SHARED_REWARD_MODE: {
+            LOGS(save_controller_logs,central_controller_logger.file,
+                 "%.15f;CC;%s;%s Requesting Agent %d to disable the shared reward mode\n",
+                 SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+            break;
+        }
 		// Unknown command id
 		default: {
 			printf("[CC] ERROR: Undefined command id %d\n", command_id);
@@ -413,7 +435,7 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
 		}
 	}
 
-	outportSendCommandToAgent(destination_agent_id, command_id, conf, type_of_reward);
+	outportSendCommandToAgent(destination_agent_id, command_id, conf, type_of_reward, controller_report);
 
 };
 
@@ -446,30 +468,30 @@ void CentralController :: InportReceivingInformationFromAgent(int agent_id,
 	    WriteAgentPerformance(actions, agent_id);
 	}
 
-	// According to the defined mode, behave in one way or another
-	switch(controller_mode) {
-		// Passive mode: the agents send information to the CC, which only observes (monitoring mode)
-		case CC_MODE_PASSIVE: {
-			break;
-		}
-		// Active mode: the CC requests information to agents
-		case CC_MODE_ACTIVE: {
-			// Create-update clusters, which can be used by the ML method
-			GenerateClusters(agent_id, performance_array[agent_id], configuration_array[agent_id]);
-			// Once all the information is available, compute a new configuration according to the updated rewards
-			if (counter_responses_received == agents_number) {
-				trigger_apply_ml_method.Set(FixTimeOffset(SimTime(), 13, 12));
-				counter_responses_received = 0;
-			}
-			break;
-		}
-		// Unknown controller mode
-		default:{
-			printf("[CC] ERROR: Undefined controller mode %d\n"
-				"	- Use CC_MODE_PASSIVE (%d) or CC_MODE_ACTIVE (%d)\n",
-				controller_mode, CC_MODE_PASSIVE, CC_MODE_ACTIVE);
-		}
-	}
+    // Create-update clusters, which can be used by the ML method
+    GenerateClusters(agent_id, performance_array[agent_id], configuration_array[agent_id]);
+    if (counter_responses_received == agents_number) {
+        counter_responses_received = 0;
+        // According to the defined mode, behave in one way or another
+        switch (controller_mode) {
+            // Passive mode: the agents send information to the CC, which only observes (monitoring mode)
+            case CC_MODE_PASSIVE: {
+                break;
+            }
+            // Active mode: the CC requests information to agents
+            case CC_MODE_ACTIVE: {
+                // Once all the information is available, compute a new configuration according to the updated rewards
+                trigger_apply_ml_method.Set(FixTimeOffset(SimTime(), 13, 12));
+                break;
+            }
+            // Unknown controller mode
+            default: {
+                printf("[CC] ERROR: Undefined controller mode %d\n"
+                       "	- Use CC_MODE_PASSIVE (%d) or CC_MODE_ACTIVE (%d)\n",
+                       controller_mode, CC_MODE_PASSIVE, CC_MODE_ACTIVE);
+            }
+        }
+    }
 
 };
 
@@ -488,7 +510,7 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 		"%.15f;CC;%s;%s Applying the ML method (iteration %d)\n", SimTime(), LOG_C00, LOG_LVL1, cc_iteration);
 
 	// STEP 1 [OPTIONAL]: Update the performance observed per cluster (shared metric)
-	UpdatePerformancePerCluster(MAX_MIN_PERFORMANCE); // TODO: specify the shared performance from input files (now hardcoded)
+	UpdatePerformancePerCluster(SHARED_COST_THROUGHPUT); // TODO: specify the shared performance from input files (now hardcoded)
 
 	// STEP 2: APPLY THE ML METHOD
 	ml_model.ComputeGlobalConfiguration(configuration_array, controller_report, central_controller_logger, SimTime());
@@ -501,6 +523,12 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 			SendCommandToAllAgents(BAN_CONFIGURATION, configuration_array);
 			break;
 		}
+		// Mechanism to let agents share a reward
+        case CENTRALIZED_REWARD_SHARING: {
+            // Forward the output to agents
+            SendCommandToAllAgents(UPDATE_REWARD, configuration_array);
+            break;
+        }
 		// Unknown controller mode
 		default:{
 			printf("[CC] ERROR: Undefined centralized ML method %d\n"
@@ -566,7 +594,7 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 
 	switch(shared_performance_metric) {
 		// Max-min performance
-		case MAX_MIN_PERFORMANCE:{
+		case SHARED_MAX_MIN_PERFORMANCE:{
 			double min_performance;
 			int applicable(0);
 			for(int i = 0; i < agents_number; ++i) {
@@ -584,7 +612,7 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 			break;
 		}
 		// Geometric sum
-		case PROP_FAIRNESS_PERFORMANCE:{
+		case SHARED_PROP_FAIRNESS_PERFORMANCE:{
 			double cumulative_log_performance(1);	// TODO: rework this part in order to consider absolute performance values (throughput, delay, etc.)
 			for(int i = 0; i < agents_number; ++i) {
 				for(int j = 0; j < agents_number; ++j) {
@@ -597,7 +625,7 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 			break;
 		}
 		// Average
-		case AVERAGE_PERFORMANCE:{
+		case SHARED_AVERAGE_PERFORMANCE:{
 			double cumulative_performance(0);
 			int num_agents_involved(0);
 			for(int i = 0; i < agents_number; ++i) {
@@ -611,6 +639,24 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 			}
 			break;
 		}
+        // Cost throughput
+    case SHARED_COST_THROUGHPUT: {
+            for (int i = 0; i < agents_number; ++i) {
+                double cumulative_cost(0);
+                for (int j = 0; j < agents_number; ++j) {
+                    if (i != j && controller_report.clusters_per_wlan[i][j]) {
+                        double perf_i = (performance_array[i].throughput) / performance_array[i].current_data_rate;
+                        double perf_j = (performance_array[j].throughput) / performance_array[j].current_data_rate;
+                        cumulative_cost += pow((perf_i - perf_j), 2);
+                        //printf("     + cumulative_cost = %f:\n", cumulative_cost);
+                    }
+                }
+                if (cumulative_cost > 1) cumulative_cost = 1;
+                controller_report.cluster_performance[i] = cumulative_cost;
+                //printf("Cost in cluster %d = %f\n", i, controller_report.cluster_performance[i]);
+            }
+            break;
+        }
 		// Default
 		default :{
 			printf("Unknown performance metric\n");
@@ -711,6 +757,10 @@ void CentralController :: InitializeMlModel() {
 		}
 		controller_report.cluster_performance[i] = 0;
 		controller_report.most_played_action_per_agent[i] = -1;
+	}
+
+	if(learning_mechanism == CENTRALIZED_REWARD_SHARING) {
+        SendCommandToAllAgents(ENABLE_SHARED_REWARD_MODE, configuration_array);
 	}
 
 }

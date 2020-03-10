@@ -731,6 +731,47 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		}
 
+        // Distributed social-aware learning for 11ax SR enhancement
+        case 15: {
+            //  - Throughput experienced/allocated for each device (AP and STAs)
+            char tpt_array[250] = "";
+            char aux_tpt[50];
+            // Total airtime
+            char airtime_array[250] = "";
+            char aux_airtime[50];
+            // Successful airtime
+            char sairtime_array[250] = "";
+            char aux_sairtime[50];
+            // Successful airtime
+            char delay_array[250] = "";
+            char aux_delay[50];
+            for(int i = 0; i < total_nodes_number; i ++) {
+                if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+                    // Throughput allocated to the STA
+                    sprintf(aux_tpt, "%.2f", performance_report[i].throughput * pow(10,-6));
+                    strcat(tpt_array, aux_tpt);
+                    strcat(tpt_array, ";");
+                    // Total airtime
+                    sprintf(aux_airtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
+                                                   - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
+                    strcat(airtime_array, aux_airtime);
+                    strcat(airtime_array, ";");
+                    // Successful airtime
+                    sprintf(aux_sairtime, "%.2f", (performance_report[i].total_time_transmitting_in_num_channels[0]*100/simulation_time_komondor));
+                    strcat(sairtime_array, aux_sairtime);
+                    strcat(sairtime_array, ";");
+                    // Delay
+                    sprintf(aux_delay, "%.2f", performance_report[i].average_waiting_time * pow(10,3));
+                    strcat(delay_array, aux_delay);
+                    strcat(delay_array, ";");
+                }
+            }
+            fprintf(logger_script.file, ";%s%s%s%s\n", tpt_array, airtime_array, sairtime_array, delay_array);
+            break;
+
+        }
+
+        // Not found
 		default:{
 		  printf("No simulation type found\n");
 		  break;

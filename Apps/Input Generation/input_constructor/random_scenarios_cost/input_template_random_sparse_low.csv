@@ -1,0 +1,2 @@
+//map_width;map_heigth;M;N_MIN;N_MAX;d_min_AP_AP;d_min_AP_STA;d_max_AP_STA;legacy_ratio;c_sys_width;cont_wind;cont_wind_stage;tpc_default;cca_default;channel_bonding;central_freq;ieee_protocol;traffic_load
+80;80;9;1;1;1;4;2;0;1;16;5;20;-82;4;5;1;1000
