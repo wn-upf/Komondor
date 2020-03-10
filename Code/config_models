@@ -1,5 +1,5 @@
 # Path-loss model to be used
-path_loss_model=4
+path_loss_model=12
 # Co-channel interference model to be used
 adjacent_channel_model=0
 # Collisions model

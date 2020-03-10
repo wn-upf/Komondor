@@ -4135,7 +4135,9 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 	current_pd = new_configuration.selected_pd;
 	if(current_tx_power != new_configuration.selected_tx_power) flag_change_in_tx_power = TRUE;
 	current_tx_power = new_configuration.selected_tx_power;
-	current_dcb_policy = new_configuration.selected_dcb_policy;
+    min_channel_allowed = current_primary_channel;
+    max_channel_allowed = current_primary_channel + new_configuration.selected_dcb_policy - 1;
+	//current_dcb_policy = new_configuration.selected_dcb_policy;
 	non_srg_obss_pd = new_configuration.non_srg_obss_pd;
 	// Re-compute MCS according to the new configuration
 	if (node_type == NODE_TYPE_AP) {
