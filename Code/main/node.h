@@ -638,8 +638,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			notification.left_channel, notification.right_channel);
 
 		LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s START Channel before updating: ",
+			"%.15f;N%d;S%d;%s;%s Power sensed per channel BEFORE updating [dBm]: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
+
+		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+					&channel_power);
 
         // Update 'power received' array in case a new tx power is used
 //        if(node_id == 0) printf("notification.tx_info.flag_change_in_tx_power = %d\n", notification.tx_info.flag_change_in_tx_power);
@@ -668,7 +671,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			central_frequency, path_loss_model, adjacent_channel_model, received_power_array[notification.source_id], node_id);
 
 		LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
+			"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
 		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
@@ -681,20 +684,20 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
 			current_pd, SimTime());
 
-		if(save_node_logs) {
-			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
-				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
-			for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
-				fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
-			}
-			fprintf(node_logger.file, "\n");
-			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
-				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
-			for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
-				fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
-			}
-			fprintf(node_logger.file, "\n");
-		}
+//		if(save_node_logs) {
+//			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
+//				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+//			for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
+//				fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
+//			}
+//			fprintf(node_logger.file, "\n");
+//			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
+//				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+//			for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
+//				fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
+//			}
+//			fprintf(node_logger.file, "\n");
+//		}
 
 		/* ****************************************
 		/* SPATIAL REUSE OPERATION
@@ -956,10 +959,10 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
 								current_nav_time, trigger_NAV_timeout.GetTime());
 
-							LOGS(save_node_logs,node_logger.file,
-								"%.15f;N%d;S%d;%s;%s current_nav_time = %.12f\n",
-								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4,
-								current_nav_time);
+//							LOGS(save_node_logs,node_logger.file,
+//								"%.15f;N%d;S%d;%s;%s current_nav_time = %.12f\n",
+//								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4,
+//								current_nav_time);
 
 							node_state = STATE_NAV;
 							last_time_not_in_nav = SimTime();
@@ -1363,10 +1366,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								}
 
 							} else {			// Packet IS LOST
-								LOGS(save_node_logs, node_logger.file,
-									"%.15f;N%d;S%d;%s;%s RTS/CTS sent from N%d could not be decoded for reason %d\n",
-									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
-									notification.source_id, loss_reason);
+								if(notification.packet_type == PACKET_TYPE_RTS
+										||  notification.packet_type == PACKET_TYPE_CTS){
+									LOGS(save_node_logs, node_logger.file,
+										"%.15f;N%d;S%d;%s;%s RTS/CTS sent from N%d could not be decoded for reason %d\n",
+										SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
+										notification.source_id, loss_reason);
+								}
 							}
 						}
 					}
@@ -2174,12 +2180,12 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 //				notification.right_channel);
 
 
-//		LOGS(save_node_logs,node_logger.file,
-//			"%.15f;N%d;S%d;%s;%s Channel before updating: ",
-//			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
-//
-//		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-//				channel_power);
+		LOGS(save_node_logs,node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Power sensed per channel BEFORE updating [dBm]: ",
+			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
+
+		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+					&channel_power);
 
 		// Update the power sensed at each channel
 		UpdateChannelsPower(&channel_power, notification, TX_FINISHED,
@@ -2212,7 +2218,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		/* **************************************** */
 
 		LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
+			"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
 		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
@@ -2225,20 +2231,20 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
 			current_pd, SimTime());
 
-		if(save_node_logs) {
-			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_free: ",
-				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
-			for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
-				fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
-			}
-			fprintf(node_logger.file, "\n");
-			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
-				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
-			for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
-				fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
-			}
-			fprintf(node_logger.file, "\n");
-		}
+//		if(save_node_logs) {
+//			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_free: ",
+//				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+//			for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
+//				fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
+//			}
+//			fprintf(node_logger.file, "\n");
+//			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
+//				SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+//			for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
+//				fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
+//			}
+//			fprintf(node_logger.file, "\n");
+//		}
 
 		switch(node_state){
 
@@ -2385,6 +2391,17 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, notification.packet_id,
 							notification.source_id);
 
+						LOGS(save_node_logs,node_logger.file,
+							"%.15f;N%d;S%d;%s;%s -------------------------------------\n",
+							SimTime(), node_id, node_state, LOG_D08, LOG_LVL2);
+						LOGS(save_node_logs,node_logger.file,
+							"%.15f;N%d;S%d;%s;%s TRANSMISSION #%d SUCCESSFULLY FINISHED!\n",
+							SimTime(), node_id, node_state, LOG_D08, LOG_LVL2,
+							data_packets_acked);
+						LOGS(save_node_logs,node_logger.file,
+							"%.15f;N%d;S%d;%s;%s -------------------------------------\n",
+							SimTime(), node_id, node_state, LOG_D08, LOG_LVL2);
+
 						// Whole data packet ACKed
 						++data_packets_acked;
 						++data_packets_acked_per_sta[current_destination_id-node_id-1];
@@ -2400,11 +2417,11 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							++data_frames_acked_per_sta[current_destination_id-node_id-1];
 							++num_delay_measurements;
 							sum_delays = sum_delays + (SimTime() - buffer.GetFirstPacket().timestamp_generated);
-							LOGS(save_node_logs,node_logger.file,
-								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
-								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
-								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
-								buffer.GetFirstPacket().timestamp_generated);
+//							LOGS(save_node_logs,node_logger.file,
+//								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
+//								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
+//								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
+//								buffer.GetFirstPacket().timestamp_generated);
 
 							buffer.DelFirstPacket();
 
@@ -2444,6 +2461,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							cw_current, cw_stage_current, cw_stage_max);
 						// Restart node (implicitly to STATE_SENSING)
+
 
 						// Extra slot for successful transmissions
 						RestartNode(FALSE);
@@ -3091,26 +3109,26 @@ void Node :: EndBackoff(trigger_t &){
 	}
 
 	LOGS(save_node_logs,node_logger.file,
-		"%.15f;N%d;S%d;%s;%s Power sensed per channel: ",
+		"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
 		SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
 	PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
 		&channel_power);
 
-	if(save_node_logs) {
-		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
-			SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
-		for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
-			fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
-		}
-		fprintf(node_logger.file, "\n");
-		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
-			SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
-		for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
-			fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
-		}
-		fprintf(node_logger.file, "\n");
-	}
+//	if(save_node_logs) {
+//		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
+//			SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+//		for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
+//			fprintf(node_logger.file, "%.9f  ", timestampt_channel_becomes_free[i]);
+//		}
+//		fprintf(node_logger.file, "\n");
+//		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s difference times: ",
+//			SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+//		for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
+//			fprintf(node_logger.file, "%.9f  ", SimTime() - timestampt_channel_becomes_free[i]);
+//		}
+//		fprintf(node_logger.file, "\n");
+//	}
 
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free (mind PIFS if activated): ",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
@@ -3137,6 +3155,7 @@ void Node :: EndBackoff(trigger_t &){
 
 		// Change to state "transmitting RTS"
 		node_state = STATE_TX_RTS;
+
 
 		// Get the transmission channels
 		current_left_channel = GetFirstOrLastTrueElemOfArray(FIRST_TRUE_IN_ARRAY,
@@ -3222,10 +3241,10 @@ void Node :: EndBackoff(trigger_t &){
 		current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
 		current_nav_time = FixTimeOffset(current_nav_time,13,12); // Update the NAV time according to the time offsets
 
-		LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
-			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
-			rts_duration, current_nav_time);
+//		LOGS(save_node_logs,node_logger.file,
+//			"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
+//			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
+//			rts_duration, current_nav_time);
 
 //		printf("current_nav_time = %f\n",current_nav_time);
 
@@ -3244,10 +3263,10 @@ void Node :: EndBackoff(trigger_t &){
 			// time_rand_value = RoundToDigits(time_rand_value, 15);
 			time_rand_value = FixTimeOffset(time_rand_value,13,12);
 			current_nav_time = current_nav_time - time_rand_value;
-			LOGS(save_node_logs,node_logger.file,
-				"%.15f;N%d;S%d;%s;%s time_rand_value = %.12f s - corrected NAV time = %.12f s\n",
-				SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
-				time_rand_value, current_nav_time);
+//			LOGS(save_node_logs,node_logger.file,
+//				"%.15f;N%d;S%d;%s;%s time_rand_value = %.12f s - corrected NAV time = %.12f s\n",
+//				SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
+//				time_rand_value, current_nav_time);
 		}
 
 		// Generate the RTS notification
@@ -3259,6 +3278,17 @@ void Node :: EndBackoff(trigger_t &){
 
         // Reset the flag that indicates whether the tx power changed or not
         flag_change_in_tx_power = FALSE;
+
+        LOGS(save_node_logs,node_logger.file,
+			"%.15f;N%d;S%d;%s;%s -------------------------------------\n",
+			SimTime(), node_id, node_state, LOG_D08, LOG_LVL2);
+		LOGS(save_node_logs,node_logger.file,
+			"%.15f;N%d;S%d;%s;%s TRANSMISSION #%d STARTED\n",
+			SimTime(), node_id, node_state, LOG_D08, LOG_LVL2,
+			rts_cts_sent);
+		LOGS(save_node_logs,node_logger.file,
+			"%.15f;N%d;S%d;%s;%s -------------------------------------\n",
+			SimTime(), node_id, node_state, LOG_D08, LOG_LVL2);
 
 		LOGS(save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission of RTS #%d started\n",
@@ -3282,10 +3312,10 @@ void Node :: EndBackoff(trigger_t &){
 
 		time_to_trigger = SimTime() + current_tx_duration;
 
-		LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s time_to_trigger = %.12f s - FixTimeOffset = %.12f s\n",
-			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
-			time_to_trigger, FixTimeOffset(time_to_trigger,13,12));
+//		LOGS(save_node_logs,node_logger.file,
+//			"%.15f;N%d;S%d;%s;%s time_to_trigger = %.12f s - FixTimeOffset = %.12f s\n",
+//			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
+//			time_to_trigger, FixTimeOffset(time_to_trigger,13,12));
 
 		trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger,13,12));
 		++rts_cts_sent;
@@ -3829,17 +3859,15 @@ void Node :: PauseBackoff(){
 
 		if(trigger_end_backoff.Active()){	// If backoff trigger is active, freeze it
 
-			LOGS(save_node_logs,node_logger.file,
-				"%.15f;N%d;S%d;%s;%s BO is active. Freezing it from %.9f (%.2f slots)...\n",
-				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-				(trigger_end_backoff.GetTime() - SimTime()) * pow(10,6), (trigger_end_backoff.GetTime() - SimTime())/SLOT_TIME);
-
 			remaining_backoff = ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
 
 			LOGS(save_node_logs,node_logger.file,
-				"%.15f;N%d;S%d;%s;%s ... to %.9f (%.2f slots)\n",
+				"%.15f;N%d;S%d;%s;%s BO is active. Freezing it from %.9f (%.2f slots) to %.9f (%.2f slots)\n",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+				(trigger_end_backoff.GetTime() - SimTime()) * pow(10,6),
+				(trigger_end_backoff.GetTime() - SimTime())/SLOT_TIME,
 				remaining_backoff * pow(10,6), remaining_backoff/SLOT_TIME);
+
 
 //			LOGS(save_node_logs,node_logger.file,
 //								"%.15f;N%d;S%d;%s;%s Original remaining BO: %.9f us\n",

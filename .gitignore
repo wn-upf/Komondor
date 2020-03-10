@@ -31,10 +31,22 @@
 # IDE-related
 .project
 .classpath
+<<<<<<< HEAD
+=======
+.idea
+.metadata
+*.class
+*.properties
+*.jar
+>>>>>>> master
 
 # Komondor
 *.cxx
 *.txt~
-output/*
-Code_RTS_CTS/output/*
-Code_Basic/output/*
+*.csv~
+
+Code/output/.keep
+Code/output/
+!.gitignore
+
+Code/main/komondor_main
