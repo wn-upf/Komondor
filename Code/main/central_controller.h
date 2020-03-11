@@ -720,6 +720,8 @@ void CentralController :: InitializeMlModel() {
  */
 void CentralController :: InitializeCentralController() {
 
+	time_between_requests = 0;
+
 	save_controller_logs = TRUE;
 	print_controller_logs = TRUE;
 

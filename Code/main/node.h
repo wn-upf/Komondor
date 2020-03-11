@@ -4240,7 +4240,12 @@ void Node :: RestartNode(int called_by_time_out){
 		called_by_time_out);
 
 	// Update TX time statistics
-	total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+
+	int ix_num_ch = (int)log2(current_right_channel - current_left_channel + 1);
+
+	total_time_transmitting_in_num_channels[ix_num_ch] +=
+			current_tx_duration;
+
 	performance_report.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
 		total_time_transmitting_per_channel[c] += current_tx_duration;
@@ -5028,9 +5033,9 @@ void Node :: InitializeVariables() {
 		total_time_spectrum_per_channel[i] = 0;
 	}
 
-	total_time_transmitting_in_num_channels = new double[num_channels_allowed];
-	total_time_lost_in_num_channels = new double[num_channels_allowed];
-	for(int i = 0; i < num_channels_allowed; ++i){
+	total_time_transmitting_in_num_channels = new double[NUM_CHANNELS_KOMONDOR];
+	total_time_lost_in_num_channels = new double[NUM_CHANNELS_KOMONDOR];
+	for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
 		total_time_transmitting_in_num_channels[i] = 0;
 		total_time_lost_in_num_channels[i] = 0;
 	}

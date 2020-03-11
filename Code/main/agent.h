@@ -613,6 +613,8 @@ void Agent :: InitializeAgent() {
 	controller_on = FALSE;
 	automatic_forward_enabled = TRUE;
 
+	initial_reward = 0;
+
 	flag_request_from_controller = false;
 	flag_information_available = false;
 

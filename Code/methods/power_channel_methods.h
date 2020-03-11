@@ -683,7 +683,7 @@ void GetTxChannelsByChannelBondingCCA11ax(int *channels_for_tx, int channel_bond
 	int num_channels_allowed = max_channel_allowed - min_channel_allowed + 1;
 
 	// Reset channels for transmitting
-	for(int c = 0; c <= NUM_CHANNELS_KOMONDOR; ++c){
+	for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 		channels_for_tx[c] = FALSE;
 	}
 
@@ -1097,7 +1097,7 @@ void GetTxChannelsByChannelBondingCCASame(int *channels_for_tx, int channel_bond
     int min_channel_allowed, int max_channel_allowed, int primary_channel, int num_channels_system){
 
 	// Reset channels for transmitting
-	for(int c = 0; c <= NUM_CHANNELS_KOMONDOR; ++c){
+	for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 		channels_for_tx[c] = FALSE;
 	}
 
