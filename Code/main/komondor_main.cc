@@ -153,7 +153,7 @@ component Komondor : public CostSimEng {
 		int num_arms_channel;		///> Number of available channels
 		int num_arms_sensitivity;	///> Number of available sensitivity levels
 		int num_arms_tx_power;		///> Number of available transmit power levels
-		int num_arms_dcb_policy;		///> Number of available DCB policies
+		int num_arms_max_bandwidth;		///> Number of available DCB policies
 
 		double *actions_pd;				///> Array of Packet Detect (PD) actions
 		double *actions_tx_power;		///> Array of transmission power actions
@@ -826,22 +826,22 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 			agent_container[agent_ix].num_arms_tx_power = num_arms_tx_power;
 			// Find the length of the DCB actions actions array
 			tmp_agents = strdup(line_agents);
-			const char *policy_values_aux (GetField(tmp_agents, IX_AGENT_DCB_POLICY));
-			std::string policy_values_text;
-			policy_values_text.append(ToString(policy_values_aux));
-			const char *policy_aux;
-			policy_aux = strtok ((char*)policy_values_text.c_str(),",");
-			num_arms_dcb_policy = 0;
-			while (policy_aux != NULL) {
-				policy_aux = strtok (NULL, ",");
-				++num_arms_dcb_policy;
+			const char *max_bandwidth_values_aux (GetField(tmp_agents, IX_AGENT_MAX_BANDWIDTH));
+			std::string max_bandwidth_values_text;
+			max_bandwidth_values_text.append(ToString(max_bandwidth_values_aux));
+			const char *max_bandwidth_aux;
+			max_bandwidth_aux = strtok ((char*)max_bandwidth_values_text.c_str(),",");
+			num_arms_max_bandwidth = 0;
+			while (max_bandwidth_aux != NULL) {
+				max_bandwidth_aux = strtok (NULL, ",");
+				++num_arms_max_bandwidth;
 			}
-			// Set the length of DCB actions to agent's field
-			agent_container[agent_ix].num_arms_dcb_policy = num_arms_dcb_policy;
+			// Set the length of max bandwidth to agent's field
+			agent_container[agent_ix].num_arms_max_bandwidth = num_arms_max_bandwidth;
 
 			// Set the lenght of the total actions in the agent (combinations of parameters)
 			agent_container[agent_ix].num_arms = num_arms_channel * num_arms_sensitivity
-				* num_arms_tx_power * num_arms_dcb_policy;
+				* num_arms_tx_power * num_arms_max_bandwidth;
 
 			// Set the simulation code for generating output files
 			agent_container[agent_ix].simulation_code.append(ToString(simulation_code_console));
@@ -938,19 +938,19 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 					tx_power_aux_2 = strtok (NULL, ",");
 					++ix;
 				}
-				// DCB policy values
+				// Max bandwidth values
 				tmp_agents = strdup(line_agents);
-				std::string dcb_policy_values_text = ToString(GetField(tmp_agents, IX_AGENT_DCB_POLICY));
-				// Fill the DCB policy actions array
-				char *policy_aux_2;
-				char *dcb_policy_values_text_char = new char[dcb_policy_values_text.length() + 1];
-				strcpy(dcb_policy_values_text_char, dcb_policy_values_text.c_str());
-				policy_aux_2 = strtok (dcb_policy_values_text_char,",");
+				std::string max_bandwidth_values_text = ToString(GetField(tmp_agents, IX_AGENT_MAX_BANDWIDTH));
+				// Fill the max bandwidth actions array
+				char *max_bandwidth_aux_2;
+				char *max_bandwidth_values_text_char = new char[max_bandwidth_values_text.length() + 1];
+				strcpy(max_bandwidth_values_text_char, max_bandwidth_values_text.c_str());
+				max_bandwidth_aux_2 = strtok (max_bandwidth_values_text_char,",");
 				ix = 0;
-				while (policy_aux_2 != NULL) {
-					int a (atoi(policy_aux_2));
-					agent_container[agent_ix].list_of_dcb_policy[ix] = a;
-					policy_aux_2 = strtok (NULL, ",");
+				while (max_bandwidth_aux_2 != NULL) {
+					int a (atoi(max_bandwidth_aux_2));
+					agent_container[agent_ix].list_of_max_bandwidth[ix] = a;
+					max_bandwidth_aux_2 = strtok (NULL, ",");
 					++ix;
 				}
 				// Type of reward
