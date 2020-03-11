@@ -70,14 +70,14 @@ class PreProcessor {
 		int *list_of_channels;				///> List of channels to be selected
 		double *list_of_pd_values;			///> List of PD values to be selected
 		double *list_of_tx_power_values;	///> List of Tx Power values to be selected
-		int *list_of_dcb_policy;			///> List of DCB policies to be selected
+		int *list_of_max_bandwidth;			///> List of DCB policies to be selected
 
 		// Actions management
 		int num_arms;					///> Number of actions
 		int num_arms_channel;			///> Number of channel actions
 		int num_arms_sensitivity;		///> Number of sensitivity actions
 		int num_arms_tx_power;			///> Number of transmission power actions
-		int num_arms_dcb_policy;			///> Number of DCB policy actions
+		int num_arms_max_bandwidth;		///> Number of max bandwidth actions
 		int *indexes_selected_arm;			///> Indexes for each parameter that conform the current selected arm
 
 	// Private items
@@ -250,15 +250,14 @@ class PreProcessor {
 			int *indexes_arm = new int[NUM_FEATURES_ACTIONS];
 			for(int i = 0; i < num_arms; ++i) {
 				index2values(indexes_arm, i, num_arms_channel,num_arms_sensitivity,
-					num_arms_tx_power, num_arms_dcb_policy);
+					num_arms_tx_power, num_arms_max_bandwidth);
 				action_array[i].id = i;
 				// Configuration
 				action_array[i].channel = list_of_channels[indexes_arm[0]];
 				action_array[i].cca = list_of_pd_values[indexes_arm[1]];
 				action_array[i].tx_power = list_of_tx_power_values[indexes_arm[2]];
-				action_array[i].dcb_policy = list_of_dcb_policy[indexes_arm[3]];
+				action_array[i].max_bandwidth = list_of_max_bandwidth[indexes_arm[3]];
 				// Performance
-				action_array[i].instantaneous_reward = 0;
 				action_array[i].instantaneous_reward = 0;
 				action_array[i].times_played = 0;
 				action_array[i].average_reward_since_last_cc_request = 0;
@@ -277,12 +276,12 @@ class PreProcessor {
 		Configuration GenerateNewConfigurationBandits(Configuration configuration, double ml_output){
 			// Find which parameters correspond to the selected arm
 			index2values(indexes_selected_arm, (int) ml_output, num_arms_channel,
-				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
+				num_arms_sensitivity, num_arms_tx_power, num_arms_max_bandwidth);
 			// Update each parameter according to the configuration provided by the MAB
 			int new_primary = list_of_channels[indexes_selected_arm[0]];
 			double new_pd = list_of_pd_values[indexes_selected_arm[1]];
 			double new_tx_power = list_of_tx_power_values[indexes_selected_arm[2]];
-			int new_dcb_policy = list_of_dcb_policy[indexes_selected_arm[3]];
+			int new_max_bandwidth = list_of_max_bandwidth[indexes_selected_arm[3]];
 			// Generate the configuration object
 			Configuration new_configuration;
 			// Set configuration to the received one, and then change specific parameters
@@ -295,7 +294,7 @@ class PreProcessor {
 				new_configuration.selected_pd = new_pd;
 			}
 			new_configuration.selected_tx_power = new_tx_power;			// TX Power
-			new_configuration.selected_dcb_policy = new_dcb_policy;		// DCB policy
+			new_configuration.selected_max_bandwidth = new_max_bandwidth;		// Max bandwidth
 			return new_configuration;
 		}
 
@@ -311,7 +310,7 @@ class PreProcessor {
 			int index_channel = -1;
 			int index_pd = -1;
 			int index_tx_power = -1;
-			int index_dcb_policy = -1;
+			int index_max_bandwidth = -1;
 
 			// Channel
 			for(int i = 0; i < num_arms_channel; i++) {
@@ -337,20 +336,20 @@ class PreProcessor {
 					index_tx_power = i;
 				}
 			}
-			// DCB policy
-			for(int i = 0; i < num_arms_dcb_policy; i++) {
-				if(configuration.selected_dcb_policy == list_of_dcb_policy[i]) {
-					index_dcb_policy = i;
+			// Max bandwidth
+			for(int i = 0; i < num_arms_max_bandwidth; i++) {
+				if(configuration.selected_max_bandwidth == list_of_max_bandwidth[i]) {
+					index_max_bandwidth = i;
 				}
 			}
 			// Update the index of each chosen parameter
 			indexes_selected_arm[0] = index_channel;
 			indexes_selected_arm[1] = index_pd;
 			indexes_selected_arm[2] = index_tx_power;
-			indexes_selected_arm[3] = index_dcb_policy;
+			indexes_selected_arm[3] = index_max_bandwidth;
 			// Find the action ix and return it
 			int action_ix = values2index(indexes_selected_arm, num_arms_channel,
-				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
+				num_arms_sensitivity, num_arms_tx_power, num_arms_max_bandwidth);
 //			PrintActionBandits(action_ix);
 
 			return action_ix;
@@ -391,7 +390,7 @@ class PreProcessor {
 		*/
 		void PrintActionBandits(int action_ix){
 			index2values(indexes_selected_arm, action_ix, num_arms_channel,
-				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
+				num_arms_sensitivity, num_arms_tx_power, num_arms_max_bandwidth);
 			printf("%s Action %d ([%d %d %d %d]\n", LOG_LVL2,
 				action_ix, indexes_selected_arm[0], indexes_selected_arm[1], indexes_selected_arm[2], indexes_selected_arm[3]);
 			printf("%s Channel: %d\n", LOG_LVL3, list_of_channels[indexes_selected_arm[0]]);
@@ -399,7 +398,7 @@ class PreProcessor {
 				ConvertPower(PW_TO_DBM, list_of_pd_values[indexes_selected_arm[1]]));
 			printf("%s Tx Power: %.2f dBm\n", LOG_LVL3,
 				ConvertPower(PW_TO_DBM, list_of_tx_power_values[indexes_selected_arm[2]]));
-			printf("%s DCB policy: %d\n", LOG_LVL3, list_of_dcb_policy[indexes_selected_arm[3]]);
+			printf("%s Max bandwidth: %d\n", LOG_LVL3, list_of_max_bandwidth[indexes_selected_arm[3]]);
 		}
 
 		/**
@@ -520,14 +519,14 @@ class PreProcessor {
 		* @param "size_pd" [type int]: size of pd possibilities
 		* @param "size_tx_power" [type int]: size of Tx power possibilities
 		*/
-		void index2values(int *indexes, int action_ix, int size_channels, int size_pd, int size_tx_power, int size_dcb_policy) {
-			indexes[0] = (int) action_ix/(size_pd * size_tx_power * size_dcb_policy);
-			indexes[1] = (int) (action_ix - indexes[0] * (size_pd * size_tx_power * size_dcb_policy))
-					/(size_tx_power * size_dcb_policy);
-			indexes[2] = (int) (action_ix -  indexes[0] * (size_pd * size_tx_power * size_dcb_policy)
-					- indexes[1] * (size_tx_power * size_dcb_policy))
-					/(size_dcb_policy);
-			indexes[3] = action_ix % size_dcb_policy;
+		void index2values(int *indexes, int action_ix, int size_channels, int size_pd, int size_tx_power, int size_max_bandwidth) {
+			indexes[0] = (int) action_ix/(size_pd * size_tx_power * size_max_bandwidth);
+			indexes[1] = (int) (action_ix - indexes[0] * (size_pd * size_tx_power * size_max_bandwidth))
+					/(size_tx_power * size_max_bandwidth);
+			indexes[2] = (int) (action_ix -  indexes[0] * (size_pd * size_tx_power * size_max_bandwidth)
+					- indexes[1] * (size_tx_power * size_max_bandwidth))
+					/(size_max_bandwidth);
+			indexes[3] = action_ix % size_max_bandwidth;
 		}
 
 		/**
@@ -538,10 +537,10 @@ class PreProcessor {
 		* NOTE: size of tx power elements is not necessary
 		* @return  "index" [type int]: index of the action, which represents a combination of channel, pd and tx power
 		*/
-		int values2index(int *indexes, int size_channels, int size_pd, int size_tx_power, int size_dcb_policy) {
-			int index = indexes[0] * (size_pd * size_tx_power * size_dcb_policy)
-				+ indexes[1] * (size_tx_power * size_dcb_policy)
-				+ indexes[2] * size_dcb_policy
+		int values2index(int *indexes, int size_channels, int size_pd, int size_tx_power, int size_max_bandwidth) {
+			int index = indexes[0] * (size_pd * size_tx_power * size_max_bandwidth)
+				+ indexes[1] * (size_tx_power * size_max_bandwidth)
+				+ indexes[2] * size_max_bandwidth
 				+ indexes[3];
 			return index;
 		}
@@ -554,7 +553,7 @@ class PreProcessor {
 			list_of_channels = new int[num_arms_channel];
 			list_of_pd_values = new double[num_arms_sensitivity];
 			list_of_tx_power_values = new double[num_arms_tx_power];
-			list_of_dcb_policy = new int[num_arms_dcb_policy];
+			list_of_max_bandwidth = new int[num_arms_max_bandwidth];
 //			list_of_available_actions = new int[num_arms];
 //			for (int i = 0 ; i < num_arms; ++i) {
 //				list_of_available_actions[i] = 1;

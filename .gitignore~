@@ -28,25 +28,8 @@
 *.out
 *.app
 
-# IDE-related
-.project
-.classpath
-<<<<<<< HEAD
-=======
-.idea
-.metadata
-*.class
-*.properties
-*.jar
->>>>>>> master
-
 # Komondor
+*.csv
 *.cxx
 *.txt~
-*.csv~
-
-Code/output/.keep
-Code/output/
-!.gitignore
-
-Code/main/komondor_main
+output/*

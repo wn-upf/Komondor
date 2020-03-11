@@ -352,7 +352,7 @@
 #define ORIGIN_AP		1		///> To determine the source of a received command/configuration (AP)
 #define ORIGIN_CC		2		///> To determine the source of a received command/configuration (AP)
 
-#define NUM_FEATURES_ACTIONS			4	///> Number of features considered (e.g., primary, PD, P_tx, DCB policy)
+#define NUM_FEATURES_ACTIONS			4	///> Number of features considered (e.g., primary, PD, P_tx, Max bandwidth)
 
 // Types of rewards
 #define REWARD_TYPE_PACKETS_SUCCESSFUL	0	///> Packets sent
@@ -491,7 +491,7 @@
 #define IX_AGENT_CHANNEL_VALUES			4
 #define IX_AGENT_PD_VALUES				5
 #define IX_AGENT_TX_POWER_VALUES		6
-#define IX_AGENT_DCB_POLICY				7
+#define IX_AGENT_MAX_BANDWIDTH			7
 #define IX_AGENT_TYPE_OF_REWARD			8
 #define IX_AGENT_LEARNING_MECHANISM		9
 #define IX_AGENT_SELECTED_STRATEGY 		10

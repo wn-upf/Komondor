@@ -59,11 +59,11 @@ struct Action
 
 	int id;				///> Action identifier
 
-	// Configuration - Only channel, sensitivity, transmission power and DCB policy are considered at this moment
+	// Configuration - Only channel, sensitivity, transmission power and max bandwidth are considered at this moment
 	int channel;		///> Channel selected
 	double cca;			///> CCA level
 	double tx_power;	///> Tx Power
-	int dcb_policy;		///> DCB policy
+	int max_bandwidth;	///> Max bandwidth
 
 	// Full run information
 	double instantaneous_reward;    ///> Last reward experienced by playing the action
@@ -84,7 +84,7 @@ struct Action
 		printf(" * channel = %d\n", channel);
 		printf(" * cca = %f dBm\n", ConvertPower(PW_TO_DBM, cca));
 		printf(" * tx_power = %f dBm\n", ConvertPower(PW_TO_DBM, tx_power));
-		printf(" * dcb_policy = %d\n", dcb_policy);
+		printf(" * max_bandwidth = %d\n", max_bandwidth);
 		printf("------------\n");
 	}
 
@@ -100,7 +100,7 @@ struct Action
 		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s channel = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, channel);
 		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s cca = %f dBm\n", sim_time, string_device, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, cca));
 		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s tx_power = %f dBm\n", sim_time, string_device, LOG_C03, LOG_LVL3, ConvertPower(PW_TO_DBM, tx_power));
-		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s dcb_policy = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, dcb_policy);
+		LOGS(save_logs, logger.file, "%.15f;%s;%s;%s max_bandwidth = %d\n", sim_time, string_device, LOG_C03, LOG_LVL3, max_bandwidth);
 	}
 
 	/**

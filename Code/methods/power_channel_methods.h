@@ -683,7 +683,7 @@ void GetTxChannelsByChannelBondingCCA11ax(int *channels_for_tx, int channel_bond
 	int num_channels_allowed = max_channel_allowed - min_channel_allowed + 1;
 
 	// Reset channels for transmitting
-	for(int c = min_channel_allowed; c <= max_channel_allowed; ++c){
+	for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 		channels_for_tx[c] = FALSE;
 	}
 
@@ -1097,7 +1097,7 @@ void GetTxChannelsByChannelBondingCCASame(int *channels_for_tx, int channel_bond
     int min_channel_allowed, int max_channel_allowed, int primary_channel, int num_channels_system){
 
 	// Reset channels for transmitting
-	for(int c = min_channel_allowed; c <= max_channel_allowed; ++c){
+	for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 		channels_for_tx[c] = FALSE;
 	}
 
@@ -1561,6 +1561,81 @@ void PrintOrWriteNodesTransmitting(int write_or_print, int save_node_logs, int p
 	}
 }
 
+
+/**
+* Get minimum and maximum allowed channels given primary and max bandwidth
+* @param "primary_channel" [type int]: primary channel
+* @param "max_bandwidth" [type int]: max allocated bandwidth [no. of channels]
+* @param "min_ch" [type int]:  min channel allocated
+* @param "max_ch" [type Logger]: max channel allocated
+*/
+
+void GetMinAndMaxAllowedChannels(int& min_ch, int& max_ch, int primary_channel, int max_bandwidth){
+
+	switch(max_bandwidth){
+
+		// 20 MHz
+		case 1:{
+			min_ch = primary_channel;
+			max_ch = primary_channel;
+			break;
+		}
+
+		//40 MHz
+		case 2:{
+
+			if(primary_channel == 0 || primary_channel == 1){
+				min_ch = 0;
+				max_ch = 1;
+			} else if(primary_channel == 2 || primary_channel == 3){
+				min_ch = 2;
+				max_ch = 3;
+			} else if(primary_channel == 4 || primary_channel == 5){
+				min_ch = 4;
+				max_ch = 5;
+			} else if(primary_channel == 6 || primary_channel == 7){
+				min_ch = 6;
+				max_ch = 7;
+			}
+
+			break;
+		}
+
+		// 80 MHz
+		case 4:{
+			if(primary_channel <= 3){
+				min_ch = 0;
+				max_ch = 3;
+			} else {
+				min_ch = 4;
+				max_ch = 7;
+			}
+			break;
+		}
+
+		// 160 MHz
+		case 8:{
+			min_ch = 0;
+			max_ch = 7;
+			break;
+		}
+
+	} // End of switch(max_bandwidth)
+
+}
+
+/**
+* Get channels where the TX is performed
+* @param "channels_for_tx" [type int*]: boolean array indicating whether a channel is used for TX (1) or not (0)
+* @param "channel_bonding_model" [type int]: channel bonding model (e.g., 4 DCB)
+* @param "channels_free" [type int*]:  array indicating whether a channel is free (1) or not (0)
+* @param "min_channel_allowed" [type int]: minimum allocated channel (most to the left)
+* @param "max_channel_allowed" [type int]: maximum allocated channel (most to the right)
+* @param "primary_channel" [type int]: primary channel
+* @param "num_channels_komondor" [type int]: number of channels in the system
+* @param "channel_power" [type double**]: array indicating the power perceived per channel
+* @param "channel_aggregation_cca_model" [type int]: indicates if CCA is considered to be different per bandwidth
+*/
 
 void GetTxChannels(int *channels_for_tx, int channel_bonding_model, int *channels_free,
     int min_channel_allowed, int max_channel_allowed, int primary_channel, int num_channels_komondor,

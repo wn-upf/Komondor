@@ -68,7 +68,7 @@ struct Capabilities
 	int num_channels_allowed;	///> Maximum number of channels allowed to TX in
 	double tx_power_default;	///> Default power transmission [pW]
 	double sensitivity_default;	///> Default pd	("sensitivity" threshold) [pW]
-	int current_dcb_policy;		///> Selected DCB policy
+	int current_max_bandwidth;	///> Selected max bandwidth [no. of channels]
 
 	/**
 	 * Function to print the node's capabilities
@@ -80,7 +80,7 @@ struct Capabilities
 		printf("%s primary_channel = %d\n", LOG_LVL4, primary_channel);
 		printf("%s min_channel_allowed = %d\n", LOG_LVL4, min_channel_allowed);
 		printf("%s max_channel_allowed = %d\n", LOG_LVL4, max_channel_allowed);
-		printf("%s current_dcb_policy = %d\n", LOG_LVL4, current_dcb_policy);
+		printf("%s current_max_bandwidth = %d\n", LOG_LVL4, current_max_bandwidth);
 //		printf("%s traffic_load = %.2f packets/s\n", LOG_LVL4, traffic_load);
 //		printf("%s destination_id = %d\n", LOG_LVL4, destination_id);
 		printf("%s tx_power_default = %f pW (%f dBm)\n", LOG_LVL4, tx_power_default, ConvertPower(PW_TO_DBM, tx_power_default));
@@ -105,8 +105,8 @@ struct Capabilities
 			sim_time, node_id, LOG_F00, LOG_LVL4, min_channel_allowed);
 		fprintf(logger.file, "%.15f;N%d;%s;%s max_channel_allowed = %d\n",
 			sim_time, node_id, LOG_F00, LOG_LVL4, max_channel_allowed);
-		fprintf(logger.file, "%.15f;N%d;%s;%s current_dcb_policy = %d\n",
-			sim_time, node_id, LOG_F00, LOG_LVL4, current_dcb_policy);
+		fprintf(logger.file, "%.15f;N%d;%s;%s current_max_bandwidth = %d\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, current_max_bandwidth);
 //		fprintf(logger.file, "%.15f;N%d;%s;%s traffic_load = %.2f packets/s\n",
 //			sim_time, node_id, LOG_F00, LOG_LVL4, traffic_load);
 //		fprintf(logger.file, "%.15f;N%d;%s;%s destination_id = %d\n",
@@ -162,7 +162,7 @@ struct Configuration
 	int selected_primary_channel;		///> Selected primary channel
 	double selected_pd;					///> Selected pd ("sensitivity" threshold) [pW]
 	double selected_tx_power;			///> Selected Tx Power [pW]
-	int selected_dcb_policy;			///> Selected DCB policy
+	int selected_max_bandwidth;			///> Selected Max bandwidth [no. of channels]
 
 	// Frames
 	int frame_length;
@@ -193,7 +193,7 @@ struct Configuration
 		printf("%s selected_primary = %d\n", LOG_LVL4, selected_primary_channel);
 		printf("%s pd_default = %f pW (%f dBm)\n", LOG_LVL4, selected_pd, ConvertPower(PW_TO_DBM, selected_pd));
 		printf("%s tx_power_default = %f pW (%f dBm)\n", LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
-		printf("%s selected_dcb_policy = %d\n", LOG_LVL4, selected_dcb_policy);
+		printf("%s selected_max_bandwidth = %d\n", LOG_LVL4, selected_max_bandwidth);
 		printf("\n");
 	}
 
@@ -210,8 +210,8 @@ struct Configuration
 			sim_time, LOG_F00, LOG_LVL4, selected_pd, ConvertPower(PW_TO_DBM, selected_pd));
 		fprintf(logger.file, "%.15f;CC;%s;%s tx_power_default = %f pW (%f dBm)\n",
 			sim_time, LOG_F00, LOG_LVL4, selected_tx_power, ConvertPower(PW_TO_DBM, selected_tx_power));
-		fprintf(logger.file, "%.15f;CC;%s;%s selected_dcb_policy = %d\n",
-			sim_time, LOG_F00, LOG_LVL4, selected_dcb_policy);
+		fprintf(logger.file, "%.15f;CC;%s;%s selected_max_bandwidth = %d\n",
+			sim_time, LOG_F00, LOG_LVL4, selected_max_bandwidth);
 	}
 
 };
