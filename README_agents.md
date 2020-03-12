@@ -42,9 +42,9 @@ Detailed installation and execution instructions can be found in the [Komondor U
 
 To run Komondor with intelligent agents, additional information should be provided to the simulator. In particular, you should run Komondor simulator by using the following command:
 
-```
-$ ./komondor_main INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
-```
+<pre>
+$ ./komondor_main <b>INPUT_FILE_NODES</b> INPUT_FILE_AGENTS <b>OUTPUT_FILE_LOGS</b> SIM_CODE <b>FLAG_SAVE_NODE_LOGS</b> FLAG_SAVE_AGENT_LOGS <b>FLAG_PRINT_SYSTEM_LOGS</b> FLAG_PRINT_NODE_LOGS <b>FLAG_PRINT_AGENT_LOGS</b> SIM_TIME <b>SEED</b>
+</pre>
 
 The inputs are further described next:
 * ```INPUT_FILE_NODES```: file containing nodes information (e.g., position, channels allowed, etc.).The file must be a .csv with semicolons as separators.
