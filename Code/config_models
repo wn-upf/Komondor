@@ -11,4 +11,4 @@ pdf_backoff=0
 # [DEPRECATED] PDF for generating the transmission time of packets - 0=deterministic or 1=exponential
 pdf_tx_time=0
 # Simulation index for the script's output
-simulation_ix_output_script=10
+simulation_ix_output_script=0

@@ -327,7 +327,7 @@
  * *****************************************
  */
 #define MIN_TX_POWER_DBM 		1
-#define MAX_TX_POWER_DBM 		20
+#define MAX_TX_POWER_DBM 		23
 #define MIN_SENSITIVITY_DBM 	-82
 #define MAX_SENSITIVITY_DBM 	-62
 
