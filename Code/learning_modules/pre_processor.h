@@ -160,6 +160,7 @@ class PreProcessor {
 						reward = 0;
 					} else {
 						reward = (double) performance.throughput/performance.max_bound_throughput;
+						//reward = pow(2, (double) performance.throughput/performance.max_bound_throughput);
 					}
 					break;
 				}

@@ -353,7 +353,7 @@ double ComputePowerReceived(double distance, double tx_power, double central_fre
 		case PATHLOSS_TMB:{
 			double pl_overall_db;
 			pl_overall_db = 54.12 + 10 * 2.06067 * log10(distance) + 5.25 * 0.1467 * distance;
-			double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) - pl_overall_db;
+			double pw_received_dbm = ConvertPower(PW_TO_DBM, tx_power) + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - pl_overall_db;
 			pw_received = ConvertPower(DBM_TO_PW, pw_received_dbm);
 			break;
 		}

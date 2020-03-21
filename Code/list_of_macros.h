@@ -259,8 +259,8 @@
 #define NUM_CHANNELS_KOMONDOR	8   ///> Total number of frequency channels
 #define CHANNEL_BW_MHZ			20	///> Bandwidth of a basic channel [MHz]
 #define NOISE_LEVEL_DBM			-95	///> Noise level [dBm]
-#define ANTENNA_RX_GAIN_DB 		0	///> Antenna receiption gain [dB]
-#define ANTENNA_TX_GAIN_DB 		0	///> Antenna transmission gain [dB]
+#define ANTENNA_RX_GAIN_DB 		1.8	///> Antenna reception gain [dB]
+#define ANTENNA_TX_GAIN_DB 		1.8	///> Antenna transmission gain [dB]
 
 // MODULATION TYPES: https://en.wikipedia.org/wiki/IEEE_802.11ax
 #define MODULATION_FORBIDDEN	-1
