@@ -751,15 +751,32 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					current_left_channel = notification.left_channel;
 					current_right_channel = notification.right_channel;
+					current_modulation = notification.modulation_id;
 
 					LOGS(save_node_logs,node_logger.file,
 						"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
 						SimTime(), node_id, node_state, LOG_D07, LOG_LVL3,
 						notification.destination_id);
 
-					// Compute max interference (the highest one perceived in the reception channel range)
-					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-						notification, node_state, power_received_per_node, &channel_power);
+					// Issue #146 RTS/CTS BW indication
+					// - If incoming packet is RTS or CTS sent to me, focus first just on the primary channel
+					// - If RTS/CTS decodable in the primary, packet not lost.
+					// - After decoding the RTS/CTS at the primary, perform CCA assessment in all the range
+					// - So, if RTS/CTS: max_pw_interference is now referred just to primary channel interference
+					// - Keep max_pw_interference for all range if DATA or ACK.
+
+					if(notification.packet_type == PACKET_TYPE_RTS){
+
+						// max_pw_interference is interference in primary
+						max_pw_interference = channel_power[current_primary_channel]
+							- power_received_per_node[notification.source_id];
+
+					} else {
+
+						// Compute max interference (the highest one perceived in the reception channel range)
+						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+							notification, node_state, power_received_per_node, &channel_power);
+					}
 
 					LOGS(save_node_logs, node_logger.file,
 						"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %.2f dBm - P_if = %.2f dBm - P_noise = %.2f dBm\n",
@@ -1940,6 +1957,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									SimTime(), node_id, node_state, LOG_D16, LOG_LVL4,
 									notification.packet_id, notification.source_id);
 
+							current_left_channel = notification.left_channel;
+							current_right_channel = notification.right_channel;
+
 							// Cancel ACK timeout and go to STATE_RX_ACK while updating receiving info
 							trigger_CTS_timeout.Cancel();
 							node_state = STATE_RX_CTS;
@@ -2519,7 +2539,52 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]),
 							ConvertPower(PW_TO_DBM, current_pd));
 
-						if(ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) < current_pd) {
+
+						// Issue #146 RTS/CTS BW indication
+						// - If incoming packet is RTS decodable:
+						// 1. Perform CCA assessment in full range
+						// 2. Derive new operation BW (e.g., if original range was 0 to 7 and 5 is busy, report 0 to 3)
+						// 3. Transmit (later) CTS
+
+						int CTS_transmission_possible = FALSE;
+
+						GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free, current_left_channel,
+								current_right_channel, &channel_power, current_pd, timestampt_channel_becomes_free, SimTime(), PIFS);
+
+						LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free after RTS: ",
+								SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
+
+						PrintOrWriteChannelsFree(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
+							channels_free);
+
+						GetTxChannels(channels_for_tx, current_dcb_policy, channels_free,
+								current_left_channel, current_right_channel, current_primary_channel,
+								NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+
+						LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting after RTS: ",
+								SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
+
+						PrintOrWriteChannelForTx(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
+							channels_for_tx);
+
+						if(channels_for_tx[0] != TX_NOT_POSSIBLE){
+
+							// Get the transmission channels
+							current_left_channel = GetFirstOrLastTrueElemOfArray(FIRST_TRUE_IN_ARRAY,
+								channels_for_tx, NUM_CHANNELS_KOMONDOR);
+							current_right_channel = GetFirstOrLastTrueElemOfArray(LAST_TRUE_IN_ARRAY,
+								channels_for_tx, NUM_CHANNELS_KOMONDOR);
+
+							CTS_transmission_possible = TRUE;
+
+						} else{
+							CTS_transmission_possible = FALSE;
+						}
+
+
+						//if(ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) < current_pd) {
+
+						if(CTS_transmission_possible){
 
 							LOGS(save_node_logs,node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Channel(s) is (are) clear! Sending CTS to N%d (STATE = %d) ...\n",
@@ -2528,10 +2593,18 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							node_state = STATE_TX_CTS;
 							// Generate and send CTS to transmitter after SIFS
 							current_destination_id = notification.source_id;
-
 							current_tx_duration = cts_duration;
 
 							// Compute the NAV time
+							bits_ofdm_sym =  getNumberSubcarriers(current_right_channel - current_left_channel +1) *
+								Mcs_array::modulation_bits[notification.modulation_id-1] *
+								Mcs_array::coding_rates[notification.modulation_id-1] *
+								IEEE_AX_SU_SPATIAL_STREAMS;
+
+							ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
+								num_channels_tx, notification.modulation_id, notification.tx_info.num_packets_aggregated,
+								frame_length, bits_ofdm_sym);
+
 							current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
 							current_nav_time = FixTimeOffset(current_nav_time,13,12); // Update the NAV time according to the time offsets
 
@@ -2552,7 +2625,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 							cts_notification = GenerateNotification(PACKET_TYPE_CTS, current_destination_id,
 								notification.packet_id, notification.tx_info.num_packets_aggregated,
-								notification.timestamp_generated, current_tx_duration);
+								notification.timestamp_generated, notification.tx_info.total_tx_power);
 
                             // Reset the flag that indicates whether the tx power changed or not
                             flag_change_in_tx_power = FALSE;
@@ -2578,7 +2651,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							// CANNOT START PACKET TX
 
 							LOGS(save_node_logs,node_logger.file,
-								"%.15f;N%d;S%d;%s;%s NO PUEDE PASAR!\n",
+								"%.15f;N%d;S%d;%s;%s CTS TX NOT POSSIBLE\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 
 							/*
@@ -2629,6 +2702,24 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 								notification.packet_id, notification.source_id);
 
 						node_state = STATE_TX_DATA;
+
+						// Compute the NAV time
+						bits_ofdm_sym =  getNumberSubcarriers(current_right_channel - current_left_channel +1) *
+							Mcs_array::modulation_bits[notification.modulation_id-1] *
+							Mcs_array::coding_rates[notification.modulation_id-1] *
+							IEEE_AX_SU_SPATIAL_STREAMS;
+
+						ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
+							num_channels_tx, notification.modulation_id, notification.tx_info.num_packets_aggregated,
+							frame_length, bits_ofdm_sym);
+
+						limited_num_packets_aggregated = notification.tx_info.num_packets_aggregated;
+
+						LOGS(save_node_logs,node_logger.file,
+							"%.15f;N%d;S%d;%s;%s Transmitting DATA (N_agg = %d) in %d channels using modulation %d (%.0f bits per OFDM symbol ---> %.2f Mbps) \n",
+							SimTime(), node_id, node_state, LOG_F04, LOG_LVL4, limited_num_packets_aggregated,
+							(current_right_channel - current_left_channel + 1), current_modulation, bits_ofdm_sym,
+							bits_ofdm_sym/IEEE_AX_OFDM_SYMBOL_GI32_DURATION * pow(10,-6));
 
 						// Compute the NAV time
 						current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
@@ -3506,6 +3597,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 	notification.source_id = node_id;
 	notification.destination_id = destination_id;
 	notification.tx_duration = tx_duration;
+	notification.tx_info.total_tx_power = current_tx_power;
 
 	if(first_time_requesting_mcs) {
 		notification.left_channel = current_primary_channel;
@@ -3517,7 +3609,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 	}
 
 	notification.frame_length = -1;
-	notification.modulation_id = -1;
+	notification.modulation_id = current_modulation;
 	notification.timestamp = SimTime();
 	notification.timestamp_generated = timestamp_generated;
 
