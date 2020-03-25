@@ -65,7 +65,8 @@ struct TxInfo
 	double cts_duration;		///> Duration of the CTS packet
 
 	double preoccupancy_duration;	///>
-	double tx_power;				///> Transmission power in [pW]
+	double total_tx_power;			///> Transmission power [pW]
+	double tx_power;				///> Transmission power per 20 MHz channel [pW]
 	double tx_gain;					///> Transmission gain [linear ratio]
 	double pd;						///> PD threshold in [pW]
 	double bits_ofdm_sym; 			///> Bits per OFDM symbol
