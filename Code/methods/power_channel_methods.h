@@ -793,19 +793,19 @@ void GetTxChannelsByChannelBondingCCA11ax(int *channels_for_tx, int channel_bond
 							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 2){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
-							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 3){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
 							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 4){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
-							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 5){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
 							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 6){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
-							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 7){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
 							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
@@ -923,19 +923,19 @@ void GetTxChannelsByChannelBondingCCA11ax(int *channels_for_tx, int channel_bond
 							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 2){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
-							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 3){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
 							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 4){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
-							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 5){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
 							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 6){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
-							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 						} else if(primary_channel == 7){
 							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
 							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
@@ -1002,19 +1002,19 @@ void GetTxChannelsByChannelBondingCCA11ax(int *channels_for_tx, int channel_bond
 						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 					} else if(primary_channel == 2){
 						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
-						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 					} else if(primary_channel == 3){
 						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
 						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 					} else if(primary_channel == 4){
 						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
-						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 					} else if(primary_channel == 5){
 						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
 						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 					} else if(primary_channel == 6){
 						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
-						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
 					} else if(primary_channel == 7){
 						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
 						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
