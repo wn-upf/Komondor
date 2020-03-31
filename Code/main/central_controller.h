@@ -164,6 +164,21 @@ component CentralController : public TypeII{
 		int cc_iteration; 					///> Counter that keeps track of the number of iterations at the CC
 		int counter_responses_received; 	///> Needed to determine the number of answers that the controller receives from agents
 
+        // Actions management (tunable parameters)
+        int *indexes_configuration;                     ///>
+        int *list_of_channels; 				///> List of channels
+        double *list_of_pd_values;			///> List of PD values
+        double *list_of_tx_power_values;	///> List of TX power values
+        int *list_of_dcb_policy;			///> List of DCB policies
+
+        Action *actions;					///> List of actions
+        int *list_of_available_actions;		///> List of the actions that are available
+        int num_arms;					///> Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
+        int num_arms_channel;			///> Number of channels available
+        int num_arms_sensitivity;		///> Number of PD levels available
+        int num_arms_tx_power;			///> Number of TX power levels available
+        int num_arms_dcb_policy;			///> Number of DCB policies available
+
 	// Connections and timers
 	public:
 
@@ -262,6 +277,8 @@ void CentralController :: StartCcActivity() {
     // According to the defined mode, start making requests by activating triggers
     if (controller_mode == CC_MODE_ACTIVE) {
         // Indicate to all the agents to send information upon receiving a trigger only
+        SendCommandToAllAgents(STOP_ACTING, configuration_array);
+        printf("%f Stop activity all\n", SimTime());
         SendCommandToAllAgents(COMMUNICATION_UPON_TRIGGER, configuration_array);    // TODO: based on the intent for the CC, decide to use triggers or not (now it is hardcoded)
         // Generate the time trigger for the first request
         if (time_between_requests > 0) {
@@ -487,13 +504,43 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 	LOGS(save_controller_logs,central_controller_logger.file,
 		"%.15f;CC;%s;%s Applying the ML method (iteration %d)\n", SimTime(), LOG_C00, LOG_LVL1, cc_iteration);
 
-	// STEP 1 [OPTIONAL]: Update the performance observed per cluster (shared metric)
-	UpdatePerformancePerCluster(MAX_MIN_PERFORMANCE); // TODO: specify the shared performance from input files (now hardcoded)
-
-	// STEP 2: APPLY THE ML METHOD
-	ml_model.ComputeGlobalConfiguration(configuration_array, controller_report, central_controller_logger, SimTime());
-
-	// STEP 3: PROVIDE A RESPONSE
+	// STEP 1: APPLY THE ML METHOD
+    // Find the index of the current action
+    int processed_configuration = 0;
+    if(configuration_array[0].selected_tx_power == ConvertPower(DBM_TO_PW,4)) {
+        processed_configuration = 0;
+    } else if (configuration_array[0].selected_tx_power == ConvertPower(DBM_TO_PW,7)) {
+        processed_configuration = 1;
+    } else if (configuration_array[0].selected_tx_power == ConvertPower(DBM_TO_PW,12)) {
+        processed_configuration = 2;
+    } else if (configuration_array[0].selected_tx_power == ConvertPower(DBM_TO_PW,17)) {
+        processed_configuration = 3;
+    } else if (configuration_array[0].selected_tx_power == ConvertPower(DBM_TO_PW,23)) {
+        processed_configuration = 4;
+    }
+    // Process the performance to obtain the corresponding reward
+    double processed_reward = pre_processor.ProcessWlanPerformance(performance_array[0], type_of_reward);
+    // Process the performance to obtain the corresponding reward according to the central controller
+    //if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
+    int ml_output = ml_model.ComputeIndividualConfiguration
+            (processed_configuration, processed_reward, central_controller_logger,
+             SimTime(), list_of_available_actions);
+    double processed_ml_output;
+    if(ml_output == 0) {
+        processed_ml_output = ConvertPower(DBM_TO_PW,4);
+    } else if (ml_output == 1) {
+        processed_ml_output = ConvertPower(DBM_TO_PW,7);
+    } else if (ml_output == 2) {
+        processed_ml_output = ConvertPower(DBM_TO_PW,12);
+    } else if (ml_output == 3) {
+        processed_ml_output = ConvertPower(DBM_TO_PW,17);
+    } else if (ml_output == 4) {
+        processed_ml_output = ConvertPower(DBM_TO_PW,23);
+    }
+    // Process the configuration from the output of the ML method
+    configuration_array[0].selected_tx_power = processed_ml_output;
+    configuration_array[1].selected_tx_power = processed_ml_output;
+ 	// STEP 3: PROVIDE A RESPONSE
 	switch(ml_model.learning_mechanism) {
 		// Action banning: special case where configurations are banned, rather that provided
 		case CENTRALIZED_ACTION_BANNING: {
@@ -501,6 +548,11 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 			SendCommandToAllAgents(BAN_CONFIGURATION, configuration_array);
 			break;
 		}
+        case MULTI_ARMED_BANDITS: {
+            // Forward the output to agents
+            SendCommandToAllAgents(UPDATE_CONFIGURATION, configuration_array);
+            break;
+        }
 		// Unknown controller mode
 		default:{
 			printf("[CC] ERROR: Undefined centralized ML method %d\n"
@@ -674,7 +726,22 @@ void CentralController :: InitializeMlPipeline() {
  */
 void CentralController :: InitializePreProcessor() {
 //	pre_processor.type_of_reward = type_of_reward;
-	pre_processor.InitializeVariables();
+    pre_processor.num_arms = num_arms;
+    pre_processor.num_arms_channel = num_arms_channel;
+    pre_processor.num_arms_sensitivity = num_arms_sensitivity;
+    pre_processor.num_arms_tx_power = num_arms_tx_power;
+    pre_processor.num_arms_dcb_policy = num_arms_dcb_policy;
+
+    pre_processor.InitializeVariables();
+
+    pre_processor.list_of_channels = list_of_channels;
+    pre_processor.list_of_pd_values = list_of_pd_values;
+    pre_processor.list_of_tx_power_values = list_of_tx_power_values;
+    pre_processor.list_of_dcb_policy = list_of_dcb_policy;
+
+    // Initialize the actions array
+    //actions = pre_processor.InitializeActions();
+
 }
 
 /**
@@ -682,10 +749,18 @@ void CentralController :: InitializePreProcessor() {
  */
 void CentralController :: InitializeMlModel() {
 
-	ml_model.learning_mechanism = learning_mechanism;
+    // Agent information
+    ml_model.agent_id = 0;
+    ml_model.num_stas = 1;
+    // ML model information
+    ml_model.learning_mechanism = learning_mechanism;
+    ml_model.action_selection_strategy = action_selection_strategy;
+    // MABs information
+    ml_model.num_channels = num_arms_channel;
+    ml_model.num_arms = num_arms;
+
 	ml_model.save_logs = save_controller_logs;
 	ml_model.print_logs = print_controller_logs;
-	ml_model.action_selection_strategy = action_selection_strategy;
 	ml_model.agents_number = agents_number;
 	ml_model.max_number_of_actions = max_number_of_actions;
 	ml_model.InitializeVariables();
@@ -720,6 +795,11 @@ void CentralController :: InitializeMlModel() {
  */
 void CentralController :: InitializeCentralController() {
 
+    list_of_available_actions = new int[5];
+    for (int i = 0; i < 5; ++i) {
+        list_of_available_actions[i] = 1;
+    }
+
 	save_controller_logs = TRUE;
 	print_controller_logs = TRUE;
 
@@ -735,6 +815,21 @@ void CentralController :: InitializeCentralController() {
 	controller_report.agents_number = agents_number;
 	controller_report.max_number_of_actions = max_number_of_actions;
 	controller_report.SetSizeOfArrays();
+
+    indexes_configuration = new int[4];
+
+    list_of_channels = new int[0];
+    list_of_channels[0] = 0;
+    list_of_pd_values = new double[0];
+    list_of_pd_values[0] = ConvertPower(DBM_TO_PW, -82);
+    list_of_tx_power_values = new double[5];
+    list_of_tx_power_values[0] = ConvertPower(DBM_TO_PW, 4);
+    list_of_tx_power_values[1] = ConvertPower(DBM_TO_PW, 7);
+    list_of_tx_power_values[2] = ConvertPower(DBM_TO_PW, 12);
+    list_of_tx_power_values[3] = ConvertPower(DBM_TO_PW, 17);
+    list_of_tx_power_values[4] = ConvertPower(DBM_TO_PW, 23);
+    list_of_dcb_policy = new int[0];
+    list_of_dcb_policy[0] = 4;
 
 }
 

@@ -159,7 +159,8 @@ class PreProcessor {
 					if (performance.max_bound_throughput == 0) {
 						reward = 0;
 					} else {
-						reward = (double) performance.throughput/performance.max_bound_throughput;
+					    double max_bound_tpt_override = 121875000.000000;
+						reward = (double) performance.throughput/max_bound_tpt_override;
 						//reward = pow(2, (double) performance.throughput/performance.max_bound_throughput);
 					}
 					break;
@@ -280,10 +281,10 @@ class PreProcessor {
 			index2values(indexes_selected_arm, (int) ml_output, num_arms_channel,
 				num_arms_sensitivity, num_arms_tx_power, num_arms_dcb_policy);
 			// Update each parameter according to the configuration provided by the MAB
-			int new_primary = list_of_channels[indexes_selected_arm[0]];
-			double new_pd = list_of_pd_values[indexes_selected_arm[1]];
-			double new_tx_power = list_of_tx_power_values[indexes_selected_arm[2]];
-			int new_dcb_policy = list_of_dcb_policy[indexes_selected_arm[3]];
+			int new_primary = 0;
+			double new_pd = ConvertPower(DBM_TO_PW,-82);
+			double new_tx_power = ml_output;
+			int new_dcb_policy = 4;
 			// Generate the configuration object
 			Configuration new_configuration;
 			// Set configuration to the received one, and then change specific parameters

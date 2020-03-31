@@ -235,7 +235,7 @@ void Agent :: Start(){
 	InitializeMlPipeline();
 
 	// Compute the new configuration by using the current ML model
-	ComputeNewConfiguration();
+	//ComputeNewConfiguration();
 
 };
 
@@ -382,14 +382,14 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 				LOGS(save_agent_logs,agent_logger.file,
 					"%.15f;A%d;%s;%s SENDING the current configuration and performance to the CC...\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2);
-				if ( CheckValidityOfData(configuration, performance, SimTime(),
-						MAX_TIME_INFORMATION_VALID) && flag_information_available) {
-					ForwardInformationToController();
-				} else {
+				//if ( CheckValidityOfData(configuration, performance, SimTime(),
+				//		MAX_TIME_INFORMATION_VALID) && flag_information_available) {
+				//	ForwardInformationToController();
+				//} else {
 					// Request information to the AP (trigger = 0)
 					trigger_request_information_to_ap.Set(FixTimeOffset(SimTime(),13,12));
 					flag_request_from_controller = true;
-				}
+				//}
 				break;
 			}
 			// Update the configuration to the one sent by the CC

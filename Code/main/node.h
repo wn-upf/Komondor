@@ -4111,7 +4111,7 @@ void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configu
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s New configuration received from the Agent\n",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
-	if(!flag_apply_new_configuration) {
+	//if(!flag_apply_new_configuration) {
 		new_configuration = received_configuration;
 		if(save_node_logs) WriteNodeConfiguration(node_logger, header_str);
 		if(save_node_logs) WriteReceivedConfiguration(node_logger, header_str, new_configuration);
@@ -4121,9 +4121,9 @@ void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configu
 			// FORCE RESTART TO APPLY CHANGES
 			RestartNode(FALSE);
 		}
-	} else {
-		printf("%.15f;N%d Received a new configuration before applying the last one!\n", SimTime(), node_id);
-	}
+	//} else {
+	//	printf("%.15f;N%d Received a new configuration before applying the last one!\n", SimTime(), node_id);
+	//}
 
 }
 

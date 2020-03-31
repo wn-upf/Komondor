@@ -374,6 +374,7 @@
 #define ACTION_BANNING					3
 #define RTOT_ALGORITHM					4
 #define CENTRALIZED_ACTION_BANNING		5
+#define UNIFIED_MAB                     6
 
 // Types of banning threshold adaptation
 #define BANNING_THRESHOLD_STATIC        0

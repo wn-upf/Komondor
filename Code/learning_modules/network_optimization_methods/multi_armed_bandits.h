@@ -244,7 +244,7 @@ class MultiArmedBandit {
 		int PickArmThompsonSampling(int num_arms, double *estimated_reward_per_arm,
 			int *times_arm_has_been_selected, int *available_arms) {
 			//TODO: validate the behavior of this implementation
-			int action_ix;
+			int action_ix = 0;
 			double *theta = new double[num_arms];
 			double std;
 			// Compute the posterior probability of each arm
@@ -265,7 +265,6 @@ class MultiArmedBandit {
 				}
 				//  TODO: elseif(theta[i] == max) --> Break ties!
 			}
-//			printf("Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
 			return action_ix;
 		}
 
@@ -384,12 +383,13 @@ class MultiArmedBandit {
 			initial_reward = 0;
 			num_iterations = 1;
 			// Initialize the rewards assigned to each arm
-			reward_per_arm = new double[num_arms];
-			cumulative_reward_per_arm = new double[num_arms];
-			average_reward_per_arm = new double[num_arms];
-			estimated_reward_per_arm = new double[num_arms];
+			reward_per_arm = new double[5];
+			cumulative_reward_per_arm = new double[5];
+			average_reward_per_arm = new double[5];
+			estimated_reward_per_arm = new double[5];
 			// Initialize the array containing the times each arm has been played
-			times_arm_has_been_selected = new int[num_arms];
+			times_arm_has_been_selected = new int[5];
+			num_arms = 5;
 			for(int i = 0; i < num_arms; ++i){
 				reward_per_arm[i] = initial_reward;	// Set the initial reward
 				cumulative_reward_per_arm[i] = initial_reward;
