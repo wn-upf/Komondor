@@ -1,0 +1,4 @@
+# processing part 1: extract lines where word "satisfaction" appears ;
+grep "satisfaction" ${array[executing_ix]} > processed_output/test_output_$(printf %03d $executing_ix).csv ;
+# processing part 2: parse the pre-processed files and generate a csv file with the timestamp and the satisfaction value ;
+# process the files (select only the timestamp and the satisfaction value) ;

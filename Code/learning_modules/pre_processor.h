@@ -194,6 +194,13 @@ class PreProcessor {
 					reward = performance.successful_channel_occupancy;/// (SimTime() - performance.timestamp);
 				    break;
 				}
+				/* REWARD_TYPE_THROUGHPUT_SATISFACTION:
+				 * - Number of packets successfully delivered (ACKed) divided by the number of packets generated
+				 */
+				case REWARD_TYPE_THROUGHPUT_SATISFACTION:{
+					reward = (double) performance.data_frames_acked/ (double) performance.num_packets_generated;
+					break;
+				}
 				/* Default */
 				default:{
 					printf("[Pre-Processor] ERROR: '%d' is not a correct type of performance indicator\n", type_of_reward);
@@ -471,6 +478,25 @@ class PreProcessor {
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Average throughput = %.2f Mbps\n", sim_time, string_device,
 						LOG_C03, LOG_LVL3, performance.throughput * pow(10,-6));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Throughput satisfaction = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, ((double)performance.data_frames_acked/(double)performance.num_packets_generated));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets generated = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_packets_generated);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets ACKed = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.data_frames_acked);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS sent = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_sent);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS lost = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_lost);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Prob. RTS/CTS lost = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, (double) performance.rts_cts_lost / (double) performance.rts_cts_sent);
+
 					break;
 				}
 				// Minimum RSSI
@@ -501,6 +527,33 @@ class PreProcessor {
 						LOG_C03, LOG_LVL3, performance.successful_channel_occupancy);
 					break;
 				}
+				// Throughput satisfaction
+				case REWARD_TYPE_THROUGHPUT_SATISFACTION:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Throughput satisfaction = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, ((double)performance.data_frames_acked/(double)performance.num_packets_generated));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets generated = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_packets_generated);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets ACKed = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.data_frames_acked);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Throughput = %.2f Mbps\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.throughput * pow(10,-6));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS sent = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_sent);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS lost = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_lost);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Prob. RTS/CTS lost = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, (double) performance.rts_cts_lost / (double) performance.rts_cts_sent);
+
+					break;
+				}
+
 			}
 
 		}

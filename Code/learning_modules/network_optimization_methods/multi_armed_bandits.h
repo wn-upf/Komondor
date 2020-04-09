@@ -83,6 +83,17 @@ class MultiArmedBandit {
 		double initial_epsilon;		///> Initial epsilon parameter (exploration coefficient)
 		double epsilon;				///> Epsilon parameter (exploration coefficient)
 
+		// Thompsong sampling - Beta distribution
+		double *alpha;
+		double *beta;
+		double kappa_beta;
+
+		// EXP3
+		double exp3_gamma;						///> EXP3's exploration rate
+		double exp3_eta_original;						///> EXP3's learning rate
+		double *exp3_prob_arm;					///> Array containing the prob of picking each arm
+		double *exp3_weight_arm;				///> Array containing the weight of each arm
+
 	// Methods
 	public:
 
@@ -99,6 +110,8 @@ class MultiArmedBandit {
 		*/
 		void UpdateArmStatistics(int action_ix, double reward){
 
+			//printf("reward %f\n", reward);
+
 			if(action_ix >= 0) { // Avoid indexing errors
 				// Update the reward for the chosen arm
 				reward_per_arm[action_ix] = reward;
@@ -109,10 +122,26 @@ class MultiArmedBandit {
 				// Update the average reward for the chosen arm
 				average_reward_per_arm[action_ix] = cumulative_reward_per_arm[action_ix] /
 					times_arm_has_been_selected[action_ix];
-				// Update the estimated reward per arm
+
+				// Update the estimated reward per arm (Gaussian)
 				estimated_reward_per_arm[action_ix] = ((estimated_reward_per_arm[action_ix]
 					* times_arm_has_been_selected[action_ix])
 					+ reward) / (times_arm_has_been_selected[action_ix] + 2);
+
+				// Beta distribution
+				alpha[action_ix] = alpha[action_ix] + kappa_beta * reward;
+				beta[action_ix] = beta[action_ix] + kappa_beta * (1 - reward);
+
+				// EXP3
+				exp3_weight_arm[action_ix] *= exp(reward/exp3_prob_arm[action_ix] / (double) num_arms);
+
+				double sum_weights = sum_array(num_arms, exp3_weight_arm);
+
+				exp3_prob_arm[action_ix] = (1 - exp3_gamma)
+						* exp3_weight_arm[action_ix]/sum_weights + exp3_gamma / (double) num_arms;
+
+
+
 			} else {
 				printf("[MAB] ERROR: The action ix (%d) is not correct!\n", action_ix);
 				exit(EXIT_FAILURE);
@@ -125,9 +154,11 @@ class MultiArmedBandit {
 		*/
 		int SelectNewAction(int *available_arms, int current_arm) {
 			int arm_ix;
+
 			// Select an action according to the chosen strategy: TODO improve this part (now it is hardcoded)
 			//action_selection_strategy = STRATEGY_EGREEDY;
 			switch(action_selection_strategy) {
+
 				/*
 				 * epsilon-greedy strategy:
 				 */
@@ -135,26 +166,65 @@ class MultiArmedBandit {
 					// Update epsilon
 					epsilon = initial_epsilon / sqrt( (double) num_iterations);
 					// Pick an action according to e-greedy
-                    arm_ix = PickArmEgreedy(num_arms, average_reward_per_arm, epsilon, available_arms);
+                    arm_ix = PickArmEgreedy(num_arms, reward_per_arm, epsilon, available_arms);
 					break;
 				}
+
+				case STRATEGY_EXPLORATION_FIRST:{
+
+
+					// Pick an action according to e-greedy
+					arm_ix = PickArmEgreedySequential(num_arms, reward_per_arm, available_arms);
+					break;
+
+				}
+
 				/*
 				 * Thompson sampling strategy:
 				 */
 				case STRATEGY_THOMPSON_SAMPLING:{
 					// Pick an action according to Thompson sampling
-                    arm_ix = PickArmThompsonSampling(num_arms,
-						estimated_reward_per_arm, times_arm_has_been_selected, available_arms);
+                    arm_ix = PickArmThompsonSampling(num_arms, estimated_reward_per_arm, times_arm_has_been_selected, available_arms);
 					break;
 				}
+
+				/*
+				 * Thompson sampling strategy:
+				 */
+				case STRATEGY_THOMPSON_SAMPLING_BETA:{
+					// Pick an action according to Thompson sampling
+					arm_ix = PickArmThompsonSamplingBeta(num_arms, estimated_reward_per_arm, times_arm_has_been_selected, available_arms);
+					break;
+				}
+
+				/*
+				 * UCB strategy:
+				 */
+				case STRATEGY_UCB:{
+					// Pick an action according to UCB
+					arm_ix = PickArmUCB(num_arms, num_iterations, cumulative_reward_per_arm,
+							times_arm_has_been_selected, available_arms);
+					break;
+				}
+
+				/*
+				 * EXP3 strategy:
+				 */
+				case STRATEGY_EXP3:{
+					// Pick an action according to UCB
+					arm_ix = PickArmEXP3(num_arms, exp3_prob_arm, available_arms);
+					break;
+				}
+
                 /*
-                 * Thompson sampling strategy:
+                 * Sequential sampling strategy:
                  */
                 case STRATEGY_SEQUENTIAL:{
                     // Pick an action according to Thompson sampling
                     arm_ix = PickArmSequentially(num_arms, available_arms, current_arm);
                     break;
                 }
+
 				default:{
 					printf("[MAB] ERROR: '%d' is not a correct action-selection strategy!\n", action_selection_strategy);
 					PrintAvailableActionSelectionStrategies();
@@ -163,6 +233,9 @@ class MultiArmedBandit {
 			}
             // Increase the number of iterations
             ++ num_iterations;
+
+            //printf("\n action #%d: ", arm_ix);
+
             // Return the selected action
 			return arm_ix;
 		}
@@ -204,9 +277,205 @@ class MultiArmedBandit {
 //				printf("EXPLOIT: Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
 			}
 
+
+//			if(num_iterations == 100){
+//				printf("\n epsilon-greedy - val_par_array: ");
+//				for (int i = 0; i < num_arms; i++){
+//
+//					printf("   %.2f", reward_per_arm[i]);
+//
+//				}
+//				printf("\n");
+//			}
+
 			return action_ix;
 
 		}
+
+		int PickArmEgreedySequential(int num_arms, double *reward_per_arm, int *available_arms) {
+
+			int action_ix;
+
+			int unexplored_action_flag = FALSE;
+
+//			printf("\n epsilon-greedy-sequential: ");
+//			for (int i = 0; i < num_arms; i++){
+//
+//				printf("   %.2f", reward_per_arm[i]);
+//
+//			}
+//			printf("\n");
+
+
+			for (int i = 0; i < num_arms; i ++) {
+				if(available_arms[i] && reward_per_arm[i] == -1) {
+					action_ix = i;
+					unexplored_action_flag = TRUE;
+					break;
+				}
+			}
+
+			if(!unexplored_action_flag){
+
+				double max = 0;
+				for (int i = 0; i < num_arms; i ++) {
+					if(available_arms[i] && reward_per_arm[i] > max) {
+						max = reward_per_arm[i];
+						action_ix = i;
+					}
+				}
+			}
+
+
+//				printf("EXPLOIT: Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
+
+
+//			if(num_iterations == 100){
+//				printf("\n epsilon-greedy - val_par_array: ");
+//				for (int i = 0; i < num_arms; i++){
+//
+//					printf("   %.2f", reward_per_arm[i]);
+//
+//				}
+//				printf("\n");
+//			}
+
+//			printf("U(%d) action: %d\n", unexplored_action_flag, action_ix);
+
+			return action_ix;
+
+		}
+
+		/*******************************/
+		/*******************************/
+		/*  UCB METHODS  */
+		/*******************************/
+		/*******************************/
+		int PickArmUCB(int num_arms, int num_iterations,
+				double *cumulative_reward_per_arm, int *times_arm_has_been_selected, int *available_arms){
+
+			int action_ix;
+			double max = 0;
+			// Compute argument metric
+			double *arg_value = new double[num_arms];
+
+			for (int i = 0; i < num_arms; i ++) {
+
+				arg_value[i] = cumulative_reward_per_arm[i] / (times_arm_has_been_selected[i]+1) +
+						sqrt((2*log(num_iterations)/ (times_arm_has_been_selected[i]+1)));
+
+				// argmax of arg_value
+				if(available_arms[i] && arg_value[i] >= max) {
+					max = arg_value[i];
+					action_ix = i;
+				}
+			}
+
+//			if(num_iterations == 100){
+//				printf("\n UCB val_par_array: ");
+//				for (int i = 0; i < num_arms; i++){
+//
+//					printf("   %.2f", arg_value[i]);
+//
+//				}
+//				printf("\n");
+//			}
+
+//			printf("\n");
+//			printf("- max = %.2f - \n", max);
+			return action_ix;
+		}
+
+		/*******************************/
+		/*******************************/
+		/*  EXP3 METHODS  */
+		/*******************************/
+		/*******************************/
+		int PickArmEXP3(int num_arms, double *exp3_prob_arm, int* available_arms){
+
+
+//			printf("\n----------------\n");
+//			for (int i = 0; i < num_arms; i++){
+//
+//				printf("   %.2f", exp3_weight_arm[i]);
+//
+//			}
+//			printf("\n");
+//			for (int i = 0; i < num_arms; i++){
+//
+//				printf("   %.2f", exp3_prob_arm[i]);
+//
+//			}
+//			printf("\n----------------\n");
+
+//			if(num_iterations == 100){
+//				printf("\n exp3 val_par_array: ");
+//				for (int i = 0; i < num_arms; i++){
+//
+//					printf("   %.2f", exp3_weight_arm[i]);
+//
+//				}
+//				printf("\n");
+//				printf("\n val_par_array_2: ");
+//				for (int i = 0; i < num_arms; i++){
+//
+//					printf("   %.2f", exp3_prob_arm[i]);
+//
+//				}
+//				printf("\n");
+//			}
+
+			int action_ix = random_weighted(num_arms, exp3_prob_arm);
+
+
+			return action_ix;
+
+		}
+
+		double sum_array(int array_size, double* array){
+
+			double sum = 0;
+			for(int i = 0; i<array_size; i++){
+				sum += array[i];
+			}
+			return sum;
+		}
+
+		/**
+		 * Picks a random element according to its weighted probability
+		 * @param "size_array" [type int]: size of the array
+		 * @param "freq" [type int*]: array with the counts (or weight) of each element
+		 * @return [type int]: selected element index
+		 * Note: SUCCESSFULLY CHECKED IN MATLAB THROUGH HISTOGRAM
+		 */
+		int random_weighted(int size_array, double* freq) {
+
+			int total_frequency = 0;
+			int selected = -1;
+
+			for(int i = 0; i<size_array; i++){
+				total_frequency += (int) (freq[i] * 100000);
+			}
+
+			int num = rand() % total_frequency; // int between 0 and total_frequency - 1
+
+			int count_aux = 0;
+
+			for(int i = 0; i<size_array; i++){
+
+				count_aux += (int) (freq[i] * 100000);
+
+				if(count_aux > num){
+					selected = i;
+					break;
+				}
+
+			}
+
+			return selected;
+
+		}
+
 
 		/*******************************/
 		/*******************************/
@@ -215,6 +484,7 @@ class MultiArmedBandit {
 		/*******************************/
 
 		double gaussrand(double mean, double std){
+
 			static double V1, V2, S;
 			static int phase = 0;
 			double X;
@@ -234,37 +504,272 @@ class MultiArmedBandit {
 			return X;
 		}
 
+
+		/**
+		 * Generate random number from normal distribution
+		 * @param "mu" [type double]: mean value
+		 * @param "sigma" [type double]: standard deviation
+		 * @return [type int]: random number following normal (gaussian) distribution
+		 * Note: SUCCESSFULLY CHECKED AGAINST MATLAB RANDOM GENERATOR randn()
+		 */
+		double randn(double mu, double sigma) {
+
+		  double U1, U2, W, mult;
+		  static double X1, X2;
+		  static int call = 0;
+
+		  if (call == 1)
+			{
+			  call = !call;
+			  return (mu + sigma * (double) X2);
+			}
+
+		  do
+			{
+			  U1 = -1 + ((double) rand () / RAND_MAX) * 2;
+			  U2 = -1 + ((double) rand () / RAND_MAX) * 2;
+			  W = pow (U1, 2) + pow (U2, 2);
+			}
+		  while (W >= 1 || W == 0);
+
+		  mult = sqrt ((-2 * log (W)) / W);
+		  X1 = U1 * mult;
+		  X2 = U2 * mult;
+
+		  call = !call;
+
+		  return (mu + sigma * (double) X1);
+		}
+
+		// This is the heart of the generator.
+		// It uses George Marsaglia's MWC algorithm to produce an unsigned integer.
+		// See http://www.bobwheeler.com/statistics/Password/MarsagliaPost.txt
+		uint GetUint()
+		{
+
+			uint m_w = 521288629;
+			uint m_z = 362436069;
+
+			m_z = 36969 * (m_z & 65535) + (m_z >> 16);
+			m_w = 18000 * (m_w & 65535) + (m_w >> 16);
+			return (m_z << 16) + m_w;
+		}
+
+		// Produce a uniform random sample from the open interval (0, 1).
+		// The method will not return either end point.
+		double GetUniform()
+		{
+			// 0 <= u < 2^32
+			uint u = GetUint();
+			// The magic number below is 1/(2^32 + 2).
+			// The result is strictly between 0 and 1.
+			return (u + 1.0) * 2.328306435454494e-10;
+		}
+
+		double GetGamma(double shape, double scale)
+		{
+			// Implementation based on "A Simple Method for Generating Gamma Variables"
+			// by George Marsaglia and Wai Wan Tsang.  ACM Transactions on Mathematical Software
+			// Vol 26, No 3, September 2000, pages 363-372.
+
+			double d, c, x, xsquared, v, u;
+
+			if (shape >= 1.0)
+			{
+				d = shape - 1.0/3.0;
+				c = 1.0/sqrt(9.0*d);
+				for (;;)
+				{
+					do
+					{
+						x = randn(0,1);
+						v = 1.0 + c*x;
+					}
+					while (v <= 0.0);
+					v = v*v*v;
+					u = GetUniform();
+					xsquared = x*x;
+					if (u < 1.0 -.0331*xsquared*xsquared || log(u) < 0.5*xsquared + d*(1.0 - v + log(v)))
+						return scale*d*v;
+				}
+			}
+			else if (shape <= 0.0)
+			{
+				std::stringstream os;
+				os << "Shape parameter must be positive." << "\n"
+				   << "Received shape parameter " << shape;
+				throw std::invalid_argument( os.str() );
+			}
+			else
+			{
+				double g = GetGamma(shape+1.0, 1.0);
+				double w = GetUniform();
+				return scale*g*pow(w, 1.0/shape);
+			}
+		}
+
+		double GetBeta(double a, double b)
+		{
+
+			// There are more efficient methods for generating beta samples.
+			// However such methods are a little more efficient and much more complicated.
+			// For an explanation of why the following method works, see
+			// http://www.johndcook.com/distribution_chart.html#gamma_beta
+
+			double u = GetGamma(a, 1.0);
+			double v = GetGamma(b, 1.0);
+			return u / (u + v);
+		}
+
 		/**
 		 * Select an action according to the Thompson sampling strategy
 		 * @param "num_arms" [type int]: number of possible actions
 		 * @param "estimated_reward_per_arm" [type double*]: array containing the estimated reward for each action
 		 * @param "times_arm_has_been_selected" [type int*]: array containing the times each action has been selected
-		 * @return "action_ix" [type int]: index of the selected action
+		 * @return "available_arms" [type int*]: array of the indeces of the permitted arms
 		 */
 		int PickArmThompsonSampling(int num_arms, double *estimated_reward_per_arm,
 			int *times_arm_has_been_selected, int *available_arms) {
+
 			//TODO: validate the behavior of this implementation
-			int action_ix;
+			int action_ix = -1;
 			double *theta = new double[num_arms];
-			double std;
+			for(int i = 0; i < num_arms; ++i){
+				theta[i] = 0;
+			}
+
+			double *std = new double[num_arms];
+
+
 			// Compute the posterior probability of each arm
 			for (int i = 0; i < num_arms; ++i) {
+
+
 				if (available_arms[i]) {
-					std = 1.0/(1+times_arm_has_been_selected[i]);
-					theta[i] = gaussrand(estimated_reward_per_arm[i], std);
+
+					// Normal distribution
+					std[i] = 1.0/(1+times_arm_has_been_selected[i]);
+					theta[i] = randn(estimated_reward_per_arm[i], std[i]);
+
+
 				} else {
 					theta[i] = -10000;
 				}
+
 			}
+
+
 			// Find the action with the highest likelihood
 			double max = theta[0];
 			for (int i = 0; i < num_arms; ++i) {
-				if(theta[i] > max) {
+				if(theta[i] >= max) {
 					max = theta[i];
 					action_ix = i;
 				}
 				//  TODO: elseif(theta[i] == max) --> Break ties!
 			}
+
+			if(action_ix == -1){
+				printf("action_ix = %d invalid!\n",
+									action_ix);
+				exit(-1);
+			}
+
+
+//			if(num_iterations == 100){
+//				printf("\n T.S. normal val_par_array: ");
+//				for (int i = 0; i < num_arms; i++){
+//
+//					printf("   %.2f", estimated_reward_per_arm[i]);
+//
+//				}
+//				printf("\n");
+//
+//				printf("\n val_par_array_2: ");
+//				for (int i = 0; i < num_arms; i++){
+//
+//					printf("   %.2f", std[i]);
+//
+//				}
+//				printf("\n");
+//			}
+
+
+//			printf("Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
+			return action_ix;
+		}
+
+		/**
+		 * Select an action according to the Thompson sampling strategy with beta distribution
+		 * @param "num_arms" [type int]: number of possible actions
+		 * @param "estimated_reward_per_arm" [type double*]: array containing the estimated reward for each action
+		 * @param "times_arm_has_been_selected" [type int*]: array containing the times each action has been selected
+		 * @return "available_arms" [type int*]: array of the indeces of the permitted arms
+		 */
+		int PickArmThompsonSamplingBeta(int num_arms, double *estimated_reward_per_arm,
+			int *times_arm_has_been_selected, int *available_arms) {
+
+			//TODO: validate the behavior of this implementation
+			int action_ix = -1;
+			double *theta = new double[num_arms];
+			for(int i = 0; i < num_arms; ++i){
+				theta[i] = 0;
+			}
+
+
+
+			// Compute the posterior probability of each arm
+			for (int i = 0; i < num_arms; ++i) {
+
+
+				if (available_arms[i]) {
+
+//					// Beta distribution
+					theta[i] = GetBeta(alpha[i], beta[i]);
+
+				} else {
+					theta[i] = -10000;
+				}
+
+			}
+
+
+			// Find the action with the highest likelihood
+			double max = theta[0];
+			for (int i = 0; i < num_arms; ++i) {
+				if(theta[i] >= max) {
+					max = theta[i];
+					action_ix = i;
+				}
+				//  TODO: elseif(theta[i] == max) --> Break ties!
+			}
+
+			if(action_ix == -1){
+				printf("action_ix = %d invalid!\n",
+									action_ix);
+				exit(-1);
+			}
+
+//			if(num_iterations == 100){
+//				printf("\n T.S. Beta val_par_array: ");
+//				for (int i = 0; i < num_arms; i++){
+//
+//					printf("   %.2f", alpha[i]);
+//
+//				}
+//				printf("\n");
+//
+//				printf("\n val_par_array_2: ");
+//				for (int i = 0; i < num_arms; i++){
+//
+//					printf("   %.2f", beta[i]);
+//
+//				}
+//				printf("\n");
+//			}
+
+
+
 //			printf("Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
 			return action_ix;
 		}
@@ -381,13 +886,26 @@ class MultiArmedBandit {
 			// TODO: generate file that stores algorithm-specific variables
 			initial_epsilon = 1;
 			epsilon = initial_epsilon;
-			initial_reward = 0;
+
+			if(action_selection_strategy == STRATEGY_EXPLORATION_FIRST){
+				initial_reward = -1;
+			} else {
+				initial_reward = 0;
+			}
+
 			num_iterations = 1;
+
+			kappa_beta = 1;
+			exp3_gamma = 0.07;				///> EXP3's exploration rate
 			// Initialize the rewards assigned to each arm
 			reward_per_arm = new double[num_arms];
 			cumulative_reward_per_arm = new double[num_arms];
 			average_reward_per_arm = new double[num_arms];
 			estimated_reward_per_arm = new double[num_arms];
+			alpha = new double[num_arms];
+			beta = new double[num_arms];
+			exp3_prob_arm = new double[num_arms];
+			exp3_weight_arm = new double[num_arms];
 			// Initialize the array containing the times each arm has been played
 			times_arm_has_been_selected = new int[num_arms];
 			for(int i = 0; i < num_arms; ++i){
@@ -395,8 +913,14 @@ class MultiArmedBandit {
 				cumulative_reward_per_arm[i] = initial_reward;
 				average_reward_per_arm[i] = initial_reward;
 				estimated_reward_per_arm[i] = initial_reward;
+				alpha[i] = 1;
+				beta[i] = 1;
 				times_arm_has_been_selected[i] = 0;
+				exp3_weight_arm[i] = 1;
+				exp3_prob_arm[i] = (1 - exp3_gamma)
+					* 1 /  (double) num_arms + exp3_gamma / (double) num_arms;
 			}
+
 		}
 
 };

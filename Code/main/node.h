@@ -771,6 +771,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						max_pw_interference = channel_power[current_primary_channel]
 							- power_received_per_node[notification.source_id];
 
+						channel_max_intereference = current_primary_channel;
+
 					} else {
 
 						// Compute max interference (the highest one perceived in the reception channel range)
@@ -2425,6 +2427,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL2);
 
 						// Whole data packet ACKed
+
 						++data_packets_acked;
 						++data_packets_acked_per_sta[current_destination_id-node_id-1];
 
@@ -2437,6 +2440,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 							++data_frames_acked;
 							++data_frames_acked_per_sta[current_destination_id-node_id-1];
+							++ performance_report.data_frames_acked;
 							++num_delay_measurements;
 							sum_delays = sum_delays + (SimTime() - buffer.GetFirstPacket().timestamp_generated);
 //							LOGS(save_node_logs,node_logger.file,
@@ -3418,6 +3422,7 @@ void Node :: EndBackoff(trigger_t &){
 
 		trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger,13,12));
 		++rts_cts_sent;
+		++performance_report.rts_cts_sent;
 		++rts_cts_sent_per_sta[current_destination_id-node_id-1];
 		trigger_start_backoff.Cancel();	// Safety instruction
 
@@ -3834,6 +3839,12 @@ void Node :: CtsTimeout(trigger_t &){
 		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
 
+	++performance_report.rts_cts_lost;
+
+//	if (node_id == 0){
+//		printf("%.15f;CTS TO: %d - %d\n", SimTime(), rts_cts_lost, performance_report.rts_cts_lost);
+//	}
+
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s CTS TIMEOUT! RTS-CTS packet lost\n",
@@ -3875,6 +3886,11 @@ void Node :: DataTimeout(trigger_t &){
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
 		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
+
+	++performance_report.rts_cts_lost;
+//	if (node_id == 0){
+//		printf("%.15f;DATA TO: %d - %d\n", SimTime(), rts_cts_lost, performance_report.rts_cts_lost);
+//	}
 
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 
@@ -5072,7 +5088,12 @@ void Node :: InitializeVariables() {
 	 * END OF HARDCODED INITIALIZATION
 	 */
 
-	current_max_bandwidth = max_channel_allowed - min_channel_allowed + 1;
+
+	/* HARDCODEEEEEEEEED */
+	//current_max_bandwidth = max_channel_allowed - min_channel_allowed + 1;
+	current_max_bandwidth = 8;
+	/* END OF HARDCODEEEEEEEEED */
+
 
 	current_sinr = 0;
 	max_pw_interference = 0;
@@ -5281,6 +5302,7 @@ void Node :: InitializeVariables() {
 
 	// Measurements to be sent to agents
 	RestartPerformanceMetrics(&performance_report, 0, num_channels_allowed);
+
 	performance_report.SetSizeOfRssiList(total_wlans_number);
 
 	flag_apply_new_configuration = FALSE;

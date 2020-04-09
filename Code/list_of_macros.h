@@ -361,6 +361,7 @@
 #define REWARD_TYPE_MAX_DELAY			3	///> Maximum experienced delay
 #define REWARD_TYPE_AVERAGE_DELAY		4	///> Average experienced delay
 #define REWARD_TYPE_CHANNEL_OCCUPANCY 	5	///> Average channel occupancy ratio
+#define REWARD_TYPE_THROUGHPUT_SATISFACTION 6	///> Throughput satisfaction (thr/load)
 
 // Agent modes
 #define AGENT_MODE_DECENTRALIZED 	0	///> Agents are independent entities that follow their own learning procedure
@@ -384,9 +385,14 @@
 #define DECREASE_THRESHOLD   1
 
 // Action-selection strategies (MABs)
+#define STRATEGY_FIX					0	// Do not change action (but follow iterations)
 #define STRATEGY_EGREEDY				1
 #define STRATEGY_THOMPSON_SAMPLING		2
 #define STRATEGY_SEQUENTIAL             3
+#define STRATEGY_UCB					4
+#define STRATEGY_EXP3					5
+#define STRATEGY_THOMPSON_SAMPLING_BETA	6	// Thompson Sampling with Beta distribution
+#define STRATEGY_EXPLORATION_FIRST		7
 
 #define MAX_TIME_INFORMATION_VALID		10 ///> Maximum amount of time (in seconds) the information of the network is considered to be valid
 

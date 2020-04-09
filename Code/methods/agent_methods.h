@@ -70,6 +70,7 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 	current_performance->rts_cts_lost = 0;
 	current_performance->num_packets_generated = 0;
 	current_performance->num_packets_dropped = 0;
+	current_performance->data_frames_acked = 0;
 
 	for(int n = 0; n < num_channels_allowed; ++n){
 		current_performance->total_time_transmitting_in_num_channels[n] = 0;
