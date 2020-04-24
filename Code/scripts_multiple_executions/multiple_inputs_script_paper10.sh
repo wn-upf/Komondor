@@ -37,16 +37,49 @@ cd ..
 pwd
 cd main
 pwd
+echo 'EXECUTING KOMONDOR SIMULATIONS WITH FULL CONFIGURATION... '
+
+echo ""
+# exploration-first
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo " ALGORITHM: exploration-first"
 for (( executing_ix=0; executing_ix < (file_ix + 1); executing_ix++))
 do 
-	echo ""
-	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./komondor_main ../input/input_paper10/nodes/${array[executing_ix]} ../input/input_paper10/agents.csv ../output/script_output.txt sim_${array[executing_ix]} 0 1 1 1 1 $SIM_TIME $SEED >> ../output/logs_console.tx
-	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	echo ""
+	echo "- executing ${array[executing_ix]} (${executing_ix}/${file_ix})"
+	./komondor_main ../input/input_paper10/nodes/${array[executing_ix]} ../input/input_paper10/agents_action_space2_explfirst.csv ../output/script_output.txt sim_action_space2_explfirst_${array[executing_ix]} 0 1 1 1 1 $SIM_TIME $SEED >> ../output/logs_console.tx
 done
 echo ""
+
+# epsilon
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo " ALGORITHM: epsilon"
+for (( executing_ix=0; executing_ix < (file_ix + 1); executing_ix++))
+do 
+	echo "- executing ${array[executing_ix]} (${executing_ix}/${file_ix})"
+	./komondor_main ../input/input_paper10/nodes/${array[executing_ix]} ../input/input_paper10/agents_action_space2_epsilon.csv ../output/script_output.txt sim_action_space2_epsilon_${array[executing_ix]} 0 1 1 1 1 $SIM_TIME $SEED >> ../output/logs_console.tx
+done
+echo ""
+
+# T.S. normal
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo " ALGORITHM: TS normal"
+for (( executing_ix=0; executing_ix < (file_ix + 1); executing_ix++))
+do 
+	echo "- executing ${array[executing_ix]} (${executing_ix}/${file_ix})"
+	./komondor_main ../input/input_paper10/nodes/${array[executing_ix]} ../input/input_paper10/agents_action_space2_tsnormal.csv ../output/script_output.txt sim_action_space2_tsnormal_${array[executing_ix]} 0 1 1 1 1 $SIM_TIME $SEED >> ../output/logs_console.tx
+done
+echo ""
+
+# T.S. beta
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo " ALGORITHM: TS beta"
+for (( executing_ix=0; executing_ix < (file_ix + 1); executing_ix++))
+do 
+	echo "- executing ${array[executing_ix]} (${executing_ix}/${file_ix})"
+	./komondor_main ../input/input_paper10/nodes/${array[executing_ix]} ../input/input_paper10/agents_action_space2_tsbeta.csv ../output/script_output.txt sim_action_space2_tsbeta_${array[executing_ix]} 0 1 1 1 1 $SIM_TIME $SEED >> ../output/logs_console.tx
+done
+echo ""
+
 echo 'SCRIPT FINISHED: OUTUP FILE SAVED IN /output/script_output.txt'
 echo ""
 echo ""

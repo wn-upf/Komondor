@@ -234,7 +234,7 @@ class MultiArmedBandit {
             // Increase the number of iterations
             ++ num_iterations;
 
-            //printf("\n action #%d: ", arm_ix);
+//            printf("\n action #%d: \n", arm_ix);
 
             // Return the selected action
 			return arm_ix;
@@ -294,11 +294,11 @@ class MultiArmedBandit {
 
 		int PickArmEgreedySequential(int num_arms, double *reward_per_arm, int *available_arms) {
 
-			int action_ix;
+			int action_ix = -1;
 
 			int unexplored_action_flag = FALSE;
 
-//			printf("\n epsilon-greedy-sequential: ");
+//			printf("epsilon-greedy-sequential: ");
 //			for (int i = 0; i < num_arms; i++){
 //
 //				printf("   %.2f", reward_per_arm[i]);
@@ -317,7 +317,7 @@ class MultiArmedBandit {
 
 			if(!unexplored_action_flag){
 
-				double max = 0;
+				double max = -1;
 				for (int i = 0; i < num_arms; i ++) {
 					if(available_arms[i] && reward_per_arm[i] > max) {
 						max = reward_per_arm[i];

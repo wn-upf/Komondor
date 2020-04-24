@@ -604,6 +604,10 @@ class PreProcessor {
 		void InitializeVariables(){
 			// Lists of modifiable parameters
 			list_of_channels = new int[num_arms_channel];
+			for(int i = 0; i < num_arms_channel; i++){
+				list_of_channels[i] = 0;
+			}
+
 			list_of_pd_values = new double[num_arms_sensitivity];
 			list_of_tx_power_values = new double[num_arms_tx_power];
 			list_of_max_bandwidth = new int[num_arms_max_bandwidth];

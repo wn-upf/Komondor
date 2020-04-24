@@ -319,7 +319,7 @@ void handlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
 		++(*packets_lost_per_sta)[destination_id-node_id-1];
 	} else if(type == PACKET_TYPE_CTS){
 		++rts_cts_lost;
-		++(*rts_cts_lost_per_sta)[destination_id-node_id-1];
+		//++(*rts_cts_lost_per_sta)[destination_id-node_id-1];
 	}
 
 

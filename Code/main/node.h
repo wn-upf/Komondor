@@ -5091,9 +5091,10 @@ void Node :: InitializeVariables() {
 
 	/* HARDCODEEEEEEEEED */
 	//current_max_bandwidth = max_channel_allowed - min_channel_allowed + 1;
-	current_max_bandwidth = 8;
+	//current_max_bandwidth = 8;
 	/* END OF HARDCODEEEEEEEEED */
 
+	//printf("\n\n\n current_max_bandwidth = %d\n\n\n", current_max_bandwidth);
 
 	current_sinr = 0;
 	max_pw_interference = 0;

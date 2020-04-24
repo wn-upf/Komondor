@@ -134,6 +134,44 @@ void TrafficGenerator :: GenerateTraffic() {
 	double time_to_trigger (0);
 //	printf("traffic_model = %d\n", traffic_model);
 
+
+	/*
+	 * HARDCODED FOR PAPER 10: VARIABLE MEAN TRAFFIC LOAD FOR POISSON
+	 * - Hardcode a pattern of changes in the mean traffic load by checking the SimTime()
+	 */
+
+//	if(node_id == 0){
+//
+//		// 2 traffic load periods
+//		if(SimTime()/StopTime() < 1.0/2.0){
+//			//printf("First half of simulation: %f / %f (%f)\n", SimTime(), StopTime(), SimTime()/StopTime());
+//			//traffic_load = 50*83.33;
+//			traffic_load = 200*83.33;
+//		} else {
+//			//printf("Second half of simulation: %f / %f (%f)\n", SimTime(), StopTime(), SimTime()/StopTime());
+//			//traffic_load = 200*83.33;
+//			traffic_load = 50*83.33;
+//		}
+//
+////		// 3 traffic load periods
+////		if(SimTime()/StopTime() < 1.0/3.0){
+////			printf("First third of simulation: %f / %f (%f)\n", SimTime(), StopTime(), SimTime()/StopTime());
+////			// change traffic_load
+////		} else if (SimTime()/StopTime() < 2.0/3.0){
+////			printf("Second third of simulation: %f / %f (%f)\n", SimTime(), StopTime(), SimTime()/StopTime());
+////			// change traffic_load
+////		} else {
+////			printf("Third third of simulation: %f / %f (%f)\n", SimTime(), StopTime(), SimTime()/StopTime());
+////			// change traffic_load
+////		}
+////
+//	}
+
+	/*
+	 * END OF HARDCODING
+	 */
+
+
 	switch(traffic_model) {
 
 		// TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION is not considered (handled by the node)
@@ -161,11 +199,9 @@ void TrafficGenerator :: GenerateTraffic() {
 
 		// 1
 		case TRAFFIC_POISSON:{
-			// Sergio on 11th January 2018
-			// - Traffic generation depends on the traffic load (not on the lambda parameter, which is related
-			//   with BO generation exponentially distributed.
-			// time_for_next_packet = Exponential(1/lambda);
+
 			// Generates new packet when the trigger expires
+
 			time_for_next_packet = Exponential(1/traffic_load);
 			time_to_trigger = SimTime() + time_for_next_packet;
 			trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));

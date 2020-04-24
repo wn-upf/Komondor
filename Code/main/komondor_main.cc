@@ -953,6 +953,32 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 					max_bandwidth_aux_2 = strtok (NULL, ",");
 					++ix;
 				}
+
+
+				/*
+				 * HARDCODED PAPER#10 SERGIO
+				 * - Set maximum bandwidth in node to avoid misplacing action indices
+				 */
+
+				int max_bw_aux = -1;
+
+				for(int max_bw_ix = 0; max_bw_ix < num_arms_max_bandwidth; max_bw_ix++){
+
+					if(agent_container[agent_ix].list_of_max_bandwidth[max_bw_ix] > max_bw_aux){
+						max_bw_aux = agent_container[agent_ix].list_of_max_bandwidth[max_bw_ix];
+					}
+
+				}
+
+				node_container[0].current_max_bandwidth = max_bw_aux;
+
+				printf("\n\n\n node_container[0].current_max_bandwidth = %d\n\n\n", node_container[0].current_max_bandwidth);
+
+				/*
+				 * END HARDCODING
+				 */
+
+
 				// Type of reward
 				tmp_agents = strdup(line_agents);
 				int type_of_reward (atoi(GetField(tmp_agents, IX_AGENT_TYPE_OF_REWARD)));
