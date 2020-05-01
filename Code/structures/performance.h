@@ -66,7 +66,9 @@ struct Performance
 	int data_packets_acked;			///> Number of data packets acknowledged
 	int data_frames_acked;			///> Number of frames acknowledged
 	int data_packets_sent;			///> Number of data packets sent
+	int data_frames_sent;			///> Number of data packets sent
 	int data_packets_lost;			///> Number of data packets lost
+	int data_frames_lost;			///> Number of data packets lost
 	int rts_cts_sent;				///> Number of RTS/CTS packets sent
 	int rts_cts_lost;				///> Number of RTS/CTS packets lost
 	int rts_lost_slotted_bo;		///> Number of RTS/CTS packets lost by slotted BO
@@ -105,8 +107,10 @@ struct Performance
     int num_stas;                   ///> Number of STAs in the BSS
 	double *throughput_per_sta;			///> Array containing the throughput delivered to each STA
 	int *data_packets_sent_per_sta;		///> Array containing the number of packets sent to each STA
+	int *data_frames_sent_per_sta;		///> Array containing the number of packets sent to each STA
 	int *rts_cts_sent_per_sta;			///> Array containing the number of RTS/CTS sent to each STA
 	int *data_packets_lost_per_sta;		///> Array containing the number of packets lost when sent to each STA
+	int *data_frames_lost_per_sta;		///> Array containing the number of packets lost when sent to each STA
 	int *rts_cts_lost_per_sta;			///> Array containing the number of RTS/CTS lost when sent to each STA
 	int *data_packets_acked_per_sta;	///> Array containing the number of acknowledged packets by each STA
 	int *data_frames_acked_per_sta;		///> Array containing the number of acknowledged frames by each STA
@@ -145,16 +149,20 @@ struct Performance
 	void SetSizeOfStaList(int num_stas){
 		throughput_per_sta = new double[num_stas];
 		data_packets_sent_per_sta = new int[num_stas];
+		data_frames_sent_per_sta = new int[num_stas];
 		rts_cts_sent_per_sta = new int[num_stas];
 		data_packets_lost_per_sta = new int[num_stas];
+		data_frames_lost_per_sta = new int[num_stas];
 		rts_cts_lost_per_sta = new int[num_stas];
 		data_packets_acked_per_sta = new int[num_stas];
 		data_frames_acked_per_sta = new int[num_stas];
 		for(int i = 0; i < num_stas; ++i){
 			throughput_per_sta[i] = 0;
 			data_packets_sent_per_sta[i] = 0;
+			data_frames_sent_per_sta[i] = 0;
 			rts_cts_sent_per_sta[i] = 0;
 			data_packets_lost_per_sta[i] = 0;
+			data_frames_lost_per_sta[i] = 0;
 			rts_cts_lost_per_sta[i] = 0;
 			data_packets_acked_per_sta[i] = 0;
 			data_frames_acked_per_sta[i] = 0;

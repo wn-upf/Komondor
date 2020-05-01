@@ -165,7 +165,7 @@ struct Configuration
 	int selected_max_bandwidth;			///> Selected Max bandwidth [no. of channels]
 
 	// Frames
-	int frame_length;
+	int packet_length;
 	int max_num_packets_aggregated;
 
 	// Spatial reuse

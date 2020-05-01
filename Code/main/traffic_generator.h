@@ -84,18 +84,31 @@ component TrafficGenerator : public TypeII{
 	// Private items (just for node operation)
 	private:
 
+		// ONOFF traffic model
+		double time_traffic_state_initiated;	///> Timestamp where traffic state was initiated
+		double duration_current_traffic_state;	///> Duration to be completed in current traffic state
+		int traffic_onoff_state;				///> Traffic state indicator (0: OFF, 1: ON)
+		double prob_traffic_state_on;			///> Probability next traffic state is ON
+		double traffic_load_onoff;				///> Traffic load during the ON state in the ON/OFF traffic model
+
 	// Connections and timers
 	public:
 
 		// INPORT connections to receive packets being generated
 		inport inline void NewPacketGenerated(trigger_t& t1);
+		inport inline void GenerateTrafficONOFF(trigger_t& t1);
 		// OUTPORT connections for sending notifications
 		outport void outportNewPacketGenerated();
+
 		// Timer ruled by the packet generation ratio
 		Timer <trigger_t> trigger_new_packet_generated;
+		// Timer for triggering ON/OFF traffic
+		Timer <trigger_t> trigger_onoff_traffic;
+
 		// Connect the timer with the inport method
 		TrafficGenerator () {
 			connect trigger_new_packet_generated.to_component,NewPacketGenerated;
+			connect trigger_onoff_traffic.to_component,GenerateTrafficONOFF;
 		}
 
 };
@@ -125,6 +138,13 @@ void TrafficGenerator :: Stop(){
 
 };
 
+
+void TrafficGenerator :: GenerateTrafficONOFF(trigger_t &) {
+
+	GenerateTraffic();
+
+}
+
 /**
  * Main method for generating traffic
  */
@@ -132,7 +152,6 @@ void TrafficGenerator :: GenerateTraffic() {
 
 	double time_for_next_packet (0);
 	double time_to_trigger (0);
-//	printf("traffic_model = %d\n", traffic_model);
 
 
 	/*
@@ -201,7 +220,6 @@ void TrafficGenerator :: GenerateTraffic() {
 		case TRAFFIC_POISSON:{
 
 			// Generates new packet when the trigger expires
-
 			time_for_next_packet = Exponential(1/traffic_load);
 			time_to_trigger = SimTime() + time_for_next_packet;
 			trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));
@@ -230,8 +248,43 @@ void TrafficGenerator :: GenerateTraffic() {
 			break;
 		}
 
+		//4
+		case TRAFFIC_POISSON_ONOFF:{
+
+			// Identify or set new traffic generation state (ON or OFF)
+			double time_in_current_traffic_state = SimTime() - time_traffic_state_initiated;
+
+			if(time_in_current_traffic_state >= (duration_current_traffic_state - 0.0001)){	// New state
+
+				if(traffic_onoff_state == 0){
+					traffic_onoff_state = 1;
+					duration_current_traffic_state = Exponential(TRAFFIC_ONOFF_DURATION_ON_SECONDS);
+				} else {
+					traffic_onoff_state = 0;
+					time_traffic_state_initiated = SimTime();
+					duration_current_traffic_state = Exponential(TRAFFIC_ONOFF_DURATION_OFF_SECONDS);
+					trigger_onoff_traffic.Set(FixTimeOffset(SimTime() + duration_current_traffic_state,13,12));
+				}
+
+				time_traffic_state_initiated = SimTime();
+
+			} // else: keep the state as it was
+
+			if(traffic_onoff_state == 1){	// If traffic state ON, generate packets
+
+				time_for_next_packet = Exponential(1/traffic_load_onoff);
+				time_to_trigger = SimTime() + time_for_next_packet;
+				trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));
+
+			} // else: just wait until next state draw
+
+			break;
+
+		}
+
 		default:{
 			printf("Wrong traffic model!\n");
+			printf("- traffic_model = %d\n", traffic_model);
 			exit(EXIT_FAILURE);
 			break;
 		}
@@ -258,5 +311,15 @@ void TrafficGenerator :: InitializeTrafficGenerator() {
 	 */
 	burst_rate = 10;
 	num_bursts = 0;
+
+	traffic_onoff_state = 0;
+	time_traffic_state_initiated = 0;
+	duration_current_traffic_state = 0;
+	prob_traffic_state_on = TRAFFIC_ONOFF_DURATION_OFF_SECONDS
+			/ (TRAFFIC_ONOFF_DURATION_OFF_SECONDS + TRAFFIC_ONOFF_DURATION_ON_SECONDS);
+	traffic_load_onoff = traffic_load
+			* (TRAFFIC_ONOFF_DURATION_OFF_SECONDS + TRAFFIC_ONOFF_DURATION_ON_SECONDS)
+			/ TRAFFIC_ONOFF_DURATION_ON_SECONDS;
+
 	GenerateTraffic();
 }

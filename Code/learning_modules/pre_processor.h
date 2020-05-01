@@ -531,13 +531,13 @@ class PreProcessor {
 				case REWARD_TYPE_THROUGHPUT_SATISFACTION:{
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Throughput satisfaction = %.2f\n", sim_time, string_device,
-						LOG_C03, LOG_LVL3, ((double)performance.data_frames_acked/(double)performance.num_packets_generated));
+						LOG_C03, LOG_LVL3, ((double)performance.data_packets_acked/(double)performance.num_packets_generated));
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Data packets generated = %d\n", sim_time, string_device,
 						LOG_C03, LOG_LVL4, performance.num_packets_generated);
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Data packets ACKed = %d\n", sim_time, string_device,
-						LOG_C03, LOG_LVL4, performance.data_frames_acked);
+						LOG_C03, LOG_LVL4, performance.data_packets_acked);
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Throughput = %.2f Mbps\n", sim_time, string_device,
 						LOG_C03, LOG_LVL4, performance.throughput * pow(10,-6));

@@ -142,7 +142,7 @@ struct Notification
 	double tx_duration;			///> Duration of the transmission
 	int left_channel;			///> Left channel used in the transmission
 	int right_channel;			///> Right channel used in the transmission
-	int frame_length;			///> Size of the packet to transmit
+	int packet_length;			///> Size of the packet to transmit
 	int modulation_id;			///> Modulation being used during the transmission
 	double timestamp;			///> Timestamp when notification is sent
 	double timestamp_generated;	///> Timestamp when notification was generated
@@ -153,7 +153,7 @@ struct Notification
 	 */
 	void PrintNotification(void){
 		printf("source_id = %d - packet_type = %d - left_channel = %d - right_channel = %d - pkt_length = %d -",
-			source_id, packet_type, left_channel, right_channel, frame_length);
+			source_id, packet_type, left_channel, right_channel, packet_length);
 		printf("tx_info: ");
 		tx_info.PrintTxInfo(packet_id, destination_id, tx_duration);
 	}

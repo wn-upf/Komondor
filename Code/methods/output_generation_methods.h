@@ -148,7 +148,7 @@ void ComputeSimulationStatistics(Performance *performance_report, Configuration 
 * @param "configuration_per_node" [type Configuration*]: array containing the final configuration of each WLAN
 * @param "total_nodes_number" [type int]: total number of nodes
 * @param "total_wlans_number" [type int]: total number of WLANs
-* @param "frame_length" [type double]: length of a frame in bits
+* @param "packet_length" [type double]: length of a frame in bits
 * @param "max_num_packets_aggregated" [type int]: maximum number of packets to be aggregated
 * @param "simulation_time_komondor" [type double]: total simulation time
 */
@@ -165,10 +165,10 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 		printf("%s Average throughput per WLAN = %.3f Mbps\n",
 			LOG_LVL2, (total_throughput * pow(10,-6) / total_wlans_number));
 		printf("%s Min. throughput = %.2f Mbps (%.2f pkt/s)\n",
-			LOG_LVL3, min_throughput * pow(10,-6), min_throughput / (configuration_per_node[0].frame_length
+			LOG_LVL3, min_throughput * pow(10,-6), min_throughput / (configuration_per_node[0].packet_length
 			* configuration_per_node[0].max_num_packets_aggregated));
 		printf("%s Max. throughput = %.2f Mbps (%.2f pkt/s)\n",
-			LOG_LVL3, max_throughput * pow(10,-6), max_throughput / (configuration_per_node[0].frame_length
+			LOG_LVL3, max_throughput * pow(10,-6), max_throughput / (configuration_per_node[0].packet_length
 			* configuration_per_node[0].max_num_packets_aggregated));
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, total_throughput * pow(10,-6));
 		printf("%s Total number of packets sent = %d\n", LOG_LVL3, total_data_packets_sent);
@@ -222,7 +222,7 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 * @param "logger_script" [type Logger]: pointer to the logger that writes logs into a file
 * @param "total_wlans_number" [type int]: total number of WLANs
 * @param "total_nodes_number" [type int]: total number of nodes
-* @param "frame_length" [type double]: length of a frame in bits
+* @param "packet_length" [type double]: length of a frame in bits
 * @param "max_num_packets_aggregated" [type int]: maximum number of packets to be aggregated
 * @param "wlan_container" [type Wlan*]: array containing each WLAN in the network
 * @param "simulation_time_komondor" [type double]: total simulation time
@@ -307,9 +307,9 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 				"%.4f;%.4f;%.2f;%.2f;%.4f;%.4f;%.4f;%.4f;%.4f;%.4f;%.2f;%.2f\n",
 				performance_report[0].num_packets_generated,
 				performance_report[2].num_packets_generated,
-				performance_report[0].throughput / (configuration_per_node[0].frame_length *
+				performance_report[0].throughput / (configuration_per_node[0].packet_length *
 					configuration_per_node[0].max_num_packets_aggregated),
-				performance_report[2].throughput / (configuration_per_node[2].frame_length *
+				performance_report[2].throughput / (configuration_per_node[2].packet_length *
 					configuration_per_node[2].max_num_packets_aggregated),
 				performance_report[0].average_rho,
 				performance_report[2].average_rho,
@@ -331,7 +331,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 		case 7:{
 			// Sergio logs for Paper #5: central WLAN scenario
 			fprintf(logger_script.file, ";%.0f;%d;%d;%d;%d;%d;%d;%d;%f;%f;%f;%f;%f\n",
-				performance_report[0].throughput / (configuration_per_node[0].frame_length *
+				performance_report[0].throughput / (configuration_per_node[0].packet_length *
 					configuration_per_node[0].max_num_packets_aggregated),
 				performance_report[0].rts_cts_sent,
 				performance_report[0].rts_cts_lost,
@@ -354,7 +354,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			fprintf(logger_script.file, ";%d;%.0f;%.2f;"
 				"%.4f;%.2f;%.4f;%.4f;%.4f;%.4f\n",
 				performance_report[0].num_packets_generated,
-				performance_report[0].throughput / (configuration_per_node[0].frame_length *
+				performance_report[0].throughput / (configuration_per_node[0].packet_length *
 					configuration_per_node[0].max_num_packets_aggregated),
 				performance_report[0].average_rho,
 				performance_report[0].average_delay * pow(10,3),
@@ -370,10 +370,10 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 		case 9:{
 			// Sergio logs for Paper #5: 6 WLAN random
 			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%d;%.4f;%.4f;%.4f;%.2f;%.2f;%.2f;%f;%f;%f\n",
-				total_throughput/(configuration_per_node[0].frame_length *
+				total_throughput/(configuration_per_node[0].packet_length *
 					configuration_per_node[0].max_num_packets_aggregated * total_wlans_number),
 				(total_throughput * pow(10,-6)/total_wlans_number),
-				min_throughput/(configuration_per_node[0].frame_length *
+				min_throughput/(configuration_per_node[0].packet_length *
 					configuration_per_node[0].max_num_packets_aggregated),
 				ix_wlan_min_throughput,
 				proportional_fairness,
@@ -384,7 +384,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 				total_bandiwdth_tx / (double) total_wlans_number,
 				av_expected_waiting_time * pow(10,3),
 				min_delay * pow(10,3),
-				max_throughput/(configuration_per_node[0].frame_length *
+				max_throughput/(configuration_per_node[0].packet_length *
 					configuration_per_node[0].max_num_packets_aggregated)
 				);
 			break;

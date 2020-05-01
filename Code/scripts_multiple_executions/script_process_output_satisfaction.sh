@@ -1,12 +1,10 @@
 #!/bin/bash
 
 # get input files path in folder 'script_input_files'
-#cd ../output_rq7/action_space_4/explfirst
-#cd ../output_rq7/action_space_4/exp3
-#cd ../output_rq7/action_space_4/epsilon
-#cd ../output_rq7/action_space_4/ts_beta
-#cd ../output_rq7/action_space_4/ts_normal
-cd ../output_rq7/action_space_4/ucb
+#cd ../output_rq8_poisson/logs_agents
+cd ../output_rq8_onoff_50_50/logs_agents
+#cd ../output_rq8_onoff_100_100/logs_agents
+#cd ../output_rq8_onoff_100_50/logs_agents
 pwd
 
 #delete old files

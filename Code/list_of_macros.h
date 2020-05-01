@@ -229,6 +229,12 @@
 #define TRAFFIC_POISSON_BURST					3	///> Traffic is generated in bursts following a Poisson distribution
 #define TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION	99	///> Transmitters always have the same packet pending to be transmitted
 
+#define TRAFFIC_POISSON_ONOFF					4	///> Poisson traffic in ON/OFF model
+#define TRAFFIC_ONOFF_DURATION_OFF_SECONDS		0.05	///> Average duration of OFF state [s]
+#define TRAFFIC_ONOFF_DURATION_ON_SECONDS		0.05	///> Average duration of ON state [s]
+
+
+
 // Protocols
 #define INCREASE_CW 1		///> Command to increase contention window
 #define RESET_CW 2			///> Command to reset the contention window
@@ -256,7 +262,7 @@
 
 // Physical parameters
 #define SPEED_LIGHT			3*pow(10,8)	///> Speed of light [m/s]
-#define NUM_CHANNELS_KOMONDOR	8   ///> Total number of frequency channels
+#define NUM_CHANNELS_KOMONDOR	4   ///> Total number of frequency channels
 #define CHANNEL_BW_MHZ			20	///> Bandwidth of a basic channel [MHz]
 #define NOISE_LEVEL_DBM			-95	///> Noise level [dBm]
 #define ANTENNA_RX_GAIN_DB 		0	///> Antenna receiption gain [dB]
@@ -279,7 +285,7 @@
 #define MODULATION_1024QAM_5_6	12
 
 // Application parameters
-#define PACKET_BUFFER_SIZE		100		///> Size of the packets buffer
+#define PACKET_BUFFER_SIZE		150		///> Size of the packets buffer
 
 /* *****************
  * * IEEE 802.11ax *

@@ -661,7 +661,7 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				// Packet length
 				tmp_nodes = strdup(line_nodes);
 				const char* packet_length_char (GetField(tmp_nodes, IX_PACKET_LENGTH));
-				node_container[node_ix].frame_length = atoi(packet_length_char);
+				node_container[node_ix].packet_length = atoi(packet_length_char);
 				// Maximum number of aggregated packets
 				tmp_nodes = strdup(line_nodes);
 				const char* packets_aggregated_char (GetField(tmp_nodes, IX_NUM_PACKETS_AGG));
@@ -971,8 +971,6 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 				}
 
 				node_container[0].current_max_bandwidth = max_bw_aux;
-
-				printf("\n\n\n node_container[0].current_max_bandwidth = %d\n\n\n", node_container[0].current_max_bandwidth);
 
 				/*
 				 * END HARDCODING
@@ -1335,26 +1333,27 @@ int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::st
  * @return "presence_central_cotnroller" [type bool]: flag indicating whether a CC is present or not
  */
 int Komondor :: CheckCentralController(const char *agents_filename){
-	int presence_central_cotnroller(FALSE);
-	FILE* stream_agents = fopen(agents_filename, "r");
-	char line_agents[CHAR_BUFFER_SIZE];
-	first_line_skiped_flag = 0;	// Flag for skipping first informative line of input file
-	while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_agents)){
-		if(!first_line_skiped_flag){	// Skip the first line of the .csv file
-			first_line_skiped_flag = 1;
-		} else{
-			// WLAN code
-			char* tmp_agents (strdup(line_agents));
-			const char *wlan_code_aux (GetField(tmp_agents, IX_AGENT_WLAN_CODE));
-			std::string wlan_code;
-			wlan_code.append(ToString(wlan_code_aux));
-			// Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
-			if (strcmp(wlan_code.c_str(), "NULL") == 0) {
-				presence_central_cotnroller = TRUE;
-			}
-		}
-	}
-	return presence_central_cotnroller;
+//	int presence_central_cotnroller(FALSE);
+//	FILE* stream_agents = fopen(agents_filename, "r");
+//	char line_agents[CHAR_BUFFER_SIZE];
+//	first_line_skiped_flag = 0;	// Flag for skipping first informative line of input file
+//	while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_agents)){
+//		if(!first_line_skiped_flag){	// Skip the first line of the .csv file
+//			first_line_skiped_flag = 1;
+//		} else{
+//			// WLAN code
+//			char* tmp_agents (strdup(line_agents));
+//			const char *wlan_code_aux (GetField(tmp_agents, IX_AGENT_WLAN_CODE));
+//			std::string wlan_code;
+//			wlan_code.append(ToString(wlan_code_aux));
+//			// Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
+//			if (strcmp(wlan_code.c_str(), "NULL") == 0) {
+//				presence_central_cotnroller = TRUE;
+//			}
+//		}
+//	}
+//	return presence_central_cotnroller;
+	return FALSE;
 }
 
 /**********/
