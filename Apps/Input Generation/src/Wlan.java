@@ -15,7 +15,7 @@ import java.awt.geom.Point2D;
 public class Wlan {
 
     public int wlan_id;		// WLAN ID
-    public String wlan_code;	// Code of the WLAN (string)
+    public String bss_code;	// Code of the WLAN (string)
     public int num_stas;	// Number of STAs in the WLAN (AP not included)
     public String ap_code;	// Id of the Access Point
     String[] list_sta_code;     // List of STAs IDs belonging to the WLAN
@@ -44,7 +44,7 @@ public class Wlan {
             int max_ch_allowed, boolean wlan_80211ax, double x, double y, 
             double z, int channel_bonding_model, double traffic_load) {
         this.wlan_id = wlan_id;
-        this.wlan_code = wlan_code;
+        this.bss_code = wlan_code;
         this.num_stas = num_stas;
         this.ap_code = ap_code;
         this.list_sta_code = list_sta_code;
@@ -70,7 +70,7 @@ public class Wlan {
             int bss_color, int spatial_reuse_group, int non_srg_obss_pd, int srg_obss_pd) {
         
         this.wlan_id = wlan_id;
-        this.wlan_code = wlan_code;
+        this.bss_code = wlan_code;
         this.num_stas = num_stas;
         this.ap_code = ap_code;
         this.list_sta_code = list_sta_code;

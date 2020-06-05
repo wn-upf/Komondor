@@ -297,7 +297,7 @@ public class random_scenarios {
             node_type = 0;
             
             line = getCompleteLine(wlan.ap_code, node_type,
-                wlan.wlan_code, wlan.x, wlan.y, wlan.z, wlan.primary_channel,
+                wlan.bss_code, wlan.x, wlan.y, wlan.z, wlan.primary_channel,
                 wlan.min_ch_allowed, wlan.max_ch_allowed,
                 wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
                 wlan.bss_color, wlan.spatial_reuse_group, wlan.non_srg_obss_pd,
@@ -313,7 +313,7 @@ public class random_scenarios {
                 
                 if (w==1) { // Change Z of STA in WLAN A
                     line = getCompleteLine(wlan.list_sta_code[n], node_type,
-                        wlan.wlan_code, wlan.stas_position_list[n].x, 
+                        wlan.bss_code, wlan.stas_position_list[n].x, 
                         wlan.stas_position_list[n].y, 0, wlan.primary_channel,
                         wlan.min_ch_allowed, wlan.max_ch_allowed,
                         wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
@@ -321,7 +321,7 @@ public class random_scenarios {
                         wlan.srg_obss_pd);
                 } else {
                     line = getCompleteLine(wlan.list_sta_code[n], node_type,
-                    wlan.wlan_code, wlan.stas_position_list[n].x, 
+                    wlan.bss_code, wlan.stas_position_list[n].x, 
                     wlan.stas_position_list[n].y, 0, wlan.primary_channel,
                     wlan.min_ch_allowed, wlan.max_ch_allowed,
                     wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
