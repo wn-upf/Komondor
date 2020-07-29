@@ -15,7 +15,7 @@ pwd
 rm output/*
 
 # get input files path in folder 'script_input_files'
-cd input/sr_action_banning/input_nodes_toy_scenario_2/
+cd input/sr_action_banning/toy_scenarios/input_nodes_toy_scenario_2/
 pwd
 
 echo 'DETECTED KOMONDOR INPUT FILES: '
@@ -30,6 +30,7 @@ done < <(ls)
 (( file_ix --));
 
 # execute files
+cd ..
 cd ..
 cd ..
 cd ..
