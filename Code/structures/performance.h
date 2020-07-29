@@ -94,6 +94,8 @@ struct Performance
 	int *num_trials_tx_per_num_channels;				///> Number of attempts for transmitting to each number of channels
 	double average_waiting_time;						///> Average waiting time
 	double bandwidth_used_txing;						///> Bandwidth used during transmissions
+	int min_channel_allowed;                            ///> First channel used
+    int max_channel_allowed;                            ///> Last channel used
 	double *total_time_transmitting_per_channel;		///> Total time transmitting in each channel
 	double *total_time_transmitting_in_num_channels;	///> Total time transmitting per each channel width
 	double *total_time_lost_per_channel;				///> Total time lost in each channel (e.g. collisions)

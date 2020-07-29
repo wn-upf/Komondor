@@ -728,69 +728,18 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		}
 
-		// ITU-T AI CHALLENGE
-        case 15: {
-            //  - Throughput experienced/allocated for each device (AP and STAs)
-            char tpt_array[500] = "";
-            char aux_tpt[150];
-            // Total airtime
-            char airtime_array[500] = "";
-            char aux_airtime[150];
-            // Successful airtime
-            char sairtime_array[500] = "";
-            char aux_sairtime[150];
-            // - RSSI in STAs from the associated AP
-            char max_power_in_ap_per_wlan[2000] = "";
-            char aux_power_in_ap[500];
-
-            for(int i = 0; i < total_nodes_number; i ++) {
-                if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
-                    // Throughput allocated to the STA
-                    sprintf(aux_tpt, "%.2f", performance_report[i].throughput * pow(10,-6));
-                    strcat(tpt_array, aux_tpt);
-                    strcat(tpt_array, ";");
-                    // Total airtime
-                    sprintf(aux_airtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
-                        - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
-                    strcat(airtime_array, aux_airtime);
-                    strcat(airtime_array, ";");
-                    // Successful airtime
-                    sprintf(aux_sairtime, "%.2f", (performance_report[i].total_time_transmitting_in_num_channels[0]*100/simulation_time_komondor));
-                    strcat(sairtime_array, aux_sairtime);
-                    strcat(sairtime_array, ";");
-                    // RSSI received from the AP (dBm)
-                    // Increase the number of visited nodes
-                    strcat(max_power_in_ap_per_wlan, "{");
-                    for(int w = 0; w < total_wlans_number; w ++) {
-                        // Array to store all details of STA
-                        // RSSI received from the AP
-                        sprintf(aux_power_in_ap, "%.2f", ConvertPower(PW_TO_DBM,
-                             performance_report[i].max_received_power_in_ap_per_wlan[w]));
-                        strcat(max_power_in_ap_per_wlan, aux_power_in_ap);
-                        // Increase the number of visited nodes
-                        if (w < total_wlans_number-1) strcat(max_power_in_ap_per_wlan, ",");
-                    }
-                    strcat(max_power_in_ap_per_wlan, "};");
-                }
-            }
-
-            fprintf(logger_script.file, ";%s%s%s%s\n", tpt_array, airtime_array, sairtime_array, max_power_in_ap_per_wlan);
-            break;
-
-        }
-
         // ITU-T AI CHALLENGE (II)
-        case 16: {
-            // STEP 1: Concatenate the information obtained from each STA in each WLAN
+        case 15: {
+            // STEP 1: Concatenate the information obtained from each STA in each BSS
             //  - Throughput experienced/allocated for each device (AP and STAs)
             char tpt_per_device[1500] = "{";
             char aux_tpt_per_device[1500];
             // - Airtime
-            char airtime_per_device[1500] = "{";
+            char airtime_per_bss[1500] = "{";
             char aux_airtime[1500];
             // - RSSI in STAs from the associated AP
-            char rssi_per_device[1500] = "{";
-            char aux_rssi_per_device[1500];
+            char rssi_per_device[2000] = "{";
+            char aux_rssi_per_device[2000];
             // - Power received in APs from other APs
             char power_per_ap[1500] = "{";
             char aux_power_per_ap[1500];
@@ -798,16 +747,29 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
             // - Counter for visited nodes
             int counter_nodes_visited = 0;
             int counter_bss_visited = 0;
+            // Auxiliary variables to keep track of the number of channels selected per each BSS
+            int first_channel_selected = 0;
+            int last_channel_selected = 0;
             for(int i = 0; i < total_nodes_number; i ++) {
                 if(configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+                    first_channel_selected = performance_report[i].min_channel_allowed;
+                    last_channel_selected = performance_report[i].max_channel_allowed;
                     // Throughput (Mbps)
                     sprintf(aux_tpt_per_device, "%.2f,", performance_report[i].throughput * pow(10,-6));
                     strcat(tpt_per_device, aux_tpt_per_device);
                     // Airtime (%)
-                    sprintf(aux_airtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
-                        - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
-                    strcat(airtime_per_device, aux_airtime);
-                    if(counter_bss_visited < total_wlans_number - 1) { strcat(airtime_per_device, ","); }
+                    for (int j = 0; j < last_channel_selected-first_channel_selected+1; ++j) {
+                        if (j < last_channel_selected-first_channel_selected) {
+                            sprintf(aux_airtime, "%.2f,", (performance_report[i].total_time_spectrum_per_channel[first_channel_selected+j] * 100 /simulation_time_komondor));
+                            strcat(airtime_per_bss, aux_airtime);
+                        } else {
+                            sprintf(aux_airtime, "%.2f", (performance_report[i].total_time_spectrum_per_channel[first_channel_selected+j] * 100 /simulation_time_komondor));
+                            strcat(airtime_per_bss, aux_airtime);
+                        }
+                    }
+                    sprintf(aux_airtime, ";");
+                    strcat(airtime_per_bss, aux_airtime);
+                    //if(counter_bss_visited < total_wlans_number - 1) { strcat(airtime_per_bss, ","); }
                     // RSSI received from the AP (dBm)
                     strcat(rssi_per_device, "Inf,");
                     // Increase the number of visited nodes
@@ -858,17 +820,13 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
                         }
                     }
                 }
-//                // Time in NAV per device (%)
-//                sprintf(aux_time_in_nav_per_device, "%.2f", performance_report[i].time_in_nav/simulation_time_komondor*100);
-//                strcat(time_in_nav_per_device, aux_time_in_nav_per_device);
-//                if(i < total_nodes_number-1) strcat(time_in_nav_per_device, ",");
             }
             strcat(tpt_per_device, "}");
-            strcat(airtime_per_device, "}");
+            strcat(airtime_per_bss, "}");
             strcat(rssi_per_device, "}");
 
             // STEP 2: Print the data to the output .csv file
-            fprintf(logger_script.file, "\n%s\n%s\n%s\n%s\n", tpt_per_device, airtime_per_device, rssi_per_device, power_per_ap);
+            fprintf(logger_script.file, "\n%s\n%s\n%s\n%s\n", tpt_per_device, airtime_per_bss, rssi_per_device, power_per_ap);
 
             break;
         }

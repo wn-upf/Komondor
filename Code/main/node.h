@@ -4984,6 +4984,8 @@ void Node :: SaveSimulationPerformance() {
 	if(node_id == 0) simulation_performance.sum_time_channel_idle = sum_time_channel_idle;
 
 	simulation_performance.num_stas = wlan.num_stas;
+    simulation_performance.min_channel_allowed = min_channel_allowed;
+    simulation_performance.max_channel_allowed = max_channel_allowed;
 
 	// Throughput
 	simulation_performance.throughput = throughput;
