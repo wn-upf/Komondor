@@ -303,10 +303,8 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		case 6:{
 			// Sergio logs for Paper #5 Toy Scenario I and II: 2 WLANs overlap scenario, and 3 line scenario
-			fprintf(logger_script.file, ";%d;%d;%d;%d;%.0f;%.0f;%.2f;%.2f;"
+			fprintf(logger_script.file, ";%d;%d;%.0f;%.0f;%.2f;%.2f;"
 				"%.4f;%.4f;%.2f;%.2f;%.4f;%.4f;%.4f;%.4f;%.4f;%.4f;%.2f;%.2f\n",
-				configuration_per_node[0].capabilities.current_dcb_policy,
-				configuration_per_node[2].capabilities.current_dcb_policy,
 				performance_report[0].num_packets_generated,
 				performance_report[2].num_packets_generated,
 				performance_report[0].throughput / (configuration_per_node[0].frame_length *
@@ -353,9 +351,8 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		case 8:{
 			// Sergio logs for Paper #5: Central WLAN scenario
-			fprintf(logger_script.file, ";%d;%d;%.0f;%.2f;"
+			fprintf(logger_script.file, ";%d;%.0f;%.2f;"
 				"%.4f;%.2f;%.4f;%.4f;%.4f;%.4f\n",
-				configuration_per_node[0].capabilities.current_dcb_policy,
 				performance_report[0].num_packets_generated,
 				performance_report[0].throughput / (configuration_per_node[0].frame_length *
 					configuration_per_node[0].max_num_packets_aggregated),

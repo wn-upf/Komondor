@@ -675,6 +675,412 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intere
 	}
 }
 
+
+void GetTxChannelsByChannelBondingCCA11ax(int *channels_for_tx, int channel_bonding_model, int min_channel_allowed,
+		int max_channel_allowed, int primary_channel, double **channel_power){
+
+
+	int num_channels_allowed = max_channel_allowed - min_channel_allowed + 1;
+
+	// Reset channels for transmitting
+	for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
+		channels_for_tx[c] = FALSE;
+	}
+
+	// Select channels to transmit depending on the sensed power
+	switch(channel_bonding_model){
+
+		// Only Primary Channel used if FREE
+		case CB_ONLY_PRIMARY:{
+			if((*channel_power)[primary_channel] < ConvertPower(DBM_TO_PW,-82)) channels_for_tx[primary_channel] = TRUE;
+			break;
+		}
+
+		case CB_ALWAYS_MAX_LOG2:{
+
+			switch(num_channels_allowed){
+
+				// 160 MHz allocated
+				case 8: {
+
+					int num_ch_tx_possible = 8;
+
+					// Try 160 MHz
+					if(primary_channel <=3){
+
+						for(int c = 0; c <= 3; ++c){
+							if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_80MHZ)) num_ch_tx_possible = 4;
+						}
+
+						for(int c = 4; c <= 7; ++c){
+							if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_80MHZ)) num_ch_tx_possible = 4;
+						}
+
+					} else {
+
+						for(int c = 0; c <= 3; ++c){
+							if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_80MHZ)) num_ch_tx_possible = 4;
+						}
+
+						for(int c = 4; c <= 7; ++c){
+							if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_80MHZ)) num_ch_tx_possible = 4;
+						}
+
+					}
+
+					if (num_ch_tx_possible == 4){
+						// Try 80 MHz
+						// Detect primary 40 MHz
+						if(primary_channel <= 3){
+
+							if(primary_channel <= 1){
+
+								for(int c = 0; c <= 1; ++c){
+									if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_40MHZ)) num_ch_tx_possible = 2;
+								}
+
+								for(int c = 2; c <= 3; ++c){
+									if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_40MHZ)) num_ch_tx_possible = 2;
+								}
+
+							} else {
+
+								for(int c = 0; c <= 1; ++c){
+									if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_40MHZ)) num_ch_tx_possible = 2;
+								}
+
+								for(int c = 2; c <= 3; ++c){
+									if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_40MHZ)) num_ch_tx_possible = 2;
+								}
+
+							}
+
+						} else {
+
+							if(primary_channel <= 5){
+
+								for(int c = 4; c <= 5; ++c){
+									if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_40MHZ)) num_ch_tx_possible = 2;
+								}
+
+								for(int c = 6; c <= 7; ++c){
+									if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_40MHZ)) num_ch_tx_possible = 2;
+								}
+
+							} else {
+
+								for(int c = 4; c <= 5; ++c){
+									if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_40MHZ)) num_ch_tx_possible = 2;
+								}
+
+								for(int c = 6; c <= 7; ++c){
+									if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_40MHZ)) num_ch_tx_possible = 2;
+								}
+
+							}
+						}
+					}
+
+					if (num_ch_tx_possible == 2){
+
+						// Try 40 MHz
+						// Detect primary 20 MHz
+						if(primary_channel == 0){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 1){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 2){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 3){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 4){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 5){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 6){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 7){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						}
+
+					}
+
+					if (num_ch_tx_possible == 1){
+
+						channels_for_tx[primary_channel] = TRUE;
+
+					} else if (num_ch_tx_possible == 2){
+
+						if(primary_channel <= 1){
+							channels_for_tx[0] = TRUE;
+							channels_for_tx[1] = TRUE;
+						} else if(primary_channel <= 3){
+							channels_for_tx[2] = TRUE;
+							channels_for_tx[3] = TRUE;
+						} else if(primary_channel <= 5){
+							channels_for_tx[4] = TRUE;
+							channels_for_tx[5] = TRUE;
+						} else if(primary_channel <= 7){
+							channels_for_tx[6] = TRUE;
+							channels_for_tx[7] = TRUE;
+						}
+
+					} else if (num_ch_tx_possible == 4){
+
+						if(primary_channel <= 3){
+							channels_for_tx[0] = TRUE;
+							channels_for_tx[1] = TRUE;
+							channels_for_tx[2] = TRUE;
+							channels_for_tx[3] = TRUE;
+						} else if(primary_channel <= 7){
+							channels_for_tx[4] = TRUE;
+							channels_for_tx[5] = TRUE;
+							channels_for_tx[6] = TRUE;
+							channels_for_tx[7] = TRUE;
+						}
+
+
+					} else if (num_ch_tx_possible == 8){
+						for(int c = 0; c <= 7; ++c){
+							channels_for_tx[c] = TRUE;
+						}
+					}
+				}
+
+				// 80 MHz
+				case 4: {
+
+					int num_ch_tx_possible = 4;
+
+					// Try 80 MHz
+					// Detect primary 40 MHz
+					if(primary_channel <= 3){
+
+						if(primary_channel <= 1){
+
+							for(int c = 0; c <= 1; ++c){
+								if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_40MHZ)) num_ch_tx_possible = 2;
+							}
+
+							for(int c = 2; c <= 3; ++c){
+								if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_40MHZ)) num_ch_tx_possible = 2;
+							}
+
+						} else {
+
+							for(int c = 0; c <= 1; ++c){
+								if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_40MHZ)) num_ch_tx_possible = 2;
+							}
+
+							for(int c = 2; c <= 3; ++c){
+								if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_40MHZ)) num_ch_tx_possible = 2;
+							}
+
+						}
+
+					} else {
+
+						if(primary_channel <= 5){
+
+							for(int c = 4; c <= 5; ++c){
+								if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_40MHZ)) num_ch_tx_possible = 2;
+							}
+
+							for(int c = 6; c <= 7; ++c){
+								if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_40MHZ)) num_ch_tx_possible = 2;
+							}
+
+						} else {
+
+							for(int c = 4; c <= 5; ++c){
+								if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_40MHZ)) num_ch_tx_possible = 2;
+							}
+
+							for(int c = 6; c <= 7; ++c){
+								if((*channel_power)[c] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_40MHZ)) num_ch_tx_possible = 2;
+							}
+
+						}
+					}
+
+					if (num_ch_tx_possible == 2){
+
+						// Try 40 MHz
+						// Detect primary 20 MHz
+						if(primary_channel == 0){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 1){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 2){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 3){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 4){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 5){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 6){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						} else if(primary_channel == 7){
+							if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+							if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+						}
+
+					}
+
+					if (num_ch_tx_possible == 1){
+
+						channels_for_tx[primary_channel] = TRUE;
+
+					} else if (num_ch_tx_possible == 2){
+
+						if(primary_channel <= 1){
+							channels_for_tx[0] = TRUE;
+							channels_for_tx[1] = TRUE;
+						} else if(primary_channel <= 3){
+							channels_for_tx[2] = TRUE;
+							channels_for_tx[3] = TRUE;
+						} else if(primary_channel <= 5){
+							channels_for_tx[4] = TRUE;
+							channels_for_tx[5] = TRUE;
+						} else if(primary_channel <= 7){
+							channels_for_tx[6] = TRUE;
+							channels_for_tx[7] = TRUE;
+						}
+
+					} else if (num_ch_tx_possible == 4){
+
+						if(primary_channel <= 3){
+							channels_for_tx[0] = TRUE;
+							channels_for_tx[1] = TRUE;
+							channels_for_tx[2] = TRUE;
+							channels_for_tx[3] = TRUE;
+						} else if(primary_channel <= 7){
+							channels_for_tx[4] = TRUE;
+							channels_for_tx[5] = TRUE;
+							channels_for_tx[6] = TRUE;
+							channels_for_tx[7] = TRUE;
+						}
+
+
+					} else if (num_ch_tx_possible == 8){
+						for(int c = 0; c <= 7; ++c){
+							channels_for_tx[c] = TRUE;
+						}
+					}
+
+					break;
+				}
+
+				// 40 MHz
+				case 2: {
+
+					int num_ch_tx_possible = 2;
+
+					// Try 40 MHz
+					// Detect primary 20 MHz
+					if(primary_channel == 0){
+						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+					} else if(primary_channel == 1){
+						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+					} else if(primary_channel == 2){
+						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+					} else if(primary_channel == 3){
+						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+					} else if(primary_channel == 4){
+						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+					} else if(primary_channel == 5){
+						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+					} else if(primary_channel == 6){
+						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel+1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+					} else if(primary_channel == 7){
+						if((*channel_power)[primary_channel] > ConvertPower(DBM_TO_PW,CCA_PRIMARY_20MHZ)) num_ch_tx_possible = 1;
+						if((*channel_power)[primary_channel-1] > ConvertPower(DBM_TO_PW,CCA_SECONDARY_20MHZ)) num_ch_tx_possible = 1;
+					}
+
+					if (num_ch_tx_possible == 1){
+
+						channels_for_tx[primary_channel] = TRUE;
+
+					} else if (num_ch_tx_possible == 2){
+
+						if(primary_channel <= 1){
+							channels_for_tx[0] = TRUE;
+							channels_for_tx[1] = TRUE;
+						} else if(primary_channel <= 3){
+							channels_for_tx[2] = TRUE;
+							channels_for_tx[3] = TRUE;
+						} else if(primary_channel <= 5){
+							channels_for_tx[4] = TRUE;
+							channels_for_tx[5] = TRUE;
+						} else if(primary_channel <= 7){
+							channels_for_tx[6] = TRUE;
+							channels_for_tx[7] = TRUE;
+						}
+
+					} else if (num_ch_tx_possible == 4){
+
+						if(primary_channel <= 3){
+							channels_for_tx[0] = TRUE;
+							channels_for_tx[1] = TRUE;
+							channels_for_tx[2] = TRUE;
+							channels_for_tx[3] = TRUE;
+						} else if(primary_channel <= 7){
+							channels_for_tx[4] = TRUE;
+							channels_for_tx[5] = TRUE;
+							channels_for_tx[6] = TRUE;
+							channels_for_tx[7] = TRUE;
+						}
+
+
+					} else if (num_ch_tx_possible == 8){
+						for(int c = 0; c <= 7; ++c){
+							channels_for_tx[c] = TRUE;
+						}
+					}
+
+
+					break;
+				}
+
+				// 20 MHz
+				case 1: {
+
+					// Direct assignment to TRUE since the BO has already finished
+					channels_for_tx[primary_channel] = TRUE;
+
+					break;
+				}
+
+				break;
+			}
+
+		}
+	}
+}
+
 /**
 * Identify the channels to TX in depending on the channel_bonding scheme and channel_power state.
 * @param "channels_for_tx" [type int*]: list of channels for transmitting (to be updated by this method)
@@ -687,11 +1093,11 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intere
 * @param "ix_mcs_per_node" [type int]: index of the MCS used per node
 * @param "num_channels_system" [type int]: total number of channels in the system
 */
-void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_model, int *channels_free,
-    int min_channel_allowed, int max_channel_allowed, int primary_channel, int **mcs_per_node, int ix_mcs_per_node){
+void GetTxChannelsByChannelBondingCCASame(int *channels_for_tx, int channel_bonding_model, int *channels_free,
+    int min_channel_allowed, int max_channel_allowed, int primary_channel, int num_channels_system){
 
 	// Reset channels for transmitting
-	for(int c = min_channel_allowed; c <= max_channel_allowed; ++c){
+	for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 		channels_for_tx[c] = FALSE;
 	}
 
@@ -712,7 +1118,6 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 		}
 	}
 
-	int num_free_ch (right_free_ch - left_free_ch + 1);
 	int num_available_ch (max_channel_allowed - min_channel_allowed + 1);
 	int log2_modulus;	// Auxiliary variable representing a modulus
 	int left_tx_ch;		// Left channel to TX
@@ -910,54 +1315,9 @@ void GetTxChannelsByChannelBonding(int *channels_for_tx, int channel_bonding_mod
 			// Always-map (DCB) log2 with optimal MCS: picks the channel range + MCS providing max throughput
 			case CB_ALWAYS_MAX_LOG2_MCS:{
 
-				int num_channels = 0;
-				int modulation = 0;
-				int modulation_num_channels_ix = 0;
-				double max_throughput = 0;
-				double aux_throughput = 0;
-
-				while(num_free_ch > 0){
-
-					// If num_free_ch is power of 2
-					if(fmod(log10(num_free_ch)/log10(2), 1) == 0){
-
-						log2_modulus = primary_channel % num_free_ch;
-						left_tx_ch = primary_channel - log2_modulus;
-						right_tx_ch = primary_channel + num_free_ch - log2_modulus - 1;
-						num_channels = right_tx_ch - left_tx_ch + 1;
-						modulation_num_channels_ix = (int) log2(num_channels);
-
-						// Check if tx channels are inside the free ones
-						if((left_tx_ch >= min_channel_allowed) && (right_tx_ch <= max_channel_allowed)){
-
-							// Security check for ensuring picked range is free
-							int range_is_free = TRUE;
-							for(int c = left_tx_ch; c <= right_tx_ch; ++c){
-								if(!channels_free[c]){
-									range_is_free = FALSE;
-									break;
-								}
-							}
-
-							if (range_is_free){
-
-								/* MCS optimization */
-								modulation = mcs_per_node[ix_mcs_per_node][modulation_num_channels_ix];
-								aux_throughput = Mcs_array::mcs_array[modulation_num_channels_ix][modulation-1];
-
-								if(aux_throughput > max_throughput){
-									// TX channels found!
-									for(int c = left_tx_ch; c <= right_tx_ch; ++c){
-										channels_for_tx[c] = TRUE;
-									}
-								}
-							}
-						}
-						--num_free_ch;
-					} else {
-						--num_free_ch;
-					}
-				}
+				// Deprecated
+				printf("Deprecated CB model. Please, use another one.\n");
+				exit(-1);
 
 				break;
 				}
@@ -1199,6 +1559,104 @@ void PrintOrWriteNodesTransmitting(int write_or_print, int save_node_logs, int p
 			break;
 		}
 	}
+}
+
+
+/**
+* Get minimum and maximum allowed channels given primary and max bandwidth
+* @param "primary_channel" [type int]: primary channel
+* @param "max_bandwidth" [type int]: max allocated bandwidth [no. of channels]
+* @param "min_ch" [type int]:  min channel allocated
+* @param "max_ch" [type Logger]: max channel allocated
+*/
+
+void GetMinAndMaxAllowedChannels(int& min_ch, int& max_ch, int primary_channel, int max_bandwidth){
+
+	switch(max_bandwidth){
+
+		// 20 MHz
+		case 1:{
+			min_ch = primary_channel;
+			max_ch = primary_channel;
+			break;
+		}
+
+		//40 MHz
+		case 2:{
+
+			if(primary_channel == 0 || primary_channel == 1){
+				min_ch = 0;
+				max_ch = 1;
+			} else if(primary_channel == 2 || primary_channel == 3){
+				min_ch = 2;
+				max_ch = 3;
+			} else if(primary_channel == 4 || primary_channel == 5){
+				min_ch = 4;
+				max_ch = 5;
+			} else if(primary_channel == 6 || primary_channel == 7){
+				min_ch = 6;
+				max_ch = 7;
+			}
+
+			break;
+		}
+
+		// 80 MHz
+		case 4:{
+			if(primary_channel <= 3){
+				min_ch = 0;
+				max_ch = 3;
+			} else {
+				min_ch = 4;
+				max_ch = 7;
+			}
+			break;
+		}
+
+		// 160 MHz
+		case 8:{
+			min_ch = 0;
+			max_ch = 7;
+			break;
+		}
+
+	} // End of switch(max_bandwidth)
+
+}
+
+/**
+* Get channels where the TX is performed
+* @param "channels_for_tx" [type int*]: boolean array indicating whether a channel is used for TX (1) or not (0)
+* @param "channel_bonding_model" [type int]: channel bonding model (e.g., 4 DCB)
+* @param "channels_free" [type int*]:  array indicating whether a channel is free (1) or not (0)
+* @param "min_channel_allowed" [type int]: minimum allocated channel (most to the left)
+* @param "max_channel_allowed" [type int]: maximum allocated channel (most to the right)
+* @param "primary_channel" [type int]: primary channel
+* @param "num_channels_komondor" [type int]: number of channels in the system
+* @param "channel_power" [type double**]: array indicating the power perceived per channel
+* @param "channel_aggregation_cca_model" [type int]: indicates if CCA is considered to be different per bandwidth
+*/
+
+void GetTxChannels(int *channels_for_tx, int channel_bonding_model, int *channels_free,
+    int min_channel_allowed, int max_channel_allowed, int primary_channel, int num_channels_komondor,
+	double **channel_power, int channel_aggregation_cca_model){
+
+	switch(channel_aggregation_cca_model){
+
+		case CHANNEL_AGGREGATION_CCA_SAME:{
+			GetTxChannelsByChannelBondingCCASame(channels_for_tx, channel_bonding_model, channels_free,
+					min_channel_allowed, max_channel_allowed, primary_channel, num_channels_komondor);
+			break;
+		}
+
+		case CHANNEL_AGGREGATION_CCA_11AX:{
+			GetTxChannelsByChannelBondingCCA11ax(channels_for_tx, channel_bonding_model, min_channel_allowed,
+						max_channel_allowed, primary_channel, channel_power);
+			break;
+		}
+
+	}
+
 }
 
 /**

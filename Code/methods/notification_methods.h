@@ -461,7 +461,6 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	tx_info.SetSizeOfMCS(4);	// TODO: make size dynamic
 
 	tx_info.num_packets_aggregated = num_packets_aggregated;
-
 	tx_info.data_duration = data_duration;
 	tx_info.ack_duration = ack_duration;
 	tx_info.rts_duration = rts_duration;

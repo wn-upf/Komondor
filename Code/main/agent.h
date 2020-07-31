@@ -126,7 +126,7 @@ component Agent : public TypeII{
 		int *list_of_channels; 				///> List of channels
 		double *list_of_pd_values;			///> List of PD values
 		double *list_of_tx_power_values;	///> List of TX power values
-		int *list_of_dcb_policy;			///> List of DCB policies
+		int *list_of_max_bandwidth;			///> List of DCB policies
 
 		Action *actions;					///> List of actions
 		int *list_of_available_actions;		///> List of the actions that are available
@@ -134,7 +134,7 @@ component Agent : public TypeII{
 		int num_arms_channel;			///> Number of channels available
 		int num_arms_sensitivity;		///> Number of PD levels available
 		int num_arms_tx_power;			///> Number of TX power levels available
-		int num_arms_dcb_policy;			///> Number of DCB policies available
+		int num_arms_max_bandwidth;			///> Number of DCB policies available
 
 		// Other input parameters
 		int type_of_reward;					///> Type of reward
@@ -654,6 +654,8 @@ void Agent :: InitializeAgent() {
 	automatic_forward_enabled = TRUE;
     flag_shared_reward = FALSE;
 
+	initial_reward = 0;
+
 	flag_request_from_controller = false;
 	flag_information_available = false;
 
@@ -662,7 +664,7 @@ void Agent :: InitializeAgent() {
 	list_of_channels = new int[num_arms_channel];
 	list_of_pd_values = new double[num_arms_sensitivity];
 	list_of_tx_power_values = new double[num_arms_tx_power];
-	list_of_dcb_policy = new int[num_arms_dcb_policy];
+	list_of_max_bandwidth = new int[num_arms_max_bandwidth];
 
 	actions = new Action[num_arms];
 	list_of_available_actions = new int[num_arms];
@@ -691,14 +693,14 @@ void Agent :: InitializePreProcessor() {
 	pre_processor.num_arms_channel = num_arms_channel;
 	pre_processor.num_arms_sensitivity = num_arms_sensitivity;
 	pre_processor.num_arms_tx_power = num_arms_tx_power;
-	pre_processor.num_arms_dcb_policy = num_arms_dcb_policy;
+	pre_processor.num_arms_max_bandwidth = num_arms_max_bandwidth;
 
 	pre_processor.InitializeVariables();
 
 	pre_processor.list_of_channels = list_of_channels;
 	pre_processor.list_of_pd_values = list_of_pd_values;
 	pre_processor.list_of_tx_power_values = list_of_tx_power_values;
-	pre_processor.list_of_dcb_policy = list_of_dcb_policy;
+	pre_processor.list_of_max_bandwidth = list_of_max_bandwidth;
 
     // Initialize the actions array
     actions = pre_processor.InitializeActions();
@@ -760,9 +762,9 @@ void Agent :: PrintAgentInfo(){
 		printf("%f pW (%f dBm)  ", list_of_tx_power_values[i], ConvertPower(PW_TO_DBM, list_of_tx_power_values[i]));
 	}
 	printf("\n");
-	printf("%s list_of_dcb_policy: ", LOG_LVL4);
-	for (int i = 0; i < num_arms_dcb_policy; ++i) {
-		printf("%d  ", list_of_dcb_policy[i]);
+	printf("%s list_of_max_bandwidth: ", LOG_LVL4);
+	for (int i = 0; i < num_arms_max_bandwidth; ++i) {
+		printf("%d  ", list_of_max_bandwidth[i]);
 	}
 	printf("\n");
 	printf("%s learning_mechanism: %d\n", LOG_LVL4, learning_mechanism);
@@ -800,9 +802,9 @@ void Agent :: WriteAgentInfo(Logger logger, std::string header_str){
 		fprintf(logger.file, "%f pW (%f dBm)  ", list_of_tx_power_values[i], ConvertPower(PW_TO_DBM, list_of_tx_power_values[i]));
 	}
 	fprintf(logger.file, "\n");
-	fprintf(logger.file, "%s - list_of_dcb_policy: ", header_str.c_str());
+	fprintf(logger.file, "%s - list_of_max_bandwidth: ", header_str.c_str());
 	for (int i = 0; i < num_arms_channel; ++i) {
-		fprintf(logger.file, "%d  ", list_of_dcb_policy[i]);
+		fprintf(logger.file, "%d  ", list_of_max_bandwidth[i]);
 	}
 	fprintf(logger.file, "\n");
 	fprintf(logger.file, "%s - learning_mechanism = %d\n", header_str.c_str(), learning_mechanism);

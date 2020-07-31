@@ -207,6 +207,16 @@
 #define CB_ALWAYS_MAX_LOG2_MCS		5	///> Log2 Always-max (DCB) with optimal MCS: picks the channel range + MCS providing max throughput
 #define CB_PROB_UNIFORM_LOG2		6	///> Log2 probabilistic uniform: pick with same probabilty any available channel range
 
+#define CHANNEL_AGGREGATION_CCA_SAME 0	///> Same CCA (e.g., -82 dBm) is applied to every 20-MHz channel
+#define CHANNEL_AGGREGATION_CCA_11AX 1	///> Different CCA (i.e., -82, 79, -72...) is applied depending on primary and secondary
+
+#define CCA_PRIMARY_20MHZ	-82			///> CCA for primary channel of width 20 MHz (in 40 MHz)
+#define CCA_SECONDARY_20MHZ	-72			///> CCA for secondary channel of width 20 MHz (in 40 MHz)
+#define CCA_PRIMARY_40MHZ	-79			///> CCA for primary channel of width 40 MHz (in 80 MHz)
+#define CCA_SECONDARY_40MHZ	-72			///> CCA for primary channel of width 40 MHz (in 80 MHz)
+#define CCA_PRIMARY_80MHZ	-76			///> CCA for primary channel of width 80 MHz (in 160 MHz)
+#define CCA_SECONDARY_80MHZ	-69			///> CCA for primary channel of width 80 MHz (in 160 MHz)
+
 // Adjacent channel interference model
 #define ADJACENT_CHANNEL_NONE		0	///> No adjacent channel interference
 #define ADJACENT_CHANNEL_BOUNDARY	1	///> (RECOMMENDED) Boundary adjacent channel interference: only boundary channels (left and right) used in the TX affect the rest of channels
@@ -342,7 +352,7 @@
 #define ORIGIN_AP		1		///> To determine the source of a received command/configuration (AP)
 #define ORIGIN_CC		2		///> To determine the source of a received command/configuration (AP)
 
-#define NUM_FEATURES_ACTIONS			4	///> Number of features considered (e.g., primary, PD, P_tx, DCB policy)
+#define NUM_FEATURES_ACTIONS			4	///> Number of features considered (e.g., primary, PD, P_tx, Max bandwidth)
 
 // Types of rewards
 #define REWARD_TYPE_PACKETS_SUCCESSFUL	0	///> Packets sent
@@ -420,8 +430,8 @@
  */
 
 // CONSOLE ARGUMENTS
-#define NUM_FULL_ARGUMENTS_CONSOLE				13		///> Number of arguments entered per console corresponding to full config
-#define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	10		///> Number of arguments entered per console corresponding to full config (NO AGENTS)
+#define NUM_FULL_ARGUMENTS_CONSOLE				12		///> Number of arguments entered per console corresponding to full config
+#define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	9		///> Number of arguments entered per console corresponding to full config (NO AGENTS)
 #define NUM_PARTIAL_ARGUMENTS_CONSOLE			4		///> Number of arguments entered per console corresponding to partial config
 #define NUM_PARTIAL_ARGUMENTS_SCRIPT			5		///> Number of arguments entered per script corresponding to partial config
 
@@ -486,7 +496,7 @@
 #define IX_AGENT_CHANNEL_VALUES			4
 #define IX_AGENT_PD_VALUES				5
 #define IX_AGENT_TX_POWER_VALUES		6
-#define IX_AGENT_DCB_POLICY				7
+#define IX_AGENT_MAX_BANDWIDTH			7
 #define IX_AGENT_TYPE_OF_REWARD			8
 #define IX_AGENT_LEARNING_MECHANISM		9
 #define IX_AGENT_SELECTED_STRATEGY 		10
