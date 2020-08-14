@@ -101,8 +101,8 @@ public class random_scenario_1 {
                     map_heigth = Double.parseDouble(node_info[1]);
                     num_bss = Integer.parseInt(node_info[2]);
                     bss_container = new Wlan[num_bss];
-                    num_sta_min = Integer.parseInt(node_info[3]);
-                    num_sta_max = Integer.parseInt(node_info[4]);
+                    num_sta_min = 1;//Integer.parseInt(node_info[3]);
+                    num_sta_max = 1;//Integer.parseInt(node_info[4]);
                     d_min_AP_AP = Double.parseDouble(node_info[5]);
                     d_min_AP_STA = Double.parseDouble(node_info[6]);
                     d_max_AP_STA = Double.parseDouble(node_info[7]);
@@ -395,7 +395,7 @@ public class random_scenario_1 {
     public static void main(String args[]) throws IOException {
 
         // Complete path building
-        String scenario_id = "sce1a";
+        String scenario_id = "sce2c";
         String input_path = "./input_constructor/template_ai_challenge_"+ scenario_id +".csv";
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";

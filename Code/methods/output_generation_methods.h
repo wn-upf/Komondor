@@ -731,17 +731,17 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
         // Distributed social-aware learning for 11ax SR enhancement
         case 15: {
             //  - Throughput experienced/allocated for each device (AP and STAs)
-            char tpt_array[250] = "";
-            char aux_tpt[50];
+            char tpt_array[2500] = "";
+            char aux_tpt[500];
             // Total airtime
-            char airtime_array[250] = "";
-            char aux_airtime[50];
+            char airtime_array[2500] = "";
+            char aux_airtime[500];
             // Successful airtime
-            char sairtime_array[250] = "";
-            char aux_sairtime[50];
+            char sairtime_array[2500] = "";
+            char aux_sairtime[500];
             // Successful airtime
-            char delay_array[250] = "";
-            char aux_delay[50];
+            char delay_array[2500] = "";
+            char aux_delay[500];
             for(int i = 0; i < total_nodes_number; i ++) {
                 if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
                     // Throughput allocated to the STA
@@ -750,7 +750,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
                     strcat(tpt_array, ";");
                     // Total airtime
                     sprintf(aux_airtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
-                                                   - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
+                    - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
                     strcat(airtime_array, aux_airtime);
                     strcat(airtime_array, ";");
                     // Successful airtime

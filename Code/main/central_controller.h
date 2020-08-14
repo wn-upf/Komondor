@@ -640,7 +640,7 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 			break;
 		}
         // Cost throughput
-    case SHARED_COST_THROUGHPUT: {
+        case SHARED_COST_THROUGHPUT: {
             for (int i = 0; i < agents_number; ++i) {
                 double cumulative_cost(0);
                 for (int j = 0; j < agents_number; ++j) {

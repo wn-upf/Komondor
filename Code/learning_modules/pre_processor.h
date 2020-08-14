@@ -204,7 +204,7 @@ class PreProcessor {
 					break;
 				}
 			}
-//			printf("Reward = %f\n",reward);
+			//printf("Reward in preprocessor (type %d) = %f\n",type_of_reward,reward);
 			return reward;
 		}
 
@@ -250,7 +250,8 @@ class PreProcessor {
 		Action* InitializeActions(){
 			Action *action_array = new Action[num_arms];
 			int *indexes_arm = new int[NUM_FEATURES_ACTIONS];
-			for(int i = 0; i < num_arms; ++i) {
+
+            for(int i = 0; i < num_arms; ++i) {
 				index2values(indexes_arm, i, num_arms_channel,num_arms_sensitivity,
 					num_arms_tx_power, num_arms_max_bandwidth);
 				action_array[i].id = i;
@@ -259,7 +260,7 @@ class PreProcessor {
 				action_array[i].cca = list_of_pd_values[indexes_arm[1]];
 				action_array[i].tx_power = list_of_tx_power_values[indexes_arm[2]];
 				action_array[i].max_bandwidth = list_of_max_bandwidth[indexes_arm[3]];
-				// Performance
+                // Performance
 				action_array[i].instantaneous_reward = 0;
 				action_array[i].times_played = 0;
 				action_array[i].average_reward_since_last_cc_request = 0;
@@ -313,6 +314,11 @@ class PreProcessor {
 			int index_pd = -1;
 			int index_tx_power = -1;
 			int index_max_bandwidth = -1;
+
+//			printf("configuration.selected_primary_channel = %d\n", configuration.selected_primary_channel);
+//            printf("configuration.selected_pd = %f\n", configuration.selected_pd);
+//            printf("configuration.selected_tx_power = %f\n", configuration.selected_tx_power);
+//            printf("configuration.selected_max_bandwidth = %d\n", configuration.selected_max_bandwidth);
 
 			// Channel
 			for(int i = 0; i < num_arms_channel; i++) {
@@ -485,14 +491,14 @@ class PreProcessor {
 				// Maximum delay
 				case REWARD_TYPE_MAX_DELAY:{
 					LOGS(TRUE, logger.file,
-						"%.15f;%s;%s;%s Max delay = %.2f ms\n", sim_time, string_device,
+						"%.15f;%s;%s;%s Max delay = %.9f ms\n", sim_time, string_device,
 						LOG_C03, LOG_LVL3, performance.average_delay * pow(10,-3));
 					break;
 				}
 				// Average delay
 				case REWARD_TYPE_AVERAGE_DELAY:{
 					LOGS(TRUE, logger.file,
-						"%.15f;%s;%s;%s Average delay = %.2f ms\n", sim_time, string_device,
+						"%.15f;%s;%s;%s Average delay = %.9f ms\n", sim_time, string_device,
 						LOG_C03, LOG_LVL3, performance.average_delay * pow(10,-3));
 					break;
 				}

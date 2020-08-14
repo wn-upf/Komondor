@@ -249,13 +249,13 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
         for(int j = 0; j < total_nodes_number; ++j) {
             // Compute and assign distances for each other node
             node_container[i].distances_array[j] = ComputeDistance(node_container[i].x,node_container[i].y,
-                                                                   node_container[i].z,node_container[j].x,node_container[j].y,node_container[j].z);
+                    node_container[i].z,node_container[j].x,node_container[j].y,node_container[j].z);
             // Compute and assign the received power from each other node
             if(i == j) {
                 node_container[i].received_power_array[j] = 0;
             } else {
                 node_container[i].received_power_array[j] = ComputePowerReceived(node_container[i].distances_array[j],
-                                                                                 node_container[j].tx_power_default, node_container[i].central_frequency, path_loss_model);
+                        node_container[j].tx_power_default, node_container[i].central_frequency, path_loss_model);
             }
         }
     }
@@ -413,7 +413,7 @@ void Komondor :: InputChecker(){
         nodes_z[i] = 0;
     }
 
-    if (print_system_logs) printf("%s Validating input files...\n", LOG_LVL2);
+    if (print_system_logs) printf("\n%s Validating input files...\n", LOG_LVL2);
 
     for (int i = 0; i < total_nodes_number; ++i) {
 
@@ -749,6 +749,7 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
     }
 
     if (print_system_logs) printf("%s Nodes generated!\n", LOG_LVL3);
+
 }
 
 /**
@@ -757,7 +758,7 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
  */
 void Komondor :: GenerateAgents(const char *agents_filename, const char *simulation_code_console) {
 
-    if (print_system_logs) printf("%s Generating agents...\n", LOG_LVL1);
+    if (print_system_logs) printf("\n%s Generating agents...\n", LOG_LVL1);
     if (print_system_logs) printf("%s Reading agents input file '%s'...\n", LOG_LVL2, agents_filename);
 
     // STEP 1: CHECK IF THERE IS A CC AND PARSE ITS INFORMATION DIFFERENTLY THAN FROM AGENTS
@@ -841,7 +842,7 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 
             // Set the lenght of the total actions in the agent (combinations of parameters)
             agent_container[agent_ix].num_arms = num_arms_channel * num_arms_sensitivity
-                                                 * num_arms_tx_power * num_arms_max_bandwidth;
+                    * num_arms_tx_power * num_arms_max_bandwidth;
 
             // Set the simulation code for generating output files
             agent_container[agent_ix].simulation_code.append(ToString(simulation_code_console));
@@ -974,7 +975,7 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
                     agent_container[agent_ix].margin_rtot = agent_container[agent_ix].list_of_pd_values[0];
                 }
 
-                agent_container[agent_ix].PrintAgentInfo();
+                //agent_container[agent_ix].PrintAgentInfo();
 
                 ++agent_ix;
 
@@ -982,7 +983,7 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
             free(tmp_agents);
         }
     }
-    if (print_system_logs) printf("%s Agents parameters set!\n", LOG_LVL4);
+    if (print_system_logs) printf("%s Agents parameters set!\n\n", LOG_LVL4);
 
 }
 
@@ -1089,8 +1090,7 @@ void Komondor :: GenerateCentralController(const char *agents_filename) {
         printf("%s WARNING: THE CENTRAL CONTROLLER DOES NOT HAVE ANY ATTACHED AGENT! CHECK YOUR AGENTS' INPUT FILE\n", LOG_LVL2);
         central_controller[0].controller_on = FALSE;
     }
-
-    central_controller[0].PrintControllerInfo();
+   // central_controller[0].PrintControllerInfo();
 
 }
 

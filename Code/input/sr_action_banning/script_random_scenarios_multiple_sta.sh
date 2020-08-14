@@ -50,7 +50,7 @@ do
 	echo ""
 done
 echo ""
-echo 'OUTPUT FILE SAVED IN /output/script_output_legacy_dense_low.txt'
+echo 'OUTPUT FILE SAVED IN /output/script_output_RND_NSTA_static.txt'
 echo ""
 echo ""
 # execute files with agents (decentralized)
@@ -64,7 +64,7 @@ do
 	echo ""
 done
 echo ""
-echo 'OUTPUT FILE SAVED IN /output/script_output_decentralized_dense_low.txt'
+echo 'OUTPUT FILE SAVED IN /output/script_output_RND_NSTA_selfish.txt'
 echo ""
 echo ""
 # execute files with agents (decentralized with cost)
@@ -78,6 +78,6 @@ do
 	echo ""
 done
 echo ""
-echo 'OUTPUT FILE SAVED IN /output/script_output_decentralized_with_cost_dense_low.txt'
+echo 'OUTPUT FILE SAVED IN /output/script_output_RND_NSTA_cost.txt'
 echo ""
 echo ""

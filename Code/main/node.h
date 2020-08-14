@@ -2438,7 +2438,10 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
                             ++data_frames_acked;
                             ++data_frames_acked_per_sta[current_destination_id-node_id-1];
                             ++num_delay_measurements;
-                            sum_delays = sum_delays + (SimTime() - buffer.GetFirstPacket().timestamp_generated);
+                            ++performance_report.num_delay_measurements;
+                            double difference_time((SimTime() - buffer.GetFirstPacket().timestamp_generated));
+                            sum_delays = sum_delays + difference_time;
+                            performance_report.sum_delays = performance_report.sum_delays + difference_time;
 //							LOGS(save_node_logs,node_logger.file,
 //								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
 //								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
@@ -2448,11 +2451,16 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
                             buffer.DelFirstPacket();
 
                         }
+
                         // ***************************
 
                         // - Add antoher bunch of packets to the buffer if TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION
                         if(traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION) {
-
+                            // Delete packets that remained in buffer (avoid snowball effect)
+                            for (int i = 0; i < buffer.QueueSize(); ++i) {
+                                buffer.DelFirstPacket();
+                            }
+                            // Add new bunch of packets to queue
                             for(int i = 0; i < max_num_packets_aggregated; ++i){
                                 new_packet = null_notification;
                                 new_packet.timestamp_generated = SimTime();
@@ -2948,15 +2956,20 @@ void Node :: InportMCSResponseReceived(Notification &notification){
             LOGS(save_node_logs,node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
         }
 
-//		double max_achievable_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
-//			Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
-//			Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
-//			IEEE_AX_SU_SPATIAL_STREAMS);
+		double max_achievable_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
+			Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
+			Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
+			IEEE_AX_SU_SPATIAL_STREAMS);
 
-        double max_achievable_bits_ofdm_sym (getNumberSubcarriers(NUM_CHANNELS_KOMONDOR) *
-                                             Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
-                                             Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
-                                             IEEE_AX_SU_SPATIAL_STREAMS);
+//        double max_achievable_bits_ofdm_sym (getNumberSubcarriers(NUM_CHANNELS_KOMONDOR) *
+//             Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
+//             Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
+//             IEEE_AX_SU_SPATIAL_STREAMS);
+
+//        double max_achievable_bits_ofdm_sym (getNumberSubcarriers(NUM_CHANNELS_KOMONDOR) *
+//             Mcs_array::modulation_bits[mcs_per_node[i][0]-1] *
+//             Mcs_array::coding_rates[mcs_per_node[i][0]-1] *
+//             IEEE_AX_SU_SPATIAL_STREAMS);
 
         double max_achievable_throughput (max_achievable_bits_ofdm_sym / IEEE_AX_OFDM_SYMBOL_GI32_DURATION);
 
@@ -3033,10 +3046,10 @@ void Node :: InportNewPacketGenerated(){
                 if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
 
                     if(trigger_end_backoff.Active()) remaining_backoff =
-                                                             ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
+                            ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
 
                     int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_pd,
-                                              buffer.QueueSize()));
+                            buffer.QueueSize()));
 
                     if (resume) {
                         time_to_trigger = SimTime() + DIFS;
@@ -3096,10 +3109,10 @@ void Node :: InportNewPacketGenerated(){
                     if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
 
                         if(trigger_end_backoff.Active()) remaining_backoff =
-                                                                 ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
+                                ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
 
                         int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
-                                                  current_pd, buffer.QueueSize()));
+                                current_pd, buffer.QueueSize()));
 
                         if (resume) {
                             time_to_trigger = SimTime() + DIFS;
@@ -3160,14 +3173,14 @@ void Node :: EndBackoff(trigger_t &){
             // Use default values
         }
         if(save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Intended values for the next TX: "
-                                                     "pd = %f dBm, Tx Power = %f dBm\n", SimTime(), node_id, node_state, LOG_F02, LOG_LVL3,
-                                   ConvertPower(PW_TO_DBM, current_obss_pd_threshold), ConvertPower(PW_TO_DBM, current_tx_power_sr));
+                 "pd = %f dBm, Tx Power = %f dBm\n", SimTime(), node_id, node_state, LOG_F02, LOG_LVL3,
+                 ConvertPower(PW_TO_DBM, current_obss_pd_threshold), ConvertPower(PW_TO_DBM, current_tx_power_sr));
     }
     /* **************************************** */
 
     // Sergio on 26th June 2018:
     // - Compute average BO waiting time
-    sum_waiting_time = sum_waiting_time + SimTime() - timestamp_new_trial_started;
+    sum_waiting_time = sum_waiting_time + (SimTime() - timestamp_new_trial_started);
     ++num_average_waiting_time_measurements;
     // Cancel NAV TO trigger
     trigger_NAV_timeout.Cancel();
@@ -4139,6 +4152,21 @@ void Node :: UpdatePerformanceMeasurements(){
                        performance_report.data_packets_lost) * frame_length
               * limited_num_packets_aggregated)) / (SimTime()-performance_report.timestamp);
 
+    // - Delay
+    performance_report.average_delay = performance_report.sum_delays / performance_report.num_delay_measurements;
+
+    // - Average data rate for STA
+    double cumulative_rate (0);
+    for (int i = 0; i < wlan.num_stas; ++i)  {
+        double max_achievable_bits_ofdm_sym (getNumberSubcarriers(NUM_CHANNELS_KOMONDOR) *
+         Mcs_array::modulation_bits[mcs_per_node[i][0]-1] *
+         Mcs_array::coding_rates[mcs_per_node[i][0]-1] *
+          IEEE_AX_SU_SPATIAL_STREAMS);
+        double max_rate (max_achievable_bits_ofdm_sym / IEEE_AX_OFDM_SYMBOL_GI32_DURATION);
+        cumulative_rate += max_rate;
+    }
+    performance_report.current_data_rate = cumulative_rate/ wlan.num_stas;
+
     // - Max RSSI received per WLAN
     for (int i = 0 ; i < total_wlans_number; ++ i) {
         performance_report.rssi_list[i] = max_received_power_in_ap_per_wlan[i];
@@ -4250,6 +4278,7 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
         // Broadcast the new configuration to the associated STAs
         BroadcastNewConfigurationToStas(new_configuration);
     }
+
     // Print new configuration
     if(save_node_logs) WriteNodeConfiguration(node_logger, header_str);
 }
@@ -4734,6 +4763,9 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
                 printf("%s Throughput = %f Mbps (%.2f pkt/s)\n", LOG_LVL2,
                        throughput * pow(10,-6),
                        throughput / (frame_length * limited_num_packets_aggregated));
+                // BO waiting time (from tx queue to air)
+                printf("%s Average BO waiting time (from tx queue to air) from %d measurements = %f s (%.2f ms)\n", LOG_LVL2,
+                       num_average_waiting_time_measurements, average_waiting_time, average_delay * 1000);
                 // Delay
                 printf("%s Average delay from %d measurements = %f s (%.2f ms)\n", LOG_LVL2,
                        num_delay_measurements, average_delay, average_delay * 1000);

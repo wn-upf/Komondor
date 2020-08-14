@@ -298,11 +298,12 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
     // Process the performance to obtain the corresponding reward
 	processed_reward = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
+
 	//printf("---------------------\n%.15f A%d processed_reward = %f\n", SimTime(), agent_id, processed_reward);
     // Process the performance to obtain the corresponding reward according to the central controller
     if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
 
-	// Update the information of the current selected action
+    // Update the information of the current selected action
 	UpdateAction(processed_configuration);
 
 	// Update the agent's capabilities
@@ -315,6 +316,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
         sprintf(device_code, "A%d", agent_id);
         actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
 		pre_processor.WritePerformance(agent_logger, SimTime(), device_code, performance, type_of_reward);
+        pre_processor.WritePerformance(agent_logger, SimTime(), device_code, performance, REWARD_TYPE_AVERAGE_DELAY);
 	}
 
 	// Set flag "information available" to true
@@ -633,6 +635,7 @@ void Agent :: UpdateAction(int action_ix){
 	// Information since last CC request
 	actions[action_ix].cumulative_reward_since_last_cc_request += processed_reward_cc;
 	++ actions[action_ix].times_played_since_last_cc_request;
+
 }
 
 /*****************************/
@@ -817,7 +820,7 @@ void Agent :: WriteAgentInfo(Logger logger, std::string header_str){
  * Print Agent's statistics
  */
 void Agent :: PrintOrWriteAgentStatistics() {
-	if (print_agent_logs) printf("\n------- Agent A%d ------\n", agent_id);
+	if (print_agent_logs && learning_mechanism != MONITORING_ONLY) printf("\n------- Agent A%d ------\n", agent_id);
 	ml_model.PrintOrWriteStatistics(PRINT_LOG, agent_logger, SimTime());
 //	ml_model.PrintOrWriteStatistics(WRITE_LOG, agent_logger, SimTime());
 }

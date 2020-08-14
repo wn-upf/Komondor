@@ -14,40 +14,15 @@ cd ..
 pwd
 # remove old script output file and node logs
 rm output/*
-
-########################################################
-# DENSE DEPLOYMENT - LOW TRAFFIC LOAD
-########################################################
-cd input/sr_action_banning/random/multiple_sta/sce2a
-pwd
-echo 'DETECTED KOMONDOR INPUT FILES: '
-file_ix=0
-while read line
-do
-	array[ $file_ix ]="$line"
-	echo "- ${array[file_ix]}"
-	(( file_ix++ ))
-done < <(ls)
-(( file_ix --));
-# execute files (legacy)
-cd ..
-cd ..
-cd ..
-cd ..
-cd ..
-pwd
 cd main
-pwd
-# execute files with agents (decentralized)
-for (( executing_ix=0; executing_ix < (file_ix + 1); executing_ix++))
-do 
-	echo ""
-	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	echo "- EXECUTING ${array[executing_ix]} (${executing_ix}/${file_ix})"
-	./komondor_main ../input/sr_action_banning/random/multiple_sta/sce2a/${array[executing_ix]} ../input/sr_action_banning/agents_files/agents_decentralized_random.csv ../output/script_output_selfish_random_multiple_sta.txt sim_${array[executing_ix]} 0 0 0 0 1 0 $SIM_TIME $SEED >> ../output/logs_console.txt
-	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	echo ""
-done
+
+echo ""
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo "- EXECUTING (1/1)"
+./komondor_main ../input/sr_action_banning/other_input_nodes/input_nodes_1.csv ../input/sr_action_banning/agents_files/agents_example.csv ../output/script_testing.txt sim_${array[executing_ix]} 0 0 0 1 1 $SIM_TIME $SEED >> ../output/logs_console.txt
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo ""
+
 echo ""
 echo 'OUTPUT FILE SAVED IN /output/script_output_decentralized_dense_low.txt'
 echo ""
