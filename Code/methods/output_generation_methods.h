@@ -750,7 +750,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
                     strcat(tpt_array, ";");
                     // Total airtime
                     sprintf(aux_airtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
-                    - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
+                    - performance_report[i].total_time_lost_in_num_channels[0])*100/simulation_time_komondor));
                     strcat(airtime_array, aux_airtime);
                     strcat(airtime_array, ";");
                     // Successful airtime

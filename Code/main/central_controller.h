@@ -118,24 +118,24 @@ component CentralController : public TypeII{
 	public:
 
 		// General configuration of the CC
-		int controller_on;				///> Flag indicating whether the CC is active or not
-		int controller_mode; 			///> The CC can be either passive (0) or active (1)
-		double time_between_requests;	///> Time between requests
+		int controller_on = 0;				///> Flag indicating whether the CC is active or not
+		int controller_mode = 0; 			///> The CC can be either passive (0) or active (1)
+		double time_between_requests = 0;	///> Time between requests
         double *agent_iteration_time;   ///> Time between iterations at agents (parameter that can be modified by the CC)
 
         // Keep track of attached agents
-		int agents_number;				///> Number of agents controlled by the CC
+		int agents_number = 0;				///> Number of agents controlled by the CC
 		int *list_of_agents;			///> List of the identifiers of the agents controlled by the CC
-		int wlans_number;				///> Number of WLANs
-		int total_nodes_number;			///> Number of nodes
+		int wlans_number = 0;				///> Number of WLANs
+		int total_nodes_number = 0;			///> Number of nodes
 		int *num_arms_per_agent;		///> Array containing the number of actions available to each agent
-		int max_number_of_actions;		///> Maximum number of actions available for all the agents (for generating data structures)
+		int max_number_of_actions = 0;		///> Maximum number of actions available for all the agents (for generating data structures)
 
 		// Reward and ML method types
-		int type_of_reward;				///> Type of reward
-		double updated_reward;          ///> Updated reward by the CC
-		int learning_mechanism;			///> Index of the chosen learning mechanism
-		int action_selection_strategy;	///> Index of the chosen action-selection strategy
+		int type_of_reward = 0;				///> Type of reward
+		double updated_reward = 0;          ///> Updated reward by the CC
+		int learning_mechanism = 0;			///> Index of the chosen learning mechanism
+		int action_selection_strategy = 0;	///> Index of the chosen action-selection strategy
 
 		// Logs
 		int save_controller_logs;		///> Boolean that indicates whether to write CC's logs or not
@@ -561,7 +561,7 @@ void CentralController :: GenerateClusters(int wlan_id, Performance performance,
 	switch(clustering_approach) {
 		// CCA + Margin
 		case CLUSTER_BY_CCA :{
-			double margin_db(5);	// TODO: read this margin from the input file (now it is hardcoded)
+			double margin_db(0);	// TODO: read this margin from the input file (now it is hardcoded)
 			for (int j = 0; j < wlans_number; ++j) {
 				if (wlan_id != j && ConvertPower(PW_TO_DBM, performance.max_received_power_in_ap_per_wlan[j])
 					  > ConvertPower(PW_TO_DBM, configuration.capabilities.sensitivity_default) - margin_db ) {
@@ -641,19 +641,30 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 		}
         // Cost throughput
         case SHARED_COST_THROUGHPUT: {
+            double perf_i;
+            double perf_j;
             for (int i = 0; i < agents_number; ++i) {
                 double cumulative_cost(0);
                 for (int j = 0; j < agents_number; ++j) {
                     if (i != j && controller_report.clusters_per_wlan[i][j]) {
-                        double perf_i = (performance_array[i].throughput) / performance_array[i].current_data_rate;
-                        double perf_j = (performance_array[j].throughput) / performance_array[j].current_data_rate;
+//                        printf("A%d and A%d belong to the same cluster:\n", i, j);
+//                        printf("     + throughput A%d vs throughput A%d = %.2f / %.2f\n", i, j,
+//                                performance_array[i].throughput * pow(10,-6), performance_array[j].throughput * pow(10,-6));
+//                        printf("     + rate A%d vs rate A%d = %.2f / %.2f\n", i, j,
+//                               performance_array[i].current_data_rate * pow(10,-6), performance_array[j].current_data_rate * pow(10,-6));
+                        perf_i = (performance_array[i].throughput) / performance_array[i].current_data_rate;
+                        perf_j = (performance_array[j].throughput) / performance_array[j].current_data_rate;
                         cumulative_cost += pow((perf_i - perf_j), 2);
-                        //printf("     + cumulative_cost = %f:\n", cumulative_cost);
+//                        printf("     + cumulative_cost = %f:\n", cumulative_cost);
                     }
                 }
-                if (cumulative_cost > 1) cumulative_cost = 1;
+                if (isnan(cumulative_cost)) {
+                    cumulative_cost = 0;
+                } else if (cumulative_cost > 1) {
+                    cumulative_cost = 1;
+                }
                 controller_report.cluster_performance[i] = cumulative_cost;
-                //printf("Cost in cluster %d = %f\n", i, controller_report.cluster_performance[i]);
+//                printf("Cost in cluster %d = %f\n", i, controller_report.cluster_performance[i]);
             }
             break;
         }

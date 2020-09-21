@@ -73,11 +73,11 @@ class PreProcessor {
 		int *list_of_max_bandwidth;			///> List of DCB policies to be selected
 
 		// Actions management
-		int num_arms;					///> Number of actions
-		int num_arms_channel;			///> Number of channel actions
-		int num_arms_sensitivity;		///> Number of sensitivity actions
-		int num_arms_tx_power;			///> Number of transmission power actions
-		int num_arms_max_bandwidth;		///> Number of max bandwidth actions
+		int num_arms = 0;					///> Number of actions
+		int num_arms_channel = 0;			///> Number of channel actions
+		int num_arms_sensitivity = 0;		///> Number of sensitivity actions
+		int num_arms_tx_power = 0;			///> Number of transmission power actions
+		int num_arms_max_bandwidth = 0;		///> Number of max bandwidth actions
 		int *indexes_selected_arm;			///> Indexes for each parameter that conform the current selected arm
 
 	// Private items
@@ -278,6 +278,7 @@ class PreProcessor {
 		*/
 		Configuration GenerateNewConfigurationBandits(Configuration configuration, double ml_output){
 			// Find which parameters correspond to the selected arm
+
 			index2values(indexes_selected_arm, (int) ml_output, num_arms_channel,
 				num_arms_sensitivity, num_arms_tx_power, num_arms_max_bandwidth);
 			// Update each parameter according to the configuration provided by the MAB
@@ -285,6 +286,9 @@ class PreProcessor {
 			double new_pd = list_of_pd_values[indexes_selected_arm[1]];
 			double new_tx_power = list_of_tx_power_values[indexes_selected_arm[2]];
 			int new_max_bandwidth = list_of_max_bandwidth[indexes_selected_arm[3]];
+
+
+
 			// Generate the configuration object
 			Configuration new_configuration;
 			// Set configuration to the received one, and then change specific parameters

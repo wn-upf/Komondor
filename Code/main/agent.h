@@ -161,12 +161,12 @@ component Agent : public TypeII{
         char *header_string;				///> Header string for the logger
 
         // Variables to store performance and configuration reports
-        Performance performance;						///> Performance object
+        Performance performance = {0};						///> Performance object
         int *indexes_configuration;                     ///>
-        Configuration configuration;					///> Configuration object
+        Configuration configuration = {0};					///> Configuration object
         Configuration new_configuration;				///> Object containing the new configuration to be set
         Configuration configuration_from_controller;	///> Configuration object obtained from the CC
-        int ml_output;	                            ///> Output of the ML model (previous step to the new configuration)
+        int ml_output;	                                ///> Output of the ML model (previous step to the new configuration)
 
         // ML-based architecture (see https://arxiv.org/abs/1910.03510)
         PreProcessor pre_processor;             ///> Pre-processor object
@@ -175,18 +175,18 @@ component Agent : public TypeII{
         int flag_compute_new_configuration; 	///> Flag to be activated in case of needing to compute a new configuration
 
 		// Configuration and performance after being processed by the Pre-processor
-		int processed_configuration;	///> Processed configuration
-		double processed_reward;		///> Processed performance
-		double processed_reward_cc;     ///> Processed performance according to the type of reward fixed at the CC
+		int processed_configuration = 0;	///> Processed configuration
+		double processed_reward = 0;		///> Processed performance
+		double processed_reward_cc = 0;     ///> Processed performance according to the type of reward fixed at the CC
 
 		// Items related to the interaction with the Central Controller (CC)
-        int automatic_forward_enabled;          ///> Flag to indicate that data received from the AP is automatically forwarded to the CC
-		int flag_request_from_controller;		///> Flag to be activated in case the CC made a request
-		int flag_information_available;			///> Flag to indicate that information is available at the agent
+        int automatic_forward_enabled = 0;          ///> Flag to indicate that data received from the AP is automatically forwarded to the CC
+		int flag_request_from_controller = 0;		///> Flag to be activated in case the CC made a request
+		int flag_information_available = 0;			///> Flag to indicate that information is available at the agent
 
 		// Auxiliary variables
-        int num_requests;			///> Number of requests made by the agent to the AP
-        double initial_reward;		///> Initial reward assigned to each arm
+        int num_requests = 0;			///> Number of requests made by the agent to the AP
+        double initial_reward = 0;		///> Initial reward assigned to each arm
 
 	// Connections and timers
 	public:
@@ -413,7 +413,20 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
                      "%.15f;A%d;%s;%s Updating the reward with cluster information...\n",
                      SimTime(), agent_id, LOG_C00, LOG_LVL2);
                 // Update reward according to the cluster's performance (computed at the CC)
+                LOGS(save_agent_logs,agent_logger.file,
+                     "%.15f;A%d;%s;%s individual processed_reward = %f\n",
+                     SimTime(), agent_id, LOG_C00, LOG_LVL3, processed_reward);
+
+//                printf("\nA%d Updated reward = %f - %f = %f\n\n", agent_id,
+//                       processed_reward, controller_report.cluster_performance[agent_id],
+//                       processed_reward - controller_report.cluster_performance[agent_id]);
+
                 processed_reward -= controller_report.cluster_performance[agent_id];
+
+                if (processed_reward < 0) processed_reward = 0;
+                LOGS(save_agent_logs,agent_logger.file,
+                     "%.15f;A%d;%s;%s [UPDATE] processed_reward = %f\n",
+                     SimTime(), agent_id, LOG_C00, LOG_LVL3, processed_reward);
                 //printf("%.15f - [UPDATE] A%d processed_reward = %f\n", SimTime(), agent_id, processed_reward);
                 trigger_compute_new_configuration.Set(FixTimeOffset(SimTime(),13,12));
                 break;
@@ -574,6 +587,8 @@ void Agent :: ComputeNewConfiguration(trigger_t &){
 
 		LOGS(save_agent_logs, agent_logger.file, "%.15f;A%d;%s;%s ComputeNewConfiguration()\n",
 			SimTime(), agent_id, LOG_F00, LOG_LVL1);
+        LOGS(save_agent_logs, agent_logger.file, "%.15f;A%d;%s;%s Previous configuration: %d (reward = %f)\n",
+             SimTime(), agent_id, LOG_F00, LOG_LVL3, processed_configuration, processed_reward);
 
 		// Compute a new configuration if information is up to date. Otherwise, request it to the AP and use it.
 		if ( CheckValidityOfData(configuration, performance, SimTime(), MAX_TIME_INFORMATION_VALID)
@@ -604,10 +619,11 @@ void Agent :: ComputeNewConfiguration(trigger_t &){
 			}
 			// Process the configuration from the output of the ML method
 			new_configuration = pre_processor.ProcessMLOutput(learning_mechanism, configuration, ml_output);
-			// Send the configuration to the AP
+            LOGS(save_agent_logs, agent_logger.file, "%.15f;A%d;%s;%s New configuration: %d\n",
+                 SimTime(), agent_id, LOG_F00, LOG_LVL3, ml_output);
+            // Send the configuration to the AP
 			SendNewConfigurationToAp(new_configuration);
-
-		} else {
+        } else {
 			// Generate the first request to be triggered after "time_between_requests"
 			// *** We generate here the first request in order to obtain the AP's configuration
 			// TODO: add an activation time, to be introduced by the user in the agent's configuration file

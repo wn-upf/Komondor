@@ -250,6 +250,7 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
             // Compute and assign distances for each other node
             node_container[i].distances_array[j] = ComputeDistance(node_container[i].x,node_container[i].y,
                     node_container[i].z,node_container[j].x,node_container[j].y,node_container[j].z);
+//            printf(" - Distance from %d to %d = %f\n",i,j,node_container[i].distances_array[j]);
             // Compute and assign the received power from each other node
             if(i == j) {
                 node_container[i].received_power_array[j] = 0;
@@ -264,6 +265,7 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
     for(int i = 0; i < total_nodes_number; ++i) {
         double max_power_received_per_wlan;
         if (node_container[i].node_type == NODE_TYPE_AP) {
+//            printf("\nAP%d:\n", i);
             node_container[i].max_received_power_in_ap_per_wlan = new double[total_wlans_number];
             for(int j = 0; j < total_wlans_number; ++j) {
                 if (strcmp(node_container[i].wlan_code.c_str(),wlan_container[j].wlan_code.c_str()) == 0) {
@@ -272,15 +274,19 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
                 } else {
                     // Different WLAN
                     max_power_received_per_wlan = -1000;
+//                    int node_max_power(0);
                     for (int k = 0; k < total_nodes_number; ++k) {
                         // Check only nodes in WLAN "j"
                         if(strcmp(node_container[k].wlan_code.c_str(),wlan_container[j].wlan_code.c_str()) == 0) {
                             if (node_container[i].received_power_array[k] > max_power_received_per_wlan) {
                                 max_power_received_per_wlan = node_container[i].received_power_array[k];
+//                                node_max_power = k;
                             }
                         }
                     }
                     node_container[i].max_received_power_in_ap_per_wlan[j] = max_power_received_per_wlan;
+//                    printf("      + Max. power from BSS %d (node %d): %f\n", j, node_max_power,
+//                            ConvertPower(PW_TO_DBM, node_container[i].max_received_power_in_ap_per_wlan[j]));
                 }
             }
         }
@@ -765,6 +771,7 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
     central_controller_flag = CheckCentralController(agents_filename);
     // STEP 2: SET SIZE OF THE AGENTS CONTAINER
     total_agents_number = GetNumOfLines(agents_filename) - central_controller_flag;
+    if (total_agents_number > total_wlans_number){ total_agents_number = total_wlans_number;}
     agent_container.SetSize(total_agents_number);
     if (print_system_logs) printf("%s Num. of agents (WLANs): %d/%d\n", LOG_LVL3, total_agents_number, total_wlans_number);
     // STEP 3: read the input file to determine the action space
@@ -774,81 +781,87 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
     first_line_skiped_flag = 0;	// Flag for skipping first informative line of input file
     int agent_ix (0);	// Auxiliary index
     while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_agents)){
-        if(!first_line_skiped_flag){	// Skip the first line of the .csv file
-            first_line_skiped_flag = 1;
-        } else{
-            char* tmp_agents = strdup(line_agents);
-            const char *wlan_code_aux (GetField(tmp_agents, IX_AGENT_WLAN_CODE));
-            std::string wlan_code;
-            wlan_code.append(ToString(wlan_code_aux));
-            // Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
-            if (strcmp(wlan_code.c_str(), "NULL") == 0) continue;
-            // Find the length of the channel actions array
-            tmp_agents = strdup(line_agents);
-            const char *channel_values_aux (GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
-            std::string channel_values_text;
-            channel_values_text.append(ToString(channel_values_aux));
-            const char *channel_aux;
-            channel_aux = strtok ((char*)channel_values_text.c_str(),",");
-            num_arms_channel = 0;
-            while (channel_aux != NULL) {
-                channel_aux = strtok (NULL, ",");
-                ++ num_arms_channel;
-            }
-            // Set the length of channel actions to agent's field
-            agent_container[agent_ix].num_arms_channel = num_arms_channel;
-            // Find the length of the pd actions array
-            tmp_agents = strdup(line_agents);
-            const char *pd_values_aux (GetField(tmp_agents, IX_AGENT_PD_VALUES));
-            std::string pd_values_text;
-            pd_values_text.append(ToString(pd_values_aux));
-            const char *pd_aux;
-            pd_aux = strtok ((char*)pd_values_text.c_str(),",");
-            num_arms_sensitivity = 0;
-            while (pd_aux != NULL) {
-                pd_aux = strtok (NULL, ",");
-                ++ num_arms_sensitivity;
-            }
-            // Set the length of sensitivity actions to agent's field
-            agent_container[agent_ix].num_arms_sensitivity = num_arms_sensitivity;
-            // Find the length of the Tx power actions array
-            tmp_agents = strdup(line_agents);
-            const char *tx_power_values_aux (GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES));
-            std::string tx_power_values_text;
-            tx_power_values_text.append(ToString(tx_power_values_aux));
-            const char *tx_power_aux;
-            tx_power_aux = strtok ((char*)tx_power_values_text.c_str(),",");
-            num_arms_tx_power = 0;
-            while (tx_power_aux != NULL) {
-                tx_power_aux = strtok (NULL, ",");
-                ++ num_arms_tx_power;
-            }
-            // Set the length of Tx power actions to agent's field
-            agent_container[agent_ix].num_arms_tx_power = num_arms_tx_power;
-            // Find the length of the DCB actions actions array
-            tmp_agents = strdup(line_agents);
-            const char *max_bandwidth_values_aux (GetField(tmp_agents, IX_AGENT_MAX_BANDWIDTH));
-            std::string max_bandwidth_values_text;
-            max_bandwidth_values_text.append(ToString(max_bandwidth_values_aux));
-            const char *max_bandwidth_aux;
-            max_bandwidth_aux = strtok ((char*)max_bandwidth_values_text.c_str(),",");
-            num_arms_max_bandwidth = 0;
-            while (max_bandwidth_aux != NULL) {
-                max_bandwidth_aux = strtok (NULL, ",");
-                ++num_arms_max_bandwidth;
-            }
-            // Set the length of max bandwidth to agent's field
-            agent_container[agent_ix].num_arms_max_bandwidth = num_arms_max_bandwidth;
 
-            // Set the lenght of the total actions in the agent (combinations of parameters)
-            agent_container[agent_ix].num_arms = num_arms_channel * num_arms_sensitivity
-                    * num_arms_tx_power * num_arms_max_bandwidth;
+        if (agent_ix < total_wlans_number) {
 
-            // Set the simulation code for generating output files
-            agent_container[agent_ix].simulation_code.append(ToString(simulation_code_console));
+            if(!first_line_skiped_flag){	// Skip the first line of the .csv file
+                first_line_skiped_flag = 1;
+            } else {
+                char *tmp_agents = strdup(line_agents);
+                const char *wlan_code_aux(GetField(tmp_agents, IX_AGENT_WLAN_CODE));
+                std::string wlan_code;
+                wlan_code.append(ToString(wlan_code_aux));
+                // Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
+                if (strcmp(wlan_code.c_str(), "NULL") == 0) continue;
+                // Find the length of the channel actions array
+                tmp_agents = strdup(line_agents);
+                const char *channel_values_aux(GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
+                std::string channel_values_text;
+                channel_values_text.append(ToString(channel_values_aux));
+                const char *channel_aux;
+                channel_aux = strtok((char *) channel_values_text.c_str(), ",");
+                num_arms_channel = 0;
+                while (channel_aux != NULL) {
+                    channel_aux = strtok(NULL, ",");
+                    ++num_arms_channel;
+                }
+                // Set the length of channel actions to agent's field
+                agent_container[agent_ix].num_arms_channel = num_arms_channel;
+                // Find the length of the pd actions array
+                tmp_agents = strdup(line_agents);
+                const char *pd_values_aux(GetField(tmp_agents, IX_AGENT_PD_VALUES));
+                std::string pd_values_text;
+                pd_values_text.append(ToString(pd_values_aux));
+                const char *pd_aux;
+                pd_aux = strtok((char *) pd_values_text.c_str(), ",");
+                num_arms_sensitivity = 0;
+                while (pd_aux != NULL) {
+                    pd_aux = strtok(NULL, ",");
+                    ++num_arms_sensitivity;
+                }
+                // Set the length of sensitivity actions to agent's field
+                agent_container[agent_ix].num_arms_sensitivity = num_arms_sensitivity;
+                // Find the length of the Tx power actions array
+                tmp_agents = strdup(line_agents);
+                const char *tx_power_values_aux(GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES));
+                std::string tx_power_values_text;
+                tx_power_values_text.append(ToString(tx_power_values_aux));
+                const char *tx_power_aux;
+                tx_power_aux = strtok((char *) tx_power_values_text.c_str(), ",");
+                num_arms_tx_power = 0;
+                while (tx_power_aux != NULL) {
+                    tx_power_aux = strtok(NULL, ",");
+                    ++num_arms_tx_power;
+                }
+                // Set the length of Tx power actions to agent's field
+                agent_container[agent_ix].num_arms_tx_power = num_arms_tx_power;
+                // Find the length of the DCB actions actions array
+                tmp_agents = strdup(line_agents);
+                const char *max_bandwidth_values_aux(GetField(tmp_agents, IX_AGENT_MAX_BANDWIDTH));
+                std::string max_bandwidth_values_text;
+                max_bandwidth_values_text.append(ToString(max_bandwidth_values_aux));
+                const char *max_bandwidth_aux;
+                max_bandwidth_aux = strtok((char *) max_bandwidth_values_text.c_str(), ",");
+                num_arms_max_bandwidth = 0;
+                while (max_bandwidth_aux != NULL) {
+                    max_bandwidth_aux = strtok(NULL, ",");
+                    ++num_arms_max_bandwidth;
+                }
+                // Set the length of max bandwidth to agent's field
+                agent_container[agent_ix].num_arms_max_bandwidth = num_arms_max_bandwidth;
 
-            ++agent_ix;
-            free(tmp_agents);
+                // Set the lenght of the total actions in the agent (combinations of parameters)
+                agent_container[agent_ix].num_arms = num_arms_channel * num_arms_sensitivity
+                                                     * num_arms_tx_power * num_arms_max_bandwidth;
+
+                // Set the simulation code for generating output files
+                agent_container[agent_ix].simulation_code.append(ToString(simulation_code_console));
+
+                ++agent_ix;
+                free(tmp_agents);
+
+            }
+
         }
     }
 
@@ -858,129 +871,138 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
     if (print_system_logs) printf("%s Setting agents parameters...\n", LOG_LVL4);
     stream_agents = fopen(agents_filename, "r");
     first_line_skiped_flag = 0;		// Flag for skipping first informative line of input file
-    agent_ix = 0;	// Auxiliary index
+    agent_ix = 0;	                // Auxiliary index
     total_controlled_agents_number = 0;
     while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_agents)){
         if(!first_line_skiped_flag){	// Skip the first line of the .csv file
             first_line_skiped_flag = 1;
         } else{
-            // WLAN code
-            char* tmp_agents (strdup(line_agents));
-            const char *wlan_code_aux (GetField(tmp_agents, IX_AGENT_WLAN_CODE));
-            std::string wlan_code;
-            wlan_code.append(ToString(wlan_code_aux));
-            // Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
-            if (strcmp(wlan_code.c_str(), "NULL") == 0) {
-                continue;
-            } else {
-                // Agent ID
-                agent_container[agent_ix].agent_id = agent_ix;
-                agent_container[agent_ix].wlan_code = wlan_code.c_str();
-                // WLAN Id
-                for(int w=0; w < total_wlans_number; ++w){
-                    if(strcmp(wlan_container[w].wlan_code.c_str(), agent_container[agent_ix].wlan_code.c_str()) == 0) {
-                        agent_container[agent_ix].wlan_id = w;
+
+            if(agent_ix < total_agents_number) {
+
+                // WLAN code
+                char* tmp_agents (strdup(line_agents));
+                const char *wlan_code_aux (GetField(tmp_agents, IX_AGENT_WLAN_CODE));
+                std::string wlan_code;
+                wlan_code.append(ToString(wlan_code_aux));
+                // Skip the line in case we find a Central Controller (CC). Otherwise, read it and initialize the agent
+                if (strcmp(wlan_code.c_str(), "NULL") == 0) {
+                    continue;
+                } else {
+                    // Agent ID
+                    agent_container[agent_ix].agent_id = agent_ix;
+                    agent_container[agent_ix].wlan_code = wlan_code.c_str();
+                    // WLAN Id
+                    for (int w = 0; w < total_wlans_number; ++w) {
+                        if (strcmp(wlan_container[w].wlan_code.c_str(), agent_container[agent_ix].wlan_code.c_str()) ==
+                            0) {
+                            agent_container[agent_ix].wlan_id = w;
+                        }
                     }
-                }
-                // Initialize actions and arrays in agents
-                agent_container[agent_ix].InitializeAgent();
-                //  Agent associated to the Central Controller (CC)
-                tmp_agents = strdup(line_agents);
-                int agent_centralized (atoi(GetField(tmp_agents, IX_COMMUNICATION_LEVEL)));
-                agent_container[agent_ix].agent_centralized = agent_centralized;
-                // Check if the central controller has to be created or not
-                if(agent_centralized) ++total_controlled_agents_number;
-                // Time between requests (in seconds)
-                tmp_agents = strdup(line_agents);
-                double time_between_requests (atof(GetField(tmp_agents, IX_AGENT_TIME_BW_REQUESTS)));
-                agent_container[agent_ix].time_between_requests = time_between_requests;
-                // Channel values
-                tmp_agents = strdup(line_agents);
-                std::string channel_values_text = ToString(GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
-                // Fill the channel actions array
-                char *channel_aux_2;
-                char *channel_values_text_char = new char[channel_values_text.length() + 1];
-                strcpy(channel_values_text_char, channel_values_text.c_str());
-                channel_aux_2 = strtok (channel_values_text_char,",");
-                int ix (0);
-                while (channel_aux_2 != NULL) {
-                    int a (atoi(channel_aux_2));
-                    agent_container[agent_ix].list_of_channels[ix] = a;
-                    channel_aux_2 = strtok (NULL, ",");
-                    ++ix;
-                }
-                // sensitivity values
-                tmp_agents = strdup(line_agents);
-                std::string pd_values_text = ToString(GetField(tmp_agents, IX_AGENT_PD_VALUES));
-                // Fill the sensitivity actions array
-                char *pd_aux_2;
-                char *pd_values_text_char = new char[pd_values_text.length() + 1];
-                strcpy(pd_values_text_char, pd_values_text.c_str());
-                pd_aux_2 = strtok (pd_values_text_char,",");
-                ix = 0;
-                while (pd_aux_2 != NULL) {
-                    int a = atoi(pd_aux_2);
-                    agent_container[agent_ix].list_of_pd_values[ix] = ConvertPower(DBM_TO_PW, a);
-                    pd_aux_2 = strtok (NULL, ",");
-                    ++ix;
-                }
-                // Tx Power values
-                tmp_agents = strdup(line_agents);
-                std::string tx_power_values_text = ToString(GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES));
-                // Fill the TX power actions array
-                char *tx_power_aux_2;
-                char *tx_power_values_text_char = new char[tx_power_values_text.length() + 1];
-                strcpy(tx_power_values_text_char, tx_power_values_text.c_str());
-                tx_power_aux_2 = strtok (tx_power_values_text_char,",");
-                ix = 0;
-                while (tx_power_aux_2 != NULL) {
-                    int a (atoi(tx_power_aux_2));
-                    agent_container[agent_ix].list_of_tx_power_values[ix] = ConvertPower(DBM_TO_PW, a);
-                    tx_power_aux_2 = strtok (NULL, ",");
-                    ++ix;
-                }
-                // Max bandwidth values
-                tmp_agents = strdup(line_agents);
-                std::string max_bandwidth_values_text = ToString(GetField(tmp_agents, IX_AGENT_MAX_BANDWIDTH));
-                // Fill the max bandwidth actions array
-                char *max_bandwidth_aux_2;
-                char *max_bandwidth_values_text_char = new char[max_bandwidth_values_text.length() + 1];
-                strcpy(max_bandwidth_values_text_char, max_bandwidth_values_text.c_str());
-                max_bandwidth_aux_2 = strtok (max_bandwidth_values_text_char,",");
-                ix = 0;
-                while (max_bandwidth_aux_2 != NULL) {
-                    int a (atoi(max_bandwidth_aux_2));
-                    agent_container[agent_ix].list_of_max_bandwidth[ix] = a;
-                    max_bandwidth_aux_2 = strtok (NULL, ",");
-                    ++ix;
-                }
-                // Type of reward
-                tmp_agents = strdup(line_agents);
-                int type_of_reward (atoi(GetField(tmp_agents, IX_AGENT_TYPE_OF_REWARD)));
-                agent_container[agent_ix].type_of_reward = type_of_reward;
-                // Learning mechanism
-                tmp_agents = strdup(line_agents);
-                int learning_mechanism (atoi(GetField(tmp_agents, IX_AGENT_LEARNING_MECHANISM)));
-                agent_container[agent_ix].learning_mechanism = learning_mechanism;
-                // Selected strategy
-                tmp_agents = strdup(line_agents);
-                int action_selection_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
-                agent_container[agent_ix].action_selection_strategy = action_selection_strategy;
-                // Other information
-                agent_container[agent_ix].save_agent_logs = save_agent_logs;
-                agent_container[agent_ix].print_agent_logs = print_agent_logs;
-                agent_container[agent_ix].num_stas = wlan_container[agent_container[agent_ix].wlan_id].num_stas;
-                // TRICKY - USE THE FIRST ELEMENT INT HE LIST OF PD VALUES AS THE MARGIN
-                if(agent_container[agent_ix].learning_mechanism == RTOT_ALGORITHM) {
-                    agent_container[agent_ix].margin_rtot = agent_container[agent_ix].list_of_pd_values[0];
-                }
+                    // Initialize actions and arrays in agents
+                    agent_container[agent_ix].InitializeAgent();
+                    //  Agent associated to the Central Controller (CC)
+                    tmp_agents = strdup(line_agents);
+                    int agent_centralized(atoi(GetField(tmp_agents,
+                    IX_COMMUNICATION_LEVEL)));
+                    agent_container[agent_ix].agent_centralized = agent_centralized;
+                    // Check if the central controller has to be created or not
+                    if (agent_centralized) ++total_controlled_agents_number;
+                    // Time between requests (in seconds)
+                    tmp_agents = strdup(line_agents);
+                    double time_between_requests(atof(GetField(tmp_agents,
+                    IX_AGENT_TIME_BW_REQUESTS)));
+                    agent_container[agent_ix].time_between_requests = time_between_requests;
+                    // Channel values
+                    tmp_agents = strdup(line_agents);
+                    std::string channel_values_text = ToString(GetField(tmp_agents, IX_AGENT_CHANNEL_VALUES));
+                    // Fill the channel actions array
+                    char *channel_aux_2;
+                    char *channel_values_text_char = new char[channel_values_text.length() + 1];
+                    strcpy(channel_values_text_char, channel_values_text.c_str());
+                    channel_aux_2 = strtok(channel_values_text_char, ",");
+                    int ix(0);
+                    while (channel_aux_2 != NULL) {
+                        int a(atoi(channel_aux_2));
+                        agent_container[agent_ix].list_of_channels[ix] = a;
+                        channel_aux_2 = strtok(NULL, ",");
+                        ++ix;
+                    }
+                    // sensitivity values
+                    tmp_agents = strdup(line_agents);
+                    std::string pd_values_text = ToString(GetField(tmp_agents, IX_AGENT_PD_VALUES));
+                    // Fill the sensitivity actions array
+                    char *pd_aux_2;
+                    char *pd_values_text_char = new char[pd_values_text.length() + 1];
+                    strcpy(pd_values_text_char, pd_values_text.c_str());
+                    pd_aux_2 = strtok(pd_values_text_char, ",");
+                    ix = 0;
+                    while (pd_aux_2 != NULL) {
+                        int a = atoi(pd_aux_2);
+                        agent_container[agent_ix].list_of_pd_values[ix] = ConvertPower(DBM_TO_PW, a);
+                        pd_aux_2 = strtok(NULL, ",");
+                        ++ix;
+                    }
+                    // Tx Power values
+                    tmp_agents = strdup(line_agents);
+                    std::string tx_power_values_text = ToString(GetField(tmp_agents, IX_AGENT_TX_POWER_VALUES));
+                    // Fill the TX power actions array
+                    char *tx_power_aux_2;
+                    char *tx_power_values_text_char = new char[tx_power_values_text.length() + 1];
+                    strcpy(tx_power_values_text_char, tx_power_values_text.c_str());
+                    tx_power_aux_2 = strtok(tx_power_values_text_char, ",");
+                    ix = 0;
+                    while (tx_power_aux_2 != NULL) {
+                        int a(atoi(tx_power_aux_2));
+                        agent_container[agent_ix].list_of_tx_power_values[ix] = ConvertPower(DBM_TO_PW, a);
+                        tx_power_aux_2 = strtok(NULL, ",");
+                        ++ix;
+                    }
+                    // Max bandwidth values
+                    tmp_agents = strdup(line_agents);
+                    std::string max_bandwidth_values_text = ToString(GetField(tmp_agents, IX_AGENT_MAX_BANDWIDTH));
+                    // Fill the max bandwidth actions array
+                    char *max_bandwidth_aux_2;
+                    char *max_bandwidth_values_text_char = new char[max_bandwidth_values_text.length() + 1];
+                    strcpy(max_bandwidth_values_text_char, max_bandwidth_values_text.c_str());
+                    max_bandwidth_aux_2 = strtok(max_bandwidth_values_text_char, ",");
+                    ix = 0;
+                    while (max_bandwidth_aux_2 != NULL) {
+                        int a(atoi(max_bandwidth_aux_2));
+                        agent_container[agent_ix].list_of_max_bandwidth[ix] = a;
+                        max_bandwidth_aux_2 = strtok(NULL, ",");
+                        ++ix;
+                    }
+                    // Type of reward
+                    tmp_agents = strdup(line_agents);
+                    int type_of_reward(atoi(GetField(tmp_agents,
+                    IX_AGENT_TYPE_OF_REWARD)));
+                    agent_container[agent_ix].type_of_reward = type_of_reward;
+                    // Learning mechanism
+                    tmp_agents = strdup(line_agents);
+                    int learning_mechanism(atoi(GetField(tmp_agents,
+                    IX_AGENT_LEARNING_MECHANISM)));
+                    agent_container[agent_ix].learning_mechanism = learning_mechanism;
+                    // Selected strategy
+                    tmp_agents = strdup(line_agents);
+                    int action_selection_strategy(atoi(GetField(tmp_agents,
+                    IX_AGENT_SELECTED_STRATEGY)));
+                    agent_container[agent_ix].action_selection_strategy = action_selection_strategy;
+                    // Other information
+                    agent_container[agent_ix].save_agent_logs = save_agent_logs;
+                    agent_container[agent_ix].print_agent_logs = print_agent_logs;
+                    agent_container[agent_ix].num_stas = wlan_container[agent_container[agent_ix].wlan_id].num_stas;
+                    // TRICKY - USE THE FIRST ELEMENT INT HE LIST OF PD VALUES AS THE MARGIN
+                    if (agent_container[agent_ix].learning_mechanism == RTOT_ALGORITHM) {
+                        agent_container[agent_ix].margin_rtot = agent_container[agent_ix].list_of_pd_values[0];
+                    }
 
-                //agent_container[agent_ix].PrintAgentInfo();
+                    //agent_container[agent_ix].PrintAgentInfo();
 
-                ++agent_ix;
-
+                    ++agent_ix;
+                }
+                free(tmp_agents);
             }
-            free(tmp_agents);
         }
     }
     if (print_system_logs) printf("%s Agents parameters set!\n\n", LOG_LVL4);
@@ -1311,6 +1333,9 @@ int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::st
 int Komondor :: CheckCentralController(const char *agents_filename){
     int presence_central_cotnroller(FALSE);
     FILE* stream_agents = fopen(agents_filename, "r");
+    if (stream_agents == NULL) {
+        printf("[ERROR] Failed to open Agents file %s\n", agents_filename);
+    }
     char line_agents[CHAR_BUFFER_SIZE];
     first_line_skiped_flag = 0;	// Flag for skipping first informative line of input file
     while (fgets(line_agents, CHAR_BUFFER_SIZE, stream_agents)){
@@ -1447,11 +1472,8 @@ int main(int argc, char *argv[]){
         printf("%s seed: %d\n", LOG_LVL2, seed);
     }
 
-
     // Create output directory if not exists
-
     struct stat st = {0};
-
     if (stat("../output/", &st) == -1) {
         printf("- Output folder does not exist --> creating it...\n");
         mkdir("../output/", 0777);
@@ -1463,15 +1485,14 @@ int main(int argc, char *argv[]){
         }
     }
 
-
     // Generate a Komondor component to start the simulation
     Komondor komondor_simulation;
     komondor_simulation.Seed = seed;
     srand(seed); // Needed for ensuring randomness dependency on seed
     komondor_simulation.StopTime(sim_time);
     komondor_simulation.Setup(sim_time, save_node_logs, save_agent_logs, print_system_logs,
-                              print_node_logs, print_agent_logs, nodes_input_filename, script_output_filename.c_str(),
-                              simulation_code.c_str(), seed, agents_enabled, agents_input_filename);
+          print_node_logs, print_agent_logs, nodes_input_filename, script_output_filename.c_str(),
+          simulation_code.c_str(), seed, agents_enabled, agents_input_filename);
 
     printf("------------------------------------------\n");
     printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());

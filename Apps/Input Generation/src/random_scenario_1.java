@@ -44,7 +44,7 @@ public class random_scenario_1 {
     static int cont_wind;          // contention window (CW)
     static int cont_wind_stage;     // CW stage 
     static int channel_bonding_model;
-    static int traffic_model = 99;      
+    static int traffic_model = 1;      
     static double traffic_load;
     static int tpc_default_input;
     static int cca_default_input;
@@ -100,9 +100,8 @@ public class random_scenario_1 {
                     map_width = Double.parseDouble(node_info[0]);
                     map_heigth = Double.parseDouble(node_info[1]);
                     num_bss = Integer.parseInt(node_info[2]);
-                    bss_container = new Wlan[num_bss];
-                    num_sta_min = 1;//Integer.parseInt(node_info[3]);
-                    num_sta_max = 1;//Integer.parseInt(node_info[4]);
+                    num_sta_min = Integer.parseInt(node_info[3]);
+                    num_sta_max = Integer.parseInt(node_info[4]);
                     d_min_AP_AP = Double.parseDouble(node_info[5]);
                     d_min_AP_STA = Double.parseDouble(node_info[6]);
                     d_max_AP_STA = Double.parseDouble(node_info[7]);
@@ -136,7 +135,7 @@ public class random_scenario_1 {
         }
     }
 
-    public static void generate_bss(Point2D.Double[] aps_position_list) {
+    public static void generate_bss(Point2D.Double[] aps_position_list, int num_sta_min, int num_sta_max) {
         
         int bss_counter = 0;
         Wlan bss_aux;
@@ -163,7 +162,7 @@ public class random_scenario_1 {
 
         for (int i = 0; i < num_bss; i++) {
 
-            System.out.println("  - Setting BSS " + (i+1) + "/" + num_bss);
+            //System.out.println("  - Setting BSS " + (i+1) + "/" + num_bss);
             
             bss_id = bss_counter;
             bss_code = DICTIONARY[bss_counter];
@@ -177,29 +176,7 @@ public class random_scenario_1 {
             for (int j = 0; j < num_stas; ++j) {
                 list_sta_code[j] = "STA_" + bss_code + "" + (j + 1);
             }
-//
-//            // Channel allocation
-//            primary_channel = ThreadLocalRandom.current().nextInt(0, c_sys_width);
-//            min_ch_allowed = primary_channel;
-//            max_ch_allowed = primary_channel;
-            
-            // Select the channel width among all the possibilities
-            //int rnd_ix = (int)(Math.random()*list_of_ch_width.length);
-            //int ch_width = list_of_ch_width[rnd_ix];
-            //if(ch_width == 2) {
-            //    rnd_ix = (int)(Math.random()*list_of_primary_ch2.length);
-            //    primary_channel = list_of_primary_ch2[rnd_ix];
-            //} else if (ch_width == 2) {
-            //    rnd_ix = (int)(Math.random()*list_of_primary_ch4.length);
-            //    primary_channel = list_of_primary_ch4[rnd_ix];
-            //} else if (ch_width == 8) {
-            //    primary_channel = 0;
-            //} else {
-            //    primary_channel = 0;
-            //}
-            //min_ch_allowed = primary_channel;
-            //max_ch_allowed = primary_channel + ch_width - 1;
-            
+                        
             primary_channel = 0;
             min_ch_allowed = 0;
             max_ch_allowed = 0;      
@@ -395,44 +372,73 @@ public class random_scenario_1 {
     public static void main(String args[]) throws IOException {
 
         // Complete path building
-        String scenario_id = "sce2c";
-        String input_path = "./input_constructor/template_ai_challenge_"+ scenario_id +".csv";
+        String d_stas = "2-5";
+        String load = "5000";
+        String input_path = "./input_constructor/d="+d_stas+"_l="+load+".csv";
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";
 
         input_attributes(input_path);
+
+        int num_random_deployments = 50;
+        int[] num_aps = new int[]{4,8,12};
+        int[] num_stas = new int[]{1,2,4};
         
-        int num_random_deployments = 100;
+        for (int n = 0; n < num_aps.length; ++n) {
+            
+            System.out.println("size aps = " + num_aps.length);
+
+            num_bss = num_aps[n];
+
+            for (int m = 0; m < num_stas.length ; ++m) {
+            
+                // Set position of APs
+                double x = 0;
+                double y = 0;    
+                int num_rows = 0;
+                int num_cols = 0;            
+                // Fix APs' location
+                Point2D.Double[] array_ap_locations = new Point2D.Double[num_bss];
+
+                if (num_bss == 4) {
+                    num_rows = 2;
+                    num_cols = 2;
+                } else if (num_bss == 8) {
+                    num_rows = 2;
+                    num_cols = 4;
+                } else if (num_bss == 12) {
+                    num_rows = 3;
+                    num_cols = 4;
+                }
+                                
+                int aux_row_counter = 0;
+                for (int i = 0; i < num_bss; ++i) {
+                    Point2D.Double ap_location = new Point2D.Double();
+                    x = map_width/(num_cols*2) + (i%num_cols)*(map_width/num_cols);
+                    y = map_heigth/(num_rows*2) + aux_row_counter*(map_heigth/num_rows);
+                    if (i%num_cols == num_cols-1) aux_row_counter ++ ;
+                    ap_location.setLocation(x, y);
+                    array_ap_locations[i] = ap_location;  
+                    //System.out.println(ap_location);
+                }
+
+                // Generate the random .csv files of "input_nodes"
+                bss_container = new Wlan[num_bss];
+                for (int i = 0; i < num_random_deployments; ++i) {   
+                    // Generate BSSs
+                    generate_bss(array_ap_locations, num_stas[m], num_stas[m]);
+                    // Specify the output path (file's name)
+                    output_path = "./output/input_nodes_aps" + String.format("%02d", num_bss) + 
+                        "_stas" + String.format("%02d", num_stas[m]) + "_sce" + String.format("%03d", i) + ".csv";
+                    //System.out.println("output_path: " + output_path);
+                    // Generate the .csv file
+                    generate_file(output_path);  
+                }
+            
+            }
         
-        double x = 0;
-        double y = 0;
-                
-        // Fix APs' location
-        Point2D.Double[] array_ap_locations = new Point2D.Double[num_bss];
-        int num_rows = 3;
-        int num_cols = 4;
-        int aux_row_counter = 0;
-        for (int i = 0; i < num_bss; ++i) {
-            Point2D.Double ap_location = new Point2D.Double();
-            x = map_width/(num_cols*2) + (i%num_cols)*(map_width/num_cols);
-            y = map_heigth/(num_rows*2) + aux_row_counter*(map_heigth/num_rows);
-            if (i%num_cols == num_cols-1) aux_row_counter ++ ;
-            ap_location.setLocation(x, y);
-            array_ap_locations[i] = ap_location;  
-            //System.out.println(ap_location);
         }
-        
-        // Generate the random .csv files of "input_nodes"
-        for (int i = 0; i < num_random_deployments; ++i) {   
-            // Generate BSSs
-            generate_bss(array_ap_locations);
-            // Specify the output path (file's name)
-            output_path = "./output/input_nodes_"+ scenario_id +"_deployment_" + String.format("%03d", i) + ".csv";
-            System.out.println("output_path: " + output_path);
-            // Generate the .csv file
-            generate_file(output_path);  
-        }
-        
+
     }
         
 }

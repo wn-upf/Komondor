@@ -245,7 +245,7 @@ class MultiArmedBandit {
         int PickArmThompsonSampling(int num_arms, double *estimated_reward_per_arm,
                 int *times_arm_has_been_selected, int *available_arms) {
             //TODO: validate the behavior of this implementation
-            int action_ix;
+            int action_ix(0);
             double *theta = new double[num_arms];
             double std;
             // Compute the posterior probability of each arm
