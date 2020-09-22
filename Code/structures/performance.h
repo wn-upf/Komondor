@@ -70,6 +70,7 @@ struct Performance
 	int rts_cts_sent;				///> Number of RTS/CTS packets sent
 	int rts_cts_lost;				///> Number of RTS/CTS packets lost
 	int rts_lost_slotted_bo;		///> Number of RTS/CTS packets lost by slotted BO
+	double average_sinr;
 
 	// Buffer statistics
 	int num_packets_generated;		///> Number of packets generated

@@ -312,6 +312,8 @@ component Node : public TypeII{
 		double current_nav_time;			///> Current NAV duration
 		int packet_id;						///> Notification ID
 		double current_sinr;				///> SINR perceived in current TX [linear ratio]
+		double aggregate_sinr;              ///> To compute the average SINR at STAs over all the received transmissions
+		int num_sinr_measurements;
 		int loss_reason;					///> Packet loss reason (if any)
 		int current_num_packets_aggregated;	///> Num. of packets aggregated in a single PPDU
 		int limited_num_packets_aggregated; ///> Num. of limited (due to max PPDU duration) packets aggregated in a single PPDU
@@ -596,7 +598,6 @@ void Node :: Stop(){
 
 	// Save the configuration currently being used by the node
 	GenerateConfiguration();
-
 	// LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Node info:\n", SimTime(), node_id, node_state, LOG_C01, LOG_LVL1);
 };
 
@@ -629,7 +630,6 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			SimTime(), node_id, node_state, LOG_D02, LOG_LVL2, notification.packet_id,
 			notification.packet_type, notification.destination_id,
 			notification.left_channel, notification.right_channel, notification.tx_duration * pow(10,6));
-
 
 	} else {	// If OTHER NODE IS THE TRANSMITTER
 
@@ -676,15 +676,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
-		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-			&channel_power);
+		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs, &channel_power);
 
 		// Call UpdatePowerSensedPerNode() ONLY for adding power (some node started)
 		UpdatePowerSensedPerNode(current_primary_channel, power_received_per_node, notification,
 			central_frequency, path_loss_model, received_power_array[notification.source_id], TX_INITIATED);
 
-		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
-			current_pd, SimTime());
+		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power, current_pd, SimTime());
 
 //		if(save_node_logs) {
 //			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
@@ -1532,8 +1530,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					// Check if ongoing notification has been lost due to interferences caused by new transmission
 					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
-						current_sinr, capture_effect, current_pd,
-						power_rx_interest, constant_per, node_id, capture_effect_model);
+						current_sinr, capture_effect, current_pd, power_rx_interest, constant_per, node_id, capture_effect_model);
 
 					// TODO: method for checking whether the detected transmission can be decoded or not
 					// ...
@@ -1676,8 +1673,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							power_rx_interest, constant_per, node_id, capture_effect_model);
 					} else {
 						loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
-							current_sinr, capture_effect, current_pd,
-							power_rx_interest, constant_per, node_id, capture_effect_model);
+							current_sinr, capture_effect, current_pd, power_rx_interest, constant_per, node_id, capture_effect_model);
 					}
 
 					// TODO: method for checking whether the detected transmission can be decoded or not
@@ -1718,7 +1714,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									power_received_per_node[receiving_from_node_id] + capture_effect;
 								if (capture_effect_condition) {
 									loss_reason = PACKET_LOST_CAPTURE_EFFECT;
-									printf("Node %d was in state RX (from %d), and a new notification arrived from %d:\n", node_id, receiving_from_node_id, notification.source_id);
+									printf("Node %d was in state RX (from %d), and a new notification arrived from %d:\n",
+									        node_id, receiving_from_node_id, notification.source_id);
 									printf("	* New RSSI: %f\n", power_received_per_node[notification.source_id]);
 									printf("	* Old RSSI: %f:\n", power_received_per_node[receiving_from_node_id]);
 									printf("	* CE: %f:\n", capture_effect);
@@ -1736,6 +1733,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						}
 					}
 				}
+
+                // Measure average SINR at STAs (DL transmissions)
+                if (node_type == NODE_TYPE_STA) {
+                    aggregate_sinr = aggregate_sinr +  current_sinr;
+                    num_sinr_measurements = num_sinr_measurements + 1;
+                }
 
 //				/* ****************************************
 //				/* SPATIAL REUSE OPERATION
@@ -1786,9 +1789,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				if(notification.destination_id == node_id){	// Node is the destination
 
 					power_rx_interest = power_received_per_node[notification.source_id];
-
 					incoming_notification = notification;
-
 //					LOGS(save_node_logs, node_logger.file,
 //							"%.15f;N%d;S%d;%s;%s I am the TX destination (N%d). Checking if notification can be received.\n",
 //							SimTime(), node_id, node_state, LOG_D07, LOG_LVL3, notification.destination_id);
@@ -5041,6 +5042,11 @@ void Node :: SaveSimulationPerformance() {
 	}
 	simulation_performance.received_power_array = received_power_array;
 
+    if(node_type == NODE_TYPE_AP) {
+        simulation_performance.average_sinr = 0;
+    } else {
+        simulation_performance.average_sinr = aggregate_sinr/num_sinr_measurements;
+    }
 	// Other
 	simulation_performance.num_tx_init_tried = num_tx_init_tried;
 	simulation_performance.num_tx_init_not_possible = num_tx_init_not_possible;
@@ -5077,6 +5083,8 @@ void Node :: InitializeVariables() {
 	current_max_bandwidth = max_channel_allowed - min_channel_allowed + 1;
 
 	current_sinr = 0;
+    aggregate_sinr = 0;
+    num_sinr_measurements = 0;
 	max_pw_interference = 0;
 	rts_lost_slotted_bo = 0;
 	last_packet_generated_id = 0;

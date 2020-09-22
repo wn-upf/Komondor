@@ -392,20 +392,6 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		// Regression test (scenarios paper Komondor - Wireless Days 2019)
 		case 10:{
-//			if (total_nodes_number == 2 || total_nodes_number == 3) {
-//				// Basic scenarios (1 WLAN)
-//				fprintf(logger_script.file, ";%.2f\n",
-//					performance_report[0].throughput * pow(10,-6));
-//			} else if (total_nodes_number == 6) {
-//				// Complex scenarios (3 WLANs)
-//				fprintf(logger_script.file, ";%.2f;%.2f;%.2f\n",
-//					performance_report[0].throughput * pow(10,-6),
-//					performance_report[2].throughput * pow(10,-6),
-//					performance_report[4].throughput * pow(10,-6));
-//			} else {
-//				printf("Error in 'Komondor :: Stop()' ---> be careful of the desired generated logs (script)\n");
-//			}
-
             //  - Throughput experienced/allocated for each device (AP and STAs)
             char tpt_per_device[250] = "{";
             char aux_tpt_per_device[50];
@@ -743,6 +729,9 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
             // - Power received in APs from other APs
             char power_per_ap[1500] = "{";
             char aux_power_per_ap[1500];
+            // - Average SINR in STAs
+            char sinr_per_device[1500] = "{";
+            char aux_sinr_per_device[1500];
             //char aux_time_in_nav_per_sta[1500];
             // - Counter for visited nodes
             int counter_nodes_visited = 0;
@@ -825,8 +814,24 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
             strcat(airtime_per_bss, "}");
             strcat(rssi_per_device, "}");
 
+            // Average SINR (dB) per device
+            for(int i = 0; i < total_nodes_number; i ++) {
+                if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+                    strcat(sinr_per_device, "Inf");
+                } else {
+                    sprintf(aux_sinr_per_device, "%.2f", ConvertPower(LINEAR_TO_DB, performance_report[i].average_sinr));
+                    strcat(sinr_per_device, aux_sinr_per_device);
+                }
+                if (i < total_nodes_number - 1) {
+                    strcat(sinr_per_device, ",");
+                } else {
+                    strcat(sinr_per_device, "}");
+                }
+            }
+
             // STEP 2: Print the data to the output .csv file
-            fprintf(logger_script.file, "\n%s\n%s\n%s\n%s\n", tpt_per_device, airtime_per_bss, rssi_per_device, power_per_ap);
+            fprintf(logger_script.file, "\n%s\n%s\n%s\n%s\n%s\n",
+                    tpt_per_device, airtime_per_bss, rssi_per_device, power_per_ap, sinr_per_device);
 
             break;
         }
