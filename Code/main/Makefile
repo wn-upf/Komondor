@@ -3,7 +3,7 @@ CC = g++
 CDEBUG = -g
 CCFLAGS = -Wall
 BIN = komondor_main
-COMPCPP_DIR = ../compc++
+COMPCPP_DIR = ../compcpp
 COMPCPP_BIN = $(COMPCPP_DIR)/cxx
 
 .PHONY: all

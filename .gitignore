@@ -52,5 +52,5 @@ Code/output/
 Code/main/komondor_main
 
 # CompC++
-Code/compc++/cxx
-Code/compc++/lexer.cpp
+Code/compcpp/cxx
+Code/compcpp/lexer.cpp
