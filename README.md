@@ -58,8 +58,13 @@ An overview of the current modules available in Komondor is next shown:
 Detailed installation and execution instructions can be found in the [Komondor User's Guide](https://github.com/wn-upf/Komondor/blob/master/Documentation/User%20guide/LaTeX%20files/komondor_user_guide.pdf).
 
 ### Build
-Komondor is build using [CMake](https://cmake.org). Please refer to [CMake's
+#### Requirements
+Komondor is built using [CMake](https://cmake.org). Please refer to [CMake's
 installation documentation](https://cmake.org/install/) to get CMake installed.
+
+CompC++ requires [flex](https://github.com/westes/flex).
+
+#### Building cxx an komondor
 
 To build the `komondor` executable simply run following commands in the root
 directory:
