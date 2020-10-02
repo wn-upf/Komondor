@@ -57,24 +57,37 @@ An overview of the current modules available in Komondor is next shown:
 
 Detailed installation and execution instructions can be found in the [Komondor User's Guide](https://github.com/wn-upf/Komondor/blob/master/Documentation/User%20guide/LaTeX%20files/komondor_user_guide.pdf).
 
-In short, to run Komondor, just build the project by using the "build_local" script and then execute it by following the next steps:
+### Build
+Komondor is build using [CMake](https://cmake.org). Please refer to [CMake's
+installation documentation](https://cmake.org/install/) to get CMake installed.
 
-STEP 0: Set permissions to the folder
+To build the `komondor` executable simply run following commands in the root
+directory:
+
+```sh
+$ mkdir build; cd build # Create and go to build directory
+$ cmake .. # generate build system
+$ make # Build komondor and cxx
+$ make install # Installs komondor bin to the PATH
+```
+
+The `komondor` binary is now available in your `PATH`. The binaries `komondor`
+and `cxx` can be also found in `build/bin`.
+
+To install `cxx` to your `PATH` generate the build system with
+`-DINSTALL_COMPCPP=ON`:
+
+```sh
+$ cmake -DINSTALL_COMPCPP=ON ..
+```
+
+For detailed information refer to the official [cmake(1)
+documentation](https://cmake.org/cmake/help/latest/manual/cmake.1.html).
+
+### Run Komondor simulator for the given input information (basic simulation)
 
 ```
-$ chmod -R 777 <dirname>
-```
-
-STEP 1: Build the project
-
-```
-$ ./build_local
-```
-
-STEP 2: Run Komondor simulator for the given input information (basic simulation)
-
-```
-$ ./komondor_main INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
+$ ./komondor INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
 ```
 
 The inputs are further described next:
@@ -88,12 +101,12 @@ The inputs are further described next:
 
 IMPORTANT NOTE (!): Setting ```FLAG_SAVE_NODE_LOGS``` to TRUE (1) entails a larger execution time. 
 
-STEP 2-1: Run Komondor simulator with intelligent agents
+### Run Komondor simulator with intelligent agents
 
 Alternatively, and in order to indicate the usage of agents, the console input must add the following extra information:
 
 ```
-$ ./komondor_main INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
+$ ./komondor INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
 ```
 
 The agents operation has been summarized at [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
