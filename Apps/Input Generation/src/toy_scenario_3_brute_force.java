@@ -325,7 +325,7 @@ public class toy_scenario_3_brute_force {
             node_type = 0;
             
             line = getCompleteLine(wlan.ap_code, node_type,
-                wlan.wlan_code, wlan.x, wlan.y, wlan.z, wlan.primary_channel,
+                wlan.bss_code, wlan.x, wlan.y, wlan.z, wlan.primary_channel,
                 wlan.min_ch_allowed, wlan.max_ch_allowed,
                 wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default);
             
@@ -345,7 +345,7 @@ public class toy_scenario_3_brute_force {
             for (int n = 0; n < wlan.num_stas; n++) {
                 
                 line = getCompleteLine(wlan.list_sta_code[n], node_type,
-                    wlan.wlan_code, wlan.stas_position_list[n].x, 
+                    wlan.bss_code, wlan.stas_position_list[n].x, 
                     wlan.stas_position_list[n].y, 0, wlan.primary_channel,
                     wlan.min_ch_allowed, wlan.max_ch_allowed,
                     wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default);

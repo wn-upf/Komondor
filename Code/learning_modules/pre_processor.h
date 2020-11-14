@@ -286,8 +286,9 @@ class PreProcessor {
 			Configuration new_configuration;
 			// Set configuration to the received one, and then change specific parameters
 			new_configuration = configuration;
-			//new_configuration.timestamp = sim_time;						// Timestamp
+			//new_configuration.timestamp = sim_time;					// Timestamp
 			new_configuration.selected_primary_channel = new_primary;	// Primary
+
 			if (configuration.spatial_reuse_enabled) {
 				new_configuration.non_srg_obss_pd = new_pd;
 			} else {
@@ -311,6 +312,12 @@ class PreProcessor {
 			int index_pd = -1;
 			int index_tx_power = -1;
 			int index_max_bandwidth = -1;
+
+//			printf("configuration.selected_primary_channel = %d\n", configuration.selected_primary_channel);
+//            printf("configuration.non_srg_obss_pd = %f\n", ConvertPower(PW_TO_DBM, configuration.non_srg_obss_pd));
+//            printf("configuration.selected_pd = %f\n", ConvertPower(PW_TO_DBM, configuration.selected_pd));
+//            printf("configuration.selected_tx_power = %f\n", ConvertPower(PW_TO_DBM, configuration.selected_tx_power));
+//            printf("configuration.selected_max_bandwidth = %d\n", configuration.selected_max_bandwidth);
 
 			// Channel
 			for(int i = 0; i < num_arms_channel; i++) {

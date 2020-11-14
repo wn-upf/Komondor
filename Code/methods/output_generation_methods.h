@@ -502,15 +502,15 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 				((performance_report[16].total_time_transmitting_in_num_channels[0]
 				- performance_report[16].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
 				// Average delay (ms)
-				performance_report[0].average_waiting_time * pow(10,3),
-				performance_report[2].average_waiting_time * pow(10,3),
-				performance_report[4].average_waiting_time * pow(10,3),
-				performance_report[6].average_waiting_time * pow(10,3),
-				performance_report[8].average_waiting_time * pow(10,3),
-				performance_report[10].average_waiting_time * pow(10,3),
-				performance_report[12].average_waiting_time * pow(10,3),
-				performance_report[14].average_waiting_time * pow(10,3),
-				performance_report[16].average_waiting_time * pow(10,3));
+				performance_report[0].average_delay * pow(10,3),
+				performance_report[2].average_delay * pow(10,3),
+				performance_report[4].average_delay * pow(10,3),
+				performance_report[6].average_delay * pow(10,3),
+				performance_report[8].average_delay * pow(10,3),
+				performance_report[10].average_delay * pow(10,3),
+				performance_report[12].average_delay * pow(10,3),
+				performance_report[14].average_delay * pow(10,3),
+				performance_report[16].average_delay * pow(10,3));
 			} else {
 				printf("Error in Komondor :: Stop(): be care of the desired generated logs (script)\n");
 			}
@@ -520,9 +520,9 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 		// SPATIAL REUSE - CSCN
 		case 12:{
 			// Random scenarios
-			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
-				";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
-				";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
+			fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
+				";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f"
+				";%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\n",
 			// Throughput per WLAN (Mbps)
 			performance_report[0].throughput * pow(10,-6),
 			performance_report[2].throughput * pow(10,-6),
@@ -532,8 +532,6 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			performance_report[10].throughput * pow(10,-6),
 			performance_report[12].throughput * pow(10,-6),
 			performance_report[14].throughput * pow(10,-6),
-			performance_report[16].throughput * pow(10,-6),
-			performance_report[18].throughput * pow(10,-6),
 			// Time occupying the channel successfully (%)
 			((performance_report[0].total_time_transmitting_in_num_channels[0]
 			- performance_report[0].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
@@ -551,10 +549,6 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			- performance_report[12].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
 			((performance_report[14].total_time_transmitting_in_num_channels[0]
 			- performance_report[14].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
-			((performance_report[16].total_time_transmitting_in_num_channels[0]
-			- performance_report[16].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
-			((performance_report[18].total_time_transmitting_in_num_channels[0]
-			- performance_report[18].total_time_lost_in_num_channels[0])*100/simulation_time_komondor),
 			// Average delay (ms)
 			performance_report[0].average_waiting_time * pow(10,3),
 			performance_report[2].average_waiting_time * pow(10,3),
@@ -563,9 +557,7 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			performance_report[8].average_waiting_time * pow(10,3),
 			performance_report[10].average_waiting_time * pow(10,3),
 			performance_report[12].average_waiting_time * pow(10,3),
-			performance_report[14].average_waiting_time * pow(10,3),
-			performance_report[16].average_waiting_time * pow(10,3),
-			performance_report[18].average_waiting_time * pow(10,3));
+			performance_report[14].average_waiting_time * pow(10,3));
 			break;
 		}
 
@@ -691,9 +683,15 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			// - RSSI in STAs from the associated AP
 			char max_power_in_ap_per_wlan[1000] = "";
 			char aux_power_in_ap[250];
+			// - Average delay
+			char average_delay[1000] = "";
+			char aux_average_delay[250];
 
 			for(int i = 0; i < total_nodes_number; i ++) {
 				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+				    // Average delay
+                    sprintf(aux_average_delay, "%.2f", performance_report[i].average_delay * pow(10,3));
+                    strcat(average_delay, aux_average_delay);
 					// Throughput allocated to the STA
 					sprintf(aux_tpt, "%.2f", performance_report[i].throughput * pow(10,-6));
 					strcat(tpt_array, aux_tpt);
@@ -727,6 +725,128 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			break;
 
 		}
+
+        // ITU-T AI CHALLENGE (II)
+        case 15: {
+            // STEP 1: Concatenate the information obtained from each STA in each BSS
+            //  - Throughput experienced/allocated for each device (AP and STAs)
+            char tpt_per_device[1500] = "{";
+            char aux_tpt_per_device[1500];
+            // - Airtime
+            char airtime_per_bss[1500] = "{";
+            char aux_airtime[1500];
+            // - RSSI in STAs from the associated AP
+            char rssi_per_device[2000] = "{";
+            char aux_rssi_per_device[2000];
+            // - Power received in APs from other APs
+            char power_per_ap[1500] = "{";
+            char aux_power_per_ap[1500];
+//            // - Average SINR in STAs
+//            char sinr_per_device[1500] = "{";
+//            char aux_sinr_per_device[1500];
+            //char aux_time_in_nav_per_sta[1500];
+            // - Counter for visited nodes
+            int counter_nodes_visited = 0;
+            int counter_bss_visited = 0;
+            // Auxiliary variables to keep track of the number of channels selected per each BSS
+            int first_channel_selected = 0;
+            int last_channel_selected = 0;
+            for(int i = 0; i < total_nodes_number; i ++) {
+                if(configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+                    first_channel_selected = 0;
+                    last_channel_selected = 0;
+                    // Throughput (Mbps)
+                    sprintf(aux_tpt_per_device, "%.2f,", performance_report[i].throughput * pow(10,-6));
+                    strcat(tpt_per_device, aux_tpt_per_device);
+                    // Airtime (%)
+                    for (int j = 0; j < 1; ++j) {
+                        if (j < last_channel_selected-first_channel_selected) {
+                            sprintf(aux_airtime, "%.2f,", (performance_report[i].total_time_spectrum_per_channel[first_channel_selected+j] * 100 /simulation_time_komondor));
+                            strcat(airtime_per_bss, aux_airtime);
+                        } else {
+                            sprintf(aux_airtime, "%.2f", (performance_report[i].total_time_spectrum_per_channel[first_channel_selected+j] * 100 /simulation_time_komondor));
+                            strcat(airtime_per_bss, aux_airtime);
+                        }
+                    }
+                    sprintf(aux_airtime, ";");
+                    strcat(airtime_per_bss, aux_airtime);
+                    //if(counter_bss_visited < total_wlans_number - 1) { strcat(airtime_per_bss, ","); }
+                    // RSSI received from the AP (dBm)
+                    strcat(rssi_per_device, "Inf,");
+                    // Increase the number of visited nodes
+                    ++counter_nodes_visited;
+                    ++counter_bss_visited;
+                    //
+                    int counter_aps_visited = 0;
+                    for(int j = 0; j < total_nodes_number; j ++) {
+                        // Power received in APs from other APs (dBm)
+                        if (configuration_per_node[j].capabilities.node_type == NODE_TYPE_AP) {
+                            ++counter_aps_visited;
+                            if (i == j) {
+                                sprintf(aux_power_per_ap, "Inf");
+                            } else {
+                                sprintf(aux_power_per_ap, "%.2f", ConvertPower(PW_TO_DBM,
+                                                                               performance_report[i].received_power_array[j]));
+                            }
+                            strcat(power_per_ap, aux_power_per_ap);
+                            if (counter_aps_visited < total_wlans_number) {
+                                strcat(power_per_ap, ",");
+                            } else {
+                                if (counter_bss_visited < total_wlans_number) {
+                                    strcat(power_per_ap, ";\n");
+                                } else {
+                                    strcat(power_per_ap, "}");
+                                }
+                            }
+                        }
+                    }
+                    for(int w = 0; w < total_wlans_number; w ++) {
+                        //
+                        if(wlan_container[w].ap_id == configuration_per_node[i].capabilities.node_id) {
+                            for(int s = 0; s < wlan_container[w].num_stas; s ++) {
+                                // Throughput allocated to the STA
+                                sprintf(aux_tpt_per_device, "%.2f", performance_report[i].throughput_per_sta[s] * pow(10,-6));
+                                strcat(tpt_per_device, aux_tpt_per_device);
+                                // RSSI received from the AP
+                                sprintf(aux_rssi_per_device, "%.2f", ConvertPower(PW_TO_DBM,
+                                                                                  performance_report[counter_nodes_visited].received_power_array[i]));
+                                strcat(rssi_per_device, aux_rssi_per_device);
+                                // Increase the number of visited nodes
+                                ++counter_nodes_visited;
+                                if(counter_nodes_visited < total_nodes_number){
+                                    strcat(tpt_per_device, ",");
+                                    strcat(rssi_per_device, ",");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            strcat(tpt_per_device, "}");
+            strcat(airtime_per_bss, "}");
+            strcat(rssi_per_device, "}");
+
+//            // Average SINR (dB) per device
+//            for(int i = 0; i < total_nodes_number; i ++) {
+//                if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+//                    strcat(sinr_per_device, "Inf");
+//                } else {
+//                    sprintf(aux_sinr_per_device, "%.2f", ConvertPower(LINEAR_TO_DB, performance_report[i].average_sinr));
+//                    strcat(sinr_per_device, aux_sinr_per_device);
+//                }
+//                if (i < total_nodes_number - 1) {
+//                    strcat(sinr_per_device, ",");
+//                } else {
+//                    strcat(sinr_per_device, "}");
+//                }
+//            }
+
+            // STEP 2: Print the data to the output .csv file
+            fprintf(logger_script.file, "\n%s\n%s\n%s\n%s\n",
+                    tpt_per_device, airtime_per_bss, rssi_per_device, power_per_ap);
+
+            break;
+        }
 
 		default:{
 		  printf("No simulation type found\n");

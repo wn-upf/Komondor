@@ -97,10 +97,15 @@ class RtotAlgorithm {
 			// Compute the OBSS/PD to be used based on the RSSI
 			double obss_pd_dbm(0);
 			obss_pd_dbm = floor(ConvertPower(PW_TO_DBM, rssi) - ConvertPower(PW_TO_DBM, margin_rtot));
+
+//			printf("RSSI = %.2f\n", ConvertPower(PW_TO_DBM, rssi) );
+//            printf("margin_rtot = %.2f\n", ConvertPower(PW_TO_DBM, margin_rtot) );
+//            printf("obss_pd_dbm = %.2f\n", obss_pd_dbm );
+
 			if (obss_pd_dbm > OBSS_PD_MAX) obss_pd_dbm = OBSS_PD_MAX;
 			else if (obss_pd_dbm < OBSS_PD_MIN) obss_pd_dbm = OBSS_PD_MIN;
 
-			printf("[RTOT] New OBSS/PD computed = %f dBm\n", floor(obss_pd_dbm));
+//			printf("[RTOT] New OBSS/PD computed = %f dBm\n", floor(obss_pd_dbm));
 
 			return ConvertPower(DBM_TO_PW, obss_pd_dbm);
 
@@ -165,6 +170,7 @@ class RtotAlgorithm {
 					printf("\n");
 					printf("%s obss_pd_per_sta: ", LOG_LVL2);
 					for (int i = 0 ; i < num_stas; ++i) {
+
 						printf("%f dBm ", ConvertPower(PW_TO_DBM, obss_pd_per_sta[i]));
 					}
 					printf("\n");

@@ -281,6 +281,7 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 						}
 					}
 					node_container[i].max_received_power_in_ap_per_wlan[j] = max_power_received_per_wlan;
+//					printf("BSS %d senses %.2f from BSS %d\n", i, ConvertPower(PW_TO_DBM, node_container[i].max_received_power_in_ap_per_wlan[j]), j);
 				}
 			}
 		}
@@ -969,7 +970,7 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 				agent_container[agent_ix].save_agent_logs = save_agent_logs;
 				agent_container[agent_ix].print_agent_logs = print_agent_logs;
 				agent_container[agent_ix].num_stas = wlan_container[agent_container[agent_ix].wlan_id].num_stas;
-				// TRICKY - USE THE FIRST ELEMENT INT HE LIST OF PD VALUES AS THE MARGIN
+				// TRICKY - USE THE FIRST ELEMENT IN THE LIST OF PD VALUES AS THE MARGIN
 				if(agent_container[agent_ix].learning_mechanism == RTOT_ALGORITHM) {
 					agent_container[agent_ix].margin_rtot = agent_container[agent_ix].list_of_pd_values[0];
 				}

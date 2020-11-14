@@ -237,7 +237,11 @@ public class toy_scenario_2_11ax_sr {
             // Spatial Reuse Operation
             wlan_aux.bss_color = wlan_id + 1;
             wlan_aux.spatial_reuse_group = wlan_id + 1;
-            wlan_aux.non_srg_obss_pd = sensitivity[w];
+            if (w == 0) {
+                wlan_aux.non_srg_obss_pd = sensitivity[w];
+            } else {
+                wlan_aux.non_srg_obss_pd = -82;
+            }
             wlan_aux.srg_obss_pd = srg_obss_pd_input;
                         
             Point2D.Double[] stas_position_list = new Point2D.Double[wlan_aux.num_stas];
@@ -325,7 +329,7 @@ public class toy_scenario_2_11ax_sr {
             node_type = 0;
             
             line = getCompleteLine(wlan.ap_code, node_type,
-                wlan.wlan_code, wlan.x, wlan.y, wlan.z, wlan.primary_channel,
+                wlan.bss_code, wlan.x, wlan.y, wlan.z, wlan.primary_channel,
                 wlan.min_ch_allowed, wlan.max_ch_allowed,
                 wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
                 wlan.bss_color, wlan.spatial_reuse_group, 
@@ -340,7 +344,7 @@ public class toy_scenario_2_11ax_sr {
             for (int n = 0; n < wlan.num_stas; n++) {
                 
                 line = getCompleteLine(wlan.list_sta_code[n], node_type,
-                    wlan.wlan_code, wlan.stas_position_list[n].x, 
+                    wlan.bss_code, wlan.stas_position_list[n].x, 
                     wlan.stas_position_list[n].y, 0, wlan.primary_channel,
                     wlan.min_ch_allowed, wlan.max_ch_allowed,
                     wlan.channel_bonding_model, wlan.tpc_default, wlan.cca_default,
@@ -427,30 +431,29 @@ public class toy_scenario_2_11ax_sr {
 
     public static void main(String args[]) throws IOException {
 
-        String input_path = "./input_constructor/toy_scenarios/input_template_toy_scenario_1.csv";
+        String input_path = "./input_constructor/template_ai_challenge_test_sce1.csv";
         System.out.println("input_path: " + input_path);
         String output_path = "./output/*";
 
-        int[] sensitvity_list = new int[4];  
+        int[] sensitvity_list = new int[6];  
         sensitvity_list[0] = -82;
-        sensitvity_list[1] = -74;
-        sensitvity_list[2] = -68;
-        sensitvity_list[3] = -62;
+        sensitvity_list[1] = -78;
+        sensitvity_list[2] = -74;
+        sensitvity_list[3] = -70;
+        sensitvity_list[4] = -66;
+        sensitvity_list[5] = -62;
                 
         input_attributes(input_path);
                                
         int sce_id = 0;
                                
         for (int i = 0; i < sensitvity_list.length; i++) {                        
-            for (int i2 = 0; i2 < sensitvity_list.length; i2++) {   
-                generate_wlans(new int[] {sensitvity_list[i], sensitvity_list[i2]});
-                output_path = "./output/input_nodes_n" + num_wlans + "_s" + String.format("%02d", sce_id) +
-                    "_sens1_" + String.format("%03d", (int) sensitvity_list[i]) + 
-                    "_sens2_" + String.format("%03d", (int) sensitvity_list[i2]) + ".csv";
-                System.out.println("output_path: " + output_path);
-                generate_file(output_path);   
-                sce_id++;
-            }
+            generate_wlans(new int[] {sensitvity_list[i]});
+            output_path = "./output/input_nodes_n" + num_wlans + "_sce" + String.format("%02d", sce_id) +
+                "_obsspd_" + String.format("%03d", (int) sensitvity_list[i]) + ".csv";
+            System.out.println("output_path: " + output_path);
+            generate_file(output_path);   
+            sce_id++;
         }
         
     }        
