@@ -66,6 +66,10 @@ struct Wlan
 	int ap_id;				///> Id of the Access Point
 	int *list_sta_id;		///> List of STAs IDs belonging to the WLAN
 
+	double traffic_load;
+	int min_channel_allowed;
+	int max_channel_allowed;
+
 	int spatial_reuse_enabled;	///> Indicates whether the SR operation is enabled or not
 
 	/**

@@ -77,6 +77,8 @@ struct Performance
 	int num_packets_generated;		///> Number of packets generated
 	int num_packets_dropped;		///> Number of packets dropped
 	int num_delay_measurements;		///> Number of delay measurements
+	int num_measures_utilization;	///> Number of buffer measurements
+	int num_measures_buffer_with_packets;	///> Number of measurements where buffer had packet/s
 	double sum_delays;				///> Sum of the delays
 	double average_delay;			///> Average delay
 	double average_rho;				///> Average rho
@@ -147,6 +149,12 @@ struct Performance
 	 * @param "num_stas" [type int]: total number of STAs in a WLAN
 	 */
 	void SetSizeOfStaList(int num_stas){
+		data_packets_acked = 0;
+		data_frames_acked = 0;
+		data_frames_sent = 0;
+		data_frames_lost = 0;
+		rts_cts_sent = 0;
+		rts_cts_lost = 0;
 		throughput_per_sta = new double[num_stas];
 		data_packets_sent_per_sta = new int[num_stas];
 		data_frames_sent_per_sta = new int[num_stas];
@@ -167,6 +175,7 @@ struct Performance
 			data_packets_acked_per_sta[i] = 0;
 			data_frames_acked_per_sta[i] = 0;
 		}
+
 	}
 
 	/**

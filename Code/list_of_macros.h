@@ -262,7 +262,7 @@
 
 // Physical parameters
 #define SPEED_LIGHT			3*pow(10,8)	///> Speed of light [m/s]
-#define NUM_CHANNELS_KOMONDOR	4   ///> Total number of frequency channels
+#define NUM_CHANNELS_KOMONDOR	8   ///> Total number of frequency channels
 #define CHANNEL_BW_MHZ			20	///> Bandwidth of a basic channel [MHz]
 #define NOISE_LEVEL_DBM			-95	///> Noise level [dBm]
 #define ANTENNA_RX_GAIN_DB 		0	///> Antenna receiption gain [dB]
@@ -368,6 +368,11 @@
 #define REWARD_TYPE_AVERAGE_DELAY		4	///> Average experienced delay
 #define REWARD_TYPE_CHANNEL_OCCUPANCY 	5	///> Average channel occupancy ratio
 #define REWARD_TYPE_THROUGHPUT_SATISFACTION 6	///> Throughput satisfaction (thr/load)
+#define REWARD_TYPE_UTILIZATION 		7	///> 1 - utilization, where utilization is prob. of having packet/s in the buffer
+#define REWARD_TYPE_MIX_SATISFACTION_UTILIZATION 8	///> Linear combination of satisfaction and (1-utilization)
+#define REWARD_TYPE_MIX_THRSAT_DELAY	9	///> Mixed of thr satisfaction and delay
+
+#define MIN_SINGLE_FRAME_DELAY_MICROSECONDS  500	///> Minimum e2e delay of a frame containing a single data packet of 12000 bit txed at max MCS in 160 MHz (1134 Mbps)
 
 // Agent modes
 #define AGENT_MODE_DECENTRALIZED 	0	///> Agents are independent entities that follow their own learning procedure
@@ -401,6 +406,9 @@
 #define STRATEGY_EXPLORATION_FIRST		7
 
 #define MAX_TIME_INFORMATION_VALID		10 ///> Maximum amount of time (in seconds) the information of the network is considered to be valid
+
+
+
 
 // Levels of applicability for configurations computed by agents / central controller
 #define CONFIGURATION_SUGGESTED 		0

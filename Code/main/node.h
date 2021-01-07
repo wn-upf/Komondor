@@ -213,6 +213,8 @@ component Node : public TypeII{
 
 		double *rssi_per_sta;	///> RSSI per STA in the WLAN
 
+		double traffic_load;
+
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
 
@@ -557,8 +559,11 @@ void Node :: Start(){
 
 		}
 
-		// if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
-		if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + 980);
+		if(node_id == 0){
+			if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
+		}
+
+		//if(flag_measure_rho) trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
 
 	} else {
 		current_destination_id = wlan.ap_id;	// TODO: for uplink traffic. Set STAs destination to the GW
@@ -589,6 +594,7 @@ void Node :: Stop(){
 
 	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Node Stop()\n",
 		SimTime(), node_id, node_state, LOG_C00, LOG_LVL1);
+
 
 	// Print and write node statistics if required
 	if (print_node_logs) PrintOrWriteNodeStatistics(PRINT_LOG);
@@ -2448,8 +2454,27 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							++data_packets_acked_per_sta[current_destination_id-node_id-1];
 
 							++ performance_report.data_packets_acked;
+
 							++num_delay_measurements;
+
+							//double delay_pkt = (SimTime() - buffer.GetFirstPacket().timestamp_generated);
+
 							sum_delays = sum_delays + (SimTime() - buffer.GetFirstPacket().timestamp_generated);
+
+							++performance_report.num_delay_measurements;
+
+							performance_report.sum_delays =
+									performance_report.sum_delays +(SimTime() - buffer.GetFirstPacket().timestamp_generated);
+
+//							if(node_id == 0) {
+//
+//								printf("%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f) - sum_delays = %f.\n",
+//									SimTime(), node_id, node_state, LOG_E14, LOG_LVL4, delay_pkt * pow(10,6),
+//									buffer.GetFirstPacket().timestamp_generated,
+//									performance_report.sum_delays);
+//
+//							}
+
 //							LOGS(save_node_logs,node_logger.file,
 //								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
 //								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
@@ -3755,6 +3780,7 @@ void Node :: SendResponsePacket(trigger_t &){
 			outportSelfStartTX(data_notification);
 			time_to_trigger = SimTime() + current_tx_duration;
 			trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger,13,12));
+
 			++data_frames_sent;
 			++data_frames_sent_per_sta[current_destination_id-node_id-1];
 
@@ -3764,6 +3790,7 @@ void Node :: SendResponsePacket(trigger_t &){
 
 			// Update performance measurements
 			++performance_report.data_packets_sent;
+			++performance_report.data_frames_sent;
 			LOGS(save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Data TX will be finished at %.15f\n",
 				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3,
@@ -4165,6 +4192,9 @@ void Node :: UpdatePerformanceMeasurements(){
 	performance_report.throughput =
 		(((double)performance_report.data_packets_acked * packet_length)) / (SimTime()-performance_report.timestamp);
 
+	// Delay
+	performance_report.average_delay = performance_report.sum_delays / performance_report.num_delay_measurements;
+
 	// - Max RSSI received per WLAN
 	for (int i = 0 ; i < total_wlans_number; ++ i) {
 		performance_report.rssi_list[i] = max_received_power_in_ap_per_wlan[i];
@@ -4530,7 +4560,10 @@ void Node:: MeasureRho(trigger_t &){
 	}
 	// Utilization
 	++num_measures_utilization;
+	++performance_report.num_measures_utilization;
+
 	if (buffer.QueueSize() > 0) ++num_measures_buffer_with_packets;
+	if (buffer.QueueSize() > 0) ++performance_report.num_measures_buffer_with_packets;
 	trigger_rho_measurement.Set(SimTime() + delta_measure_rho);
 }
 
@@ -4734,7 +4767,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 	if (data_frames_sent > 0) data_frames_lost_percentage = double(data_frames_lost * 100)/double(data_frames_sent);
 	if (data_packets_sent > 0) data_packets_lost_percentage = double(data_packets_lost * 100)/double(data_packets_sent);
 	if (rts_cts_sent > 0){
-		rts_cts_lost_percentage = double(rts_cts_lost * 100)/double(rts_cts_sent);
+		rts_cts_lost_percentage = (double) rts_cts_lost * 100/ (double) rts_cts_sent;
 		rts_lost_bo_percentage = double(rts_lost_slotted_bo *100)/double(rts_cts_sent);
 		prob_slotted_bo_collision = double(rts_lost_bo_percentage / double(100));
 	}
@@ -4751,6 +4784,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 //	}
 	average_waiting_time = sum_waiting_time / (double) num_average_waiting_time_measurements;
 	expected_backoff = expected_backoff / (double) num_new_backoff_computations;
+
 
 	switch(write_or_print){
 
@@ -4770,9 +4804,6 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 //					average_rho, average_rho * 100);
 //				printf("%s %d/%d\n", LOG_LVL3,
 //					num_measures_rho_accomplished, num_measures_rho);
-//				// Utilization
-//				printf("%s Average utilization = %f (%.2f %%)\n", LOG_LVL2,
-//					average_utilization, average_utilization * 100);
 //				printf("%s %d/%d\n", LOG_LVL3,
 //					num_measures_buffer_with_packets, num_measures_utilization);
 
@@ -4782,6 +4813,9 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Buffer
 				printf("%s Packets generated = %.0f (%.2f pkt/s) - Packets dropped = %.0f  (%.2f %% drop ratio)\n",
 					LOG_LVL3, num_packets_generated, num_packets_generated / SimTime(), num_packets_dropped, generation_drop_ratio);
+				// Utilization
+				printf("%s Prob. packets in buffer = %f (%.2f %%)\n",
+						LOG_LVL4, average_utilization, average_utilization * 100);
 				// RTS/CTS sent and lost
 				printf("%s RTS/CTS sent/lost = %d/%d  (%.2f %% lost)\n",
 					LOG_LVL3, rts_cts_sent, rts_cts_lost, rts_cts_lost_percentage);
@@ -4789,8 +4823,8 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				printf("%s RTS lost due to slotted BO = %d (%.2f %%)\n",
 					LOG_LVL4, rts_lost_slotted_bo, rts_lost_bo_percentage);
 				// Frames
-				printf("%s Data frames sent = %d - ACKed = %d - frame loss ratio = %.2f %%\n",
-					LOG_LVL3, data_frames_sent, data_frames_acked, data_frames_lost_percentage);
+				printf("%s Data frames sent = %d - ACKed = %d - Lost = %d - frame loss ratio = %.2f %%\n",
+					LOG_LVL3, data_frames_sent, data_frames_acked, data_frames_lost, data_frames_lost_percentage);
 				// Data packets sent and lost
 				printf("%s Data packets sent = %d - ACKed = %d - data loss = %.2f %%\n",
 					LOG_LVL3, data_packets_sent, data_packets_acked, data_packets_lost_percentage);
@@ -5026,7 +5060,9 @@ void Node :: SaveSimulationPerformance() {
 	simulation_performance.data_packets_acked = data_packets_acked;
 	simulation_performance.data_frames_acked = data_frames_acked;
 	simulation_performance.data_packets_sent = data_packets_sent;
+	simulation_performance.data_frames_sent = data_frames_sent;
 	simulation_performance.data_packets_lost = data_packets_lost;
+	simulation_performance.data_frames_lost = data_frames_lost;
 	simulation_performance.rts_cts_sent = rts_cts_sent;
 	simulation_performance.rts_cts_lost = rts_cts_lost;
 	simulation_performance.rts_lost_slotted_bo = rts_lost_slotted_bo;
@@ -5108,7 +5144,7 @@ void Node :: InitializeVariables() {
 
 
 	/* HARDCODEEEEEEEEED */
-	//current_max_bandwidth = max_channel_allowed - min_channel_allowed + 1;
+	current_max_bandwidth = max_channel_allowed - min_channel_allowed + 1;
 	//current_max_bandwidth = 8;
 	/* END OF HARDCODEEEEEEEEED */
 
@@ -5131,7 +5167,7 @@ void Node :: InitializeVariables() {
 	num_channels_tx = 0;
 
 	flag_measure_rho = TRUE;
-	delta_measure_rho = 0.00001;
+	delta_measure_rho = 0.0001;
 	num_measures_rho = 0;
 	num_measures_rho_accomplished = 0;
 	average_utilization = 0;

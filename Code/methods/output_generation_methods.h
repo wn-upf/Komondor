@@ -728,6 +728,126 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 
 		}
 
+		// Paper #10: selfcontained dataset
+		case 15: {
+
+			int bss_count = 0;
+
+			//int VALUES_PRIMARY = 2;
+			int VALUES_MAX_BW = 2;
+			int VALUES_LOAD = 3;
+
+			int primary_ch;
+			int max_bw_ix;
+			double traffic_load;
+			int traffic_load_ix;
+
+			int status_ix;
+			int action_ix;
+
+			for(int i = 0; i < total_nodes_number; i ++) {
+				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+
+					primary_ch = configuration_per_node[i].selected_primary_channel;
+
+					int num_chs = wlan_container[bss_count].max_channel_allowed - wlan_container[bss_count].min_channel_allowed + 1;
+					max_bw_ix = (int) log2(num_chs) + 1;
+					traffic_load = wlan_container[bss_count].traffic_load;
+
+					// Hardcoded depending on status space
+					switch( (int) (traffic_load / 83.33)){
+
+						case 20:{
+							traffic_load_ix = 1;
+							break;
+						}
+
+						case 50:{
+							traffic_load_ix = 2;
+							break;
+						}
+
+						case 150:{
+							traffic_load_ix = 3;
+							break;
+						}
+
+						default:{
+
+							printf("GenerateScriptOutput: unknown load!\n");
+
+						}
+
+					}
+
+					action_ix = primary_ch * VALUES_MAX_BW + max_bw_ix;
+					status_ix = primary_ch * (VALUES_MAX_BW * VALUES_LOAD) + (max_bw_ix - 1) * VALUES_LOAD + traffic_load_ix;
+					// ----
+
+					fprintf(logger_script.file, ";%s;%d;%d;%d;%d;%d;%.2f;%.2f;%.2f;%d;%d;%d;%d",
+					wlan_container[bss_count].wlan_code.c_str(),
+					action_ix,
+					status_ix,
+					primary_ch,
+					max_bw_ix,
+					traffic_load_ix,
+					traffic_load,
+					performance_report[i].throughput * pow(10,-6),
+					performance_report[i].average_delay * pow(10,3),
+					performance_report[i].rts_cts_lost,
+					performance_report[i].rts_cts_sent,
+			 	 	performance_report[i].data_frames_lost,
+					performance_report[i].data_frames_sent);
+
+					bss_count ++;
+				}
+			}
+
+			fprintf(logger_script.file, "\n");
+
+			break;
+		}
+		
+		// Paper #10: multi-agent random
+		case 16: {
+
+			int bss_count = 0;
+
+			int primary_ch;
+			int max_bw_ix;
+			double traffic_load;
+			
+			for(int i = 0; i < total_nodes_number; i ++) {
+				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+
+					primary_ch = configuration_per_node[i].selected_primary_channel;
+
+					int num_chs = wlan_container[bss_count].max_channel_allowed - wlan_container[bss_count].min_channel_allowed + 1;
+					max_bw_ix = (int) log2(num_chs) + 1;
+					traffic_load = wlan_container[bss_count].traffic_load;
+
+
+					fprintf(logger_script.file, ";%s;%d;%d;%.2f;%.2f;%.2f;%d;%d;%d;%d",
+						wlan_container[bss_count].wlan_code.c_str(),
+						primary_ch,
+						max_bw_ix,
+						traffic_load,
+						performance_report[i].throughput * pow(10,-6),
+						performance_report[i].average_delay * pow(10,3),
+						performance_report[i].rts_cts_lost,
+						performance_report[i].rts_cts_sent,
+						performance_report[i].data_frames_lost,
+						performance_report[i].data_frames_sent);
+
+					bss_count ++;
+				}
+			}
+
+			fprintf(logger_script.file, "\n");
+
+			break;
+		}
+
 		default:{
 		  printf("No simulation type found\n");
 		  break;

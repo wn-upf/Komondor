@@ -91,6 +91,14 @@ component TrafficGenerator : public TypeII{
 		double prob_traffic_state_on;			///> Probability next traffic state is ON
 		double traffic_load_onoff;				///> Traffic load during the ON state in the ON/OFF traffic model
 
+		// Paper #10
+		int first_load_change;
+		int second_load_change;
+		int third_load_change;
+		int *TRAFFIC_LOADS;
+		int pitaka_lapaka;
+
+
 	// Connections and timers
 	public:
 
@@ -185,6 +193,44 @@ void TrafficGenerator :: GenerateTraffic() {
 ////		}
 ////
 //	}
+
+	/*
+	 * HARDCODED FOR PAPER 10: VARIABLE MEAN TRAFFIC LOAD TO ALL APs
+	 */
+
+
+
+//	if(!first_load_change){
+//
+//		if(SimTime()/StopTime() >= 1.0/4.0){
+//			// perform first change
+//			first_load_change = TRUE;
+//			int randomIndex = rand() % 3;
+//			traffic_load = 83.33 * TRAFFIC_LOADS[randomIndex];
+//
+//		}
+//
+//	} else if(!second_load_change){
+//
+//		if(SimTime()/StopTime() >= 2.0/4.0){
+//			// perform second change
+//			second_load_change = TRUE;
+//			int randomIndex = rand() % 3;
+//			traffic_load = 83.33 * TRAFFIC_LOADS[randomIndex];
+//		}
+//
+//
+//	} else if(!third_load_change){
+//
+//		if(SimTime()/StopTime() >= 3.0/4.0){
+//			// perform third change
+//			third_load_change = TRUE;
+//			int randomIndex = rand() % 3;
+//			traffic_load = 83.33 * TRAFFIC_LOADS[randomIndex];
+//		}
+//	}
+
+
 
 	/*
 	 * END OF HARDCODING
@@ -311,6 +357,17 @@ void TrafficGenerator :: InitializeTrafficGenerator() {
 	 */
 	burst_rate = 10;
 	num_bursts = 0;
+
+
+	// Paper #10
+	first_load_change = FALSE;
+	second_load_change = FALSE;
+	third_load_change = FALSE;
+	TRAFFIC_LOADS = new int[3];
+	TRAFFIC_LOADS[0] = 20;
+	TRAFFIC_LOADS[1] = 50;
+	TRAFFIC_LOADS[2] = 150;
+	// -----
 
 	traffic_onoff_state = 0;
 	time_traffic_state_initiated = 0;

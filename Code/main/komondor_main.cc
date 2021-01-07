@@ -607,10 +607,29 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				std::string wlan_code;
 				wlan_code.append(ToString(wlan_code_aux));
 				node_container[node_ix].wlan_code = wlan_code;
+
+				// Traffic load (packet generation rate)
+				tmp_nodes = strdup(line_nodes);
+				const char* traffic_load_char (GetField(tmp_nodes, IX_TRAFFIC_LOAD));
+
+				// Primary channel
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].current_primary_channel = atoi(GetField(tmp_nodes, IX_PRIMARY_CHANNEL));
+				// Min channel allowed
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].min_channel_allowed = atoi(GetField(tmp_nodes, IX_MIN_CH_ALLOWED));
+				// Max channel allowed
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].max_channel_allowed = atoi(GetField(tmp_nodes, IX_MAX_CH_ALLOWED));
+
 				for(int w = 0; w < total_wlans_number; ++w){
 					if(strcmp(wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0){	// If nodes belong to WLAN
 						if(node_container[node_ix].node_type == NODE_TYPE_AP){	// If node is AP
 							wlan_container[w].ap_id = node_container[node_ix].node_id;
+							wlan_container[w].traffic_load = atof(traffic_load_char);
+							wlan_container[w].min_channel_allowed = node_container[node_ix].min_channel_allowed;
+							wlan_container[w].max_channel_allowed = node_container[node_ix].max_channel_allowed;
+
 						} else if (node_container[node_ix].node_type == NODE_TYPE_STA){	// If node is STA
 							for(int s = 0; s < wlan_container[w].num_stas; ++s){
 								if(wlan_container[w].list_sta_id[s] == NODE_ID_NONE){
@@ -621,6 +640,7 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 						}
 					}
 				}
+
 				// Position
 				tmp_nodes = strdup(line_nodes);
 				node_container[node_ix].x = atof(GetField(tmp_nodes, IX_POSITION_X));
@@ -635,15 +655,7 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				// Channel bonding model
 				tmp_nodes = strdup(line_nodes);
 				node_container[node_ix].current_dcb_policy = atoi(GetField(tmp_nodes, IX_CHANNEL_BONDING_MODEL));
-				// Primary channel
-				tmp_nodes = strdup(line_nodes);
-				node_container[node_ix].current_primary_channel = atoi(GetField(tmp_nodes, IX_PRIMARY_CHANNEL));
-				// Min channel allowed
-				tmp_nodes = strdup(line_nodes);
-				node_container[node_ix].min_channel_allowed = atoi(GetField(tmp_nodes, IX_MIN_CH_ALLOWED));
-				// Max channel allowed
-				tmp_nodes = strdup(line_nodes);
-				node_container[node_ix].max_channel_allowed = atoi(GetField(tmp_nodes, IX_MAX_CH_ALLOWED));
+
 				// Default tx_power
 				tmp_nodes = strdup(line_nodes);
 				double tx_power_default_dbm (atof(GetField(tmp_nodes, IX_TX_POWER_DEFAULT)));
@@ -655,9 +667,6 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				// Traffic model
 				tmp_nodes = strdup(line_nodes);
 				const char* traffic_model_char (GetField(tmp_nodes, IX_TRAFFIC_MODEL));
-				// Traffic load (packet generation rate)
-				tmp_nodes = strdup(line_nodes);
-				const char* traffic_load_char (GetField(tmp_nodes, IX_TRAFFIC_LOAD));
 				// Packet length
 				tmp_nodes = strdup(line_nodes);
 				const char* packet_length_char (GetField(tmp_nodes, IX_PACKET_LENGTH));
@@ -728,6 +737,7 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 					node_container[node_ix].non_srg_obss_pd = -1;
 					node_container[node_ix].srg_obss_pd = -1;
 				}
+
 				// Traffic generator
 				traffic_generator_container[node_ix].node_type = node_type;
 				traffic_generator_container[node_ix].node_id = node_ix;

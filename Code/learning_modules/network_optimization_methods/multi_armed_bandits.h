@@ -292,31 +292,42 @@ class MultiArmedBandit {
 
 		}
 
+		// Exploration-first
 		int PickArmEgreedySequential(int num_arms, double *reward_per_arm, int *available_arms) {
 
-			int action_ix = -1;
+			int action_ix = -666;
 
-			int unexplored_action_flag = FALSE;
-
-//			printf("epsilon-greedy-sequential: ");
-//			for (int i = 0; i < num_arms; i++){
-//
-//				printf("   %.2f", reward_per_arm[i]);
-//
-//			}
-//			printf("\n");
-
-
+			
+			// create array of unexplored actions (with reward -1)
+			int num_unexplored_actions = 0;
+			
 			for (int i = 0; i < num_arms; i ++) {
 				if(available_arms[i] && reward_per_arm[i] == -1) {
-					action_ix = i;
-					unexplored_action_flag = TRUE;
-					break;
+					num_unexplored_actions ++;
 				}
 			}
-
-			if(!unexplored_action_flag){
-
+			
+			// if there are unexplored actions
+			if(num_unexplored_actions > 0) {
+				
+				int unexplored_actions[num_unexplored_actions] = { 0 };
+				
+				int num_unexplored_actions_aux = 0;	
+						
+				for (int i = 0; i < num_arms; i ++) {
+					if(available_arms[i] && reward_per_arm[i] == -1) {
+						unexplored_actions[num_unexplored_actions_aux] = i;
+						num_unexplored_actions_aux ++;
+					}
+				}
+				
+				// pick random action from unexplored ones
+				int rand_int =  rand() % num_unexplored_actions;
+				action_ix = unexplored_actions[rand_int];
+					
+			} else { // if all actions where explored at least once
+			
+				// pick the best known one (highest reward)
 				double max = -1;
 				for (int i = 0; i < num_arms; i ++) {
 					if(available_arms[i] && reward_per_arm[i] > max) {
@@ -324,24 +335,9 @@ class MultiArmedBandit {
 						action_ix = i;
 					}
 				}
+			
 			}
-
-
-//				printf("EXPLOIT: Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
-
-
-//			if(num_iterations == 100){
-//				printf("\n epsilon-greedy - val_par_array: ");
-//				for (int i = 0; i < num_arms; i++){
-//
-//					printf("   %.2f", reward_per_arm[i]);
-//
-//				}
-//				printf("\n");
-//			}
-
-//			printf("U(%d) action: %d\n", unexplored_action_flag, action_ix);
-
+			
 			return action_ix;
 
 		}

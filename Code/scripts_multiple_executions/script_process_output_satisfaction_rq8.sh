@@ -2,9 +2,9 @@
 
 # get input files path in folder 'script_input_files'
 #cd ../output_1000ms/output_rq8_poisson/logs_agents
-#cd ../output_1000ms/output_rq8_onoff_50_50/logs_agents
+cd ../output_1000ms/output_rq8_onoff_50_50/logs_agents
 #cd ../output_1000ms/output_rq8_onoff_100_100/logs_agents
-cd ../output_1000ms/output_rq8_onoff_100_50/logs_agents
+#cd ../output_1000ms/output_rq8_onoff_100_50/logs_agents
 pwd
 
 #delete old files

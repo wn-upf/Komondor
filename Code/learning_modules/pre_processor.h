@@ -83,6 +83,11 @@ class PreProcessor {
 	// Private items
 	private:
 
+		double reward_iteration;
+		double throughput_satistfaction_iteration;
+		double delay_iteration;
+		double buffer_utilization_iteration;
+
 	// Methods
 	public:
 
@@ -140,6 +145,24 @@ class PreProcessor {
 
             double reward(0);
 			// Switch to select the reward according to the metric used (rewards must be normalized)
+
+            if(performance.num_packets_generated>0){
+            	throughput_satistfaction_iteration =
+					(double)performance.data_packets_acked/(double)performance.num_packets_generated;
+            	delay_iteration = performance.average_delay;
+
+            } else {
+            	throughput_satistfaction_iteration = 1;
+            	delay_iteration = 0;
+            }
+
+            if(performance.sum_delays == 0) delay_iteration = 999999999999999999;
+
+
+			buffer_utilization_iteration =
+					(double) performance.num_measures_buffer_with_packets / (double) performance.num_measures_utilization;
+
+
 			switch(type_of_reward){
 				/* REWARD_TYPE_PACKETS_SUCCESSFUL:
 				 * - The number of packets sent are taken into account
@@ -198,9 +221,40 @@ class PreProcessor {
 				 * - Number of packets successfully delivered (ACKed) divided by the number of packets generated
 				 */
 				case REWARD_TYPE_THROUGHPUT_SATISFACTION:{
-					reward = (double) performance.data_frames_acked/ (double) performance.num_packets_generated;
+
+					reward = throughput_satistfaction_iteration;
+
 					break;
 				}
+				/* REWARD_TYPE_UTILIZATION:
+				 * - Prob(pkt buffer > 0)
+				 */
+				case REWARD_TYPE_UTILIZATION:{
+
+					reward = 1.0 - buffer_utilization_iteration;
+
+					break;
+				}
+				/* REWARD_TYPE_MIX_SATISFACTION_UTILIZATION:
+				 * -
+				 */
+				case REWARD_TYPE_MIX_SATISFACTION_UTILIZATION:{
+
+					reward = 0.5 * throughput_satistfaction_iteration + 0.5 * (1.0 - buffer_utilization_iteration);
+
+					break;
+				}
+				/* REWARD_TYPE_MIX_THRSAT_DELAY:
+				 * - Mixed of thr satisfaction and delay
+				 */
+				case REWARD_TYPE_MIX_THRSAT_DELAY:{
+
+					reward = throughput_satistfaction_iteration *
+							(MIN_SINGLE_FRAME_DELAY_MICROSECONDS * 1E-6) / delay_iteration;
+
+					break;
+				}
+
 				/* Default */
 				default:{
 					printf("[Pre-Processor] ERROR: '%d' is not a correct type of performance indicator\n", type_of_reward);
@@ -210,6 +264,7 @@ class PreProcessor {
 				}
 			}
 //			printf("Reward = %f\n",reward);
+			reward_iteration = reward;
 			return reward;
 		}
 
@@ -530,8 +585,8 @@ class PreProcessor {
 				// Throughput satisfaction
 				case REWARD_TYPE_THROUGHPUT_SATISFACTION:{
 					LOGS(TRUE, logger.file,
-						"%.15f;%s;%s;%s Throughput satisfaction = %.2f\n", sim_time, string_device,
-						LOG_C03, LOG_LVL3, ((double)performance.data_packets_acked/(double)performance.num_packets_generated));
+						"%.15f;%s;%s;%s reward (thr. satisfaction) = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, reward_iteration);
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Data packets generated = %d\n", sim_time, string_device,
 						LOG_C03, LOG_LVL4, performance.num_packets_generated);
@@ -554,6 +609,149 @@ class PreProcessor {
 					break;
 				}
 
+				// Buffer utilization
+				case REWARD_TYPE_UTILIZATION:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s reward (1-Utilization) = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, reward_iteration);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Utilization = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, buffer_utilization_iteration);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Num. measurements buffer = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_measures_utilization);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Num. measurements buffer with pkts = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_measures_buffer_with_packets);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Throughput satisfaction = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, throughput_satistfaction_iteration);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets generated = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_packets_generated);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets ACKed = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.data_packets_acked);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Throughput = %.2f Mbps\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.throughput * pow(10,-6));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS sent = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_sent);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS lost = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_lost);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Prob. RTS/CTS lost = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, (double) performance.rts_cts_lost / (double) performance.rts_cts_sent);
+
+					break;
+				}
+
+				// Mix satisfaction and buffer utilization
+				case REWARD_TYPE_MIX_SATISFACTION_UTILIZATION:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s reward (mixed) = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, reward_iteration);
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Throughput satisfaction = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, throughput_satistfaction_iteration);
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s 1-Utilization = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, 1.0 - buffer_utilization_iteration);
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Utilization = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, ((double)performance.num_measures_buffer_with_packets/(double)performance.num_measures_utilization));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Num. measurements buffer = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_measures_utilization);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Num. measurements buffer with pkts = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_measures_buffer_with_packets);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets generated = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_packets_generated);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets ACKed = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.data_packets_acked);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Throughput = %.2f Mbps\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.throughput * pow(10,-6));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS sent = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_sent);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS lost = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_lost);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Prob. RTS/CTS lost = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, (double) performance.rts_cts_lost / (double) performance.rts_cts_sent);
+
+					break;
+				}
+
+				/* REWARD_TYPE_MIX_THRSAT_DELAY:
+				 * - Mixed of thr satisfaction and delay
+				 */
+				case REWARD_TYPE_MIX_THRSAT_DELAY:{
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s reward (mixed) = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, reward_iteration);
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Throughput satisfaction = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, throughput_satistfaction_iteration);
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Average delay = %.2f ms\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, delay_iteration * pow(10,3));
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s sum_delays = %.2f ms\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.sum_delays * pow(10,3));
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s num_delay_measurements = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_delay_measurements);
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s 1-Utilization = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, 1.0 - buffer_utilization_iteration);
+
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Utilization = %.2f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, ((double)performance.num_measures_buffer_with_packets/(double)performance.num_measures_utilization));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Num. measurements buffer = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_measures_utilization);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Num. measurements buffer with pkts = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_measures_buffer_with_packets);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets generated = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.num_packets_generated);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Data packets ACKed = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.data_packets_acked);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Throughput = %.2f Mbps\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.throughput * pow(10,-6));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS sent = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_sent);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s RTS/CTS lost = %d\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, performance.rts_cts_lost);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Prob. RTS/CTS lost = %.4f\n", sim_time, string_device,
+						LOG_C03, LOG_LVL4, (double) performance.rts_cts_lost / (double) performance.rts_cts_sent);
+
+					break;
+				}
 			}
 
 		}
@@ -617,6 +815,12 @@ class PreProcessor {
 //			}
 			// Variable to keep track of the indexes belonging to each parameter's list
 			indexes_selected_arm = new int[NUM_FEATURES_ACTIONS]; // 4 features considered
+
+			reward_iteration = 0;
+			throughput_satistfaction_iteration = 0;
+			buffer_utilization_iteration = 0;
+
+
 		}
 
 };
