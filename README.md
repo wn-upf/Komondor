@@ -57,21 +57,34 @@ An overview of the current modules available in Komondor is next shown:
 
 Detailed installation and execution instructions can be found in the [Komondor User's Guide](https://github.com/wn-upf/Komondor/blob/master/Documentation/User%20guide/LaTeX%20files/komondor_user_guide.pdf).
 
-In short, to run Komondor, just build the project by using the "build_local" script and then execute it by following the next steps:
+In short, to run Komondor, just build `komondor_main` and then execute it by
+following the next steps:
 
-STEP 0: Set permissions to the folder
-
+### STEP 0: Go to ./Code/main and set permissions of the folder
 ```
+$ cd ./Code/main
 $ chmod -R 777 <dirname>
 ```
 
-STEP 1: Build the project
+### STEP 1: Build Komondor
+#### OPTION a: Build Komondor with pre-build CompC++
+WARNING: Following instructions use a pre-build CompC++. The binary
+`Code/COST/cxx` is platform dependent and might not work on your machine.
+
 
 ```
 $ ./build_local
 ```
 
-STEP 2: Run Komondor simulator for the given input information (basic simulation)
+#### OPTION b: Build Komondor and CompC++ from scratch using make
+Following instructions require [make](https://www.gnu.org/software/make/manual/make.html).
+
+```
+$ make
+```
+
+### STEP 2: Run Komondor
+Run Komondor simulator for the given input information (basic simulation)
 
 ```
 $ ./komondor_main INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
