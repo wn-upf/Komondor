@@ -421,8 +421,8 @@ public class AI_challenge_21 {
         
         int max_num_aps = 6;
         int min_num_aps = 2;
-        int MIN_DISTANCE_BW_APS = 1;
-              
+        int MIN_DISTANCE_BW_APS = 10;
+                
         // Generate the random .csv files of "input_nodes"
         for (int i = 0; i < num_random_deployments; ++i) { 
             num_bss = ThreadLocalRandom.current().nextInt(min_num_aps, max_num_aps + 1);
@@ -459,17 +459,18 @@ public class AI_challenge_21 {
             }
             // Generate BSSs
             generate_bss(array_ap_locations);
-            int rnd = new Random().nextInt(obsspd_list.length);
-            // Set the OBSS/PD threshold of each device in the BSS of interest
-            for (int k = 0; k < bss_container[0].num_stas; ++k) {
-                bss_container[0].non_srg_obss_pd = obsspd_list[rnd];
-            }                
-            // Specify the output path (file's name)
-            output_path = "./output/input_nodes_test_s" + String.format("%03d", i) + 
-                    "_c" + obsspd_list[rnd] + ".csv";
+            for (int j = 0; j < obsspd_list.length; ++j) {  
+                // Set the OBSS/PD threshold of each device in the BSS of interest
+                for (int k = 0; k < bss_container[0].num_stas; ++k) {
+                    bss_container[0].non_srg_obss_pd = obsspd_list[j];
+                }                
+                // Specify the output path (file's name)
+                output_path = "./output/input_nodes_s" + String.format("%04d", i) + 
+                        "_c" + obsspd_list[j] + ".csv";
 //                System.out.println("output_path: " + output_path);
-            // Generate the .csv file
-            generate_file(output_path);
+                // Generate the .csv file
+                generate_file(output_path);
+            }
         }
     }
                

@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author Francesc Wilhelmi (francisco.wilhelmi@upf.edu)
  */
 
-public class AI_challenge_21 {
+public class AI_challenge_21_2 {
 
     static Wlan[] bss_container = null;
 
@@ -422,6 +422,7 @@ public class AI_challenge_21 {
         int max_num_aps = 6;
         int min_num_aps = 2;
         int MIN_DISTANCE_BW_APS = 1;
+        int MAX_NUM_VARIATIONS = 20;
               
         // Generate the random .csv files of "input_nodes"
         for (int i = 0; i < num_random_deployments; ++i) { 
@@ -459,17 +460,32 @@ public class AI_challenge_21 {
             }
             // Generate BSSs
             generate_bss(array_ap_locations);
-            int rnd = new Random().nextInt(obsspd_list.length);
-            // Set the OBSS/PD threshold of each device in the BSS of interest
-            for (int k = 0; k < bss_container[0].num_stas; ++k) {
-                bss_container[0].non_srg_obss_pd = obsspd_list[rnd];
-            }                
-            // Specify the output path (file's name)
-            output_path = "./output/input_nodes_test_s" + String.format("%03d", i) + 
-                    "_c" + obsspd_list[rnd] + ".csv";
-//                System.out.println("output_path: " + output_path);
-            // Generate the .csv file
-            generate_file(output_path);
+            int rnd_variations = new Random().nextInt(MAX_NUM_VARIATIONS);
+            for (int r = 0 ; r < rnd_variations; ++r){
+                // Select a random device and move it to a different location
+                int rnd_device = new Random().nextInt(bss_container[0].num_stas);
+                double new_angle = 360 * new Random().nextDouble();
+                double new_rand_value = new Random().nextDouble();
+                double d_ap_sta = d_min_AP_STA + Math.sqrt(new_rand_value) * (d_max_AP_STA - d_min_AP_STA);                
+                double x_sta = bss_container[0].x + Math.cos(Math.toRadians(new_angle)) * d_ap_sta;
+                double y_sta = bss_container[0].y + Math.sin(Math.toRadians(new_angle)) * d_ap_sta;
+                bss_container[0].stas_position_list[rnd_device].x = x_sta;
+                bss_container[0].stas_position_list[rnd_device].y = y_sta;
+                for (int j = 0; j < obsspd_list.length; ++j) {
+                    // Set the OBSS/PD threshold of each device in the BSS of interest
+                    for (int k = 0; k < bss_container[0].num_stas; ++k) {
+                        bss_container[0].non_srg_obss_pd = obsspd_list[j];
+                    }                
+                    // Specify the output path (file's name)
+                    output_path = "./output/input_nodes_s" + String.format("%03d", i) + 
+                            "_v" + String.format("%02d", r) + "_c" + obsspd_list[j] + ".csv";
+                    System.out.println("output_path: " + output_path);
+                    // Generate the .csv file
+                    generate_file(output_path);
+                }
+            }
+
+
         }
     }
                
