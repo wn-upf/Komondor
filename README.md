@@ -152,7 +152,7 @@ One of the main purposes of Komondor is to serve as an academic/educational tool
 
 ## Contribute
 
-If you want to contribute, please contact to sergio.barrachina@upf.edu and/or francisco.wilhelmi@upf.edu
+If you want to contribute, please contact to sbarrachina@cttc.cat and/or fwilhelmi@cttc.cat
 
 More details in [CONTRIBUTING.md](https://github.com/wn-upf/Komondor/blob/master/CONTRIBUTING.md)
 
