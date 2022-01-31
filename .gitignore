@@ -45,8 +45,6 @@
 *.txt~
 *.csv~
 
-Code/output/.keep
-Code/output/
 !.gitignore
 
-Code/main/komondor_main
+build
