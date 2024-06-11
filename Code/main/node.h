@@ -224,7 +224,7 @@ component Node : public TypeII{
 		double *total_time_transmitting_in_num_channels;	///> Time transmitting in (ix 0: 1 channel, ix 1: 2 channels...)
 		double *total_time_lost_per_channel;				///> Time transmitting per channel unsuccessfully;
 		double *total_time_lost_in_num_channels;			///> Time transmitting in (ix 0: 1 channel, ix 1: 2 channels...) unsuccessfully
-		double *total_time_spectrum_per_channel;			///> Time that the spectrum is occupied per channel
+		double *total_time_channel_busy_per_channel;		///> Time that the spectrum is occupied per channel
 															///> - Any time a transmissions is done (regardless the packet) the duration of such transmissions is added
 		double throughput;									///> Throughput [Mbps]
 		double throughput_loss;								///> Throughput of lost packets [Mbps]
@@ -259,6 +259,18 @@ component Node : public TypeII{
 		double last_time_not_in_nav;	///> Timestamp referring to the last time the node was in NAV state
 		double time_in_nav;				///> Variable to store the time spent in NAV state
 		int times_went_to_nav;			///> Variable to store the number of times the node passes to NAV state
+
+		// Statistics in the last part of the simulation
+		double last_measurements_window;
+		double last_throughput;
+		int last_data_frames_acked;
+		double last_average_delay;
+		double last_sum_delays;
+		int last_num_delay_measurements;
+		double *last_total_time_transmitting_per_channel;
+		double *last_total_time_lost_per_channel;
+		double last_sum_waiting_time;
+		int last_num_average_waiting_time_measurements;
 
 		// Statistics of each STA
 		double *throughput_per_sta;			///> Stores the throughput assigned to each STA (Downlink mode)
@@ -335,6 +347,11 @@ component Node : public TypeII{
 		int cw_current;				///> Contention Window being used currently
 		int cw_stage_current;		///> Current CW stage
 
+		// Deterministic (token-based) backoff management
+		int *list_token_colors;
+		int *list_token_status;
+		int *list_counter_token_missed;
+
 		// Packets durations
 		double data_duration;		///> Duration of the data packet
 		double ack_duration;		///> Duration of the ACK packet
@@ -365,6 +382,7 @@ component Node : public TypeII{
 		int num_channels_tx;						///> Number of channels used for transmission
 		int flag_apply_new_configuration;			///> Flag to determine if there is any new configuration to be applied when doing "RestartNode()"
 		int channel_aggregation_cca_model;			///> Flag to determine the type of CCA per bandwidth applied
+		int last_transmission_successful;			///> Flag to indicate whether the last transmission was successful or not
 
 		// Rho measurement
 		int flag_measure_rho;					///> Flag for activating rho measurement
@@ -537,16 +555,15 @@ void Node :: Start(){
 
 		if (TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION) {
 
-			for(int i = 0; i < max_num_packets_aggregated; ++i){
-				new_packet = null_notification;
-				new_packet.timestamp_generated = SimTime();
-				new_packet.packet_id = last_packet_generated_id;
-				buffer.PutPacket(new_packet);
-				++last_packet_generated_id;
-			}
+			//for(int i = 0; i < max_num_packets_aggregated; ++i){
+			//	new_packet = null_notification;
+			//	new_packet.timestamp_generated = SimTime();
+			//	new_packet.packet_id = last_packet_generated_id;
+			//	buffer.PutPacket(new_packet);
+			//	++last_packet_generated_id;
+			//}
 
 			time_to_trigger = SimTime() + DIFS;
-
 			trigger_start_backoff.Set(FixTimeOffset(time_to_trigger,13,12));
 
 		}
@@ -683,7 +700,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 		UpdatePowerSensedPerNode(current_primary_channel, power_received_per_node, notification,
 			central_frequency, path_loss_model, received_power_array[notification.source_id], TX_INITIATED);
 
-		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
+		UpdateTimestampChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
 			current_pd, SimTime());
 
 //		if(save_node_logs) {
@@ -2250,7 +2267,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		UpdatePowerSensedPerNode(current_primary_channel, power_received_per_node, notification,
 			central_frequency, path_loss_model, received_power_array[notification.source_id], TX_FINISHED);
 
-		UpdateTimestamptChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
+		UpdateTimestampChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
 			current_pd, SimTime());
 
 //		if(save_node_logs) {
@@ -2365,7 +2382,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// ------------------------------------------------------------------------
 						// Sergio on 07 Dec 2017: add ACK transmission time to spectrum utilization
 						for(int c = current_left_channel; c <= current_right_channel; ++c){
-							total_time_spectrum_per_channel[c] = total_time_spectrum_per_channel[c] + current_tx_duration;
+							total_time_channel_busy_per_channel[c] = total_time_channel_busy_per_channel[c] + current_tx_duration;
 						}
 						// ------------------------------------------------------------------------
 
@@ -2424,48 +2441,48 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							"%.15f;N%d;S%d;%s;%s -------------------------------------\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL2);
 
+						// Mark the previous transmission as successful
+						last_transmission_successful = 1;
+
 						// Whole data packet ACKed
 						++data_packets_acked;
 						++data_packets_acked_per_sta[current_destination_id-node_id-1];
 
 						current_tx_duration = current_tx_duration + (notification.tx_duration + SIFS);	// Add ACK time to tx_duration
 
-						// ***************************
-						// Sergio on 17 July 2018: Delete all the aggregated frames contained in the ACKed packet
-						// buffer.DelFirstPacket();
+						// Update packet statistics
 						for(int i = 0; i < limited_num_packets_aggregated; ++i){
 
 							++data_frames_acked;
 							++data_frames_acked_per_sta[current_destination_id-node_id-1];
 							++num_delay_measurements;
 							sum_delays = sum_delays + (SimTime() - buffer.GetFirstPacket().timestamp_generated);
-//							LOGS(save_node_logs,node_logger.file,
-//								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
-//								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
-//								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
-//								buffer.GetFirstPacket().timestamp_generated);
 
-							buffer.DelFirstPacket();
-
-						}
-						// ***************************
-
-						// - Add antoher bunch of packets to the buffer if TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION
-						if(traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION) {
-
-							for(int i = 0; i < max_num_packets_aggregated; ++i){
-								new_packet = null_notification;
-								new_packet.timestamp_generated = SimTime();
-								new_packet.packet_id = last_packet_generated_id;
-								buffer.PutPacket(new_packet);
-								++last_packet_generated_id;
+							if (buffer.GetFirstPacket().timestamp_generated > (simulation_time_komondor - last_measurements_window)) {
+								++last_data_frames_acked;
+								++last_num_delay_measurements;
+								last_sum_delays = last_sum_delays + (SimTime() - buffer.GetFirstPacket().timestamp_generated);
 							}
-						}
 
-						LOGS(save_node_logs,node_logger.file,
-							"%.15f;N%d;S%d;%s;%s Data packet/s removed from buffer (queue: %d/%d).\n",
-							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
-							buffer.QueueSize(), PACKET_BUFFER_SIZE);
+							// Update the performance report with delay measurements
+							performance_report.sum_delays = performance_report.sum_delays + (SimTime() - buffer.GetFirstPacket().timestamp_generated);
+							++performance_report.num_delay_measurements;
+							if ((SimTime() - buffer.GetFirstPacket().timestamp_generated) > performance_report.max_delay) {
+								performance_report.max_delay = (SimTime() - buffer.GetFirstPacket().timestamp_generated);
+							}
+							if ((SimTime() - buffer.GetFirstPacket().timestamp_generated) < performance_report.min_delay) {
+								performance_report.min_delay = (SimTime() - buffer.GetFirstPacket().timestamp_generated);
+							}
+							LOGS(save_node_logs,node_logger.file,
+								"%.15f;N%d;S%d;%s;%s Packet delay: %f us (generated at %f).\n",
+								SimTime(), node_id, node_state, LOG_E14, LOG_LVL4,
+								(SimTime() - buffer.GetFirstPacket().timestamp_generated) * pow(10,6),
+								buffer.GetFirstPacket().timestamp_generated);
+
+							// Delete all the aggregated frames contained in the ACKed packet
+							//buffer.DelFirstPacket();
+
+						}
 
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Handling contention window\n",
@@ -2611,7 +2628,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							// ------------------------------------------------------------------------
 							// Sergio on 07 Dec 2017: add CTS transmission time to spectrum utilization
 							for(int c = current_left_channel; c <= current_right_channel; ++c){
-								total_time_spectrum_per_channel[c] = total_time_spectrum_per_channel[c] + current_tx_duration;
+								total_time_channel_busy_per_channel[c] = total_time_channel_busy_per_channel[c] + current_tx_duration;
 							}
 							// ------------------------------------------------------------------------
 
@@ -2734,7 +2751,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// ------------------------------------------------------------------------
 						// Sergio on 07 Dec 2017: add DATA transmission time to spectrum utilization
 						for(int c = current_left_channel; c <= current_right_channel; ++c){
-							total_time_spectrum_per_channel[c] = total_time_spectrum_per_channel[c] + current_tx_duration;
+							total_time_channel_busy_per_channel[c] = total_time_channel_busy_per_channel[c] + current_tx_duration;
 						}
 						// ------------------------------------------------------------------------
 
@@ -3169,6 +3186,13 @@ void Node :: EndBackoff(trigger_t &){
 	// - Compute average BO waiting time
 	sum_waiting_time = sum_waiting_time + SimTime() - timestamp_new_trial_started;
 	++num_average_waiting_time_measurements;
+
+	// Measurements in the last part of the simulation
+	if (SimTime() > (simulation_time_komondor - last_measurements_window)) {
+		last_sum_waiting_time = last_sum_waiting_time + SimTime() - timestamp_new_trial_started;
+		++last_num_average_waiting_time_measurements;
+	}
+
 	// Cancel NAV TO trigger
 	trigger_NAV_timeout.Cancel();
 
@@ -3254,7 +3278,6 @@ void Node :: EndBackoff(trigger_t &){
 		// Change to state "transmitting RTS"
 		node_state = STATE_TX_RTS;
 
-
 		// Get the transmission channels
 		current_left_channel = GetFirstOrLastTrueElemOfArray(FIRST_TRUE_IN_ARRAY,
 			channels_for_tx, NUM_CHANNELS_KOMONDOR);
@@ -3276,9 +3299,21 @@ void Node :: EndBackoff(trigger_t &){
 		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
 
 		// ********************************************************
-		// Sergio on 17 July 2018: Flexible packet aggregation
+		// Flexible packet aggregation
+
+		//  - Delete all the aggregated frames contained in the ACKed packet
+		if (limited_num_packets_aggregated > 0) {
+			for(int i = 0; i < limited_num_packets_aggregated; ++i){
+				buffer.DelFirstPacket();
+			}
+		}
+		LOGS(save_node_logs,node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Data packet/s removed from buffer (queue: %d/%d).\n",
+			SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
+			buffer.QueueSize(), PACKET_BUFFER_SIZE);
+
 		// - Number of packets to be aggregated: min(current buffer size, max num packets aggregated)
-		if(buffer.QueueSize() > max_num_packets_aggregated){
+		if(buffer.QueueSize() > max_num_packets_aggregated || traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION){
 			current_num_packets_aggregated = max_num_packets_aggregated;
 		} else {
 			current_num_packets_aggregated = buffer.QueueSize();
@@ -3290,16 +3325,32 @@ void Node :: EndBackoff(trigger_t &){
 			Mcs_array::coding_rates[current_modulation-1] *
 			IEEE_AX_SU_SPATIAL_STREAMS;
 
-		// Update the number of packets aggregate (just in case that the max PPDU is exceeded with the current MCS)
+		// Update the number of packets to aggregate (just in case that the max PPDU is exceeded with the current MCS)
 		limited_num_packets_aggregated = findMaximumPacketsAggregated
 			(current_num_packets_aggregated, frame_length, bits_ofdm_sym);
 
-		//printf("data transmitted: %d\n", limited_num_packets_aggregated*frame_length);
-
 		LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s Num. of packets to aggregate: %d/%d\n",
+			"%.15f;N%d;S%d;%s;%s Num. of packets to aggregate: %d/%d (last_transmission_successful=%d)\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
-			limited_num_packets_aggregated, max_num_packets_aggregated);
+			limited_num_packets_aggregated, max_num_packets_aggregated, last_transmission_successful);
+
+		// - Add another bunch of packets to the buffer if TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION
+		//if(traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION && last_transmission_successful) {
+		if(traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION) {
+
+			// - Generate the aggregated frames to be sent in the next transmission
+			for(int i = 0; i < limited_num_packets_aggregated; ++i){
+				new_packet = null_notification;
+				new_packet.timestamp_generated = SimTime();
+				new_packet.packet_id = last_packet_generated_id;
+				buffer.PutPacket(new_packet);
+				++last_packet_generated_id;
+			}
+
+			// Set "last_transmission_successful" to 0 for the upcoming transmission
+			last_transmission_successful = 0;
+
+		}
 		// ********************************************************
 
 		// Compute all packets durations (RTS, CTS, DATA and ACK) and NAV time
@@ -3396,7 +3447,7 @@ void Node :: EndBackoff(trigger_t &){
 		// ------------------------------------------------------------------------
 		// Sergio on 07 Dec 2017: add RTS transmission time to spectrum utilization
 		for(int c = current_left_channel; c <= current_right_channel; ++c){
-			total_time_spectrum_per_channel[c] += current_tx_duration;
+			total_time_channel_busy_per_channel[c] += current_tx_duration;
 		}
 		// ------------------------------------------------------------------------
 
@@ -3745,6 +3796,7 @@ void Node :: SendResponsePacket(trigger_t &){
 			trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger,13,12));
 			++data_packets_sent;
 			++data_packets_sent_per_sta[current_destination_id-node_id-1];
+
 			// Update performance measurements
 			++performance_report.data_packets_sent;
 			LOGS(save_node_logs,node_logger.file,
@@ -3788,6 +3840,10 @@ void Node :: AckTimeout(trigger_t &){
 
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
 		total_time_transmitting_per_channel[c] += SIFS + TIME_OUT_EXTRA_TIME;
+		// Measurements in the last part of the simulation
+		if (SimTime() > (simulation_time_komondor - last_measurements_window)) {
+			last_total_time_lost_per_channel[c] += SIFS + TIME_OUT_EXTRA_TIME;
+		}
 	}
 
 	handlePacketLoss(PACKET_TYPE_DATA, total_time_lost_in_num_channels, total_time_lost_per_channel,
@@ -3796,9 +3852,11 @@ void Node :: AckTimeout(trigger_t &){
 
 	// Sergio on 16 July 2018: [AGENTS] add data packet lost for partial throughput computations
 	// Update performance measurements
+	total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
-		performance_report.total_time_lost_per_channel[c] += current_tx_duration;
+		total_time_lost_per_channel[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+		performance_report.total_time_lost_per_channel[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	}
 	performance_report.data_packets_lost++;
 
@@ -3858,10 +3916,19 @@ void Node :: CtsTimeout(trigger_t &){
 	// Update TX time statistics
 	total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	performance_report.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
 		total_time_transmitting_per_channel[c] += current_tx_duration;
 		performance_report.total_time_transmitting_per_channel[c] += current_tx_duration;
+		total_time_lost_per_channel[c] += current_tx_duration;
 		performance_report.total_time_lost_per_channel[c] += current_tx_duration;
+		// Measurements in the last part of the simulation
+		if (SimTime() > (simulation_time_komondor - last_measurements_window)) {
+			last_total_time_transmitting_per_channel[c] += current_tx_duration;
+			last_total_time_lost_per_channel[c] += current_tx_duration;
+		}
 	}
 
 	RestartNode(TRUE);
@@ -3876,7 +3943,9 @@ void Node :: DataTimeout(trigger_t &){
 		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
 
+	total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+
 
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
@@ -4139,6 +4208,9 @@ void Node :: UpdatePerformanceMeasurements(){
 		performance_report.data_packets_lost) * frame_length
 		* limited_num_packets_aggregated)) / (SimTime()-performance_report.timestamp);
 
+	// - Delay
+	performance_report.average_delay = performance_report.sum_delays / performance_report.num_delay_measurements;
+
 	// - Max RSSI received per WLAN
 	for (int i = 0 ; i < total_wlans_number; ++ i) {
 		performance_report.rssi_list[i] = max_received_power_in_ap_per_wlan[i];
@@ -4232,7 +4304,12 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 	// Set new configuration according to received instructions
 	current_primary_channel = new_configuration.selected_primary_channel;
-	current_pd = new_configuration.selected_pd;
+	if (spatial_reuse_enabled){
+		non_srg_obss_pd = new_configuration.selected_pd;
+	} else {
+		current_pd = new_configuration.selected_pd;
+	}
+
 	if(current_tx_power != new_configuration.selected_tx_power) flag_change_in_tx_power = TRUE;
 	current_tx_power = new_configuration.selected_tx_power;
 	current_max_bandwidth = new_configuration.selected_max_bandwidth;
@@ -4241,7 +4318,6 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 	GetMinAndMaxAllowedChannels(min_channel_allowed, max_channel_allowed,
 			current_primary_channel, current_max_bandwidth);
 
-	non_srg_obss_pd = new_configuration.non_srg_obss_pd;
 	// Re-compute MCS according to the new configuration
 	if (node_type == NODE_TYPE_AP) {
 		for(int n = 0; n < wlan.num_stas; ++n) {
@@ -4335,13 +4411,16 @@ void Node :: RestartNode(int called_by_time_out){
 
 	int ix_num_ch = (int)log2(current_right_channel - current_left_channel + 1);
 
-	total_time_transmitting_in_num_channels[ix_num_ch] +=
-			current_tx_duration;
-
+	total_time_transmitting_in_num_channels[ix_num_ch] += current_tx_duration;
 	performance_report.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
 		total_time_transmitting_per_channel[c] += current_tx_duration;
 		performance_report.total_time_transmitting_per_channel[c] += current_tx_duration;
+		// Measurements in the last part of the simulation
+		if (SimTime() > (simulation_time_komondor - last_measurements_window)) {
+			last_total_time_transmitting_per_channel[c] += current_tx_duration;
+		}
 	}
 
 	// Apply new configuration (if it is the case)
@@ -4646,7 +4725,11 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, std::strin
 void Node :: WriteNodeConfiguration(Logger node_logger, std::string header_str){
 	fprintf(node_logger.file, "%s Configuration %s info:\n", header_str.c_str(), node_code.c_str());
 	fprintf(node_logger.file, "%s - current_primary = %d\n", header_str.c_str(), current_primary_channel);
-	fprintf(node_logger.file, "%s - current_pd = %f (%f dBm)\n", header_str.c_str(), current_pd, ConvertPower(PW_TO_DBM,current_pd));
+	if(spatial_reuse_enabled) {
+		fprintf(node_logger.file, "%s - current_pd (OBSS/PD) = %f (%f dBm)\n", header_str.c_str(), non_srg_obss_pd, ConvertPower(PW_TO_DBM,non_srg_obss_pd));
+	} else {
+		fprintf(node_logger.file, "%s - current_pd = %f (%f dBm)\n", header_str.c_str(), current_pd, ConvertPower(PW_TO_DBM,current_pd));
+	}
 	fprintf(node_logger.file, "%s - current_tx_power = %f (%f dBm)\n", header_str.c_str(), current_tx_power, ConvertPower(PW_TO_DBM,current_tx_power));
 	fprintf(node_logger.file, "%s - current_max_bandwidth = %d\n", header_str.c_str(), current_max_bandwidth);
 }
@@ -4715,8 +4798,11 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 	}
 	throughput = ((double) data_frames_acked * frame_length) / SimTime();
 	for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
-		bandwidth_used_txing += (total_time_spectrum_per_channel[c]/SimTime()) * 20;
+		bandwidth_used_txing += (total_time_channel_busy_per_channel[c]/SimTime()) * 20;
 	}
+	last_throughput = ((double) last_data_frames_acked * frame_length) / last_measurements_window;
+	if (last_num_delay_measurements > 0) last_average_delay = last_sum_delays / (double) last_num_delay_measurements;
+
 //	int hidden_nodes_number = 0;
 //	for(int i = 0; i < total_nodes_number; ++i){
 //		if(hidden_nodes_list[i] == 1) hidden_nodes_number++;
@@ -4769,8 +4855,17 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Number of trials to transmit
 				printf("%s num_tx_init_tried = %d - num_tx_init_not_possible = %d (%f %% failed)\n",
 					LOG_LVL2, num_tx_init_tried, num_tx_init_not_possible, tx_init_failure_percentage);
+				// Total airtime vs successful airtime
+				double total_airtime(0);
+				double successful_airtime(0);
+				for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
+					total_airtime += total_time_transmitting_per_channel[c];
+					successful_airtime += total_time_transmitting_per_channel[c] - total_time_lost_per_channel[c];
+				}
+				printf("%s Airtime = %.2f s (%.2f %%) - Successful airtime = %.2f s (%.2f %%)\n",
+					LOG_LVL2, total_airtime, (total_airtime * 100 /SimTime()), successful_airtime, (successful_airtime * 100 /SimTime()));
 				// Time EFFECTIVELY transmitting in a given number of channels (no losses)
-				printf("%s Time EFFECTIVELY transmitting in N channels:", LOG_LVL3);
+				printf("%s Successful airtime in channels of width N:", LOG_LVL3);
 				for(int n = 0; n < num_channels_allowed; ++n){
 					printf("\n%s - %d: %f s (%.2f %%)",
 							LOG_LVL3, (int) pow(2,n),
@@ -4781,30 +4876,21 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				}
 				printf("\n");
 				// Time EFFECTIVELY transmitting in each of the channels (no losses)
-				printf("%s Time EFFECTIVELY transmitting in each channel:", LOG_LVL3);
+				printf("%s Total Airtime / Successful airtime per channel:", LOG_LVL3);
 				double time_effectively_txing;
 				for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 					time_effectively_txing = total_time_transmitting_per_channel[c] -
 						total_time_lost_per_channel[c];
-					printf("\n%s - %d = %.2f s (%.2f %%)",
-						LOG_LVL3, c, time_effectively_txing,
-						(time_effectively_txing * 100 /SimTime()));
+					printf("\n%s - %d: %.2f s (%.2f %%) / %.2f s (%.2f %%)",
+						LOG_LVL3, c, total_time_channel_busy_per_channel[c],
+						(total_time_channel_busy_per_channel[c] * 100 /SimTime()),
+						time_effectively_txing, time_effectively_txing * 100 /SimTime());
 				}
-				printf("\n");
-				// Spectrum utilization
-				printf("%s Time occupying the spectrum in each channel:", LOG_LVL3);
-				for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
-					printf("\n%s - %d = %.2f s (%.2f %%)",
-						LOG_LVL3, c, total_time_spectrum_per_channel[c],
-						(total_time_spectrum_per_channel[c] * 100 /SimTime()));
-				}
-				printf("\n%s - Average bandwidth used for transmitting = %.2f MHz / %d MHz (%.2f %%)\n",
-					LOG_LVL4,
+				printf("\n%s Average bandwidth used for transmitting = %.2f MHz / %d MHz (%.2f %%)\n",
+					LOG_LVL3,
 					bandwidth_used_txing,
 					num_channels_allowed * 20,
 					bandwidth_used_txing * 100 / (num_channels_allowed * 20));
-				printf("\n");
-
 //				// Time LOST transmitting in a given number of channels
 //				printf("%s Time LOST transmitting in N channels:", LOG_LVL3);
 //				for(int n = 0; n < num_channels_allowed; ++n){
@@ -4821,7 +4907,6 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 //						(total_time_lost_per_channel[c] * 100 / SimTime()));
 //				}
 //				printf("\n");
-
 				// Time tx trials in each number of channels
 				printf("%s Number of tx trials per number of channels:", LOG_LVL3);
 				for(int n = 0; n < NUM_CHANNELS_KOMONDOR; ++n){
@@ -4847,6 +4932,8 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 //				for(int i=0; i < total_nodes_number; ++i) {
 //					printf("%d ", potential_hidden_nodes[i]);
 //				}
+
+				// TODO: Print mean MCS used per STA
 
 				printf("%s times_went_to_nav = %d\n", LOG_LVL2, times_went_to_nav);
 				printf("%s time_in_nav = %f (%.2f %% of the total time)\n", LOG_LVL2,
@@ -4946,8 +5033,8 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					fprintf(node_logger.file,"%s Time occupying the spectrum in each channel:", LOG_LVL3);
 					for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 						fprintf(node_logger.file,"\n%s - %d = %.2f s (%.2f %%)",
-							LOG_LVL3, c, total_time_spectrum_per_channel[c],
-							(total_time_spectrum_per_channel[c] * 100 /SimTime()));
+							LOG_LVL3, c, total_time_channel_busy_per_channel[c],
+							(total_time_channel_busy_per_channel[c] * 100 /SimTime()));
 					}
 
 					fprintf(node_logger.file,"\n%s - Average bandwidth used for transmitting = %.2f MHz / %d MHz (%.2f %%)\n",
@@ -4984,6 +5071,7 @@ void Node :: SaveSimulationPerformance() {
 	if(node_id == 0) simulation_performance.sum_time_channel_idle = sum_time_channel_idle;
 
 	simulation_performance.num_stas = wlan.num_stas;
+	simulation_performance.last_measurements_window = last_measurements_window;
 
 	// Throughput
 	simulation_performance.throughput = throughput;
@@ -5018,7 +5106,7 @@ void Node :: SaveSimulationPerformance() {
 	simulation_performance.total_time_transmitting_in_num_channels = total_time_transmitting_in_num_channels;
 	simulation_performance.total_time_lost_per_channel = total_time_lost_per_channel;
 	simulation_performance.total_time_lost_in_num_channels = total_time_lost_in_num_channels;
-	simulation_performance.total_time_spectrum_per_channel = total_time_spectrum_per_channel;
+	simulation_performance.total_time_channel_busy_per_channel = total_time_channel_busy_per_channel;
 	simulation_performance.time_in_nav = time_in_nav;
 
 	// Per-STA statistics
@@ -5045,6 +5133,13 @@ void Node :: SaveSimulationPerformance() {
 	simulation_performance.prob_slotted_bo_collision = prob_slotted_bo_collision;
 
 	configuration.non_srg_obss_pd = non_srg_obss_pd;
+
+	// Last seen performance (end of the simulation)
+	simulation_performance.last_throughput = last_throughput;
+	simulation_performance.last_average_delay = last_average_delay;
+	simulation_performance.last_total_time_transmitting_per_channel = last_total_time_transmitting_per_channel;
+	simulation_performance.last_total_time_lost_per_channel = last_total_time_lost_per_channel;
+	simulation_performance.last_average_access_delay = last_sum_waiting_time/(double)last_num_average_waiting_time_measurements;
 
 }
 
@@ -5081,7 +5176,7 @@ void Node :: InitializeVariables() {
 
 	num_delay_measurements = 0;
 	sum_delays = 0;
-	average_delay = 0;
+	average_delay = -1;
 	num_packets_generated = 0;
 	num_packets_dropped = 0;
 
@@ -5107,22 +5202,25 @@ void Node :: InitializeVariables() {
 	channel_power = new double[NUM_CHANNELS_KOMONDOR];
 	num_channels_allowed = (max_channel_allowed - min_channel_allowed + 1);
 	total_time_transmitting_per_channel = new double[NUM_CHANNELS_KOMONDOR];
+	last_total_time_transmitting_per_channel = new double[NUM_CHANNELS_KOMONDOR];
 	channels_free = new int[NUM_CHANNELS_KOMONDOR];
 	channels_for_tx = new int[NUM_CHANNELS_KOMONDOR];
 	total_time_lost_per_channel = new double[NUM_CHANNELS_KOMONDOR];
-	total_time_spectrum_per_channel = new double[NUM_CHANNELS_KOMONDOR];
+	last_total_time_lost_per_channel = new double[NUM_CHANNELS_KOMONDOR];
+	total_time_channel_busy_per_channel = new double[NUM_CHANNELS_KOMONDOR];
 	timestampt_channel_becomes_free = new double[NUM_CHANNELS_KOMONDOR];
 	num_trials_tx_per_num_channels = new int[NUM_CHANNELS_KOMONDOR];
-
 	for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
 		channel_power[i] = 0;
 		total_time_transmitting_per_channel[i] = 0;
+		last_total_time_transmitting_per_channel[i] = 0;
 		channels_free[i] = FALSE;
 		channels_for_tx[i] = FALSE;
 		total_time_lost_per_channel[i] = 0;
+		last_total_time_lost_per_channel[i] = 0;
 		timestampt_channel_becomes_free[i] = 0;
 		num_trials_tx_per_num_channels[i] = 0;
-		total_time_spectrum_per_channel[i] = 0;
+		total_time_channel_busy_per_channel[i] = 0;
 	}
 
 	total_time_transmitting_in_num_channels = new double[NUM_CHANNELS_KOMONDOR];
@@ -5162,6 +5260,7 @@ void Node :: InitializeVariables() {
 	expected_backoff = 0;
 	remaining_backoff = 0;
 	num_new_backoff_computations = 0;
+	last_transmission_successful = 0;
 
 	data_packets_acked = 0;
 	data_frames_acked = 0;
@@ -5255,6 +5354,15 @@ void Node :: InitializeVariables() {
 	rts_cts_lost = 0;
 	num_tx_init_not_possible = 0;
 	num_tx_init_tried = 0;
+	last_throughput = 0;
+	last_average_delay = -1;
+	last_data_frames_acked = 0;
+	last_sum_delays = 0;
+	last_num_delay_measurements = 0;
+
+
+	// HARDCODED
+	last_measurements_window = 10;		// Time in seconds of the last performance observation window
 
 	throughput_per_sta = new double[wlan.num_stas];
 	data_packets_sent_per_sta = new int[wlan.num_stas];

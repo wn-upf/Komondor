@@ -98,14 +98,14 @@ class PreProcessor {
 		* @param "configuration" [type Configuration]: current configuration report from the AP
 		* @return "processed_configuration" [type int]: configuration to be introduced directly to the ML method
 		*/
-		int ProcessWlanConfiguration(int learning_mechanism, Configuration configuration) {
+		int ProcessWlanConfiguration(int learning_mechanism, Configuration configuration, bool received_from_ap) {
 			int processed_configuration(0);
 			// Update the current configuration according to the selected learning method
 			switch(learning_mechanism) {
 				/* Multi-Armed Bandits */
 				case MULTI_ARMED_BANDITS:{
 					// Convert the WLAN's configuration into an arm/action index value
-					processed_configuration = FindActionIndexFromConfigurationBandits(configuration, indexes_selected_arm);
+					processed_configuration = FindActionIndexFromConfigurationBandits(configuration, indexes_selected_arm, received_from_ap);
 					break;
 				}
 				/* Default */
@@ -289,7 +289,7 @@ class PreProcessor {
 			//new_configuration.timestamp = sim_time;						// Timestamp
 			new_configuration.selected_primary_channel = new_primary;	// Primary
 			if (configuration.spatial_reuse_enabled) {
-				new_configuration.non_srg_obss_pd = new_pd;
+				new_configuration.selected_pd = new_pd;
 			} else {
 				new_configuration.selected_pd = new_pd;
 			}
@@ -304,7 +304,7 @@ class PreProcessor {
 		* @param "indexes_selected_arm" [type int*]: array containing the index of each parameter chosen by the WLAN
 		* @return "action_ix" [type Configuration]: index of the action that corresponds to the input configuration
 		*/
-		int FindActionIndexFromConfigurationBandits(Configuration configuration, int* &indexes_selected_arm) {
+		int FindActionIndexFromConfigurationBandits(Configuration configuration, int* &indexes_selected_arm, bool received_from_ap) {
 
 		    // Find the index of each chosen parameter
 			int index_channel = -1;
@@ -320,11 +320,13 @@ class PreProcessor {
 			}
 			// Packet Detection (PD) threshold
 			double selected_pd;
-			if(configuration.spatial_reuse_enabled) {
+
+			if(received_from_ap && configuration.spatial_reuse_enabled) {
 				selected_pd = configuration.non_srg_obss_pd;
 			} else {
 				selected_pd = configuration.selected_pd;
 			}
+
 			for(int i = 0; i < num_arms_sensitivity; i++) {
 				if(selected_pd == list_of_pd_values[i]) {
 					index_pd = i;
@@ -350,7 +352,7 @@ class PreProcessor {
 			// Find the action ix and return it
 			int action_ix = values2index(indexes_selected_arm, num_arms_channel,
 				num_arms_sensitivity, num_arms_tx_power, num_arms_max_bandwidth);
-//			PrintActionBandits(action_ix);
+			//PrintActionBandits(action_ix);
 
 			return action_ix;
 		}
@@ -455,7 +457,7 @@ class PreProcessor {
 		 * @param "performance_to_write" [type Performance]: performance object to be written
 		 */
 		void WritePerformance(Logger &logger, double sim_time, char string_device[],
-				Performance performance, int type_of_reward) {
+				Performance performance, int type_of_reward, double reward) {
 
 			LOGS(TRUE, logger.file, "%.15f;%s;%s;%s Performance:\n", sim_time, string_device, LOG_C03, LOG_LVL2);
 			switch(type_of_reward) {
@@ -471,6 +473,15 @@ class PreProcessor {
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Average throughput = %.2f Mbps\n", sim_time, string_device,
 						LOG_C03, LOG_LVL3, performance.throughput * pow(10,-6));
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Average delay = %.4f s\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.average_delay);
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Maximum delay = %.4f s\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.max_delay);
+					LOGS(TRUE, logger.file,
+							"%.15f;%s;%s;%s Minimum delay = %.4f s\n", sim_time, string_device,
+							LOG_C03, LOG_LVL3, performance.min_delay);
 					break;
 				}
 				// Minimum RSSI
@@ -502,7 +513,8 @@ class PreProcessor {
 					break;
 				}
 			}
-
+			LOGS(TRUE, logger.file,
+				"%.15f;%s;%s;%s Associated reward = %f\n", sim_time, string_device, LOG_C03, LOG_LVL3, reward);
 		}
 
 		/***********************/

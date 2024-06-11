@@ -1443,9 +1443,9 @@ void GetTxChannelsByChannelBondingCCASame(int *channels_for_tx, int channel_bond
 }
 
 /*
- * UpdateTimestamptChannelFreeAgain: updates the timestamp at which channels became free again
+ * UpdateTimestampChannelFreeAgain: updates the timestamp at which channels became free again
  **/
-void UpdateTimestamptChannelFreeAgain(double *timestampt_channel_becomes_free, double **channel_power,
+void UpdateTimestampChannelFreeAgain(double *timestampt_channel_becomes_free, double **channel_power,
 		double current_pd, double sim_time) {
 
 	for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){

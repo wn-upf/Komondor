@@ -56,11 +56,13 @@ struct Performance
 	// Time of the last measurement
 	double timestamp;		        ///> Timestamp of the last measurement
 	double sum_time_channel_idle;	///> Sum time the channel has been idle
+	double last_measurements_window;
 
 	// Throughput statistics
 	double throughput;				///> Throughput
 	double throughput_loss;			///> Throughput lost
 	double max_bound_throughput;	///> Maximum bound throughput (if no one transmits)
+	double last_throughput;
 
 	// Frames statistics
 	int data_packets_acked;			///> Number of data packets acknowledged
@@ -77,9 +79,13 @@ struct Performance
 	int num_delay_measurements;		///> Number of delay measurements
 	double sum_delays;				///> Sum of the delays
 	double average_delay;			///> Average delay
+	double max_delay;				///> Maximum delay
+	double min_delay;				///> Minimum delay
 	double average_rho;				///> Average rho
 	double average_utilization;		///> Average utilization
 	double generation_drop_ratio;	///> Average drop ratio
+	double last_average_delay;
+	double last_average_access_delay;
 
 	// Environment statistics
 	double *max_received_power_in_ap_per_wlan;
@@ -98,8 +104,11 @@ struct Performance
 	double *total_time_transmitting_in_num_channels;	///> Total time transmitting per each channel width
 	double *total_time_lost_per_channel;				///> Total time lost in each channel (e.g. collisions)
 	double *total_time_lost_in_num_channels;			///> Total time lost per each channel width
-	double *total_time_spectrum_per_channel;			///>
+	double *total_time_channel_busy_per_channel;		///> Total time the channel is busy per each channel
 	double time_in_nav;									///> Time spent in NAV state
+	double *last_total_time_transmitting_per_channel;
+	double *last_total_time_lost_per_channel;
+
 
 	// Per-STA statistics
     int num_stas;                   ///> Number of STAs in the BSS
@@ -127,14 +136,14 @@ struct Performance
 		total_time_transmitting_in_num_channels = new double[total_channels_number];
 		total_time_lost_per_channel = new double[total_channels_number];
 		total_time_lost_in_num_channels = new double[total_channels_number];
-		total_time_spectrum_per_channel = new double[total_channels_number];
+		total_time_channel_busy_per_channel = new double[total_channels_number];
 		for(int i = 0; i < total_channels_number; ++i){
 			num_trials_tx_per_num_channels[i] = 0;
 			total_time_transmitting_per_channel[i] = 0;
 			total_time_transmitting_in_num_channels[i] = 0;
 			total_time_lost_per_channel[i] = 0;
 			total_time_lost_in_num_channels[i] = 0;
-			total_time_spectrum_per_channel[i] = 0;
+			total_time_channel_busy_per_channel[i] = 0;
 		}
 	}
 

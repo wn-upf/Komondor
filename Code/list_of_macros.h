@@ -400,19 +400,21 @@
 #define CC_MODE_ACTIVE		1
 
 // Types of commands that the CC can send to agents
-#define SEND_CONFIGURATION_PERFORMANCE 	0
-#define UPDATE_CONFIGURATION			1
-#define STOP_ACTING						2
-#define RESUME_ACTIVITY					3
-#define MODIFY_ITERATION_TIME			4
-#define BAN_CONFIGURATION				5
-#define UNBAN_CONFIGURATION				6
-#define COMMUNICATION_UPON_TRIGGER		7
-#define COMMUNICATION_AUTOMATIC			8
+#define REQUEST_CONFIGURATION_PERFORMANCE 	0
+#define UPDATE_REWARD						1
+#define UPDATE_CONFIGURATION				2
+#define STOP_ACTING							3
+#define RESUME_ACTIVITY						4
+#define MODIFY_ITERATION_TIME				5
+#define BAN_CONFIGURATION					6
+#define UNBAN_CONFIGURATION					7
+#define COMMUNICATION_UPON_TRIGGER			8
+#define COMMUNICATION_AUTOMATIC				9
 
 // Clustering approaches for grouping agents / BSSs
-#define CLUSTER_BY_CCA			0
-#define CLUSTER_BY_DISTANCE		1
+#define CLUSTER_ALL				0
+#define CLUSTER_BY_CCA			1
+#define CLUSTER_BY_DISTANCE		2
 
 // Shared performance metrics
 #define MAX_MIN_PERFORMANCE			0

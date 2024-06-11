@@ -98,7 +98,7 @@ component Agent : public TypeII{
 		// ... [Future feature]
 
 		// Actions management
-		void UpdateAction(int action_ix);
+		void UpdateActionInformation(int action_ix);
 
 		// Print methods
 		void PrintAgentInfo();
@@ -196,8 +196,9 @@ component Agent : public TypeII{
 		outport void outportSendConfigurationToAp(Configuration &new_configuration);
 		// INPORT & OUTPORT (centralized system only)
         inport void inline InportReceiveCommandFromController(int destination_agent_id,
-            int command_id, Configuration &new_configuration, int type_of_reward);
-		outport void outportAnswerToController(int agent_id, Configuration &configuration, Performance &performance, Action *actions);
+            int command_id, Configuration &new_configuration, double shared_performance, int type_of_reward);
+		outport void outportAnswerToController(int agent_id, Configuration &configuration,
+			Performance &performance, Action *actions, int processed_configuration);
 		// Triggers
 		Timer <trigger_t> trigger_request_information_to_ap;        // Timer for requesting information to the AP
 		inport inline void RequestInformationToAp(trigger_t& t1);   // Every time the timer expires execute this
@@ -284,44 +285,47 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	// Save the Configuration and Performance reports received from the AP
 	configuration = received_configuration;
 	performance = received_performance;
-    // Find the index of the current action
-	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration);
-    // Process the performance to obtain the corresponding reward
+
+	// Process the information received from the AP
+	// 1 - Find the index of the current action
+	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration, TRUE);
+	// 2 - Process the performance to obtain the corresponding reward
 	processed_reward = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
-    // Process the performance to obtain the corresponding reward according to the central controller
-    if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
+	// 3 - Process the performance to obtain the corresponding reward according to the central controller
+	if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
+
 
 	// Update the information of the current selected action
-	UpdateAction(processed_configuration);
+	UpdateActionInformation(processed_configuration);
 
-	// Update the agent's capabilities
-	configuration.agent_capabilities.num_arms = num_arms;
-	configuration.agent_capabilities.available_actions = list_of_available_actions;
-
-	// Write configuration & performance
+	// Write the action that is currently selected and its associated performance
 	if(save_agent_logs) {
-        char device_code[10];
-        sprintf(device_code, "A%d", agent_id);
+		char device_code[10];
+		sprintf(device_code, "A%d", agent_id);
 		actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
-		pre_processor.WritePerformance(agent_logger, SimTime(), device_code, performance, type_of_reward);
+		pre_processor.WritePerformance(agent_logger, SimTime(), device_code, performance, type_of_reward, processed_reward);
 	}
 
 	// Set flag "information available" to true
 	flag_information_available = true;
 
-	// Forward the received information to the controller (if necessary)
-	if (controller_on && (automatic_forward_enabled || flag_request_from_controller)) {
-        // Forward the information to the controller
+	// Forward the received information to the controller (if CC is enabled)
+	if (controller_on && automatic_forward_enabled) {
+        // Forward the information to the controller and wait for a response
 		ForwardInformationToController();
-		flag_request_from_controller = false;
+	} else {
+		if (learning_mechanism == MONITORING_ONLY) {
+			// Keep monitoring the performance of the AP
+			trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
+		} else {
+			// Compute a new configuration (if necessary)
+			ComputeNewConfiguration();
+		}
 	}
 
-	// Compute a new configuration (if necessary)
-	if (learning_mechanism == MONITORING_ONLY) {
-		trigger_request_information_to_ap.Set(FixTimeOffset(SimTime() + time_between_requests,13,12));
-	} else {
-		ComputeNewConfiguration();
-	}
+	// Update the agent's capabilities (IN CASE THE SET OF ACTIONS HAS CHANGED DUE TO ACTION BANNING)
+	configuration.agent_capabilities.num_arms = num_arms;
+	configuration.agent_capabilities.available_actions = list_of_available_actions;
 
 };
 
@@ -338,8 +342,8 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
 	// Print the configuration (action) to be sent
     char device_code[10];
     sprintf(device_code, "A%d", agent_id);
-    processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration_to_send);
-//	if(save_agent_logs) actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
+    processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration_to_send, FALSE);
+	if(save_agent_logs) actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
 
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
 	outportSendConfigurationToAp(configuration_to_send);
@@ -365,7 +369,7 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
  * @param "controller_mode" [type int]:
  */
 void Agent :: InportReceiveCommandFromController(int destination_agent_id, int command_id,
-		Configuration &received_configuration, int type_of_reward) {
+		Configuration &received_configuration, double shared_performance, int type_of_reward) {
 
 	if(controller_on && agent_id == destination_agent_id ) {
 
@@ -378,7 +382,7 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 
         switch(command_id) {
 			// Send the current configuration to the CC
-			case SEND_CONFIGURATION_PERFORMANCE:{
+			case REQUEST_CONFIGURATION_PERFORMANCE:{
 				LOGS(save_agent_logs,agent_logger.file,
 					"%.15f;A%d;%s;%s SENDING the current configuration and performance to the CC...\n",
 					SimTime(), agent_id, LOG_C00, LOG_LVL2);
@@ -390,6 +394,20 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 					trigger_request_information_to_ap.Set(FixTimeOffset(SimTime(),13,12));
 					flag_request_from_controller = true;
 				}
+				break;
+			}
+			// Update the reward information according to controller's information
+			case UPDATE_REWARD:{
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s UPDATING the reward (%f) for the current configuration...\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL2, shared_performance);
+				// Update the performance and reward
+				processed_reward = shared_performance;
+				LOGS(save_agent_logs,agent_logger.file,
+					"%.15f;A%d;%s;%s Updated reward = %f\n",
+					SimTime(), agent_id, LOG_C00, LOG_LVL3, processed_reward);
+				// Compute a new configuration
+				ComputeNewConfiguration();
 				break;
 			}
 			// Update the configuration to the one sent by the CC
@@ -484,7 +502,7 @@ void Agent :: ForwardInformationToController(){
 	}
 
 	// Send the current configuration (and performance) to the CC
-	outportAnswerToController(agent_id, configuration, performance, actions);
+	outportAnswerToController(agent_id, configuration, performance, actions, processed_configuration);
 
 	// Reset the CC statistics
 	ResetControllerStatistics();
@@ -583,7 +601,7 @@ void Agent :: ComputeNewConfiguration(){
  * Update the Action object for the corresponding played action
  * @param "action_ix" [type int]: index of the selected action/configuration
  */
-void Agent :: UpdateAction(int action_ix){
+void Agent :: UpdateActionInformation(int action_ix){
 	// Current information
 	actions[action_ix].performance_since_last_cc_request = performance;
 	actions[action_ix].instantaneous_reward = processed_reward;

@@ -164,7 +164,7 @@ file_basic_validation="./output/script_output_basic_scenarios.txt"
 ix=0
 while IFS= read line
 do
-        # Obtain the throughput of WLAN A in each scenario
+    # Obtain the throughput of WLAN A in each scenario
 	string1="$(cut -d';' -f2 <<<"$line")" 			# Get raw information separated by ";"
         string2="$(cut -d'{' -f2 <<<"$string1")" 	
         tpt_wlan_a="$(cut -d'}' -f1 <<<"$string2")" 	
@@ -207,12 +207,12 @@ echo "|    TEST CASE    | RESULT |"
 ix=0
 while IFS= read line
 do
-        # Obtain the throughput of each WLAN in each scenario
-        string_tpt="$(cut -d';' -f2 <<<"$line")"
-        string_tpt="$(cut -d'{' -f2 <<<"$string_tpt")"
-        string_tpt="$(cut -d'}' -f1 <<<"$string_tpt")"
+	# Obtain the throughput of each WLAN in each scenario
+	string_tpt="$(cut -d';' -f2 <<<"$line")"
+	string_tpt="$(cut -d'{' -f2 <<<"$string_tpt")"
+	string_tpt="$(cut -d'}' -f1 <<<"$string_tpt")"
 	tpt_wlan_a="$(cut -d',' -f1 <<<"$string_tpt")"
-        tpt_wlan_b="$(cut -d',' -f2 <<<"$string_tpt")"
+	tpt_wlan_b="$(cut -d',' -f2 <<<"$string_tpt")"
 	tpt_wlan_c="$(cut -d',' -f3 <<<"$string_tpt")"
 	# Compute lower and upper bounds, according to the actual results and the allowed error
 	lower_bound_1=$(echo "${values_complex_scenarios[$ix,0]} - $ALLOWED_ERROR_TPT" | bc)
@@ -251,12 +251,12 @@ echo "|    TEST CASE    | RESULT |"
 ix=0
 while IFS= read line
 do
-        # Obtain the throughput of each WLAN in each scenario
-        string_rssi="$(cut -d';' -f3 <<<"$line")"
-        string_rssi="$(cut -d'{' -f2 <<<"$string_rssi")"
-        string_rssi="$(cut -d'}' -f1 <<<"$string_rssi")"
+	# Obtain the throughput of each WLAN in each scenario
+	string_rssi="$(cut -d';' -f3 <<<"$line")"
+	string_rssi="$(cut -d'{' -f2 <<<"$string_rssi")"
+	string_rssi="$(cut -d'}' -f1 <<<"$string_rssi")"
 	rssi_wlan_a="$(cut -d',' -f1 <<<"$string_rssi")"
-        # Compute lower and upper bounds, according to the actual results and the allowed error
+	# Compute lower and upper bounds, according to the actual results and the allowed error
 	lower_bound=$(echo "${values_channel_bonding_scenarios[ix]} - $ALLOWED_ERROR_RSSI" | bc)
 	upper_bound=$(echo "${values_channel_bonding_scenarios[ix]} + $ALLOWED_ERROR_RSSI" | bc)
 	# Assess whether the lower and upper bounds are accomplished

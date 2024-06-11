@@ -101,7 +101,7 @@ component CentralController : public TypeII{
 		void UpdatePerformancePerCluster(int shared_performance_metric);
 
 		// Methods for updating statistics
-		void UpdateControllerReport(int agent_id, Action *actions);
+		void UpdateControllerReport(int agent_id, Action *actions, int current_action_id);
 
 		// Print/write methods
 		void PrintControllerInfo();
@@ -169,11 +169,11 @@ component CentralController : public TypeII{
 
 		// INPORT connections for receiving notifications
 		inport void inline InportReceivingInformationFromAgent(int agent_id, Configuration &configuration,
-			Performance &performance, Action *actions);
+			Performance &performance, Action *actions, int processed_configuration);
 
 		// OUTPORT connections for sending notifications
 		outport void outportSendCommandToAgent(int destination_agent_id, int command_id,
-			Configuration &new_configuration, int type_of_reward);
+			Configuration &new_configuration, double shared_performance, int type_of_reward);
 
 		// Timers
 		Timer <trigger_t> trigger_apply_ml_method;					// Timer for applying the ML method
@@ -221,7 +221,7 @@ void CentralController :: Start(){
 		InitializeMlPipeline();
 
 		// Hardcoded [TODO: introduce this parameter to the input]
-		controller_mode = CC_MODE_ACTIVE; // CC_MODE_ACTIVE, CC_MODE_PASSIVE
+		controller_mode = CC_MODE_PASSIVE; // CC_MODE_ACTIVE, CC_MODE_PASSIVE
 
 		// Start CC's activity
 		StartCcActivity();
@@ -240,9 +240,11 @@ void CentralController :: Stop() {
 	if (controller_on) {
 		LOGS(save_controller_logs,central_controller_logger.file,
 			"%.15f;CC;%s;%s Central Controller Stop()\n", SimTime(), LOG_C00, LOG_LVL1);
-		// Print and write node statistics
-		PrintOrWriteControllerStatistics(PRINT_LOG);
-		PrintOrWriteControllerStatistics(WRITE_LOG);
+		if (controller_mode == CC_MODE_ACTIVE) {
+			// Print and write node statistics
+			PrintOrWriteControllerStatistics(PRINT_LOG);
+			PrintOrWriteControllerStatistics(WRITE_LOG);
+		}
 		// Close node logs file
 		if(save_controller_logs) fclose(central_controller_logger.file);
 	}
@@ -278,36 +280,46 @@ void CentralController :: StartCcActivity() {
  * Updates the average performance obtained by every associated agent
  */
 //void CentralController :: UpdateAgentAveragePerformance(int agent_id, Action *actions) {
-void CentralController :: UpdateControllerReport(int agent_id, Action *actions) {
+void CentralController :: UpdateControllerReport(int agent_id, Action *actions, int current_action_id) {
 
-	// Update the average performance achieved by each agent
-    double cumulative_performance_per_action(0);
-    double visited_actions(0);
-    int times_action_played(0);
+	// ACTIVE MODE: Update the performance metrics for the corresponding agent
+	if (controller_mode == CC_MODE_ACTIVE) {
 
-    controller_report.num_arms_per_agent = num_arms_per_agent;
-    controller_report.cc_iteration = cc_iteration;
+		// Update the average performance achieved by the agent
+		double cumulative_performance_per_action(0);
+		double visited_actions(0);
+		int times_action_played(0);
 
-    for (int i = 0; i < max_number_of_actions; ++i) {
-    	controller_report.times_action_played_per_agent[agent_id][i] = actions[i].times_played_since_last_cc_request;
-        if (num_arms_per_agent[agent_id] >= i) {
-        	controller_report.performance_action_per_agent[agent_id][i] = actions[i].average_reward_since_last_cc_request;
-            cumulative_performance_per_action +=
-            	actions[i].average_reward_since_last_cc_request *
-                actions[i].times_played_since_last_cc_request;
-            visited_actions += actions[i].times_played_since_last_cc_request;
-            // Update the most played action per agent
-            if (actions[i].times_played_since_last_cc_request > times_action_played) {
-                times_action_played = actions[i].times_played_since_last_cc_request;
-                controller_report.most_played_action_per_agent[agent_id] = i;
-            }
-        }
-    }
-    if (visited_actions > 0) {
-    	controller_report.average_performance_per_agent[agent_id] = cumulative_performance_per_action / visited_actions;
-    } else {
-    	controller_report.average_performance_per_agent[agent_id] = 0;
-    }
+		controller_report.num_arms_per_agent = num_arms_per_agent;
+		controller_report.cc_iteration = cc_iteration;
+
+		for (int i = 0; i < max_number_of_actions; ++i) {
+			controller_report.times_action_played_per_agent[agent_id][i] = actions[i].times_played_since_last_cc_request;
+			if (num_arms_per_agent[agent_id] >= i) {
+				controller_report.performance_action_per_agent[agent_id][i] = actions[i].average_reward_since_last_cc_request;
+				cumulative_performance_per_action +=
+					actions[i].average_reward_since_last_cc_request *
+					actions[i].times_played_since_last_cc_request;
+				visited_actions += actions[i].times_played_since_last_cc_request;
+				// Update the most played action per agent
+				if (actions[i].times_played_since_last_cc_request > times_action_played) {
+					times_action_played = actions[i].times_played_since_last_cc_request;
+					controller_report.most_played_action_per_agent[agent_id] = i;
+				}
+			}
+		}
+		if (visited_actions > 0) {
+			controller_report.average_performance_per_agent[agent_id] = cumulative_performance_per_action / visited_actions;
+		} else {
+			controller_report.average_performance_per_agent[agent_id] = 0;
+		}
+
+	// PASSIVE MODE: Just get the last performance from the agent
+	} else if (controller_mode == CC_MODE_PASSIVE) {
+
+		controller_report.performance_per_agent[agent_id] = actions[current_action_id].instantaneous_reward;
+
+	}
 
 }
 
@@ -322,7 +334,7 @@ void CentralController :: UpdateControllerReport(int agent_id, Action *actions) 
  */
 void CentralController :: RequestInformationToAgents(trigger_t &){
 	// Request information to every agent associated to the CC
-	SendCommandToAllAgents(SEND_CONFIGURATION_PERFORMANCE, configuration_array);
+	SendCommandToAllAgents(REQUEST_CONFIGURATION_PERFORMANCE, configuration_array);
 };
 
 /**
@@ -352,10 +364,16 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
 	// According to the defined mode, behave in one way or another
 	switch(command_id) {
 
-		case SEND_CONFIGURATION_PERFORMANCE:{
+		case REQUEST_CONFIGURATION_PERFORMANCE:{
 			LOGS(save_controller_logs,central_controller_logger.file,
 				"%.15f;CC;%s;%s Requesting Agent %d to send the current conf. and performance\n",
 				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
+			break;
+		}
+		case UPDATE_REWARD:{
+			LOGS(save_controller_logs,central_controller_logger.file,
+				"%.15f;CC;%s;%s Requesting Agent %d to update its current reward to %f\n",
+				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id, controller_report.cluster_performance[destination_agent_id]);
 			break;
 		}
 		case UPDATE_CONFIGURATION:{
@@ -406,14 +424,13 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
 				SimTime(), LOG_C00, LOG_LVL2, destination_agent_id);
 			break;
 		}
-		// Unknown command id
-		default: {
+		default: { // Unknown command id
 			printf("[CC] ERROR: Undefined command id %d\n", command_id);
 			exit(-1);
 		}
 	}
 
-	outportSendCommandToAgent(destination_agent_id, command_id, conf, type_of_reward);
+	outportSendCommandToAgent(destination_agent_id, command_id, conf, controller_report.cluster_performance[destination_agent_id], type_of_reward);
 
 };
 
@@ -424,7 +441,7 @@ void CentralController :: SendCommandToSingleAgent(int destination_agent_id, int
  * @param "agent_id" [type int]: identifier of the agent
  */
 void CentralController :: InportReceivingInformationFromAgent(int agent_id,
-        Configuration &received_configuration, Performance &received_performance, Action *actions) {
+        Configuration &received_configuration, Performance &received_performance, Action *actions, int current_action_id) {
 
 	LOGS(save_controller_logs,central_controller_logger.file,
 		"%.15f;CC;%s;%s InportReceivingInformationFromAgent()\n", SimTime(), LOG_F00, LOG_LVL1);
@@ -439,36 +456,49 @@ void CentralController :: InportReceivingInformationFromAgent(int agent_id,
 	performance_array[agent_id] = received_performance;
 
 	// Update the average performance statistics for the agent that sent information
-	UpdateControllerReport(agent_id, actions);
+	UpdateControllerReport(agent_id, actions, current_action_id);
 
 	// Print and/or write the configuration and the performance report
 	if(save_controller_logs) {
 	    WriteAgentPerformance(actions, agent_id);
 	}
 
-	// According to the defined mode, behave in one way or another
-	switch(controller_mode) {
-		// Passive mode: the agents send information to the CC, which only observes (monitoring mode)
-		case CC_MODE_PASSIVE: {
-			break;
+	if (counter_responses_received == agents_number) {
+		LOGS(save_controller_logs,central_controller_logger.file,
+			"%.15f;CC;%s;%s The information from all the agents has been collected!\n", SimTime(), LOG_C01, LOG_LVL2);
+		// Create-update clusters, which can be used by the ML method
+		for (int agent_ix = 0; agent_ix < agents_number; ++agent_ix) {
+			GenerateClusters(agent_ix, performance_array[agent_id], configuration_array[agent_id]);
 		}
-		// Active mode: the CC requests information to agents
-		case CC_MODE_ACTIVE: {
-			// Create-update clusters, which can be used by the ML method
-			GenerateClusters(agent_id, performance_array[agent_id], configuration_array[agent_id]);
-			// Once all the information is available, compute a new configuration according to the updated rewards
-			if (counter_responses_received == agents_number) {
-				trigger_apply_ml_method.Set(FixTimeOffset(SimTime(), 13, 12));
-				counter_responses_received = 0;
+		PrintOrWriteClusters(WRITE_LOG);
+	    // According to the defined mode, behave in one way or another
+		switch(controller_mode) {
+			// Passive mode: the agents send information to the CC, which only observes (monitoring mode)
+			case CC_MODE_PASSIVE: {
+				LOGS(save_controller_logs,central_controller_logger.file,
+					"%.15f;CC;%s;%s Updating the performance of the agents\n", SimTime(), LOG_C01, LOG_LVL3);
+				// Update the shared performance per cluster
+				UpdatePerformancePerCluster(MAX_MIN_PERFORMANCE);
+				// Send the shared performance to the agents
+				SendCommandToAllAgents(UPDATE_REWARD, configuration_array);
+				break;
 			}
-			break;
+			// Active mode: the CC requests information to agents
+			case CC_MODE_ACTIVE: {
+				LOGS(save_controller_logs,central_controller_logger.file,
+					"%.15f;CC;%s;%s Updating the configuration of the agents\n", SimTime(), LOG_C01, LOG_LVL3);
+				// Once all the information is available, compute a new configuration according to the updated rewards
+				trigger_apply_ml_method.Set(FixTimeOffset(SimTime(), 13, 12));
+				break;
+			}
+			// Unknown controller mode
+			default:{
+				printf("[CC] ERROR: Undefined controller mode %d\n"
+					"	- Use CC_MODE_PASSIVE (%d) or CC_MODE_ACTIVE (%d)\n",
+					controller_mode, CC_MODE_PASSIVE, CC_MODE_ACTIVE);
+			}
 		}
-		// Unknown controller mode
-		default:{
-			printf("[CC] ERROR: Undefined controller mode %d\n"
-				"	- Use CC_MODE_PASSIVE (%d) or CC_MODE_ACTIVE (%d)\n",
-				controller_mode, CC_MODE_PASSIVE, CC_MODE_ACTIVE);
-		}
+		counter_responses_received = 0;
 	}
 
 };
@@ -528,9 +558,18 @@ void CentralController :: ApplyMlMethod(trigger_t &){
  */
 void CentralController :: GenerateClusters(int wlan_id, Performance performance, Configuration configuration){
 
-	int clustering_approach(CLUSTER_BY_CCA); // TODO: read this parameter from the input file (now it is hardcoded)
+	int clustering_approach(CLUSTER_ALL); // TODO: read this parameter from the input file (now it is hardcoded)
 
 	switch(clustering_approach) {
+		// Physical distance
+		case CLUSTER_ALL :{
+			for (int j = 0; j < wlans_number; ++j) {
+				if (wlan_id != j) {
+					controller_report.clusters_per_wlan[wlan_id][j] = 1;
+				}
+			}
+			break;
+		}
 		// CCA + Margin
 		case CLUSTER_BY_CCA :{
 			double margin_db(5);	// TODO: read this margin from the input file (now it is hardcoded)
@@ -554,8 +593,6 @@ void CentralController :: GenerateClusters(int wlan_id, Performance performance,
 		}
 	}
 
-	PrintOrWriteClusters(WRITE_LOG);
-
 }
 
 /**
@@ -565,37 +602,42 @@ void CentralController :: GenerateClusters(int wlan_id, Performance performance,
 void CentralController :: UpdatePerformancePerCluster(int shared_performance_metric) {
 
 	switch(shared_performance_metric) {
+
 		// Max-min performance
 		case MAX_MIN_PERFORMANCE:{
-			double min_performance;
-			int applicable(0);
+			//int applicable(0);
 			for(int i = 0; i < agents_number; ++i) {
-				min_performance = 1;
+				double min_performance(1);
 				for(int j = 0; j < agents_number; ++j) {
-					if (controller_report.clusters_per_wlan[i][j] && controller_report.average_performance_per_agent[j] > 0) {
-						applicable = 1;
-						if (controller_report.average_performance_per_agent[j] < min_performance)
-							min_performance = controller_report.average_performance_per_agent[j];
+					//if (controller_report.clusters_per_wlan[i][j] && controller_report.performance_per_agent[j] > 0) {
+					if (controller_report.clusters_per_wlan[i][j]) {
+						//applicable = 1;
+						if (controller_report.performance_per_agent[j] < min_performance)
+							min_performance = controller_report.performance_per_agent[j];
+							//min_performance = controller_report.average_performance_per_agent[j];
 					}
 				}
-				if(applicable) controller_report.cluster_performance[i] = min_performance;
-				else controller_report.cluster_performance[i] = -1;
+				controller_report.cluster_performance[i] = min_performance;
+				//if(applicable) controller_report.cluster_performance[i] = min_performance;
+				//else controller_report.cluster_performance[i] = -1;
 			}
 			break;
 		}
+
 		// Geometric sum
 		case PROP_FAIRNESS_PERFORMANCE:{
 			double cumulative_log_performance(1);	// TODO: rework this part in order to consider absolute performance values (throughput, delay, etc.)
 			for(int i = 0; i < agents_number; ++i) {
 				for(int j = 0; j < agents_number; ++j) {
 					if (controller_report.clusters_per_wlan[i][j]) {
-						cumulative_log_performance += log(controller_report.average_performance_per_agent[j]);
+						cumulative_log_performance += log(controller_report.performance_per_agent[j]);
 					}
 				}
 				controller_report.cluster_performance[i] = cumulative_log_performance;
 			}
 			break;
 		}
+
 		// Average
 		case AVERAGE_PERFORMANCE:{
 			double cumulative_performance(0);
@@ -603,7 +645,7 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 			for(int i = 0; i < agents_number; ++i) {
 				for(int j = 0; j < agents_number; ++j) {
 					if (controller_report.clusters_per_wlan[i][j]) {
-						cumulative_performance += controller_report.average_performance_per_agent[j];
+						cumulative_performance += controller_report.performance_per_agent[j];
 						++ num_agents_involved;
 					}
 				}
@@ -611,7 +653,8 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 			}
 			break;
 		}
-		// Default
+
+		// Unknown
 		default :{
 			printf("Unknown performance metric\n");
 			break;
@@ -639,10 +682,10 @@ void CentralController :: PrintOrWriteClusters(int print_or_write){
 		}
 		case WRITE_LOG:{
 			LOGS(save_controller_logs, central_controller_logger.file,
-				"%.15f;CC;%s;%s Already identified clusters:\n", SimTime(), LOG_C00, LOG_LVL1);
+				"%.15f;CC;%s;%s Already identified clusters:\n", SimTime(), LOG_C00, LOG_LVL3);
 			for (int i = 0; i < wlans_number; ++i) {
 				LOGS(save_controller_logs, central_controller_logger.file,
-					"%.15f;CC;%s;%s Agent %d:" , SimTime(), LOG_C00, LOG_LVL2, i);
+					"%.15f;CC;%s;%s Agent %d:" , SimTime(), LOG_C00, LOG_LVL4, i);
 				for (int j = 0; j < wlans_number; ++j) {
 					LOGS(save_controller_logs, central_controller_logger.file,
 						" %d ", controller_report.clusters_per_wlan[i][j]);

@@ -64,6 +64,11 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 	current_performance->timestamp = sim_time;
 	current_performance->throughput = 0;
 	current_performance->max_bound_throughput = 0;
+	current_performance->sum_delays = 0;
+	current_performance->num_delay_measurements = 0;
+	current_performance->average_delay = 0;
+	current_performance->max_delay = 0;
+	current_performance->min_delay = 10000;
 	current_performance->data_packets_sent = 0;
 	current_performance->data_packets_lost = 0;
 	current_performance->rts_cts_sent = 0;

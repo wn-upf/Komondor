@@ -67,7 +67,8 @@ void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
 
 	for ( int ch_num_ix = 0; ch_num_ix < 4; ++ ch_num_ix ){	// For 1, 2, 4 and 8 channels
 
-		if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_FORBIDDEN; }
+		//if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_FORBIDDEN; }
+		if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_BPSK_1_2; }
 		else if (pw_rx_intereset_dbm >= -82 + (ch_num_ix*3) && pw_rx_intereset_dbm < -79 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_BPSK_1_2;}
 		else if (pw_rx_intereset_dbm >= -79 + (ch_num_ix*3) && pw_rx_intereset_dbm < -77 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_1_2;}
 		else if (pw_rx_intereset_dbm >= -77 + (ch_num_ix*3) && pw_rx_intereset_dbm < -74 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_3_4;}

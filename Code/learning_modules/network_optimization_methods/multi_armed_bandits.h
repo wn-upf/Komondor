@@ -69,7 +69,7 @@ class MultiArmedBandit {
 		int action_selection_strategy;		///> Index of the chosen action-selection strategy
 
 		// Generic variables to all the learning strategies
-		int initial_reward;		///> Initial reward
+		double initial_reward;		///> Initial reward
 		int num_iterations;		///> Total number of iterations allowed
 
 		// Arms statistics
@@ -136,6 +136,7 @@ class MultiArmedBandit {
 					epsilon = initial_epsilon / sqrt( (double) num_iterations);
 					// Pick an action according to e-greedy
                     arm_ix = PickArmEgreedy(num_arms, average_reward_per_arm, epsilon, available_arms);
+                    //printf("Action selected = %d\n", arm_ix);
 					break;
 				}
 				/*
@@ -182,7 +183,7 @@ class MultiArmedBandit {
 		 */
 		int PickArmEgreedy(int num_arms, double *reward_per_arm, double epsilon, int *available_arms) {
 
-			double rand_number = ((double) rand() / (RAND_MAX));
+			double rand_number = ((double) rand() / (double)RAND_MAX);
 			int action_ix;
 
 			if (rand_number < epsilon) { //EXPLORE
@@ -192,16 +193,17 @@ class MultiArmedBandit {
 					action_ix = rand() % num_arms;
 					if(counter > 1000) break; // To avoid getting stuck (none of the actions is available)
 				}
-//				printf("EXPLORE: Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
+				//printf("EXPLORE: Selected action %d (available = %d), reward = %f\n", action_ix, available_arms[action_ix], reward_per_arm[action_ix]);
 			} else { //EXPLOIT
 				double max = 0;
 				for (int i = 0; i < num_arms; i ++) {
+					//printf("   - reward_per_arm[%d] = %f\n", i, reward_per_arm[i]);
 					if(available_arms[i] && reward_per_arm[i] >= max) {
 						max = reward_per_arm[i];
 						action_ix = i;
 					}
 				}
-//				printf("EXPLOIT: Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
+				//printf("EXPLOIT: Selected action %d (available = %d), reward = %f\n", action_ix, available_arms[action_ix], reward_per_arm[action_ix]);
 			}
 
 			return action_ix;
@@ -220,8 +222,8 @@ class MultiArmedBandit {
 			double X;
 			if(phase == 0) {
 				do {
-					double U1 = (double)rand() /  RAND_MAX;
-					double U2 = (double)rand() /  RAND_MAX;
+					double U1 = (double)rand() /  (double)RAND_MAX;
+					double U2 = (double)rand() /  (double)RAND_MAX;
 					V1 = 2*U1 - 1;
 					V2 = 2*U2 - 1;
 					S = V1 * V1 + V2 * V2;
@@ -381,7 +383,7 @@ class MultiArmedBandit {
 			// TODO: generate file that stores algorithm-specific variables
 			initial_epsilon = 1;
 			epsilon = initial_epsilon;
-			initial_reward = 0;
+			initial_reward = (double) 1/num_arms;
 			num_iterations = 1;
 			// Initialize the rewards assigned to each arm
 			reward_per_arm = new double[num_arms];

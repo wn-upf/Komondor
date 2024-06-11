@@ -179,7 +179,7 @@ public class random_scenarios {
 
         for (int w = 0; w < num_wlans; w++) {
 
-            System.out.println("Setting WLAN " + w + "/" + num_wlans + 1);
+            System.out.println("Setting WLAN " + (w+1) + "/" + (num_wlans + 1));
 
             wlan_id = wlan_counter;
             wlan_code = DICTIONARY[wlan_counter];
@@ -432,7 +432,7 @@ public class random_scenarios {
         Random r = new Random();
         
         int num_wlans = 10;
-        int num_scenarios = 50;
+        int num_scenarios = 5;
         double x = 0;
         double y = 0;
         double z = 0;
@@ -514,7 +514,7 @@ public class random_scenarios {
             }
 
             // GENERATE EACH .CSV FILE
-            for (int out_ix = 1; out_ix <= num_outputs; out_ix++) {
+            //for (int out_ix = 1; out_ix <= num_outputs; out_ix++) {
                 for (int f = 0; f < non_srg_obss_pd_list.length; f++) {  
                     generate_wlans(non_srg_obss_pd_list[f], aps_position_list, stas_position_list);
                     output_path = "./output/input_nodes_" + type_of_scenario + "_sce" + n + 
@@ -522,7 +522,7 @@ public class random_scenarios {
                     System.out.println("output_path: " + output_path);
                     generate_file(output_path);  
                 }
-            }
+            //}
         
         }
         

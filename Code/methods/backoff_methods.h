@@ -166,9 +166,9 @@ int HandleBackoff(int pause_or_resume, double **channel_power, int primary_chann
 		}
 
 		case RESUME_TIMER:{
-			if(packets_in_buffer > 0) {
-				if((*channel_power)[primary_channel] <= pd) backoff_action =  TRUE;
-			}
+			//if(packets_in_buffer > 0) {
+			if((*channel_power)[primary_channel] <= pd) backoff_action =  TRUE;
+			//}
 			break;
 		}
 
