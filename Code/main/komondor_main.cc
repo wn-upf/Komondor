@@ -139,7 +139,6 @@ component Komondor : public CostSimEng {
 		int adjacent_channel_model;		///> Co-channel interference model
 		int collisions_model;			///> Collisions model
 		double constant_per;			///> Constant PER for successful transmissions
-		int backoff_type;				///> Type of Backoff (0: Slotted 1: Continuous)
 		int capture_effect_model;		///> Capture Effect model (default or IEEE 802.11-based)
 		int simulation_index;			///> Simulation index for selecting the type of output in scripts
 
@@ -505,15 +504,12 @@ void Komondor :: SetupEnvironmentByReadingConfigFile() {
 			// Collisions model
 			collisions_model = atoi(ptr);
 		} else if (ix_param == 3) {
-			// Backoff model
-			backoff_type = atoi(ptr);
-		} else if (ix_param == 4) {
 			// PDF backoff model
 			pdf_backoff = atoi(ptr);
-		} else if (ix_param == 5) {
+		} else if (ix_param == 4) {
 			// PDF tx time model
 			pdf_tx_time = atoi(ptr);
-		} else if (ix_param == 6) {
+		} else if (ix_param == 5) {
 			// Simulation index (script's output)
 			simulation_index = atoi(ptr);
 		}
@@ -679,12 +675,18 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				// PIFS activated
 				tmp_nodes = strdup(line_nodes);
 				node_container[node_ix].pifs_activated = atoi(GetField(tmp_nodes, IX_PIFS_ACTIVATED));
+				// BACKOFF TYPE
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].backoff_type = atoi(GetField(tmp_nodes, IX_BACKOFF_TYPE));
 				// CW adaptation activated
 				tmp_nodes = strdup(line_nodes);
 				node_container[node_ix].cw_adaptation = atoi(GetField(tmp_nodes, IX_CW_ADAPTATION_FLAG));
-				// CW min
+				// CW min default
 				tmp_nodes = strdup(line_nodes);
-				node_container[node_ix].cw_min = atoi(GetField(tmp_nodes, IX_CW_MIN));
+				node_container[node_ix].cw_min_default = atoi(GetField(tmp_nodes, IX_CW_MIN_DEFAULT));
+				// CW max default
+				tmp_nodes = strdup(line_nodes);
+				node_container[node_ix].cw_max_default = atoi(GetField(tmp_nodes, IX_CW_MAX_DEFAULT));
 				// CW max stage
 				tmp_nodes = strdup(line_nodes);
 				node_container[node_ix].cw_stage_max = atoi(GetField(tmp_nodes, IX_CW_STAGE_MAX));
@@ -712,7 +714,6 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 				node_container[node_ix].pdf_backoff = pdf_backoff;
 				node_container[node_ix].path_loss_model = path_loss_model;
 				node_container[node_ix].pdf_tx_time = pdf_tx_time;
-				node_container[node_ix].backoff_type = backoff_type;
 				node_container[node_ix].simulation_code = simulation_code;
 				// SPATIAL REUSE
 				if (bss_color_char != NULL) { // Check if the input file is compliant with SR
@@ -1106,7 +1107,6 @@ void Komondor :: PrintSystemInfo(){
 		printf("%s total_nodes_number = %d\n", LOG_LVL3, total_nodes_number);
 		printf("%s pdf_backoff = %d\n", LOG_LVL3, pdf_backoff);
 		printf("%s pdf_tx_time = %d\n", LOG_LVL3, pdf_tx_time);
-		printf("%s backoff_type = %d\n", LOG_LVL3, backoff_type);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 		printf("%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
 		printf("%s collisions_model = %d\n", LOG_LVL3, collisions_model);

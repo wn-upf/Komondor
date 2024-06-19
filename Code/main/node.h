@@ -189,9 +189,6 @@ component Node : public TypeII{
 		int current_modulation;				///> Current_modulation used by nodes
 		int channel_max_intereference;		///> Channel of interest suffering maximum interference
 		double central_frequency;			///> Central frequency (Hz)
-		int cw_min;							///> Backoff minimum Contention Window
-		int cw_stage_max;					///> Backoff maximum Contention Window
-		int pdf_backoff;					///> Probability distribution type of the backoff (0: exponential, 1: deterministic)
 		int path_loss_model;				///> Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 
 		// Data rate - modulations
@@ -204,8 +201,14 @@ component Node : public TypeII{
 		int frame_length;					///> Notification length [bits]
 		int max_num_packets_aggregated;		///> Number of packets aggregated in one transmission
 		int traffic_model;					///> Traffic model (0: full buffer, 1: poisson, 2: deterministic)
+
+		// Channel access parameters
+		int pdf_backoff;					///> Probability distribution type of the backoff (0: exponential, 1: deterministic)
 		int backoff_type;					///> Type of Backoff (0: Slotted 1: Continuous)
 		int cw_adaptation;					///> CW adaptation (0: constant, 1: bineary exponential backoff)
+		int cw_min_default;					///> Minimum Contention Window set by default
+		int cw_max_default;					///> Maximum Contention Window set by default
+		int cw_stage_max;					///> Backoff maximum Contention Window
 
 		double *distances_array;					///> Distance with respect to other nodes
 		double *received_power_array;				///> Power received from the other nodes
@@ -340,12 +343,16 @@ component Node : public TypeII{
 		Notification outrange_nav_notification; ///> NAV notification sent in a different primary channel. Store it for detecting BO collisions when using CB.
 		TxInfo current_tx_info;					///> Object to store the current transmission information
 
+		// Traffic
+		int current_traffic_type;	///> Current type of traffic
+
 		int default_modulation;		///> Default MCS identifier
 		double bits_ofdm_sym;		///> Number of bits per OFDM symbol in the data packet according to MCS [bits]
 
 		// Contention Window (CW) management
-		int cw_current;				///> Contention Window being used currently
-		int cw_stage_current;		///> Current CW stage
+		int cw_stage_current;	///> Current Contention Window stage
+		int current_cw_min;		///> Minimum Contention Window being used currently
+		int current_cw_max;		///> Maximum Contention Window being used currently
 
 		// Deterministic (token-based) backoff management
 		int *list_token_colors;
@@ -2365,9 +2372,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
                         // Reset the flag that indicates whether the tx power changed or not
                         flag_change_in_tx_power = FALSE;
 
-						if(backoff_type == BACKOFF_SLOTTED){
-							ack_notification.tx_info.preoccupancy_duration = time_rand_value;
-						}
+                        // Set the preoccupancy duration for the ACK
+						ack_notification.tx_info.preoccupancy_duration = time_rand_value;
 
 //						current_tx_info = GenerateTxInfo(notification.tx_info.num_packets_aggregated, data_duration,
 //								ack_duration,
@@ -2488,17 +2494,18 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							"%.15f;N%d;S%d;%s;%s Handling contention window\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 						LOGS(save_node_logs,node_logger.file,
-									"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
+									"%.15f;N%d;S%d;%s;%s From CW = [%d-%d], b = %d, m = %d\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-							cw_current, cw_stage_current, cw_stage_max);
-						// Sergio on 20/09/2017:
+							current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 						// - Transmission succeeded ---> reset CW if binary exponential backoff is implemented
 						HandleContentionWindow(
-								cw_adaptation, RESET_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
+							cw_adaptation, RESET_CW, &current_cw_min, &current_cw_max, &cw_stage_current, cw_min_default,
+							cw_max_default, cw_stage_max, current_traffic_type, backoff_type);
+
 						LOGS(save_node_logs,node_logger.file,
-							"%.15f;N%d;S%d;%s;%s To CW = %d, b = %d, m = %d\n",
+							"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-							cw_current, cw_stage_current, cw_stage_max);
+							current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 						// Restart node (implicitly to STATE_SENSING)
 
 
@@ -2660,9 +2667,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 							// Workaround to solve the e->clock timer issue
 							// (occurs when being in NAV and noticing a collision of two or more CTS frames)
-							if(backoff_type == BACKOFF_SLOTTED){
-								cts_notification.tx_info.preoccupancy_duration = time_rand_value;
-							}
+							cts_notification.tx_info.preoccupancy_duration = time_rand_value;
 
 						} else {
 							// CANNOT START PACKET TX
@@ -2769,9 +2774,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// Reset the flag that indicates whether the tx power changed or not
                         flag_change_in_tx_power = FALSE;
 
-						if(backoff_type == BACKOFF_SLOTTED){
-							data_notification.tx_info.preoccupancy_duration = time_rand_value;
-						}
+						data_notification.tx_info.preoccupancy_duration = time_rand_value;
 
 //						current_tx_info = GenerateTxInfo(notification.tx_info.num_packets_aggregated, data_duration,
 //								ack_duration,
@@ -3406,18 +3409,16 @@ void Node :: EndBackoff(trigger_t &){
 		 * way we are able to capture slotted BO collisions.
 		 */
 		time_rand_value = 0;
-		if(backoff_type == BACKOFF_SLOTTED){
-			int rand_number (2 + rand() % (MAX_NUM_RAND_TIME-2));	// in [2, MAX_NUM_RAND_TIME]
-			time_rand_value = (double) rand_number * MAX_DIFFERENCE_SAME_TIME/MAX_NUM_RAND_TIME; // in [FEMTO_SECOND, MAX_DIFFERENCE_SAME_TIME]
-			// Sergio on 28/09/2017
-			// time_rand_value = RoundToDigits(time_rand_value, 15);
-			time_rand_value = FixTimeOffset(time_rand_value,13,12);
-			current_nav_time = current_nav_time - time_rand_value;
+		int rand_number (2 + rand() % (MAX_NUM_RAND_TIME-2));	// in [2, MAX_NUM_RAND_TIME]
+		time_rand_value = (double) rand_number * MAX_DIFFERENCE_SAME_TIME/MAX_NUM_RAND_TIME; // in [FEMTO_SECOND, MAX_DIFFERENCE_SAME_TIME]
+		// Sergio on 28/09/2017
+		// time_rand_value = RoundToDigits(time_rand_value, 15);
+		time_rand_value = FixTimeOffset(time_rand_value,13,12);
+		current_nav_time = current_nav_time - time_rand_value;
 //			LOGS(save_node_logs,node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s time_rand_value = %.12f s - corrected NAV time = %.12f s\n",
 //				SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
 //				time_rand_value, current_nav_time);
-		}
 
 		// Generate the RTS notification
 		Notification first_packet_buffer = buffer.GetFirstPacket();
@@ -3452,13 +3453,10 @@ void Node :: EndBackoff(trigger_t &){
 		// ------------------------------------------------------------------------
 
 		// Send RTS notification and trigger to finish transmission
-		if(backoff_type == BACKOFF_SLOTTED){
-			time_to_trigger = SimTime() + time_rand_value;
-			trigger_preoccupancy.Set(FixTimeOffset(time_to_trigger,13,12));
-			rts_notification.tx_info.preoccupancy_duration = time_rand_value;
-		} else {
-			outportSelfStartTX(rts_notification);
-		}
+		time_to_trigger = SimTime() + time_rand_value;
+		trigger_preoccupancy.Set(FixTimeOffset(time_to_trigger,13,12));
+		rts_notification.tx_info.preoccupancy_duration = time_rand_value;
+
 
 		time_to_trigger = SimTime() + current_tx_duration;
 
@@ -3815,7 +3813,7 @@ void Node :: AbortRtsTransmission(){
 
 	num_tx_init_not_possible ++;
 	// Compute a new backoff and trigger a new DIFS
-	remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
+	remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type);
 	expected_backoff += remaining_backoff;
 	num_new_backoff_computations++;
 	node_state = STATE_SENSING;
@@ -3868,17 +3866,18 @@ void Node :: AckTimeout(trigger_t &){
 		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 	LOGS(save_node_logs,node_logger.file,
-		"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
+		"%.15f;N%d;S%d;%s;%s From CW = [%d-%d], b = %d, m = %d\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-		cw_current, cw_stage_current, cw_stage_max);
-	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
+		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
+	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
-		cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
+		cw_adaptation, INCREASE_CW, &current_cw_min, &current_cw_max, &cw_stage_current, cw_min_default,
+		cw_max_default, cw_stage_max, current_traffic_type, backoff_type);
 
 	LOGS(save_node_logs,node_logger.file,
-		"%.15f;N%d;S%d;%s;%s To CW = %d, b = %d, m = %d\n",
+		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-		cw_current, cw_stage_current, cw_stage_max);
+		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 
 	RestartNode(TRUE);
 }
@@ -3901,17 +3900,18 @@ void Node :: CtsTimeout(trigger_t &){
 		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
 	LOGS(save_node_logs,node_logger.file,
-		"%.15f;N%d;S%d;%s;%s From CW = %d, b = %d, m = %d\n",
+		"%.15f;N%d;S%d;%s;%s From CW = [%d-%d], b = %d, m = %d\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-		cw_current, cw_stage_current, cw_stage_max);
-	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
+		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
+	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
-		cw_adaptation, INCREASE_CW, &cw_current, cw_min, &cw_stage_current, cw_stage_max);
+		cw_adaptation, INCREASE_CW, &current_cw_min, &current_cw_max, &cw_stage_current, cw_min_default,
+		cw_max_default, cw_stage_max, current_traffic_type, backoff_type);
 
 	LOGS(save_node_logs,node_logger.file,
-		"%.15f;N%d;S%d;%s;%s To CW = %d, b = %d, m = %d\n",
+		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-		cw_current, cw_stage_current, cw_stage_max);
+		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 
 	// Update TX time statistics
 	total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
@@ -4460,7 +4460,7 @@ void Node :: RestartNode(int called_by_time_out){
 		++packet_id;
 
 		// In case of being an AP
-		remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
+		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type);
 		expected_backoff = expected_backoff + remaining_backoff;
 		++num_new_backoff_computations;
 
@@ -4468,7 +4468,7 @@ void Node :: RestartNode(int called_by_time_out){
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
 			remaining_backoff, remaining_backoff/SLOT_TIME);
 
-		// Add extra slot since node has txed
+		// Add extra slot since node has transmitted
 		remaining_backoff = remaining_backoff + SLOT_TIME;
 
 		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Extra slot added --> remaining BO %f slots\n",
@@ -4496,7 +4496,7 @@ void Node :: RestartNode(int called_by_time_out){
 				"%.15f;N%d;S%d;%s;%s BO can be resumed! Starting DIFS...\n",
 				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
 			// time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
-			time_to_trigger = SimTime() + DIFS;
+			time_to_trigger = SimTime() + DIFS; // TODO: EDCA TO BE IMPLEMENTED -> AIFSN[AC] * SLOT_TIME + SIFS
 			trigger_start_backoff.Set(FixTimeOffset(time_to_trigger,13,12));
 		} else {
 			LOGS(save_node_logs,node_logger.file,
@@ -4671,8 +4671,9 @@ void Node :: PrintNodeInfo(int info_detail_level){
 		wlan.PrintStaIds();
 	}
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
+		printf("%s backoff_type = %d\n", LOG_LVL4, backoff_type);
 		printf("%s cw_adaptation = %d\n", LOG_LVL4, cw_adaptation);
-		printf("%s cw_min = %d\n", LOG_LVL4, cw_min);
+		printf("%s [cw_min_default - cw_max_default] = [%d-%d]\n", LOG_LVL4, cw_min_default, cw_max_default);
 		printf("%s cw_stage_max = %d\n", LOG_LVL4, cw_stage_max);
 		printf("%s central_frequency = %f Hz (%f GHz)\n", LOG_LVL4, central_frequency, central_frequency * pow(10,-9));
 		printf("%s capture_effect = %f [linear] (%f dB)\n", LOG_LVL4, capture_effect, ConvertPower(LINEAR_TO_DB, capture_effect));
@@ -4709,7 +4710,7 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, std::strin
 	}
 
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
-		fprintf(node_logger.file, "%s - cw_min = %d\n", header_str.c_str(), cw_min);
+		fprintf(node_logger.file, "%s - [cw_min_default - cw_max_default] = [%d-%d]\n", header_str.c_str(), cw_min_default, cw_max_default);
 		fprintf(node_logger.file, "%s - cw_stage_max = %d\n", header_str.c_str(), cw_stage_max);
 		fprintf(node_logger.file, "%s - tx_power_default = %f pW\n", header_str.c_str(), tx_power_default);
 		fprintf(node_logger.file, "%s - sensitivity_default = %f pW\n", header_str.c_str(), sensitivity_default);
@@ -5194,6 +5195,8 @@ void Node :: InitializeVariables() {
 	num_measures_buffer_with_packets = 0;
 	generation_drop_ratio = 0;
 
+	current_traffic_type = -1;
+
 	// Output file - logger
 	node_logger.save_logs = save_node_logs;
 	node_logger.file = node_logger.file;
@@ -5267,13 +5270,14 @@ void Node :: InitializeVariables() {
 
 	node_state = STATE_SENSING;
 	current_modulation = 1;
-	cw_current = cw_min;
+	current_cw_min = cw_min_default; // Initialize the CW min
+	current_cw_max = cw_max_default; // Initialize the CW max
 	cw_stage_current = 0;
 	packet_id = 0;
 
 	if(node_type == NODE_TYPE_AP) {
 		node_is_transmitter = TRUE;
-		remaining_backoff = ComputeBackoff(pdf_backoff, cw_current, backoff_type);
+		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type);
 		expected_backoff += remaining_backoff;
 		num_new_backoff_computations++;
 	} else {

@@ -46,7 +46,7 @@
  /**
  * backoff_methods.h: this file contains functions related to the main Komondor's operation
  *
- * - This file contains the backoff methods used to simulated the CSMA/CA operation in WLANs
+ * - This file contains the backoff methods used to simulate the CSMA/CA operation in WLANs
  */
 
 #include <math.h>
@@ -61,42 +61,64 @@ double	Exponential2(double mean)	{ return -mean*log(Random2());}
 
 /**
 * Compute a new backoff value
-* @param "pdf_backoff" [type int]: type of backoff distribution (PDF_DETERMINISTIC or PDF_EXPONENTIAL)
-* @param "cw" [type int]: current contention window
-* @param "backoff_type" [type int]: type of backoff used (BACKOFF_SLOTTED or BACKOFF_CONTINUOUS) ---> BACKOFF_SLOTTED is highly recommended
+* @param "pdf_backoff" [type int]: type of backoff distribution (PDF_UNIFORM or PDF_EXPONENTIAL)
+* @param "current_cw" [type int]: current contention window
+* @param "backoff_type" [type int]: type of backoff used (e.g., BACKOFF_SLOTTED)
 * @return "backoff_time" [type double]: new generated backoff
 */
-double ComputeBackoff(int pdf_backoff, int cw, int backoff_type){
+double ComputeBackoff(int pdf_backoff, int current_cw_min, int current_cw_max, int backoff_type){
 
 	double backoff_time;
-	double expected_backoff ((double) (cw-1)/2);	// [slots]
-	double lambda_backoff (1/(expected_backoff * SLOT_TIME));
+	double expected_backoff ((double) (current_cw_max-1)/2);	// [slots]
 
 	switch(pdf_backoff){
 
-		case PDF_DETERMINISTIC:{
-			if(backoff_type == BACKOFF_SLOTTED) {
-				int num_slots (rand() % cw); // Num slots in [0, CW-1]
+		case PDF_UNIFORM:{
+			// Backoff "Custom" (CW and max. stage manually introduced) or EDCA
+			if(backoff_type == BACKOFF_CUSTOM || backoff_type == BACKOFF_EDCA) {
+				int num_slots (current_cw_min + (std::rand() % ( current_cw_max - current_cw_min + 1 )));
 				backoff_time = num_slots * SLOT_TIME;
+				//int num_slots (rand() % current_cw); // Number of slots in [0, CW-1]
 				// printf("num_slots = %d\n", num_slots);
-			} else if(backoff_type == BACKOFF_CONTINUOUS) {
-				backoff_time = 1/lambda_backoff;
+			// TODO: Implement token-based backoff
+			} else if(backoff_type == BACKOFF_TOKENIZED) {
+				int distance_to_token = 1;
+				int cw_range = distance_to_token*current_cw_max - current_cw_max + 1;
+				int num_slots = rand() % cw_range + current_cw_max;
+				backoff_time = num_slots * SLOT_TIME;
+			// TODO: Implement deterministic backoff
+			} else if(backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM) {
+				int deterministic_phase_active = 0;
+				if (deterministic_phase_active) {
+					int num_interruptions = 0;
+					int base_backoff = 5;
+					int num_slots = base_backoff +  num_interruptions;
+					backoff_time = num_slots * SLOT_TIME;
+				} else {
+					int num_slots (rand() % current_cw_max); // Number of slots in [0, CW-1]
+					backoff_time = num_slots * SLOT_TIME;
+				}
+			} else {
+				printf("ERROR IN ComputeBackoff: Unknown backoff_type.\n");
+				exit(EXIT_FAILURE);
 			}
+
 			break;
 		}
 
 		case PDF_EXPONENTIAL:{
-			if(backoff_type == BACKOFF_SLOTTED) {
+			if(backoff_type == BACKOFF_CUSTOM) {
 				backoff_time = round(Exponential2(expected_backoff)) * SLOT_TIME;
-			} else if(backoff_type == BACKOFF_CONTINUOUS) {
-				backoff_time = Exponential2(1/lambda_backoff);
+			} else {
+				printf("ERROR IN ComputeBackoff: PDF_EXPONENTIAL only works for backoff_type = BACKOFF_CUSTOM.\n");
+				exit(EXIT_FAILURE);
 			}
 			break;
 		}
 
 		default:{
-			printf("Backoff model not found!\n");
-			break;
+			printf("ERROR IN ComputeBackoff: Backoff PDF not found!\n");
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -106,40 +128,20 @@ double ComputeBackoff(int pdf_backoff, int cw, int backoff_type){
 
 /**
 * Compute the remaining backoff after some even happens. Particularly useful to compute the closest slot in the BACKOFF_SLOTTED type.
-* @param "backoff_type" [type int]: type of backoff used (BACKOFF_SLOTTED or BACKOFF_CONTINUOUS) ---> BACKOFF_SLOTTED is highly recommended
+* @param "backoff_type" [type int]: type of backoff used (BACKOFF_SLOTTED) ---> BACKOFF_SLOTTED is recommended
 * @param "remaining_backoff" [type double]: remaining backoff
 * @return "updated_remaining_backoff" [type double]: updated value of the remaining backoff
 */
 double ComputeRemainingBackoff(int backoff_type, double remaining_backoff){
 
 	double updated_remaining_backoff;
-
-	switch(backoff_type){
-
-		case BACKOFF_SLOTTED: {
-			int closest_slot (round(remaining_backoff / SLOT_TIME));
+	int closest_slot (round(remaining_backoff / SLOT_TIME));
 //			printf("- closest_slot = %d\n", closest_slot);
-			if(fabs(remaining_backoff - closest_slot * SLOT_TIME) < MAX_DIFFERENCE_SAME_TIME){
-				updated_remaining_backoff = closest_slot * SLOT_TIME;
-			} else {
-				updated_remaining_backoff = ceil(remaining_backoff/SLOT_TIME) * SLOT_TIME;
-			}
-			break;
-		}
-
-		case BACKOFF_CONTINUOUS: {
-			updated_remaining_backoff = remaining_backoff;
-			break;
-		}
-
-		default:{
-			printf("Backoff type not found!\n");
-			exit(EXIT_FAILURE);
-			break;
-		}
-
+	if(fabs(remaining_backoff - closest_slot * SLOT_TIME) < MAX_DIFFERENCE_SAME_TIME){
+		updated_remaining_backoff = closest_slot * SLOT_TIME;
+	} else {
+		updated_remaining_backoff = ceil(remaining_backoff/SLOT_TIME) * SLOT_TIME;
 	}
-
 	return updated_remaining_backoff;
 
 }
@@ -173,7 +175,7 @@ int HandleBackoff(int pause_or_resume, double **channel_power, int primary_chann
 		}
 
 		default:{
-			printf("Unknown handle backoff mode! (not resume nor pause)\n");
+			printf("ERROR in HandleBackoff: Unknown handle backoff mode! (not resume nor pause)\n");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -185,35 +187,104 @@ int HandleBackoff(int pause_or_resume, double **channel_power, int primary_chann
 /**
 * Increase or decrease the contention window. CW adaptation: http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
 * @param "cw_adaptation" [type int]: boolean indicating whether CW adaptation is enabled or not
-* @param "pause_or_resume" [type int]: boolean indicating whether to increase or reset the CW
-* @param "cw_current" [type int*]: pointer to the current CW (to be modified by this method)
-* @param "cw_min" [type int]: minimum CW
+* @param "current_cw" [type int*]: pointer to the current CW (to be modified by this method)
+* @param "cw_base_max" [type int]: Max base CW value
+* @param "cw_base_min" [type int]: Min base CW value
 * @param "cw_stage_current" [type int]: pointer to the current CW stage (to be modified by this method)
 * @param "cw_stage_max" [type int]: maximum CW stage
 */
-void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int* cw_current, int cw_min,
-		int *cw_stage_current, int cw_stage_max) {
-	if(cw_adaptation == TRUE){
-		switch(increase_or_reset) {
-			case INCREASE_CW:{
-				if(*cw_stage_current < cw_stage_max){
-					*cw_stage_current = *cw_stage_current + 1;
-					*cw_current = cw_min * pow(2, *cw_stage_current);
+void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int *current_cw_min, int *current_cw_max,
+		int *cw_stage_current, int cw_min_default, int cw_max_default, int cw_stage_max, int traffic_type, int backoff_type) {
+
+	// Select the CW parameters depending on the traffic to be transmitted
+	switch(backoff_type){
+
+		// CUSTOM (DEFAULT)
+		case BACKOFF_CUSTOM:{
+			current_cw_min = 0; // CW_min is always 0 for this type of backoff
+			// Apply CW adaptation when needed
+			if(cw_adaptation == TRUE){
+				switch(increase_or_reset){
+					case INCREASE_CW:{
+						if(*cw_stage_current < cw_stage_max){
+							*cw_stage_current = *cw_stage_current + 1;
+							*current_cw_min = cw_min_default * pow(2, *cw_stage_current);
+							*current_cw_max = cw_max_default * pow(2, *cw_stage_current);
+						}
+						break;
+					}
+					case RESET_CW:{
+						*cw_stage_current = 0;
+						*current_cw_min = cw_min_default;
+						*current_cw_max = cw_max_default;
+						break;
+					}
+					default:{
+						printf("ERROR in HandleContentionWindow: Unknown operation on contention window!\n");
+						exit(EXIT_FAILURE);
+						break;
+					}
 				}
-				break;
+			} else {
+				// Constant CW - do nothing: keep the CW values
 			}
-			case RESET_CW:{
-				*cw_stage_current = 0;
-				*cw_current = cw_min;
-				break;
-			}
-			default:{
-				printf("Unknown operation on contention window!");
-				exit(EXIT_FAILURE);
-				break;
-			}
+			break;
 		}
-	} else {
-		// Constant CW - do nothing: keep cw
+
+		// EDCA
+		case BACKOFF_EDCA:{
+			int cw_min;
+			int cw_max;
+			// Get standard parameters regarding CW parameters
+			switch(traffic_type){
+				case AC_VO:{
+					cw_min = CW_MIN_AC_VO;
+					cw_max = CW_MAX_AC_VO;
+					break;
+				}
+				case AC_VI:{
+					cw_min = CW_MIN_AC_VI;
+					cw_max = CW_MAX_AC_VI;
+					break;
+				}
+				case AC_BE:{
+					cw_min = CW_MIN_AC_BE;
+					cw_max = CW_MAX_AC_BE;
+					break;
+				}
+				case AC_BK:{
+					cw_min = CW_MIN_AC_BK;
+					cw_max = CW_MAX_AC_BK;
+					break;
+				}
+				default:{
+					printf("WARNING in HandleContentionWindow: Unknown AC traffic type!\n");
+					cw_min = CW_MIN_AC_BK;
+					cw_max = CW_MAX_AC_BK;
+					break;
+				}
+			}
+			*current_cw_min = cw_min;
+			*current_cw_max = cw_max;
+			break;
+		}
+
+		// Token-based BO
+		case BACKOFF_TOKENIZED:{
+			// TODO: To be implemented
+			break;
+		}
+
+		// Token-based BO
+		case BACKOFF_DETERMINISTIC_QUALCOMM:{
+			// TODO: To be implemented
+			break;
+		}
+
+		default:{
+			printf("ERROR in HandleContentionWindow: Unknown backoff type.\n");
+			exit(EXIT_FAILURE);
+		}
 	}
+
 }

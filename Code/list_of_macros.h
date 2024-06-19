@@ -229,25 +229,52 @@
 #define TRAFFIC_POISSON_BURST					3	///> Traffic is generated in bursts following a Poisson distribution
 #define TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION	99	///> Transmitters always have the same packet pending to be transmitted
 
+// Traffic types for QoS
+#define AC_VO		0		///> Traffic type (Access Category) = Voice (VO)
+#define AC_VI		1		///> Traffic type (Access Category) = Video (VI)
+#define AC_BE		2		///> Traffic type (Access Category) = Best effort (BE)
+#define AC_BK		3		///> Traffic type (Access Category) = Background (BK)
+
+// Channel access
+// - https://howiwifi.com/2020/06/30/wireless-contention-mechanisms/
+#define CW_MIN_AC_VO  8		///> Minimum CW for AC = VO (voice)
+#define CW_MAX_AC_VO  16		///> Maximum CW for AC = VO (voice)
+#define CW_MIN_AC_VI  16		///> Minimum CW for AC = VI (video)
+#define CW_MAX_AC_VI  32		///> Maximum CW for AC = VI (video)
+#define CW_MIN_AC_BE  32		///> Minimum CW for AC = BE (best-effort)
+#define CW_MAX_AC_BE  1024		///> Maximum CW for AC = BE (best-effort)
+#define CW_MIN_AC_BK  32		///> Minimum CW for AC = BK (background)
+#define CW_MAX_AC_BK  1024		///> Maximum CW for AC = BK (background)
+
+#define AIFS_VO = 2		///> AIFS for AC = VO (voice)
+#define AIFS_VI = 3		///> AIFS for AC = VI (video)
+#define AIFS_BE = 5		///> AIFS for AC = BE (best-effort)
+#define AIFS_BK = 7		///> AIFS for AC = BK (background)
+
 // Protocols
-#define INCREASE_CW 1		///> Command to increase contention window
-#define RESET_CW 2			///> Command to reset the contention window
+#define INCREASE_CW 	1		///> Command to increase contention window
+#define RESET_CW 		2		///> Command to reset the contention window
 
 // CE Model
 #define CE_DEFAULT			0	///>
 #define CE_IEEE_802_11		1	///>
 
 // Probability distribution types
-#define PDF_DETERMINISTIC	0	///> Deterministic (same value as mean)
+#define PDF_UNIFORM			0	///> Uniform pdf
 #define PDF_EXPONENTIAL		1	///> Exponential pdf
+#define PDF_DETERMINISTIC	2	///> Deterministic (same value as mean)
 
 // IEEE protocol
 #define IEEE_NOT_SPECIFIED		0
 #define IEEE_802_11_AX			1
+#define IEEE_802_11_BE			2
+#define IEEE_802_11_BN			3
 
 // Backoff types
-#define BACKOFF_SLOTTED		0
-#define BACKOFF_CONTINUOUS	1
+#define BACKOFF_CUSTOM					0
+#define BACKOFF_EDCA					1
+#define BACKOFF_TOKENIZED				2
+#define BACKOFF_DETERMINISTIC_QUALCOMM	3
 
 /* *********************
  * * System parameters *
@@ -478,13 +505,15 @@
 #define IX_CAPTURE_EFFECT_THR		19
 #define IX_CONSTANT_PER				20
 #define IX_PIFS_ACTIVATED			21
-#define IX_CW_ADAPTATION_FLAG		22
-#define IX_CW_MIN					23
-#define IX_CW_STAGE_MAX				24
-#define IX_BSS_COLOR				25
-#define IX_SRG						26
-#define IX_NON_SRG_OBSS_PD			27
-#define IX_SRG_OBSS_PD				28
+#define IX_BACKOFF_TYPE				22
+#define IX_CW_ADAPTATION_FLAG		23
+#define IX_CW_MIN_DEFAULT			24
+#define IX_CW_MAX_DEFAULT			25
+#define IX_CW_STAGE_MAX				26
+#define IX_BSS_COLOR				27
+#define IX_SRG						28
+#define IX_NON_SRG_OBSS_PD			29
+#define IX_SRG_OBSS_PD				30
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1
