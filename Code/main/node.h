@@ -354,6 +354,16 @@ component Node : public TypeII{
 		int current_cw_min;		///> Minimum Contention Window being used currently
 		int current_cw_max;		///> Maximum Contention Window being used currently
 
+		// Token-based channel access
+		int *order;
+		int *token_status;
+		int distance_to_token;
+
+		// Deterministic backoff
+		int num_bo_interruptions;			///> Number of observed BO interruptions
+		int base_backoff_deterministic;		///> Base backoff for the deterministic backoff
+		int deterministic_bo_active;		///> Flag to indicate whether the deterministic phase is active or not
+
 		// Deterministic (token-based) backoff management
 		int *list_token_colors;
 		int *list_token_status;
@@ -850,9 +860,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 								int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
 									current_primary_channel, current_pd, buffer.QueueSize()));
-
 								// Check if node has to freeze the BO (if it is not already frozen)
-								if (pause) PauseBackoff();
+								if (pause) {
+									PauseBackoff();
+								}
+
 							}
 
 						} else {	// Data packet IS NOT LOST (it can be properly received)
@@ -978,7 +990,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
 									current_primary_channel, current_pd, buffer.QueueSize()));
 								// Check if node has to freeze the BO (if it is not already frozen)
-								if (pause) PauseBackoff();
+								if (pause) {
+									PauseBackoff();
+								}
 							}
 
 							// Update the NAV time according to the frame's info
@@ -1040,9 +1054,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 								// Check if node has to freeze the BO (if it is not already frozen)
 								if (pause) {
-
 									PauseBackoff();
-
 								} else {
 
 									LOGS(save_node_logs,node_logger.file,
@@ -2499,8 +2511,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 						// - Transmission succeeded ---> reset CW if binary exponential backoff is implemented
 						HandleContentionWindow(
-							cw_adaptation, RESET_CW, &current_cw_min, &current_cw_max, &cw_stage_current, cw_min_default,
-							cw_max_default, cw_stage_max, current_traffic_type, backoff_type);
+							cw_adaptation, RESET_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max,
+							&cw_stage_current, cw_min_default, cw_max_default, cw_stage_max, backoff_type);
 
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -3811,9 +3823,17 @@ void Node :: SendResponsePacket(trigger_t &){
  */
 void Node :: AbortRtsTransmission(){
 
+	if(backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM){
+	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s deterministic_bo_active = %d, num_bo_interruptions = %d.\n",
+		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
+		deterministic_bo_active, num_bo_interruptions);
+	}
+
 	num_tx_init_not_possible ++;
 	// Compute a new backoff and trigger a new DIFS
-	remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type);
+	remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type,
+			current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic);
+
 	expected_backoff += remaining_backoff;
 	num_new_backoff_computations++;
 	node_state = STATE_SENSING;
@@ -3871,8 +3891,8 @@ void Node :: AckTimeout(trigger_t &){
 		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
-		cw_adaptation, INCREASE_CW, &current_cw_min, &current_cw_max, &cw_stage_current, cw_min_default,
-		cw_max_default, cw_stage_max, current_traffic_type, backoff_type);
+		cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
+		cw_min_default, cw_max_default, cw_stage_max, backoff_type);
 
 	LOGS(save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -3905,8 +3925,8 @@ void Node :: CtsTimeout(trigger_t &){
 		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
-		cw_adaptation, INCREASE_CW, &current_cw_min, &current_cw_max, &cw_stage_current, cw_min_default,
-		cw_max_default, cw_stage_max, current_traffic_type, backoff_type);
+		cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
+		cw_min_default, cw_max_default, cw_stage_max, backoff_type);
 
 	LOGS(save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -4030,13 +4050,14 @@ void Node :: PauseBackoff(){
 
 			remaining_backoff = ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
 
+			++num_bo_interruptions;
+
 			LOGS(save_node_logs,node_logger.file,
-				"%.15f;N%d;S%d;%s;%s BO is active. Freezing it from %.9f (%.2f slots) to %.9f (%.2f slots)\n",
+				"%.15f;N%d;S%d;%s;%s BO is active. Freezing it from %.9f (%.2f slots) to %.9f (%.2f slots) -> BO interruptions = %d\n",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 				(trigger_end_backoff.GetTime() - SimTime()) * pow(10,6),
 				(trigger_end_backoff.GetTime() - SimTime())/SLOT_TIME,
-				remaining_backoff * pow(10,6), remaining_backoff/SLOT_TIME);
-
+				remaining_backoff * pow(10,6), remaining_backoff/SLOT_TIME, num_bo_interruptions);
 
 //			LOGS(save_node_logs,node_logger.file,
 //								"%.15f;N%d;S%d;%s;%s Original remaining BO: %.9f us\n",
@@ -4460,9 +4481,19 @@ void Node :: RestartNode(int called_by_time_out){
 		++packet_id;
 
 		// In case of being an AP
-		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type);
+		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max,
+				backoff_type, current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic);
 		expected_backoff = expected_backoff + remaining_backoff;
 		++num_new_backoff_computations;
+
+		if(backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM){
+		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s deterministic_bo_active = %d, num_bo_interruptions = %d.\n",
+			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
+			deterministic_bo_active, num_bo_interruptions);
+		}
+
+		// Restart the counter for the deterministic backoff
+		num_bo_interruptions = 0;
 
 		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f (%.0f slots).\n",
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
@@ -5270,14 +5301,21 @@ void Node :: InitializeVariables() {
 
 	node_state = STATE_SENSING;
 	current_modulation = 1;
+	packet_id = 0;
+
+	// Channel access
 	current_cw_min = cw_min_default; // Initialize the CW min
 	current_cw_max = cw_max_default; // Initialize the CW max
 	cw_stage_current = 0;
-	packet_id = 0;
+	// Deterministic backoff
+	num_bo_interruptions = 0;
+	base_backoff_deterministic = 5; // Hardcoded
+	deterministic_bo_active = 0;
 
 	if(node_type == NODE_TYPE_AP) {
 		node_is_transmitter = TRUE;
-		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type);
+		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type,
+				current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic);
 		expected_backoff += remaining_backoff;
 		num_new_backoff_computations++;
 	} else {

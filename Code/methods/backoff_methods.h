@@ -66,7 +66,8 @@ double	Exponential2(double mean)	{ return -mean*log(Random2());}
 * @param "backoff_type" [type int]: type of backoff used (e.g., BACKOFF_SLOTTED)
 * @return "backoff_time" [type double]: new generated backoff
 */
-double ComputeBackoff(int pdf_backoff, int current_cw_min, int current_cw_max, int backoff_type){
+double ComputeBackoff(int pdf_backoff, int current_cw_min, int current_cw_max, int backoff_type,
+		int traffic_type, int deterministic_bo_active, int num_bo_interruptions, int base_backoff_deterministic){
 
 	double backoff_time;
 	double expected_backoff ((double) (current_cw_max-1)/2);	// [slots]
@@ -75,27 +76,53 @@ double ComputeBackoff(int pdf_backoff, int current_cw_min, int current_cw_max, i
 
 		case PDF_UNIFORM:{
 			// Backoff "Custom" (CW and max. stage manually introduced) or EDCA
-			if(backoff_type == BACKOFF_CUSTOM || backoff_type == BACKOFF_EDCA) {
+			if(backoff_type == BACKOFF_CUSTOM) {
 				int num_slots (current_cw_min + (std::rand() % ( current_cw_max - current_cw_min + 1 )));
 				backoff_time = num_slots * SLOT_TIME;
 				//int num_slots (rand() % current_cw); // Number of slots in [0, CW-1]
 				// printf("num_slots = %d\n", num_slots);
+			// EDCA for QoS traffic differentiation
+			} else if(backoff_type == BACKOFF_EDCA){
+				// Get standard parameters regarding CW parameters
+				switch(traffic_type){
+					case AC_VO:{
+						current_cw_min = CW_MIN_AC_VO;
+						current_cw_max = CW_MAX_AC_VO;
+						break;
+					}
+					case AC_VI:{
+						current_cw_min = CW_MIN_AC_VI;
+						current_cw_max = CW_MAX_AC_VI;
+						break;
+					}
+					case AC_BE:{
+						current_cw_min = CW_MIN_AC_BE;
+						current_cw_max = CW_MAX_AC_BE;
+						break;
+					}
+					case AC_BK: default:{
+						current_cw_min = CW_MIN_AC_BK;
+						current_cw_max = CW_MAX_AC_BK;
+						break;
+					}
+				}
+				int num_slots (current_cw_min + (std::rand() % ( current_cw_max - current_cw_min + 1 )));
+				backoff_time = num_slots * SLOT_TIME;
+				//*current_cw_min = cw_min;
+				//*current_cw_max = cw_max;
 			// TODO: Implement token-based backoff
 			} else if(backoff_type == BACKOFF_TOKENIZED) {
 				int distance_to_token = 1;
 				int cw_range = distance_to_token*current_cw_max - current_cw_max + 1;
 				int num_slots = rand() % cw_range + current_cw_max;
 				backoff_time = num_slots * SLOT_TIME;
-			// TODO: Implement deterministic backoff
+			// Deterministic backoff (Qualcomm)
 			} else if(backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM) {
-				int deterministic_phase_active = 0;
-				if (deterministic_phase_active) {
-					int num_interruptions = 0;
-					int base_backoff = 5;
-					int num_slots = base_backoff +  num_interruptions;
+				if (deterministic_bo_active) {
+					int num_slots = base_backoff_deterministic +  num_bo_interruptions;
 					backoff_time = num_slots * SLOT_TIME;
 				} else {
-					int num_slots (rand() % current_cw_max); // Number of slots in [0, CW-1]
+					int num_slots (current_cw_min + (std::rand() % ( current_cw_max - current_cw_min + 1 )));
 					backoff_time = num_slots * SLOT_TIME;
 				}
 			} else {
@@ -193,8 +220,8 @@ int HandleBackoff(int pause_or_resume, double **channel_power, int primary_chann
 * @param "cw_stage_current" [type int]: pointer to the current CW stage (to be modified by this method)
 * @param "cw_stage_max" [type int]: maximum CW stage
 */
-void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int *current_cw_min, int *current_cw_max,
-		int *cw_stage_current, int cw_min_default, int cw_max_default, int cw_stage_max, int traffic_type, int backoff_type) {
+void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int *deterministic_bo_active, int *current_cw_min,
+		int *current_cw_max, int *cw_stage_current, int cw_min_default, int cw_max_default, int cw_stage_max, int backoff_type) {
 
 	// Select the CW parameters depending on the traffic to be transmitted
 	switch(backoff_type){
@@ -233,39 +260,7 @@ void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int *curre
 
 		// EDCA
 		case BACKOFF_EDCA:{
-			int cw_min;
-			int cw_max;
-			// Get standard parameters regarding CW parameters
-			switch(traffic_type){
-				case AC_VO:{
-					cw_min = CW_MIN_AC_VO;
-					cw_max = CW_MAX_AC_VO;
-					break;
-				}
-				case AC_VI:{
-					cw_min = CW_MIN_AC_VI;
-					cw_max = CW_MAX_AC_VI;
-					break;
-				}
-				case AC_BE:{
-					cw_min = CW_MIN_AC_BE;
-					cw_max = CW_MAX_AC_BE;
-					break;
-				}
-				case AC_BK:{
-					cw_min = CW_MIN_AC_BK;
-					cw_max = CW_MAX_AC_BK;
-					break;
-				}
-				default:{
-					printf("WARNING in HandleContentionWindow: Unknown AC traffic type!\n");
-					cw_min = CW_MIN_AC_BK;
-					cw_max = CW_MAX_AC_BK;
-					break;
-				}
-			}
-			*current_cw_min = cw_min;
-			*current_cw_max = cw_max;
+			// Do nothing
 			break;
 		}
 
@@ -277,7 +272,22 @@ void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int *curre
 
 		// Token-based BO
 		case BACKOFF_DETERMINISTIC_QUALCOMM:{
-			// TODO: To be implemented
+			// "Increase or reset" is used as an indication for enabling/disabling the deterministic backoff
+			switch(increase_or_reset){
+				case INCREASE_CW:{
+					*deterministic_bo_active = 0;
+					break;
+				}
+				case RESET_CW:{
+					*deterministic_bo_active = 1;
+					break;
+				}
+				default:{
+					printf("ERROR in HandleContentionWindow: Unknown operation on contention window!\n");
+					exit(EXIT_FAILURE);
+					break;
+				}
+			}
 			break;
 		}
 
