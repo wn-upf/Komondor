@@ -50,3 +50,7 @@ Code/output/
 !.gitignore
 
 Code/main/komondor_main
+
+# CompC++
+Code/compcpp/cxx
+Code/compcpp/lexer.cpp
