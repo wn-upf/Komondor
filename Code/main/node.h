@@ -210,6 +210,12 @@ component Node : public TypeII{
 		int cw_max_default;					///> Maximum Contention Window set by default
 		int cw_stage_max;					///> Backoff maximum Contention Window
 
+		// Token-based channel access
+		int *token_order_list;			///> Ordered list of the devices involved in the tokenized channel access
+		int token_status;				///> Status of the token (i.e., ID of the device holding the token)
+		int distance_to_token;			///> Distance of the node to the token in "token_status_list"
+		int *num_missed_tokens_list;	///> Number of missed tokens for each involved device in the tokenized channel access
+
 		double *distances_array;					///> Distance with respect to other nodes
 		double *received_power_array;				///> Power received from the other nodes
 		double *max_received_power_in_ap_per_wlan;	///> Maximum power received from each WLAN
@@ -354,20 +360,13 @@ component Node : public TypeII{
 		int current_cw_min;		///> Minimum Contention Window being used currently
 		int current_cw_max;		///> Maximum Contention Window being used currently
 
-		// Token-based channel access
-		int *order;
-		int *token_status;
-		int distance_to_token;
-
 		// Deterministic backoff
 		int num_bo_interruptions;			///> Number of observed BO interruptions
 		int base_backoff_deterministic;		///> Base backoff for the deterministic backoff
 		int deterministic_bo_active;		///> Flag to indicate whether the deterministic phase is active or not
 
-		// Deterministic (token-based) backoff management
-		int *list_token_colors;
-		int *list_token_status;
-		int *list_counter_token_missed;
+		// ECA
+		double previous_backoff;				///> Last backoff used
 
 		// Packets durations
 		double data_duration;		///> Duration of the data packet
@@ -656,6 +655,69 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 	if(save_node_logs) PrintOrWriteNodesTransmitting(WRITE_LOG, save_node_logs,
 		print_node_logs, node_logger, total_nodes_number, nodes_transmitting);
 
+	// TOKENIZED BO ONLY
+	if(node_is_transmitter && backoff_type == BACKOFF_TOKENIZED) {
+		// 1 - Check that the incoming transmission is not originated or directed to the transmitter
+		if (notification.source_id != node_id && notification.destination_id != node_id) {
+			// 2 - Check that the incoming transmission is an RTS or DATA
+			if (notification.packet_type == PACKET_TYPE_RTS
+				|| notification.packet_type == PACKET_TYPE_DATA) {
+				// 3 - Check that the incoming transmission comes from a nearby device
+				if (received_power_array[notification.source_id] > current_pd) {
+					// Update the list of neighboring devices (if not done)
+					if (token_order_list[notification.source_id] == DEVICE_INACTIVE_FOR_TOKEN) {
+						LOGS(save_node_logs,node_logger.file,
+							"%.15f;N%d;S%d;%s;%s Token-based channel access operation (update neighbor list):\n",
+							SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
+						LOGS(save_node_logs,node_logger.file,
+								"%.15f;N%d;S%d;%s;%s Token's order list before the update: ",
+								SimTime(), node_id, node_state, LOG_E18, LOG_LVL5);
+							PrintOrWriteTokenList(WRITE_LOG, save_node_logs, node_logger,
+								print_node_logs, token_order_list, total_nodes_number);
+						UpdateTokenList(ADD_DEVICE_TO_LIST, &token_order_list, notification.source_id);
+						LOGS(save_node_logs,node_logger.file,
+							"%.15f;N%d;S%d;%s;%s Token's order list updated: ",
+							SimTime(), node_id, node_state, LOG_E18, LOG_LVL5);
+						PrintOrWriteTokenList(WRITE_LOG, save_node_logs, node_logger,
+							print_node_logs, token_order_list, total_nodes_number);
+					}
+					// Update the status of the token
+					if (node_state != STATE_TX_RTS) {
+						LOGS(save_node_logs,node_logger.file,
+							"%.15f;N%d;S%d;%s;%s Token-based channel access operation (token ACQUISITION):\n",
+							SimTime(), node_id, node_state, LOG_E18, LOG_LVL4);
+						UpdateTokenStatus(node_id, TAKE_TOKEN, &token_status, notification.source_id,
+							token_order_list, total_nodes_number, &distance_to_token);
+					} else if (node_state == STATE_TX_RTS && node_id < notification.source_id) {
+						LOGS(save_node_logs,node_logger.file,
+							"%.15f;N%d;S%d;%s;%s Token-based channel access operation (token ACQUISITION):\n",
+							SimTime(), node_id, node_state, LOG_E18, LOG_LVL4);
+						UpdateTokenStatus(node_id, TAKE_TOKEN, &token_status, node_id,
+							token_order_list, total_nodes_number, &distance_to_token);
+					} else {
+						// In case of a collision (two simultaneous RTS transmissions occur),
+						// solve the conflict by releasing the token (the node with lowest ID gets the token)
+						LOGS(save_node_logs,node_logger.file,
+							"%.15f;N%d;S%d;%s;%s Token-based channel access operation (token RELEASE):\n",
+							SimTime(), node_id, node_state, LOG_E18, LOG_LVL4);
+						UpdateTokenStatus(node_id, RELEASE_TOKEN, &token_status, node_id,
+							token_order_list, total_nodes_number, &distance_to_token);
+					}
+					LOGS(save_node_logs,node_logger.file,
+						"%.15f;N%d;S%d;%s;%s Token status updated, the new token holder is %d\n",
+						SimTime(), node_id, node_state, LOG_E18, LOG_LVL5, token_status);
+					// Update the CW parameters
+					HandleContentionWindow(
+						cw_adaptation, -1, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
+						cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+					LOGS(save_node_logs,node_logger.file,
+						"%.15f;N%d;S%d;%s;%s Updated CW parameters (token-based BO) = [%d-%d]\n",
+						SimTime(), node_id, node_state, LOG_E18, LOG_LVL5, current_cw_min, current_cw_max);
+				}
+			}
+		}
+	}
+
 	if(notification.source_id == node_id){ // If OWN NODE IS THE TRANSMITTER, do nothing
 
 		LOGS(save_node_logs,node_logger.file,
@@ -689,13 +751,6 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
         }
 
 		// Update 'power received' array in case a new tx power is used
-//		if (notification.tx_info.flag_change_in_tx_power) {
-//			received_power_array[notification.source_id] =
-//				ComputePowerReceived(distances_array[notification.source_id],
-//				notification.tx_info.tx_power, notification.tx_info.tx_gain, rx_gain,
-//				central_frequency, path_loss_model);
-//		}
-
 		if (notification.tx_info.flag_change_in_tx_power) {
 			received_power_array[notification.source_id] =
 				ComputePowerReceived(distances_array[notification.source_id],
@@ -977,7 +1032,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						}
 						/* **************************************** */
 
-						if(loss_reason == PACKET_NOT_LOST) { // RTS/CTS can be decoded
+						if(loss_reason == PACKET_NOT_LOST) { // RTS/DATA/CTS/ACK can be decoded
 
 							LOGS(save_node_logs,node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Packet type %d can be decoded\n",
@@ -1056,7 +1111,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								if (pause) {
 									PauseBackoff();
 								} else {
-
+									if(trigger_end_backoff.Active()) remaining_backoff =
+											ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
 									LOGS(save_node_logs,node_logger.file,
 										"%.15f;N%d;S%d;%s;%s BO must not be paused (%f remaining slots).\n",
 										SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, remaining_backoff/SLOT_TIME);
@@ -2193,6 +2249,44 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				break;
 			}
 		}
+
+//		// TOKEN-BASED CHANNEL ACCESS - Only for transmitter-initiated frames
+//		if (backoff_type == BACKOFF_TOKENIZED &&
+//				((notification.packet_type == PACKET_TYPE_RTS
+//				|| notification.packet_type == PACKET_TYPE_DATA))
+//				&& node_is_transmitter && flag_inter_bss_tx_decoded){
+//			LOGS(save_node_logs,node_logger.file,
+//				"%.15f;N%d;S%d;%s;%s Token-based channel access operation:\n",
+//				SimTime(), node_id, node_state, LOG_E18, LOG_LVL4);
+//			// Update the list of neighboring devices
+//			if (token_order_list[notification.source_id] == 0) {
+//				LOGS(save_node_logs,node_logger.file,
+//						"%.15f;N%d;S%d;%s;%s Token's order list before the update: ",
+//						SimTime(), node_id, node_state, LOG_E18, LOG_LVL5);
+//					PrintOrWriteTokenList(WRITE_LOG, save_node_logs, node_logger,
+//						print_node_logs, token_order_list, total_nodes_number);
+//				UpdateTokenList(ADD_DEVICE_TO_LIST, &token_order_list, notification.source_id);
+//				LOGS(save_node_logs,node_logger.file,
+//					"%.15f;N%d;S%d;%s;%s Token's order list updated: ",
+//					SimTime(), node_id, node_state, LOG_E18, LOG_LVL5);
+//				PrintOrWriteTokenList(WRITE_LOG, save_node_logs, node_logger,
+//					print_node_logs, token_order_list, total_nodes_number);
+//			}
+//			// Update the status of the token
+//			UpdateTokenStatus(node_id, TAKE_TOKEN, &token_status, notification.source_id,
+//					token_order_list, total_nodes_number, &distance_to_token);
+//			LOGS(save_node_logs,node_logger.file,
+//				"%.15f;N%d;S%d;%s;%s Token status updated, the new token holder is %d\n",
+//				SimTime(), node_id, node_state, LOG_E18, LOG_LVL5, token_status);
+//			// Update the CW parameters
+//			HandleContentionWindow(
+//				cw_adaptation, -1, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
+//				cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+//			LOGS(save_node_logs,node_logger.file,
+//				"%.15f;N%d;S%d;%s;%s Updated CW parameters (token-based BO) = [%d-%d]\n",
+//				SimTime(), node_id, node_state, LOG_E18, LOG_LVL5, current_cw_min, current_cw_max);
+//		}
+
 	}
 
 	// STATISTICS: compute the time the channel is idle (Node 0 is responsible to monitor this)
@@ -2222,6 +2316,36 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 	if(save_node_logs) PrintOrWriteNodesTransmitting(WRITE_LOG, save_node_logs,
 			print_node_logs, node_logger, total_nodes_number, nodes_transmitting);
 
+	// Update the list of neighboring devices
+	//UpdateTokenList(ADD_DEVICE_TO_LIST, &token_order_list, notification.source_id);
+
+	// TOKENIZED BO ONLY
+	if(node_is_transmitter && backoff_type == BACKOFF_TOKENIZED &&
+			token_order_list[notification.destination_id] == DEVICE_ACTIVE_FOR_TOKEN) {
+		// - Check that the incoming transmission is an ACK
+		if (notification.packet_type == PACKET_TYPE_ACK) {
+			LOGS(save_node_logs,node_logger.file,
+				"%.15f;N%d;S%d;%s;%s Token-based channel access operation (token RELEASE):\n",
+				SimTime(), node_id, node_state, LOG_E18, LOG_LVL4);
+			// Update the status of the token
+			LOGS(save_node_logs,node_logger.file,
+				"%.15f;N%d;S%d;%s;%s UPDATING the status of the token (until now, with N%d)\n",
+				SimTime(), node_id, node_state, LOG_E18, LOG_LVL3, token_status);
+			UpdateTokenStatus(node_id, RELEASE_TOKEN, &token_status, notification.destination_id,
+					token_order_list, total_nodes_number, &distance_to_token);
+			LOGS(save_node_logs,node_logger.file,
+				"%.15f;N%d;S%d;%s;%s Token status updated, the new token holder is %d\n",
+				SimTime(), node_id, node_state, LOG_E18, LOG_LVL5, token_status);
+			// Update the CW parameters
+			HandleContentionWindow(
+				cw_adaptation, -1, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
+				cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+			LOGS(save_node_logs,node_logger.file,
+				"%.15f;N%d;S%d;%s;%s Updated CW parameters (token-based BO) = [%d-%d]\n",
+				SimTime(), node_id, node_state, LOG_E18, LOG_LVL5, current_cw_min, current_cw_max);
+		}
+	}
+
 	if(notification.source_id == node_id){	// Node is the TX source: do nothing
 
 //		LOGS(save_node_logs,node_logger.file,
@@ -2236,7 +2360,6 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 //				SimTime(), node_id, node_state, LOG_E18, LOG_LVL2, notification.source_id,
 //				notification.packet_id, notification.packet_type, notification.left_channel,
 //				notification.right_channel);
-
 
 		LOGS(save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Power sensed per channel BEFORE updating [dBm]: ",
@@ -2315,10 +2438,6 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 					if(!trigger_start_backoff.Active()
 						&& !trigger_end_backoff.Active()){	// BO was paused and DIFS not initiated
 
-						LOGS(save_node_logs,node_logger.file,
-							"%.15f;N%d;S%d;%s;%s UNEXPECTED ERROR IN THE BACKOFF!\n",
-							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5);
-
 						int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_pd,
 								buffer.QueueSize()));
 
@@ -2340,9 +2459,10 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 //							LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS started.\n",
 //														SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
 						} else {	// BO cannot be resumed
-							LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS cannot be started.\n",
+							LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS/DIFS cannot be started because the channel is busy.\n",
 								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
 						}
+
 					} else {	// BO was already active
 						LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s BO was already active.\n",
 								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
@@ -2512,7 +2632,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// - Transmission succeeded ---> reset CW if binary exponential backoff is implemented
 						HandleContentionWindow(
 							cw_adaptation, RESET_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max,
-							&cw_stage_current, cw_min_default, cw_max_default, cw_stage_max, backoff_type);
+							&cw_stage_current, cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
 
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -2826,6 +2946,27 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 				break;
 			}
 		}
+
+//		// TOKEN-BASED CHANNEL ACCESS
+//		if (notification.packet_type == PACKET_TYPE_ACK && backoff_type == BACKOFF_TOKENIZED && node_is_transmitter){
+//			// Update the status of the token
+//			LOGS(save_node_logs,node_logger.file,
+//				"%.15f;N%d;S%d;%s;%s UPDATING the status of the token (before with N%d)\n",
+//				SimTime(), node_id, node_state, LOG_E18, LOG_LVL3, token_status);
+//			UpdateTokenStatus(node_id, RELEASE_TOKEN, &token_status, notification.destination_id,
+//					token_order_list, total_nodes_number, &distance_to_token);
+//			LOGS(save_node_logs,node_logger.file,
+//				"%.15f;N%d;S%d;%s;%s Token status updated, the new token holder is N%d\n",
+//				SimTime(), node_id, node_state, LOG_E18, LOG_LVL4, token_status);
+//			// Update the CW parameters
+//			HandleContentionWindow(
+//				cw_adaptation, -1, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
+//				cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+//			LOGS(save_node_logs,node_logger.file,
+//				"%.15f;N%d;S%d;%s;%s Updated CW parameters (token-based BO) = [%d-%d]\n",
+//				SimTime(), node_id, node_state, LOG_E18, LOG_LVL5, current_cw_min, current_cw_max);
+//		}
+
 	}
 
 	// STATISTICS: compute the time the channel is idle (Node 0 is responsible to monitors this)
@@ -3202,6 +3343,16 @@ void Node :: EndBackoff(trigger_t &){
 	sum_waiting_time = sum_waiting_time + SimTime() - timestamp_new_trial_started;
 	++num_average_waiting_time_measurements;
 
+	// Update the performance_report
+	performance_report.sum_waiting_time += SimTime() - timestamp_new_trial_started;
+	++performance_report.num_waiting_time_measurements;
+	if (SimTime() - timestamp_new_trial_started > performance_report.max_waiting_time) {
+		performance_report.max_waiting_time = SimTime() - timestamp_new_trial_started;
+	}
+	if (SimTime() - timestamp_new_trial_started < performance_report.min_waiting_time) {
+		performance_report.min_waiting_time = SimTime() - timestamp_new_trial_started;
+	}
+
 	// Measurements in the last part of the simulation
 	if (SimTime() > (simulation_time_komondor - last_measurements_window)) {
 		last_sum_waiting_time = last_sum_waiting_time + SimTime() - timestamp_new_trial_started;
@@ -3348,6 +3499,9 @@ void Node :: EndBackoff(trigger_t &){
 			"%.15f;N%d;S%d;%s;%s Num. of packets to aggregate: %d/%d (last_transmission_successful=%d)\n",
 			SimTime(), node_id, node_state, LOG_F04, LOG_LVL4,
 			limited_num_packets_aggregated, max_num_packets_aggregated, last_transmission_successful);
+
+		// TODO: ADD TRANSMISSION DELAY
+
 
 		// - Add another bunch of packets to the buffer if TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION
 		//if(traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION && last_transmission_successful) {
@@ -3832,7 +3986,10 @@ void Node :: AbortRtsTransmission(){
 	num_tx_init_not_possible ++;
 	// Compute a new backoff and trigger a new DIFS
 	remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type,
-			current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic);
+			current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic,
+			previous_backoff);
+
+	previous_backoff = remaining_backoff;	// Update the last used backoff
 
 	expected_backoff += remaining_backoff;
 	num_new_backoff_computations++;
@@ -3892,7 +4049,7 @@ void Node :: AckTimeout(trigger_t &){
 	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
 		cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
-		cw_min_default, cw_max_default, cw_stage_max, backoff_type);
+		cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
 
 	LOGS(save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -3926,7 +4083,7 @@ void Node :: CtsTimeout(trigger_t &){
 	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
 		cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
-		cw_min_default, cw_max_default, cw_stage_max, backoff_type);
+		cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
 
 	LOGS(save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -4230,7 +4387,10 @@ void Node :: UpdatePerformanceMeasurements(){
 		* limited_num_packets_aggregated)) / (SimTime()-performance_report.timestamp);
 
 	// - Delay
-	performance_report.average_delay = performance_report.sum_delays / performance_report.num_delay_measurements;
+	//performance_report.average_delay = performance_report.sum_delays / performance_report.num_delay_measurements;
+
+	// - Access delay (contention time)
+	performance_report.average_delay = performance_report.sum_waiting_time / (double) performance_report.num_waiting_time_measurements;
 
 	// - Max RSSI received per WLAN
 	for (int i = 0 ; i < total_wlans_number; ++ i) {
@@ -4473,18 +4633,19 @@ void Node :: RestartNode(int called_by_time_out){
 	// Generate new BO in case of being a TX node
 	if(node_is_transmitter && buffer.QueueSize() > 0){
 
-		// Sergio on June 26 th
-		// - compute average waiting time to access the channel
-		timestamp_new_trial_started = SimTime();
-
 		// Set the ID of the next packet
 		++packet_id;
 
 		// In case of being an AP
 		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max,
-				backoff_type, current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic);
+				backoff_type, current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic, previous_backoff);
+		previous_backoff = remaining_backoff;
 		expected_backoff = expected_backoff + remaining_backoff;
 		++num_new_backoff_computations;
+
+		// Sergio on June 26 th
+		// - compute average waiting time to access the channel
+		timestamp_new_trial_started = SimTime();
 
 		if(backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM){
 		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s deterministic_bo_active = %d, num_bo_interruptions = %d.\n",
@@ -4983,13 +5144,13 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					printf("%.2f Mbps",  throughput_per_sta[n] * pow(10,-6));
 					if(n<wlan.num_stas-1) printf(", ");
 				}
-				printf("}\n%s RTS/CTS sent /	 RTS/CTS lost: {", LOG_LVL3);
+				printf("}\n%s RTS/CTS sent/lost: {", LOG_LVL3);
 				for(int n = 0; n < wlan.num_stas; ++n){
 					printf("%d/%d (%.2f %%)", rts_cts_sent_per_sta[n], rts_cts_lost_per_sta[n],
 						double(rts_cts_lost_per_sta[n] * 100)/double(rts_cts_sent_per_sta[n]));
 					if(n<wlan.num_stas-1) printf(", ");
 				}
-				printf("}\n%s Data packets sent / Data packets lost: {", LOG_LVL3);
+				printf("}\n%s Data packets sent/lost: {", LOG_LVL3);
 				for(int n = 0; n < wlan.num_stas; ++n){
 					printf("%d/%d (%.2f %%)", data_packets_sent_per_sta[n], data_packets_lost_per_sta[n],
 							double(data_packets_lost_per_sta[n] * 100)/double(data_packets_sent_per_sta[n]));
@@ -5132,7 +5293,6 @@ void Node :: SaveSimulationPerformance() {
 	simulation_performance.expected_backoff = expected_backoff;
 	simulation_performance.num_new_backoff_computations = num_new_backoff_computations;
 	simulation_performance.num_trials_tx_per_num_channels = num_trials_tx_per_num_channels;
-	simulation_performance.average_waiting_time = average_waiting_time;
 	simulation_performance.bandwidth_used_txing = bandwidth_used_txing;
 	simulation_performance.total_time_transmitting_per_channel = total_time_transmitting_per_channel;
 	simulation_performance.total_time_transmitting_in_num_channels = total_time_transmitting_in_num_channels;
@@ -5159,11 +5319,13 @@ void Node :: SaveSimulationPerformance() {
 	}
 	simulation_performance.received_power_array = received_power_array;
 
-	// Other
+	// Channel access
+	simulation_performance.average_waiting_time = average_waiting_time;
 	simulation_performance.num_tx_init_tried = num_tx_init_tried;
 	simulation_performance.num_tx_init_not_possible = num_tx_init_not_possible;
 	simulation_performance.prob_slotted_bo_collision = prob_slotted_bo_collision;
 
+	// Other
 	configuration.non_srg_obss_pd = non_srg_obss_pd;
 
 	// Last seen performance (end of the simulation)
@@ -5172,6 +5334,9 @@ void Node :: SaveSimulationPerformance() {
 	simulation_performance.last_total_time_transmitting_per_channel = last_total_time_transmitting_per_channel;
 	simulation_performance.last_total_time_lost_per_channel = last_total_time_lost_per_channel;
 	simulation_performance.last_average_access_delay = last_sum_waiting_time/(double)last_num_average_waiting_time_measurements;
+
+	sum_waiting_time = sum_waiting_time + SimTime() - timestamp_new_trial_started;
+		++num_average_waiting_time_measurements;
 
 }
 
@@ -5303,11 +5468,17 @@ void Node :: InitializeVariables() {
 	current_modulation = 1;
 	packet_id = 0;
 
-	// Channel access
+	// CHANNEL ACCESS
 	current_cw_min = cw_min_default; // Initialize the CW min
 	current_cw_max = cw_max_default; // Initialize the CW max
 	cw_stage_current = 0;
-	// Deterministic backoff
+	// - Tokenized backoff
+	if (backoff_type == BACKOFF_TOKENIZED){
+		token_status = node_id;
+		distance_to_token = 0;
+		token_order_list[node_id] = DEVICE_ACTIVE_FOR_TOKEN;
+	}
+	// - Deterministic backoff
 	num_bo_interruptions = 0;
 	base_backoff_deterministic = 5; // Hardcoded
 	deterministic_bo_active = 0;
@@ -5315,9 +5486,12 @@ void Node :: InitializeVariables() {
 	if(node_type == NODE_TYPE_AP) {
 		node_is_transmitter = TRUE;
 		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type,
-				current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic);
+				current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic, -1);
+		previous_backoff = remaining_backoff;
 		expected_backoff += remaining_backoff;
 		num_new_backoff_computations++;
+		// - compute average waiting time to access the channel
+		timestamp_new_trial_started = SimTime();
 	} else {
 		node_is_transmitter = FALSE;
 	}

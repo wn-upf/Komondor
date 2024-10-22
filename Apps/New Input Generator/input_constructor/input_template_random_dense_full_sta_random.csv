@@ -1,0 +1,2 @@
+//map_width;map_heigth;M;N_MIN;N_MAX;d_min_AP_AP;d_min_AP_STA;d_max_AP_STA;legacy_ratio;c_sys_width;tpc_default;cca_default;channel_bonding;central_freq;traffic_model;traffic_load;packet_length;num_pkt_agg;capture_eff_model;capture_eff_thr;constant_per;pifs_activated;bss_color;spatial_reuse_group;non_srg_obss_pd;srg_obss_pd
+15;15;3;1;4;0;1;5;0;1;20;-82;4;5;99;1000;12000;64;0;10;0;0;0;-82;-82;-82

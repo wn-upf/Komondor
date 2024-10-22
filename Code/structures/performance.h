@@ -86,6 +86,10 @@ struct Performance
 	double generation_drop_ratio;	///> Average drop ratio
 	double last_average_delay;
 	double last_average_access_delay;
+	double sum_waiting_time; 			//> Sum of channel access delays (contention)
+	int num_waiting_time_measurements;	///> Number of contention delay measurements
+	double max_waiting_time;			///> Maximum waiting time
+	double min_waiting_time;			///> Minimum waiting time
 
 	// Environment statistics
 	double *max_received_power_in_ap_per_wlan;

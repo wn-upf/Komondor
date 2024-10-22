@@ -478,10 +478,19 @@ class PreProcessor {
 						LOG_C03, LOG_LVL3, performance.average_delay);
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Maximum delay = %.4f s\n", sim_time, string_device,
-						LOG_C03, LOG_LVL3, performance.max_delay);
+						LOG_C03, LOG_LVL3, performance.max_waiting_time);
 					LOGS(TRUE, logger.file,
 							"%.15f;%s;%s;%s Minimum delay = %.4f s\n", sim_time, string_device,
-							LOG_C03, LOG_LVL3, performance.min_delay);
+							LOG_C03, LOG_LVL3, performance.min_waiting_time);
+//					LOGS(TRUE, logger.file,
+//						"%.15f;%s;%s;%s Average delay = %.4f s\n", sim_time, string_device,
+//						LOG_C03, LOG_LVL3, performance.average_delay);
+//					LOGS(TRUE, logger.file,
+//						"%.15f;%s;%s;%s Maximum delay = %.4f s\n", sim_time, string_device,
+//						LOG_C03, LOG_LVL3, performance.max_delay);
+//					LOGS(TRUE, logger.file,
+//							"%.15f;%s;%s;%s Minimum delay = %.4f s\n", sim_time, string_device,
+//							LOG_C03, LOG_LVL3, performance.min_delay);
 					break;
 				}
 				// Minimum RSSI

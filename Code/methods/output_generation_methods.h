@@ -767,8 +767,6 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			char last_av_access_delay_per_device[250] = "{";
 			char aux_last_av_access_delay_per_device[50];
 
-			//performance_report[0].average_waiting_time * pow(10,3)
-
 			int w_count = 0;
 			for(int i = 0; i < total_nodes_number; i ++) {
 				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
@@ -903,6 +901,129 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 			fprintf(logger_script.file, ";%s%s%s%s%s%s%s%s%s%s%s%s\n", tpt_array, airtime_array, sairtime_array, data_loss_ratio,
 					rtscts_loss_ratio, time_in_nav_per_device, av_delay_per_device, last_tpt_array, last_av_delay_per_device,
 					last_sairtime, last_airtime, last_av_access_delay_per_device);
+			break;
+
+		}
+
+		// TOKENIZED BACKOFF
+		case 16: {
+			//  - Throughput experienced/allocated for each device (AP and STAs)
+			char tpt_array[250] = "{";
+			char aux_tpt[50];
+			// Total airtime
+			char airtime_array[250] = "{";
+			char aux_airtime[50];
+			// Successful airtime
+			char sairtime_array[250] = "{";
+			char aux_sairtime[50];
+			// - Packets sent vs packets lost
+			char data_loss_ratio[250] = "{";
+			char aux_data_loss_ratio[50];
+			// - RTS/CTS sent vs packets lost
+			char rtscts_loss_ratio[250] = "{";
+			char aux_rtscts_loss_ratio[50];
+			// - Time each device is in NAV state
+			char time_in_nav_per_device[250] = "{";
+			char aux_time_in_nav_per_device[50];
+			// - Average packet delay
+			char av_delay_per_device[250] = "{";
+			char aux_av_delay_per_device[50];
+			// - Average channel access delay
+			char av_access_delay_per_device[250] = "{";
+			char aux_av_access_delay_per_device[50];
+			// - Average backoff
+			char av_backoff_per_device[250] = "{";
+			char aux_av_backoff_per_device[50];
+
+
+			int w_count = 0;
+			for(int i = 0; i < total_nodes_number; i ++) {
+				if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+					// Throughput allocated to the STA
+					sprintf(aux_tpt, "%.2f", performance_report[i].throughput * pow(10,-6));
+					strcat(tpt_array, aux_tpt);
+					if (w_count < total_wlans_number-1) {
+						strcat(tpt_array, ",");
+					} else {
+						strcat(tpt_array, "};");
+					}
+					// Successful airtime
+					sprintf(aux_airtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
+					 - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
+					strcat(airtime_array, aux_airtime);
+					if (w_count < total_wlans_number-1) {
+						strcat(airtime_array, ",");
+					} else {
+						strcat(airtime_array, "};");
+					}
+					// Airtime
+					sprintf(aux_sairtime, "%.2f", (performance_report[i].total_time_transmitting_in_num_channels[0]*100/simulation_time_komondor));
+					strcat(sairtime_array, aux_sairtime);
+					if (w_count < total_wlans_number-1) {
+						strcat(sairtime_array, ",");
+					} else {
+						strcat(sairtime_array, "};");
+					}
+					// Data packets sent vs packets lost
+					sprintf(aux_data_loss_ratio, "%.2f", (double)
+						100*performance_report[i].data_packets_lost/
+						performance_report[i].data_packets_sent);
+					strcat(data_loss_ratio, aux_data_loss_ratio);
+					if (w_count < total_wlans_number-1) {
+						strcat(data_loss_ratio, ",");
+					} else {
+						strcat(data_loss_ratio, "};");
+					}
+					// RTS/CTS packets sent vs packets lost
+					sprintf(aux_rtscts_loss_ratio, "%.2f", (double)
+						100*performance_report[i].rts_cts_lost/
+						performance_report[i].rts_cts_sent);
+					strcat(rtscts_loss_ratio, aux_rtscts_loss_ratio);
+					if (w_count < total_wlans_number-1) {
+						strcat(rtscts_loss_ratio, ",");
+					} else {
+						strcat(rtscts_loss_ratio, "};");
+					}
+					// Time in NAV per device (%)
+					sprintf(aux_time_in_nav_per_device, "%.2f", performance_report[i].time_in_nav/simulation_time_komondor*100);
+					strcat(time_in_nav_per_device, aux_time_in_nav_per_device);
+					if (w_count < total_wlans_number-1) {
+						strcat(time_in_nav_per_device, ",");
+					} else {
+						strcat(time_in_nav_per_device, "};");
+					}
+					// Average delay per device (ms)
+					sprintf(aux_av_delay_per_device, "%.2f", performance_report[i].average_delay * pow(10,3));
+					strcat(av_delay_per_device, aux_av_delay_per_device);
+					if (w_count < total_wlans_number-1) {
+						strcat(av_delay_per_device, ",");
+					} else {
+						strcat(av_delay_per_device, "};");
+					}
+					// Average access delay (ms)
+					sprintf(aux_av_access_delay_per_device, "%.2f", performance_report[i].average_waiting_time * pow(10,3));
+					strcat(av_access_delay_per_device, aux_av_access_delay_per_device);
+					if (w_count < total_wlans_number-1) {
+						strcat(av_access_delay_per_device, ",");
+					} else {
+						strcat(av_access_delay_per_device, "};");
+					}
+					// Average backoff (# slots)
+					sprintf(aux_av_backoff_per_device, "%.2f", performance_report[i].expected_backoff/SLOT_TIME);
+					strcat(av_backoff_per_device, aux_av_backoff_per_device);
+					if (w_count < total_wlans_number-1) {
+						strcat(av_backoff_per_device, ",");
+					} else {
+						strcat(av_backoff_per_device, "};");
+					}
+
+					++w_count;
+
+				}
+			}
+
+			fprintf(logger_script.file, ";%s%s%s%s%s%s%s%s%s\n", tpt_array, airtime_array, sairtime_array, data_loss_ratio,
+					rtscts_loss_ratio, time_in_nav_per_device, av_delay_per_device, av_access_delay_per_device, av_backoff_per_device);
 			break;
 
 		}

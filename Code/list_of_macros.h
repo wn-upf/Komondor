@@ -275,6 +275,17 @@
 #define BACKOFF_EDCA					1
 #define BACKOFF_TOKENIZED				2
 #define BACKOFF_DETERMINISTIC_QUALCOMM	3
+#define BACKOFF_REPEAT_BO 				4
+#define BACKOFF_ECA						5
+#define BACKOFF_SYNCHRONIZED 			6
+
+// Token-based channel access
+#define ADD_DEVICE_TO_LIST				1
+#define REMOVE_DEVICE_FROM_LIST			2
+#define TAKE_TOKEN						1
+#define RELEASE_TOKEN					2
+#define DEVICE_INACTIVE_FOR_TOKEN		0
+#define DEVICE_ACTIVE_FOR_TOKEN			1
 
 /* *********************
  * * System parameters *

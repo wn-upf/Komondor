@@ -285,6 +285,18 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 		}
 	}
 
+	// Initialize arrays for the token-based channel access
+	for (int i = 0; i < total_nodes_number; ++i) {
+		if (node_container[i].backoff_type == BACKOFF_TOKENIZED){
+			node_container[i].token_order_list = new int[total_nodes_number];
+			node_container[i].num_missed_tokens_list = new int[total_nodes_number];
+			for(int j = 0; j < total_nodes_number; ++j) {
+				node_container[i].token_order_list[j] = DEVICE_INACTIVE_FOR_TOKEN;
+				node_container[i].num_missed_tokens_list[j] = 0;
+			}
+		}
+	}
+
 	// Generate agents (if enabled)
 	central_controller_flag = 0;
 	if (agents_enabled) { GenerateAgents(agents_input_filename, simulation_code_console); }
