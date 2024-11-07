@@ -140,7 +140,7 @@ class PreProcessor {
 
             double reward(0);
 			// Switch to select the reward according to the metric used (rewards must be normalized)
-			switch(type_of_reward){
+            switch(type_of_reward){
 				/* REWARD_TYPE_PACKETS_SUCCESSFUL:
 				 * - The number of packets sent are taken into account
 				 * - The reward must be bounded by the maximum number of data packets
@@ -177,14 +177,21 @@ class PreProcessor {
 				 * -
 				 */
 				case REWARD_TYPE_MAX_DELAY:{
-					reward = performance.average_delay;
+					reward = 1/performance.max_delay;
+					break;
+				}
+				/* REWARD_TYPE_MIN_DELAY:
+				 * -
+				 */
+				case REWARD_TYPE_MIN_DELAY:{
+					reward = (1/performance.min_delay);
 					break;
 				}
 				/* REWARD_TYPE_AVERAGE_DELAY:
 				 * -
 				 */
 				case REWARD_TYPE_AVERAGE_DELAY:{
-					reward = performance.average_delay;
+					reward = 1/performance.average_delay;
 					break;
 				}
                 /* REWARD_TYPE_CHANNEL_OCCUPANCY:
@@ -213,16 +220,16 @@ class PreProcessor {
 		* @param "ml_output" [type int]: output of the ML method
 		* @return "suggested_configuration" [type Configuration]: new configuration to be sent to the WLAN
 		*/
-		Configuration ProcessMLOutput(int learning_mechanism, Configuration configuration, double ml_output) {
+		Configuration ProcessMLOutput(int learning_mechanism, Configuration configuration, int ml_output) {
 			Configuration suggested_configuration;
 			// Switch to select the reward according to the metric used (rewards must be normalized)
 			switch(learning_mechanism){
 				case MULTI_ARMED_BANDITS:{
-					suggested_configuration = GenerateNewConfigurationBandits(configuration, ml_output);
+					GenerateNewConfigurationBandits(&configuration, ml_output);
 					break;
 				}
 				case RTOT_ALGORITHM:{
-					suggested_configuration = GenerateNewConfigurationRtotAlg(configuration, ml_output);
+					GenerateNewConfigurationRtotAlg(&configuration, ml_output);
 					break;
 				}
 				/* Default */
@@ -232,7 +239,7 @@ class PreProcessor {
 					break;
 				}
 			}
-			return suggested_configuration;
+			return configuration;
 		};
 
 		/***********************/
@@ -273,29 +280,15 @@ class PreProcessor {
 		* @param "action_ix" [type int]: index of the action that corresponds to the new configuration
 		* @return "new_configuration" [type Configuration]: configuration report, corresponding to the new action
 		*/
-		Configuration GenerateNewConfigurationBandits(Configuration configuration, double ml_output){
+		void GenerateNewConfigurationBandits(Configuration *configuration, int ml_output){
 			// Find which parameters correspond to the selected arm
-			index2values(indexes_selected_arm, (int) ml_output, num_arms_channel,
+			index2values(indexes_selected_arm, ml_output, num_arms_channel,
 				num_arms_sensitivity, num_arms_tx_power, num_arms_max_bandwidth);
-			// Update each parameter according to the configuration provided by the MAB
-			int new_primary = list_of_channels[indexes_selected_arm[0]];
-			double new_pd = list_of_pd_values[indexes_selected_arm[1]];
-			double new_tx_power = list_of_tx_power_values[indexes_selected_arm[2]];
-			int new_max_bandwidth = list_of_max_bandwidth[indexes_selected_arm[3]];
-			// Generate the configuration object
-			Configuration new_configuration;
-			// Set configuration to the received one, and then change specific parameters
-			new_configuration = configuration;
-			//new_configuration.timestamp = sim_time;						// Timestamp
-			new_configuration.selected_primary_channel = new_primary;	// Primary
-			if (configuration.spatial_reuse_enabled) {
-				new_configuration.selected_pd = new_pd;
-			} else {
-				new_configuration.selected_pd = new_pd;
-			}
-			new_configuration.selected_tx_power = new_tx_power;			// TX Power
-			new_configuration.selected_max_bandwidth = new_max_bandwidth;		// Max bandwidth
-			return new_configuration;
+			// Update each parameter in "configuration" according to the configuration provided by the MAB
+			configuration->selected_primary_channel = list_of_channels[indexes_selected_arm[0]];		// Primary channel
+			configuration->selected_pd = list_of_pd_values[indexes_selected_arm[1]];					// Selected PD (CCA or OBSS/PD)
+			configuration->selected_tx_power = list_of_tx_power_values[indexes_selected_arm[2]];		// TX Power
+			configuration->selected_max_bandwidth = list_of_max_bandwidth[indexes_selected_arm[3]];		// Max bandwidth
 		}
 
 		/**
@@ -304,13 +297,13 @@ class PreProcessor {
 		* @param "indexes_selected_arm" [type int*]: array containing the index of each parameter chosen by the WLAN
 		* @return "action_ix" [type Configuration]: index of the action that corresponds to the input configuration
 		*/
-		int FindActionIndexFromConfigurationBandits(Configuration configuration, int* &indexes_selected_arm, bool received_from_ap) {
+		int FindActionIndexFromConfigurationBandits(Configuration configuration, int *indexes_selected_arm, bool received_from_ap) {
 
 		    // Find the index of each chosen parameter
-			int index_channel = -1;
-			int index_pd = -1;
-			int index_tx_power = -1;
-			int index_max_bandwidth = -1;
+			int index_channel(-1);
+			int index_pd(-1);
+			int index_tx_power(-1);
+			int index_max_bandwidth(-1);
 
 			// Channel
 			for(int i = 0; i < num_arms_channel; i++) {
@@ -344,6 +337,10 @@ class PreProcessor {
 					index_max_bandwidth = i;
 				}
 			}
+
+			//printf("index_channel = %d / index_pd = %d / index_tx_power = %d / index_max_bandwidth = %d\n",
+			//		index_channel, index_pd, index_tx_power, index_max_bandwidth);
+
 			// Update the index of each chosen parameter
 			indexes_selected_arm[0] = index_channel;
 			indexes_selected_arm[1] = index_pd;
@@ -352,6 +349,7 @@ class PreProcessor {
 			// Find the action ix and return it
 			int action_ix = values2index(indexes_selected_arm, num_arms_channel,
 				num_arms_sensitivity, num_arms_tx_power, num_arms_max_bandwidth);
+			//printf("action_ix = %d\n", action_ix);
 			//PrintActionBandits(action_ix);
 
 			return action_ix;
@@ -369,14 +367,9 @@ class PreProcessor {
 		* @param "action_ix" [type int]: index of the action that corresponds to the new configuration
 		* @return "new_configuration" [type Configuration]: configuration report, corresponding to the new action
 		*/
-		Configuration GenerateNewConfigurationRtotAlg(Configuration configuration, double ml_output){
-			// Generate the configuration object
-			Configuration new_configuration;
+		void GenerateNewConfigurationRtotAlg(Configuration *configuration, int ml_output){
 			// Set configuration to the received one, and then change specific parameters
-			new_configuration = configuration;
-			new_configuration.non_srg_obss_pd = ml_output;
-
-			return new_configuration;
+			configuration->non_srg_obss_pd = ml_output;
 		}
 
 
@@ -438,7 +431,7 @@ class PreProcessor {
 		void PrintAvailableRewardTypes(){
 			printf("%s Available types of rewards:\n%s REWARD_TYPE_PACKETS_SUCCESSFUL (%d)\n"
 				"%s REWARD_TYPE_AVERAGE_THROUGHPUT (%d)\n%s REWARD_TYPE_MIN_RSSI (%d)\n"
-				"%s REWARD_TYPE_MAX_DELAY (%d)\n%s REWARD_TYPE_AVERAGE_DELAY (%d)\n%s REWARD_TYPE_CHANNEL_OCCUPANCY (%d)",
+				"%s REWARD_TYPE_MAX_DELAY (%d)\n%s REWARD_TYPE_AVERAGE_DELAY (%d)\n%s REWARD_TYPE_CHANNEL_OCCUPANCY (%d)\n",
 				LOG_LVL2, LOG_LVL3, REWARD_TYPE_PACKETS_SUCCESSFUL, LOG_LVL3, REWARD_TYPE_AVERAGE_THROUGHPUT,
 				LOG_LVL3, REWARD_TYPE_MIN_RSSI, LOG_LVL3, REWARD_TYPE_MAX_DELAY, LOG_LVL3, REWARD_TYPE_AVERAGE_DELAY,
 				LOG_LVL3, REWARD_TYPE_CHANNEL_OCCUPANCY);
@@ -504,7 +497,14 @@ class PreProcessor {
 				case REWARD_TYPE_MAX_DELAY:{
 					LOGS(TRUE, logger.file,
 						"%.15f;%s;%s;%s Max delay = %.2f ms\n", sim_time, string_device,
-						LOG_C03, LOG_LVL3, performance.average_delay * pow(10,-3));
+						LOG_C03, LOG_LVL3, performance.max_delay * pow(10,-3));
+					break;
+				}
+				// Minimum delay
+				case REWARD_TYPE_MIN_DELAY:{
+					LOGS(TRUE, logger.file,
+						"%.15f;%s;%s;%s Min delay = %.2f ms\n", sim_time, string_device,
+						LOG_C03, LOG_LVL3, performance.min_delay * pow(10,-3));
 					break;
 				}
 				// Average delay
@@ -572,15 +572,26 @@ class PreProcessor {
 		void InitializeVariables(){
 			// Lists of modifiable parameters
 			list_of_channels = new int[num_arms_channel];
+			for(int i = 0; i < num_arms_channel; ++i){
+				list_of_channels[i] = 0;
+			}
 			list_of_pd_values = new double[num_arms_sensitivity];
+			for(int i = 0; i < num_arms_sensitivity; ++i){
+				list_of_pd_values[i] = 0;
+			}
 			list_of_tx_power_values = new double[num_arms_tx_power];
+			for(int i = 0; i < num_arms_tx_power; ++i){
+				list_of_tx_power_values[i] = 0;
+			}
 			list_of_max_bandwidth = new int[num_arms_max_bandwidth];
-//			list_of_available_actions = new int[num_arms];
-//			for (int i = 0 ; i < num_arms; ++i) {
-//				list_of_available_actions[i] = 1;
-//			}
+			for(int i = 0; i < num_arms_max_bandwidth; ++i){
+				list_of_max_bandwidth[i] = 0;
+			}
 			// Variable to keep track of the indexes belonging to each parameter's list
 			indexes_selected_arm = new int[NUM_FEATURES_ACTIONS]; // 4 features considered
+			for (int i = 0 ; i < NUM_FEATURES_ACTIONS; ++i) {
+				indexes_selected_arm[i] = 0;
+			}
 		}
 
 };

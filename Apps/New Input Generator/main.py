@@ -14,12 +14,12 @@ RANDOM_SEED = 1
 NUM_WLANS = 9
 num_cols = 3
 num_rows = 3
-FREQUENCY_REUSE = 1
+FREQUENCY_REUSE = 3
 NUM_SCENARIOS = 100
 PLOT_ENABLED = False
-# Parameters to be changed, according to the desired scenario type
-type_of_scenario = "dense"
-traffic_type = "full"
+# # Parameters to be changed, according to the desired scenario type
+# type_of_scenario = "dense"
+# traffic_type = "full"
 
 # Dictionary for WLAN codes
 DICTIONARY = [
@@ -312,12 +312,12 @@ def main():
     random.seed(RANDOM_SEED)  # Initialize the random number generator
 
     # Complete path building
-    input_path = f"./input_constructor/input_template_random_{type_of_scenario}_{traffic_type}_sta_random.csv"
+    input_path = f"./input_constructor/input_template_icmlcn.csv"
     print(f"input_path: {input_path}")
     output_path = "./output/*"
 
     # DEFINE THE BACKOFF VALUES TO BE USED
-    backoff_approaches = [0, 2, 3]  # DCF, Tokenized, Deterministic Qualcomm
+    backoff_approaches = [0]  # DCF, Tokenized, Deterministic Qualcomm
     cw_adaptation = 1
     cw_min = 0
     cw_max = 15
@@ -378,7 +378,7 @@ def main():
             output_folder = f"./output/input_{NUM_WLANS}bss_fullbuffer/"
             if not os.path.exists(output_folder):
                 os.makedirs(output_folder)
-            output_path = output_folder+f"input_nodes_{type_of_scenario}_sce{n:02d}_FREQUENCY_REUSE_{FREQUENCY_REUSE}_BO_{backoff_approaches[out_ix]}.csv"
+            output_path = output_folder+f"input_nodes_sce{n:02d}_FREQUENCY_REUSE_{FREQUENCY_REUSE}_BO_{backoff_approaches[out_ix]}.csv"
             print("output_path:", output_path)
             generate_file(output_path, wlan_container)
 

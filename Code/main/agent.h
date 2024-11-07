@@ -138,7 +138,7 @@ component Agent : public TypeII{
 
 		// Other input parameters
 		int type_of_reward;					///> Type of reward
-		int type_of_reward_cc;              ///> Type of reward chosen by the CC
+		//int type_of_reward_cc;              ///> Type of reward chosen by the CC
 		double time_between_requests; 		///> Time between two information requests to the AP (for a given measurement)
 
 		// Print/write variables
@@ -175,7 +175,7 @@ component Agent : public TypeII{
 		// Configuration and performance after being processed by the Pre-processor
 		int processed_configuration;	///> Processed configuration
 		double processed_reward;		///> Processed performance
-		double processed_reward_cc;     ///> Processed performance according to the type of reward fixed at the CC
+		//double processed_reward_cc;     ///> Processed performance according to the type of reward fixed at the CC
 
 		// Items related to the interaction with the Central Controller (CC)
         int automatic_forward_enabled;          ///> Flag to indicate that data received from the AP is automatically forwarded to the CC
@@ -286,14 +286,17 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	configuration = received_configuration;
 	performance = received_performance;
 
+	//printf("channel = %d / pd = %f / tx_power = %f / max_bandwidth = %d\n",
+	//		configuration.selected_primary_channel, ConvertPower(PW_TO_DBM, configuration.selected_pd),
+	//		ConvertPower(PW_TO_DBM, configuration.selected_tx_power), configuration.selected_max_bandwidth);
+
 	// Process the information received from the AP
 	// 1 - Find the index of the current action
 	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration, TRUE);
-	// 2 - Process the performance to obtain the corresponding reward
+	// 2 - Compute the reward based on the observed performance
 	processed_reward = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
-	// 3 - Process the performance to obtain the corresponding reward according to the central controller
-	if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
-
+	//// 3 - Process the performance to obtain the corresponding reward according to the central controller
+	//if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
 
 	// Update the information of the current selected action
 	UpdateActionInformation(processed_configuration);
@@ -378,7 +381,7 @@ void Agent :: InportReceiveCommandFromController(int destination_agent_id, int c
 			SimTime(), agent_id, LOG_F02, LOG_LVL1);
 
 		// Update the type of reward desired by the CC
-        type_of_reward_cc = type_of_reward;
+        //type_of_reward_cc = type_of_reward;
 
         switch(command_id) {
 			// Send the current configuration to the CC
@@ -563,6 +566,7 @@ void Agent :: ComputeNewConfiguration(){
 					ml_output = ml_model.ComputeIndividualConfiguration
 						(processed_configuration, processed_reward, agent_logger,
 						SimTime(), list_of_available_actions);
+					//PrintOrWriteAgentStatistics();
 					break;
 				}
 				case RTOT_ALGORITHM:{
@@ -609,7 +613,7 @@ void Agent :: UpdateActionInformation(int action_ix){
 	actions[action_ix].cumulative_reward += processed_reward;
 	++ actions[action_ix].times_played;
 	// Information since last CC request
-	actions[action_ix].cumulative_reward_since_last_cc_request += processed_reward_cc;
+	actions[action_ix].cumulative_reward_since_last_cc_request += processed_reward;
 	++ actions[action_ix].times_played_since_last_cc_request;
 }
 

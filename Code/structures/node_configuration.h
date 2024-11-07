@@ -157,7 +157,7 @@ struct AgentCapabilities
 // Node's configuration
 struct Configuration
 {
-	double timestamp;					///> Timestampt at which the configuration was saved
+	double timestamp;					///> Timestamp at which the configuration was saved
 
 	int selected_primary_channel;		///> Selected primary channel
 	double selected_pd;					///> Selected pd ("sensitivity" threshold) [pW]

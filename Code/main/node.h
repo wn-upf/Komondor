@@ -640,7 +640,7 @@ void Node :: Stop(){
 void Node :: InportSomeNodeStartTX(Notification &notification){
 
 	LOGS(save_node_logs, node_logger.file,
-			"%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX(): N%d to N%d sends packet type %d in range %d-%d at power %.2f dBm\n",
+			"%.15f;N%d;S%d;%s;%s InportSomeNodeStartTX(): N%d to N%d sends packet type %d in range %d-%d using a transmit power of %.2f dBm\n",
 			SimTime(), node_id, node_state, LOG_D00, LOG_LVL1,
 			notification.source_id, notification.destination_id, notification.packet_type,
 			notification.left_channel, notification.right_channel,
@@ -1041,44 +1041,47 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							// Save NAV notification for comparing timestamps in case of need
 							nav_notification = notification;
 
-							if(node_is_transmitter){
-								int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
-									current_primary_channel, current_pd, buffer.QueueSize()));
+							int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
+								current_primary_channel, current_pd, buffer.QueueSize()));
+
+							if(pause) {
+
 								// Check if node has to freeze the BO (if it is not already frozen)
-								if (pause) {
+								if (node_is_transmitter) {
 									PauseBackoff();
 								}
+
+								// Update the NAV time according to the frame's info
+								current_nav_time = notification.tx_info.nav_time;
+
+								// SERGIO on 28/09/2017:
+								// - Ensure NAV TO finishes at same time (or before) than other's WLAN ACK transmission.
+								// time_to_trigger = SimTime() + current_nav_time + TIME_OUT_EXTRA_TIME;
+								time_to_trigger = SimTime() + current_nav_time - TIME_OUT_EXTRA_TIME;
+
+								// SERGIO_TRIGGER
+								// Differentiate between Intra-BSS and Inter-BSS NAV triggers
+								if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
+									trigger_inter_bss_NAV_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
+								} else {
+									trigger_NAV_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
+								}
+
+								LOGS(save_node_logs,node_logger.file,
+									"%.15f;N%d;S%d;%s;%s Entering in NAV during %.12f and setting NAV timeout to %.12f\n",
+									SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
+									current_nav_time, trigger_NAV_timeout.GetTime());
+
+	//							LOGS(save_node_logs,node_logger.file,
+	//								"%.15f;N%d;S%d;%s;%s current_nav_time = %.12f\n",
+	//								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4,
+	//								current_nav_time);
+
+								node_state = STATE_NAV;
+								last_time_not_in_nav = SimTime();
+								++times_went_to_nav;
+
 							}
-
-							// Update the NAV time according to the frame's info
-							current_nav_time = notification.tx_info.nav_time;
-
-							// SERGIO on 28/09/2017:
-							// - Ensure NAV TO finishes at same time (or before) than other's WLAN ACK transmission.
-							// time_to_trigger = SimTime() + current_nav_time + TIME_OUT_EXTRA_TIME;
-							time_to_trigger = SimTime() + current_nav_time - TIME_OUT_EXTRA_TIME;
-
-							// SERGIO_TRIGGER
-							// Differentiate between Intra-BSS and Inter-BSS NAV triggers
-							if (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME) {
-								trigger_inter_bss_NAV_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
-							} else {
-								trigger_NAV_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
-							}
-
-							LOGS(save_node_logs,node_logger.file,
-								"%.15f;N%d;S%d;%s;%s Entering in NAV during %.12f and setting NAV timeout to %.12f\n",
-								SimTime(), node_id, node_state, LOG_D08, LOG_LVL3,
-								current_nav_time, trigger_NAV_timeout.GetTime());
-
-//							LOGS(save_node_logs,node_logger.file,
-//								"%.15f;N%d;S%d;%s;%s current_nav_time = %.12f\n",
-//								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4,
-//								current_nav_time);
-
-							node_state = STATE_NAV;
-							last_time_not_in_nav = SimTime();
-							++times_went_to_nav;
 
 						} else { // Frame cannot be decoded.
 
@@ -2438,6 +2441,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 					if(!trigger_start_backoff.Active()
 						&& !trigger_end_backoff.Active()){	// BO was paused and DIFS not initiated
 
+
 						int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_pd,
 								buffer.QueueSize()));
 
@@ -2459,10 +2463,10 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 //							LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS started.\n",
 //														SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
 						} else {	// BO cannot be resumed
-							LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s EIFS/DIFS cannot be started because the channel is busy.\n",
+							LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s EIF/DIFSS cannot be starte because the channel is busyd.\n",
 								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
-						}
 
+}
 					} else {	// BO was already active
 						LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s BO was already active.\n",
 								SimTime(), node_id, node_state, LOG_E11, LOG_LVL4);
@@ -2542,7 +2546,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 				} else {	// Node IS NOT THE DESTINATION, do nothing
 
 					LOGS(save_node_logs,node_logger.file,
-						"%.15f;N%d;S%d;%s;%s Still noticing a packet transmission (#%d) from N%d.\n",
+						"%.15f;N%d;S%d;%s;%s Still locked into the reception of packet #%d from N%d.\n",
 						SimTime(), node_id, node_state, LOG_E15, LOG_LVL3, notification.packet_id,
 						notification.source_id);
 
@@ -2782,6 +2786,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							cts_notification = GenerateNotification(PACKET_TYPE_CTS, current_destination_id,
 								notification.packet_id, notification.tx_info.num_packets_aggregated,
 								notification.timestamp_generated, notification.tx_info.total_tx_power);
+
+							cts_notification.tx_duration = current_tx_duration;
 
                             // Reset the flag that indicates whether the tx power changed or not
                             flag_change_in_tx_power = FALSE;
@@ -3121,33 +3127,32 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 			LOGS(save_node_logs,node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
 		}
 
-//		double max_achievable_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
-//			Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
-//			Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
-//			IEEE_AX_SU_SPATIAL_STREAMS);
-
-		double max_achievable_bits_ofdm_sym (getNumberSubcarriers(NUM_CHANNELS_KOMONDOR) *
-			Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
-			Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
-			IEEE_AX_SU_SPATIAL_STREAMS);
-
-		double max_achievable_throughput (max_achievable_bits_ofdm_sym / IEEE_AX_OFDM_SYMBOL_GI32_DURATION);
-
 		// Update performance measurements
-		performance_report.max_bound_throughput = max_achievable_throughput;
+		if (first_time_requesting_mcs) {
+			double max_achievable_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
+				Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
+				Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
+				IEEE_AX_SU_SPATIAL_STREAMS);
+			//	double max_achievable_bits_ofdm_sym (getNumberSubcarriers(NUM_CHANNELS_KOMONDOR) *
+			//	Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
+			//	Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
+			//	IEEE_AX_SU_SPATIAL_STREAMS);
+			double max_achievable_throughput (max_achievable_bits_ofdm_sym / IEEE_AX_OFDM_SYMBOL_GI32_DURATION);
+			performance_report.max_bound_throughput = max_achievable_throughput;
+			first_time_requesting_mcs = FALSE;
+			LOGS(save_node_logs,node_logger.file, "\n");
+			LOGS(save_node_logs,node_logger.file,
+				"%.15f;N%d;S%d;%s;%s max_achievable_throughput (%d - %d) = %.1f Mbps "
+				"(%d channel/s: Y_sc = %d, MCS %d: Y_m = %d, Y_c = %.2f)\n",
+				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+				min_channel_allowed, max_channel_allowed, max_achievable_throughput * pow(10,-6),
+				max_channel_allowed - min_channel_allowed + 1,
+				getNumberSubcarriers(current_right_channel - current_left_channel + 1),
+				mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1,
+				Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1],
+				Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1]);
+		}
 
-		LOGS(save_node_logs,node_logger.file, "\n");
-
-		LOGS(save_node_logs,node_logger.file,
-			"%.15f;N%d;S%d;%s;%s max_achievable_throughput (%d - %d) = %.1f Mbps "
-			"(%d channel/s: Y_sc = %d, MCS %d: Y_m = %d, Y_c = %.2f)\n",
-			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-			min_channel_allowed, max_channel_allowed, max_achievable_throughput * pow(10,-6),
-			max_channel_allowed - min_channel_allowed + 1,
-			getNumberSubcarriers(current_right_channel - current_left_channel + 1),
-			mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1,
-			Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1],
-			Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1]);
 		// printf("\n");
 
 		// TODO: ADD LOGIC TO HANDLE WRONG SITUATIONS (cannot transmit over none of the channel combinations)
@@ -3768,9 +3773,9 @@ void Node :: RequestMCS(){
 	// MCS of receiver is not pending anymore
 	change_modulation_flag[ix_aux] = FALSE;
 
-	if(first_time_requesting_mcs) {
-		first_time_requesting_mcs = FALSE;
-	}
+	//if(first_time_requesting_mcs) {
+	//	first_time_requesting_mcs = FALSE;
+	//}
 	// LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s RequestMCS() END\n", SimTime(), node_id, node_state, LOG_G00, LOG_LVL1);
 }
 
@@ -3817,7 +3822,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 	if(first_time_requesting_mcs) {
 		notification.left_channel = current_primary_channel;
 		notification.right_channel = current_primary_channel;
-		first_time_requesting_mcs = FALSE;
+		//first_time_requesting_mcs = FALSE;
 	} else {
 		notification.left_channel = current_left_channel;
 		notification.right_channel = current_right_channel;
@@ -5468,17 +5473,17 @@ void Node :: InitializeVariables() {
 	current_modulation = 1;
 	packet_id = 0;
 
-	// CHANNEL ACCESS
+	//CHANNEL ACCESSs
 	current_cw_min = cw_min_default; // Initialize the CW min
 	current_cw_max = cw_max_default; // Initialize the CW max
 	cw_stage_current = 0;
-	// - Tokenized backoff
+	//- Tokenized backoffF
 	if (backoff_type == BACKOFF_TOKENIZED){
 		token_status = node_id;
 		distance_to_token = 0;
 		token_order_list[node_id] = DEVICE_ACTIVE_FOR_TOKEN;
 	}
-	// - Deterministic backoff
+	//-  Deterministic backoff
 	num_bo_interruptions = 0;
 	base_backoff_deterministic = 5; // Hardcoded
 	deterministic_bo_active = 0;

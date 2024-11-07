@@ -478,7 +478,7 @@ void CentralController :: InportReceivingInformationFromAgent(int agent_id,
 				LOGS(save_controller_logs,central_controller_logger.file,
 					"%.15f;CC;%s;%s Updating the performance of the agents\n", SimTime(), LOG_C01, LOG_LVL3);
 				// Update the shared performance per cluster
-				UpdatePerformancePerCluster(MAX_MIN_PERFORMANCE);
+				UpdatePerformancePerCluster(MAX_MIN_PERFORMANCE); // AVERAGE_PERFORMANCE, PROP_FAIRNESS_PERFORMANCE, MAX_MIN_PERFORMANCE
 				// Send the shared performance to the agents
 				SendCommandToAllAgents(UPDATE_REWARD, configuration_array);
 				break;
@@ -518,14 +518,15 @@ void CentralController :: ApplyMlMethod(trigger_t &){
 		"%.15f;CC;%s;%s Applying the ML method (iteration %d)\n", SimTime(), LOG_C00, LOG_LVL1, cc_iteration);
 
 	// STEP 1 [OPTIONAL]: Update the performance observed per cluster (shared metric)
-	UpdatePerformancePerCluster(MAX_MIN_PERFORMANCE); // TODO: specify the shared performance from input files (now hardcoded)
+	//    -  MAX_MIN_PERFORMANCE, PROP_FAIRNESS_PERFORMANCE, AVERAGE_PERFORMANCE
+	UpdatePerformancePerCluster(AVERAGE_PERFORMANCE); // TODO: specify the shared performance from input files (now hardcoded)
 
 	// STEP 2: APPLY THE ML METHOD
 	ml_model.ComputeGlobalConfiguration(configuration_array, controller_report, central_controller_logger, SimTime());
 
 	// STEP 3: PROVIDE A RESPONSE
 	switch(ml_model.learning_mechanism) {
-		// Action banning: special case where configurations are banned, rather that provided
+		// Action banning: special case where sconfigurations are banned, rather that provided
 		case CENTRALIZED_ACTION_BANNING: {
 			// Forward the output to agents
 			SendCommandToAllAgents(BAN_CONFIGURATION, configuration_array);
@@ -626,11 +627,12 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 
 		// Geometric sum
 		case PROP_FAIRNESS_PERFORMANCE:{
-			double cumulative_log_performance(1);	// TODO: rework this part in order to consider absolute performance values (throughput, delay, etc.)
+			// TODO: rework this part in order to consider absolute performance values (throughput, delay, etc.)
 			for(int i = 0; i < agents_number; ++i) {
+				double cumulative_log_performance(0);
 				for(int j = 0; j < agents_number; ++j) {
 					if (controller_report.clusters_per_wlan[i][j]) {
-						cumulative_log_performance += log(controller_report.performance_per_agent[j]);
+						cumulative_log_performance += log10(1 + controller_report.performance_per_agent[j]);
 					}
 				}
 				controller_report.cluster_performance[i] = cumulative_log_performance;
@@ -640,6 +642,22 @@ void CentralController :: UpdatePerformancePerCluster(int shared_performance_met
 
 		// Average
 		case AVERAGE_PERFORMANCE:{
+			double cumulative_performance(0);
+			int num_agents_involved(0);
+			for(int i = 0; i < agents_number; ++i) {
+				for(int j = 0; j < agents_number; ++j) {
+					if (controller_report.clusters_per_wlan[i][j]) {
+						cumulative_performance += controller_report.performance_per_agent[j];
+						++ num_agents_involved;
+					}
+				}
+				controller_report.cluster_performance[i] = cumulative_performance / num_agents_involved;
+			}
+			break;
+		}
+
+		// Average
+		case HYBRID_SELFISH_COOPERATIVE:{
 			double cumulative_performance(0);
 			int num_agents_involved(0);
 			for(int i = 0; i < agents_number; ++i) {

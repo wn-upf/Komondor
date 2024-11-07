@@ -393,12 +393,13 @@
 #define NUM_FEATURES_ACTIONS			4	///> Number of features considered (e.g., primary, PD, P_tx, Max bandwidth)
 
 // Types of rewards
-#define REWARD_TYPE_PACKETS_SUCCESSFUL	0	///> Packets sent
-#define REWARD_TYPE_AVERAGE_THROUGHPUT 	1	///> Throughput
-#define REWARD_TYPE_MIN_RSSI			2	///> Minimum RSSI received
-#define REWARD_TYPE_MAX_DELAY			3	///> Maximum experienced delay
-#define REWARD_TYPE_AVERAGE_DELAY		4	///> Average experienced delay
-#define REWARD_TYPE_CHANNEL_OCCUPANCY 	5	///> Average channel occupancy ratio
+#define REWARD_TYPE_PACKETS_SUCCESSFUL	1	///> Packets sent
+#define REWARD_TYPE_AVERAGE_THROUGHPUT 	2	///> Throughput
+#define REWARD_TYPE_MIN_RSSI			3	///> Minimum RSSI received
+#define REWARD_TYPE_MAX_DELAY			4	///> Maximum experienced delay
+#define REWARD_TYPE_MIN_DELAY			5	///> Minimum experienced delay
+#define REWARD_TYPE_AVERAGE_DELAY		6	///> Average experienced delay
+#define REWARD_TYPE_CHANNEL_OCCUPANCY 	7	///> Average channel occupancy ratio
 
 // Agent modes
 #define AGENT_MODE_DECENTRALIZED 	0	///> Agents are independent entities that follow their own learning procedure
@@ -413,6 +414,10 @@
 #define RTOT_ALGORITHM					4
 #define CENTRALIZED_ACTION_BANNING		5
 
+// Type of reward computation method used
+#define AVERAGE_REWARD 					0
+#define OPTIMISTIC_ESTIMATE_REWARD		1
+
 // Types of banning threshold adaptation
 #define BANNING_THRESHOLD_STATIC        0
 #define BANNING_THRESHOLD_LINEAR        1
@@ -424,7 +429,8 @@
 // Action-selection strategies (MABs)
 #define STRATEGY_EGREEDY				1
 #define STRATEGY_THOMPSON_SAMPLING		2
-#define STRATEGY_SEQUENTIAL             3
+#define STRATEGY_UCB					3
+#define STRATEGY_SEQUENTIAL             4
 
 #define MAX_TIME_INFORMATION_VALID		10 ///> Maximum amount of time (in seconds) the information of the network is considered to be valid
 
@@ -455,9 +461,10 @@
 #define CLUSTER_BY_DISTANCE		2
 
 // Shared performance metrics
-#define MAX_MIN_PERFORMANCE			0
-#define PROP_FAIRNESS_PERFORMANCE	1
-#define AVERAGE_PERFORMANCE			2
+#define MAX_MIN_PERFORMANCE			1
+#define PROP_FAIRNESS_PERFORMANCE	2
+#define AVERAGE_PERFORMANCE			3
+#define HYBRID_SELFISH_COOPERATIVE	4
 
 /* ********************************************
  * * INPUT/OUTPUT FILES AND CONSOLE ARGUMENTS *

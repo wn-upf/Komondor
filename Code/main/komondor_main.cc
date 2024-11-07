@@ -852,7 +852,7 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 			// Set the length of max bandwidth to agent's field
 			agent_container[agent_ix].num_arms_max_bandwidth = num_arms_max_bandwidth;
 
-			// Set the lenght of the total actions in the agent (combinations of parameters)
+			// Set the length of the total actions in the agent (combinations of parameters)
 			agent_container[agent_ix].num_arms = num_arms_channel * num_arms_sensitivity
 				* num_arms_tx_power * num_arms_max_bandwidth;
 
@@ -921,6 +921,11 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 					channel_aux_2 = strtok (NULL, ",");
 					++ix;
 				}
+				// If no channel actions are provided, use the primary and range already assigned to the BSS
+				if (agent_container[agent_ix].num_arms_channel == 1) {
+					int wlan_id_aux(agent_container[agent_ix].wlan_id);
+					agent_container[agent_ix].list_of_channels[0] = node_container[wlan_container[wlan_id_aux].ap_id].current_primary_channel;
+				}
 				// sensitivity values
 				tmp_agents = strdup(line_agents);
 				std::string pd_values_text = ToString(GetField(tmp_agents, IX_AGENT_PD_VALUES));
@@ -987,7 +992,7 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 					agent_container[agent_ix].margin_rtot = agent_container[agent_ix].list_of_pd_values[0];
 				}
 
-				agent_container[agent_ix].PrintAgentInfo();
+				//agent_container[agent_ix].PrintAgentInfo();
 
 				++agent_ix;
 

@@ -103,16 +103,19 @@ class MultiArmedBandit {
 				// Update the reward for the chosen arm
 				reward_per_arm[action_ix] = reward;
 				// Update the times the chosen arm has been selected
-				times_arm_has_been_selected[action_ix] += 1;
+				++times_arm_has_been_selected[action_ix];
 				// Update the cumulative reward for the chosen arm
 				cumulative_reward_per_arm[action_ix] += reward;
 				// Update the average reward for the chosen arm
 				average_reward_per_arm[action_ix] = cumulative_reward_per_arm[action_ix] /
 					times_arm_has_been_selected[action_ix];
 				// Update the estimated reward per arm
-				estimated_reward_per_arm[action_ix] = ((estimated_reward_per_arm[action_ix]
-					* times_arm_has_been_selected[action_ix])
-					+ reward) / (times_arm_has_been_selected[action_ix] + 2);
+				//estimated_reward_per_arm[action_ix] = cumulative_reward_per_arm[action_ix] /
+				//		(times_arm_has_been_selected[action_ix] + 1);
+				estimated_reward_per_arm[action_ix] = ( (estimated_reward_per_arm[action_ix]*(times_arm_has_been_selected[action_ix]-1))
+														+ reward ) / ( (times_arm_has_been_selected[action_ix]-1) + 2 );
+				//(estimated_reward_per_arm[action_ix] + reward)
+				//								/ (double)(times_arm_has_been_selected[action_ix] + 2);
 			} else {
 				printf("[MAB] ERROR: The action ix (%d) is not correct!\n", action_ix);
 				exit(EXIT_FAILURE);
@@ -148,8 +151,17 @@ class MultiArmedBandit {
 						estimated_reward_per_arm, times_arm_has_been_selected, available_arms);
 					break;
 				}
+				/*
+				 * Upper Confidence Bound (UCB):
+				 */
+				case STRATEGY_UCB:{
+					// Pick an action according to Thompson sampling
+					arm_ix = PickArmUCB(num_arms, average_reward_per_arm,
+							times_arm_has_been_selected, available_arms, num_iterations);
+					break;
+				}
                 /*
-                 * Thompson sampling strategy:
+                 * Sequential selection strategy:
                  */
                 case STRATEGY_SEQUENTIAL:{
                     // Pick an action according to Thompson sampling
@@ -205,7 +217,6 @@ class MultiArmedBandit {
 				}
 				//printf("EXPLOIT: Selected action %d (available = %d), reward = %f\n", action_ix, available_arms[action_ix], reward_per_arm[action_ix]);
 			}
-
 			return action_ix;
 
 		}
@@ -216,24 +227,14 @@ class MultiArmedBandit {
 		/*******************************/
 		/*******************************/
 
-		double gaussrand(double mean, double std){
-			static double V1, V2, S;
-			static int phase = 0;
-			double X;
-			if(phase == 0) {
-				do {
-					double U1 = (double)rand() /  (double)RAND_MAX;
-					double U2 = (double)rand() /  (double)RAND_MAX;
-					V1 = 2*U1 - 1;
-					V2 = 2*U2 - 1;
-					S = V1 * V1 + V2 * V2;
-				} while (S >= 1 || S == 0);
-				X = (V1 * sqrt(-2 * log(S) / S)) * std + mean;
-			} else {
-				X = (V1 * sqrt(-2 * log(S) / S)) * std + mean;
-			}
-			phase = 1 - phase;
-			return X;
+		double rand_normal() {
+		  double u1 = (double)rand() / RAND_MAX;
+		  double u2 = (double)rand() / RAND_MAX;
+		  return sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
+		}
+
+		double sample_rand_normal(double mu, double sigma) {
+		  return mu + sigma * rand_normal();
 		}
 
 		/**
@@ -246,26 +247,56 @@ class MultiArmedBandit {
 		int PickArmThompsonSampling(int num_arms, double *estimated_reward_per_arm,
 			int *times_arm_has_been_selected, int *available_arms) {
 			//TODO: validate the behavior of this implementation
-			int action_ix;
+			int action_ix(-1);
 			double *theta = new double[num_arms];
 			double std;
+			int KMAX(1);
 			// Compute the posterior probability of each arm
 			for (int i = 0; i < num_arms; ++i) {
 				if (available_arms[i]) {
-					std = 1.0/(1+times_arm_has_been_selected[i]);
-					theta[i] = gaussrand(estimated_reward_per_arm[i], std);
-				} else {
-					theta[i] = -10000;
+					std = 1.0/(double)(1+times_arm_has_been_selected[i]);
+					theta[i] = 0;
+					for (int k = 0; k < KMAX; ++k){
+						theta[i] += sample_rand_normal(estimated_reward_per_arm[i], std);
+					}
 				}
 			}
 			// Find the action with the highest likelihood
-			double max = theta[0];
+			double max = -10000;
 			for (int i = 0; i < num_arms; ++i) {
-				if(theta[i] > max) {
+				if(theta[i] > max && available_arms[i]) {
 					max = theta[i];
 					action_ix = i;
 				}
 				//  TODO: elseif(theta[i] == max) --> Break ties!
+			}
+//			printf("Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
+			return action_ix;
+		}
+
+		/**
+		 * Select an action according to the UCB sampling strategy
+		 * @param "num_arms" [type int]: number of possible actions
+		 * @param "estimated_reward_per_arm" [type double*]: array containing the estimated reward for each action
+		 * @param "times_arm_has_been_selected" [type int*]: array containing the times each action has been selected
+		 * @return "action_ix" [type int]: index of the selected action
+		 */
+		int PickArmUCB(int num_arms, double *average_reward_per_arm,
+			int *times_arm_has_been_selected, int *available_arms, int num_iterations) {
+			//TODO: validate the behavior of this implementation
+			int action_ix(-1);
+			double *ucb_estimate = new double[num_arms];
+			double max = -10000;
+			// Compute the posterior probability of each arm
+			for (int i = 0; i < num_arms; ++i) {
+				if (available_arms[i]) {
+					ucb_estimate[i] = average_reward_per_arm[i] +
+							sqrt((2*log(num_iterations))/times_arm_has_been_selected[i]);
+					if (ucb_estimate[i] > max) {
+						max = ucb_estimate[i];
+						action_ix = i;
+					}
+				}
 			}
 //			printf("Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
 			return action_ix;
@@ -328,6 +359,10 @@ class MultiArmedBandit {
 						for(int n = 0; n < num_arms; n++){
 							printf("%d  ", times_arm_has_been_selected[n]);
 						}
+						printf("\n%s Estimated reward per arm: ", LOG_LVL3);
+						for(int n = 0; n < num_arms; n++){
+							printf("%f  ", estimated_reward_per_arm[n]);
+						}
 						printf("\n");
 					}
 					break;
@@ -354,6 +389,13 @@ class MultiArmedBandit {
 						if(save_logs){
 							fprintf(logger.file, "%d ", times_arm_has_been_selected[n]);
 						}
+					}
+					if(save_logs) fprintf(logger.file, "\n%.15f;A%d;%s;%s Estimated reward per arm: ",
+						sim_time, agent_id, LOG_C00, LOG_LVL3);
+					for(int n = 0; n < num_arms; n++){
+						 if(save_logs){
+							 fprintf(logger.file, "%f  ", estimated_reward_per_arm[n]);
+						 }
 					}
 					if(save_logs) fprintf(logger.file, "\n");
 					break;
@@ -383,7 +425,7 @@ class MultiArmedBandit {
 			// TODO: generate file that stores algorithm-specific variables
 			initial_epsilon = 1;
 			epsilon = initial_epsilon;
-			initial_reward = (double) 1/num_arms;
+			initial_reward = 0; //(double) 1/num_arms;
 			num_iterations = 1;
 			// Initialize the rewards assigned to each arm
 			reward_per_arm = new double[num_arms];

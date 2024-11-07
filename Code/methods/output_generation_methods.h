@@ -947,17 +947,17 @@ void GenerateScriptOutput(int simulation_index, Performance *performance_report,
 					} else {
 						strcat(tpt_array, "};");
 					}
-					// Successful airtime
-					sprintf(aux_airtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
-					 - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
+					// Airtime
+					sprintf(aux_airtime, "%.2f", (performance_report[i].total_time_transmitting_in_num_channels[0]*100/simulation_time_komondor));
 					strcat(airtime_array, aux_airtime);
 					if (w_count < total_wlans_number-1) {
 						strcat(airtime_array, ",");
 					} else {
 						strcat(airtime_array, "};");
 					}
-					// Airtime
-					sprintf(aux_sairtime, "%.2f", (performance_report[i].total_time_transmitting_in_num_channels[0]*100/simulation_time_komondor));
+					// Successful airtime
+					sprintf(aux_sairtime, "%.2f", ((performance_report[i].total_time_transmitting_in_num_channels[0]
+					 - performance_report[i].total_time_lost_in_num_channels[i])*100/simulation_time_komondor));
 					strcat(sairtime_array, aux_sairtime);
 					if (w_count < total_wlans_number-1) {
 						strcat(sairtime_array, ",");

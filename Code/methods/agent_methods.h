@@ -63,7 +63,7 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 
 	current_performance->timestamp = sim_time;
 	current_performance->throughput = 0;
-	current_performance->max_bound_throughput = 0;
+	//current_performance->max_bound_throughput = 0;
 	current_performance->sum_delays = 0;
 	current_performance->num_delay_measurements = 0;
 	current_performance->sum_waiting_time = 0;
