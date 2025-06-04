@@ -206,14 +206,14 @@ void CentralController :: Start(){
 	if (controller_on) {
 
 		// Create CC logs file (if required)
-		if(save_controller_logs) {
-			sprintf(own_file_path, "%s_CENTRAL_CONTROLLER.txt","../output/logs_output");
-			remove(own_file_path);
-			output_log_file = fopen(own_file_path, "at");
-			central_controller_logger.save_logs = save_controller_logs;
-			central_controller_logger.file = output_log_file;
-			central_controller_logger.SetVoidHeadString();
-		}
+		//if(save_controller_logs) {
+		//	sprintf(own_file_path, "%s_CENTRAL_CONTROLLER.txt","../output/logs_output");
+		//	remove(own_file_path);
+		//	output_log_file = fopen(own_file_path, "at");
+		//	central_controller_logger.save_logs = save_controller_logs;
+		//	central_controller_logger.file = output_log_file;
+		//	central_controller_logger.SetVoidHeadString();
+		//}
 		LOGS(save_controller_logs,central_controller_logger.file,
 			"%.18f;CC;%s;%s Start()\n", SimTime(), LOG_B00, LOG_LVL1);
 

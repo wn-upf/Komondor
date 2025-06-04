@@ -205,10 +205,6 @@ class CentralizedActionBanning {
 
 			// Count the number of actions available in every agent (to prevent deleting all the actions)
 			int sum_available_actions(0);
-			for (int i = 0; i < num_arms_per_agent[agent_id]; ++i) {
-				if (list_of_available_actions_per_agent[agent_id] >= 0)
-					sum_available_actions += list_of_available_actions_per_agent[agent_id][i];
-			}
 			// BAN the most popular action(s) if played a minimum number of times
             int  times_played_most_popular_action = times_action_played_per_agent[agent_id][most_played_action_per_agent[agent_id]];
 			if (sum_available_actions > 1 && times_played_most_popular_action >= min_num_times_action_is_played) {
