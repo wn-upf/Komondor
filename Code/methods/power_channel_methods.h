@@ -144,7 +144,7 @@ double ComputePowerReceived(double distance, double tx_power, double central_fre
 	double wavelength ((double) SPEED_LIGHT/central_frequency);
 	double loss;
 
-	double pw_received;	// Power received [pW]
+	double pw_received = 0;	// Power received [pW]
 
 	switch(path_loss_model){
 		// Free space - Calculator: https://www.pasternack.com/t-calculator-fspl.aspx (UNITS ARE NOT IN SI!)
