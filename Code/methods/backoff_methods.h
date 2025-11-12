@@ -49,6 +49,9 @@
  * - This file contains the backoff methods used to simulate the CSMA/CA operation in WLANs
  */
 
+#ifndef BACKOFF_METHODS_H
+#define BACKOFF_METHODS_H
+
 #include <math.h>
 #include <algorithm>
 #include <stddef.h>
@@ -523,3 +526,5 @@ void PrintOrWriteTokenList(int write_or_print, int save_node_logs, Logger node_l
 		}
 	}
 }
+
+#endif // BACKOFF_METHODS_H

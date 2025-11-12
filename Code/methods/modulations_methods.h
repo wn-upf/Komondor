@@ -49,6 +49,8 @@
  * - This file contains the methods related to "modulations" operations
  */
 
+#ifndef MODULATIONS_METHODS_H
+#define MODULATIONS_METHODS_H
 
 #include <math.h>
 #include <algorithm>
@@ -102,3 +104,5 @@ double ComputeEbToNoise(double sinr, double bit_rate, int bandwidth, int modulat
 	return Eb_to_N0;
 
 }
+
+#endif // MODULATIONS_METHODS_H

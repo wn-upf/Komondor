@@ -70,6 +70,19 @@
 #include "../structures/node_configuration.h"
 #include "../structures/performance.h"
 
+// Manager includes
+#include "node_state_manager.h"
+#include "node_logging_manager.h"
+#include "node_channel_manager.h"
+#include "node_backoff_manager.h"
+#include "node_nav_manager.h"
+#include "node_mcs_manager.h"
+#include "node_statistics_manager.h"
+#include "node_spatial_reuse_manager.h"
+#include "node_configuration_manager.h"
+#include "node_transmission_manager.h"
+#include "node_reception_manager.h"
+
 #define __SAVELOGS__
 
 #ifdef __SAVELOGS__
@@ -281,14 +294,7 @@ component Node : public TypeII{
 		double last_sum_waiting_time;
 		int last_num_average_waiting_time_measurements;
 
-		// Statistics of each STA
-		double *throughput_per_sta;			///> Stores the throughput assigned to each STA (Downlink mode)
-		int *data_packets_sent_per_sta;		///> Stores the data packets sent to each STA (Downlink mode)
-		int *rts_cts_sent_per_sta;			///> Stores the RTS/CTS packets sent to each STA (Downlink mode)
-		int *data_packets_lost_per_sta;		///> Stores the data packets lost for each STA (Downlink mode)
-		int *rts_cts_lost_per_sta;			///> Stores the RTS/CTS packets lost for each STA (Downlink mode)
-		int *data_packets_acked_per_sta;	///> Stores the data packets acknowledged by each STA (Downlink mode)
-		int *data_frames_acked_per_sta;		///> Stores the frames acknowledged by each STA (Downlink mode)
+		// Statistics arrays are now managed by NodeStatisticsManager
 
 		// Store the simulation performance
 		Performance simulation_performance;	///> Variable that stores the performance obtained during the simulation
@@ -306,10 +312,22 @@ component Node : public TypeII{
 	// Private items (just for node operation)
 	private:
 
+		// Managers - Encapsulate node functionality
+		NodeStateManager state_manager_;                    ///< State management
+		NodeLoggingManager logging_manager_;                ///< Logging management
+		NodeChannelManager channel_manager_;                ///< Channel management
+		NodeBackoffManager backoff_manager_;                ///< Backoff management
+		NodeNavManager nav_manager_;                        ///< NAV management
+		NodeMCSManager mcs_manager_;                        ///< MCS management
+		NodeStatisticsManager statistics_manager_;          ///< Statistics management
+		NodeSpatialReuseManager spatial_reuse_manager_;     ///< Spatial reuse management
+		NodeConfigurationManager config_manager_;           ///< Configuration management
+		NodeTransmissionManager transmission_manager_;      ///< Transmission management
+		NodeReceptionManager reception_manager_;            ///< Reception management
+
 		// Komondor environment
-		double *channel_power;				///> Channel power detected in each sub-channel [pW] (Pico watts for resolution issues)
-		int *channels_free;					///> Channels that are found free for the beginning TX (i.e. power sensed < pd)
-		int *channels_for_tx;				///> Channels that are used in the beginning TX (depend on the channel bonding model)
+		// channel_power removed - access through channel_manager_.GetChannelPowersPtr() instead
+		// Channel arrays are now managed by NodeChannelManager
 
 		// File for writting node logs
 		FILE *output_log_file;				///> File for logs in which the node is involved
@@ -374,9 +392,7 @@ component Node : public TypeII{
 		double rts_duration;		///> Duration of the RTS packet
 		double cts_duration;		///> Duration of the CTS packet
 
-		int **mcs_per_node;				///> Modulation selected for each of the nodes (only transmitting nodes)
-		int *change_modulation_flag;	///> Flag for changing the MCS of any of the potential receivers
-		int *mcs_response;				///> MCS response received from receiver
+		// MCS arrays are now managed by NodeMCSManager
 
 		// Sensing and Reception parameters
 		LogicalNack logical_nack;					///> NACK to be filled in case node is the destination of tx loss
@@ -551,13 +567,14 @@ void Node :: Start(){
 		// Name node log file accordingly to the node_id
 		// Sergio on 16 Jan: changed path to adapt to new directory hierarchy
 		sprintf(own_file_path,"%s_%s_N%d_%s.txt","../output/logs_output", simulation_code.c_str(), node_id, node_code.c_str());
-		remove(own_file_path);
-		output_log_file = fopen(own_file_path, "at");
-		node_logger.save_logs = save_node_logs;
-		node_logger.file = output_log_file;
-		node_logger.SetVoidHeadString();
+		// Initialize logging manager
+		logging_manager_.InitializeLogging(own_file_path, save_node_logs);
+		// Keep backward compatibility
+		output_log_file = logging_manager_.GetLogger().file;
+		node_logger = logging_manager_.GetLogger();
 	}
 
+	// Log start event - using LOGS macro for now (backward compatibility)
 	LOGS(save_node_logs, node_logger.file,"%.18f;N%d;S%d;%s;%s Start()\n",
 		SimTime(), node_id, STATE_UNKNOWN, LOG_B00, LOG_LVL1);
 
@@ -621,14 +638,69 @@ void Node :: Stop(){
 	if (print_node_logs) PrintOrWriteNodeStatistics(PRINT_LOG);
 	if (save_node_logs) PrintOrWriteNodeStatistics(WRITE_LOG);
 
-	// Close node logs file
-	if(save_node_logs) fclose(node_logger.file);
+	// Close node logs file - managed by logging_manager_, will be closed in destructor
+	// No need to close here to avoid double-free
+	
+	// channel_power is now managed by channel_manager_ - no cleanup needed
 
 	// Save performance into the simulation_performance object
 	SaveSimulationPerformance();
 
 	// Save the configuration currently being used by the node
 	GenerateConfiguration();
+
+	// Clean up allocated arrays
+	if (nodes_transmitting != NULL) {
+		delete[] nodes_transmitting;
+		nodes_transmitting = NULL;
+	}
+	
+	// Clean up performance_report arrays (after saving results)
+	// Note: performance_report has its own arrays allocated via SetSizeOf* methods
+	performance_report.CleanupArrays();
+	
+	// IMPORTANT: Arrays that are shared with simulation_performance must NOT be freed here!
+	// Komondor::Stop() will copy simulation_performance AFTER all Node::Stop() calls complete,
+	// and GenerateScriptOutput() needs to access these arrays through the copied Performance structs.
+	// 
+	// The following arrays are assigned to simulation_performance as pointers:
+	// - total_time_transmitting_per_channel
+	// - total_time_transmitting_in_num_channels
+	// - total_time_lost_per_channel
+	// - total_time_lost_in_num_channels
+	// - total_time_channel_busy_per_channel
+	// - num_trials_tx_per_num_channels
+	// - last_total_time_transmitting_per_channel
+	// - last_total_time_lost_per_channel
+	// - received_power_array
+	// - max_received_power_in_ap_per_wlan
+	// - rssi_per_sta (for APs)
+	//
+	// These arrays will be automatically cleaned up when the Node object is destroyed
+	// by the COST framework, which happens AFTER Komondor::Stop() completes.
+	// So we do NOT free them here to avoid dangling pointers in simulation_performance.
+	
+	// Clean up arrays that are NOT shared with simulation_performance
+	if (nacks_received != NULL) {
+		delete[] nacks_received;
+		nacks_received = NULL;
+	}
+	if (timestampt_channel_becomes_free != NULL) {
+		delete[] timestampt_channel_becomes_free;
+		timestampt_channel_becomes_free = NULL;
+	}
+	
+	// Arrays allocated in komondor_main.cc Setup() method
+	// NOTE: These are also shared with simulation_performance, but they're allocated
+	// in komondor_main.cc, not in Node. We still don't free them here because
+	// Komondor::Stop() needs to access them. They'll be cleaned up when Node is destroyed.
+	// However, to be safe, we set the Node's pointers to NULL so we don't double-free,
+	// but we don't actually free the memory here.
+	distances_array = NULL;  // Don't free - allocated in komondor_main.cc, will be cleaned up there
+	received_power_array = NULL;  // Don't free - used by simulation_performance
+	max_received_power_in_ap_per_wlan = NULL;  // Don't free - used by simulation_performance
+	token_order_list = NULL;  // Don't free - allocated in komondor_main.cc
+	num_missed_tokens_list = NULL;  // Don't free - allocated in komondor_main.cc
 
 	// LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Node info:\n", SimTime(), node_id, node_state, LOG_C01, LOG_LVL1);
 };
@@ -682,13 +754,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							print_node_logs, token_order_list, total_nodes_number);
 					}
 					// Update the status of the token
-					if (node_state != STATE_TX_RTS) {
+					if (!state_manager_.IsInState(NodeInternal::NODE_STATE_TX_RTS)) {
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Token-based channel access operation (token ACQUISITION):\n",
 							SimTime(), node_id, node_state, LOG_E18, LOG_LVL4);
 						UpdateTokenStatus(node_id, TAKE_TOKEN, &token_status, notification.source_id,
 							token_order_list, total_nodes_number, &distance_to_token);
-					} else if (node_state == STATE_TX_RTS && node_id < notification.source_id) {
+					} else if (state_manager_.IsInState(NodeInternal::NODE_STATE_TX_RTS) && node_id < notification.source_id) {
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Token-based channel access operation (token ACQUISITION):\n",
 							SimTime(), node_id, node_state, LOG_E18, LOG_LVL4);
@@ -739,8 +811,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			"%.15f;N%d;S%d;%s;%s Power sensed per channel BEFORE updating [dBm]: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
-		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-					&channel_power);
+				{
+					double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+					PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+						&channel_power_ptr);
+				}
 
         // Update 'power received' array in case a new tx power is used
 //        if(node_id == 0) printf("notification.tx_info.flag_change_in_tx_power = %d\n", notification.tx_info.flag_change_in_tx_power);
@@ -757,23 +832,29 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				notification.tx_info.tx_power, central_frequency, path_loss_model);
 		}
 
-		// Update the power sensed at each channel
-		UpdateChannelsPower(&channel_power, notification, TX_INITIATED,
+		// Update the power sensed at each channel using channel manager
+		channel_manager_.UpdateChannelsPowerFromNotification(notification, TX_INITIATED,
 			central_frequency, path_loss_model, adjacent_channel_model, received_power_array[notification.source_id], node_id);
 
 		LOGS(save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
-		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-			&channel_power);
+				{
+					double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+					PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+						&channel_power_ptr);
+				}
 
 		// Call UpdatePowerSensedPerNode() ONLY for adding power (some node started)
 		UpdatePowerSensedPerNode(current_primary_channel, power_received_per_node, notification,
 			central_frequency, path_loss_model, received_power_array[notification.source_id], TX_INITIATED);
 
-		UpdateTimestampChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
-			current_pd, SimTime());
+		{
+			double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+			UpdateTimestampChannelFreeAgain(timestampt_channel_becomes_free, &channel_power_ptr,
+				current_pd, SimTime());
+		}
 
 //		if(save_node_logs) {
 //			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
@@ -856,22 +937,25 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 					if(notification.packet_type == PACKET_TYPE_RTS){
 
-						// max_pw_interference is interference in primary
-						max_pw_interference = channel_power[current_primary_channel]
+					// max_pw_interference is interference in primary
+					max_pw_interference = channel_manager_.GetChannelPowersPtr()[current_primary_channel]
 							- power_received_per_node[notification.source_id];
 
 					} else {
 
 						// Compute max interference (the highest one perceived in the reception channel range)
+					{
+						double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							notification, node_state, power_received_per_node, &channel_power);
+							notification, node_state, power_received_per_node, &channel_power_ptr);
+					}
 					}
 
 					LOGS(save_node_logs, node_logger.file,
 						"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %.2f dBm - P_if = %.2f dBm - P_noise = %.2f dBm\n",
 						SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 						channel_max_intereference,
-						ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
+						ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[channel_max_intereference]),
 						ConvertPower(PW_TO_DBM, power_rx_interest),
 						ConvertPower(PW_TO_DBM, max_pw_interference),
 						ConvertPower(PW_TO_DBM, NOISE_LEVEL_DBM));
@@ -913,8 +997,12 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							if(node_is_transmitter){
 
-								int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
-									current_primary_channel, current_pd, buffer.QueueSize()));
+								int pause;
+								{
+									double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+									pause = HandleBackoff(PAUSE_TIMER, &channel_power_ptr,
+										current_primary_channel, current_pd, buffer.QueueSize());
+								}
 								// Check if node has to freeze the BO (if it is not already frozen)
 								if (pause) {
 									PauseBackoff();
@@ -944,7 +1032,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							current_left_channel = notification.left_channel;
 							current_right_channel = notification.right_channel;
 
-							node_state = STATE_RX_RTS;
+							state_manager_.SetStateFromInt(STATE_RX_RTS);
+						node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 							receiving_from_node_id = notification.source_id;
 							receiving_packet_id = notification.packet_id;
 
@@ -976,8 +1065,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// 1 - Compute the power of interest (RSSI)
 						power_rx_interest = power_received_per_node[notification.source_id];
 						// 2 - Compute max interference (the highest one perceived in the reception channel range)
+					{
+						double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							notification, node_state, power_received_per_node, &channel_power);
+							notification, node_state, power_received_per_node, &channel_power_ptr);
+					}
 						// 3 - Compute the SINR
 						current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
 						// 4 - Check if the packet is lost or not
@@ -987,7 +1079,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Pmax_intf[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm, sinr = %f dB\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-							channel_max_intereference, ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
+							channel_max_intereference, ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[channel_max_intereference]),
 							ConvertPower(PW_TO_DBM, power_rx_interest),
 							ConvertPower(PW_TO_DBM, max_pw_interference),
 							ConvertPower(LINEAR_TO_DB,current_sinr));
@@ -1040,9 +1132,14 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							// Save NAV notification for comparing timestamps in case of need
 							nav_notification = notification;
+							nav_manager_.SetNAVNotification(notification);
 
-							int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
-								current_primary_channel, current_pd, buffer.QueueSize()));
+							int pause;
+							{
+								double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+								pause = HandleBackoff(PAUSE_TIMER, &channel_power_ptr,
+									current_primary_channel, current_pd, buffer.QueueSize());
+							}
 
 							if(pause) {
 
@@ -1051,8 +1148,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									PauseBackoff();
 								}
 
-								// Update the NAV time according to the frame's info
-								current_nav_time = notification.tx_info.nav_time;
+								// Update the NAV time according to the frame's info using NAV manager
+								bool is_inter_bss = (spatial_reuse_enabled && type_last_sensed_packet != INTRA_BSS_FRAME);
+								double nav_duration = notification.tx_info.nav_time;
+								nav_duration = FixTimeOffset(nav_duration, 13, 12); // Update the NAV time according to the time offsets
+								nav_manager_.SetNAV(nav_duration, is_inter_bss, SimTime());
+								// Sync Node's current_nav_time with manager for backward compatibility
+								current_nav_time = nav_manager_.GetCurrentNAVDuration();
 
 								// SERGIO on 28/09/2017:
 								// - Ensure NAV TO finishes at same time (or before) than other's WLAN ACK transmission.
@@ -1077,7 +1179,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 	//								SimTime(), node_id, node_state, LOG_D08, LOG_LVL4,
 	//								current_nav_time);
 
-								node_state = STATE_NAV;
+								state_manager_.SetStateFromInt(STATE_NAV);
+							node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 								last_time_not_in_nav = SimTime();
 								++times_went_to_nav;
 
@@ -1102,20 +1205,25 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 								int pause;
 
-								if(spatial_reuse_enabled && txop_sr_identified) {
-									pause = HandleBackoff(PAUSE_TIMER, &channel_power,
-										current_primary_channel, current_obss_pd_threshold, buffer.QueueSize());
-								} else {
-									pause = HandleBackoff(PAUSE_TIMER, &channel_power, current_primary_channel,
-										current_pd, buffer.QueueSize());
+								{
+									double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+									if(spatial_reuse_enabled && txop_sr_identified) {
+										pause = HandleBackoff(PAUSE_TIMER, &channel_power_ptr,
+											current_primary_channel, current_obss_pd_threshold, buffer.QueueSize());
+									} else {
+										pause = HandleBackoff(PAUSE_TIMER, &channel_power_ptr, current_primary_channel,
+											current_pd, buffer.QueueSize());
+									}
 								}
 
 								// Check if node has to freeze the BO (if it is not already frozen)
 								if (pause) {
 									PauseBackoff();
 								} else {
-									if(trigger_end_backoff.Active()) remaining_backoff =
-											ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
+									if(trigger_end_backoff.Active()) {
+										double time_remaining = trigger_end_backoff.GetTime() - SimTime();
+										remaining_backoff = backoff_manager_.ComputeRemainingBackoffFromTime(time_remaining);
+									}
 									LOGS(save_node_logs,node_logger.file,
 										"%.15f;N%d;S%d;%s;%s BO must not be paused (%f remaining slots).\n",
 										SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, remaining_backoff/SLOT_TIME);
@@ -1187,15 +1295,18 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							power_rx_interest = power_received_per_node[notification.source_id];
 
 							// Compute max interference (the highest one perceived in the reception channel range)
-							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-								notification, node_state, power_received_per_node, &channel_power);
+					{
+						double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+							notification, node_state, power_received_per_node, &channel_power_ptr);
+					}
 
 							current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
 
 							LOGS(save_node_logs,node_logger.file,
 								"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
-								ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
+								ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[channel_max_intereference]),
 								ConvertPower(PW_TO_DBM, power_rx_interest),
 								ConvertPower(PW_TO_DBM, max_pw_interference));
 
@@ -1274,7 +1385,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								current_left_channel = notification.left_channel;
 								current_right_channel = notification.right_channel;
 
-								node_state = STATE_RX_RTS;
+								state_manager_.SetStateFromInt(STATE_RX_RTS);
+						node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 								receiving_from_node_id = notification.source_id;
 								receiving_packet_id = notification.packet_id;
 
@@ -1315,14 +1427,17 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						// Update power received of interest
 						power_rx_interest = power_received_per_node[notification.source_id];
 						// Compute max interference (the highest one perceived in the reception channel range)
+					{
+						double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							notification, node_state, power_received_per_node, &channel_power);
+							notification, node_state, power_received_per_node, &channel_power_ptr);
+					}
 						// Update the current_sinr
 						current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
 						LOGS(save_node_logs, node_logger.file,
 							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
-							ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
+							ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[channel_max_intereference]),
 							ConvertPower(PW_TO_DBM, power_rx_interest),
 							ConvertPower(PW_TO_DBM, max_pw_interference));
 						// Check if notification can be decoded
@@ -1406,15 +1521,18 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							power_rx_interest = power_received_per_node[notification.source_id];
 
 							// Compute max interference (the highest one perceived in the reception channel range)
-							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-								notification, node_state, power_received_per_node, &channel_power);
+					{
+						double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+							notification, node_state, power_received_per_node, &channel_power_ptr);
+					}
 
 							current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
 
 							LOGS(save_node_logs, node_logger.file,
 								"%.15f;N%d;S%d;%s;%s Pmax_intf[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm, sinr = %f dB\n",
 								SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-								channel_max_intereference, ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
+								channel_max_intereference, ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[channel_max_intereference]),
 								ConvertPower(PW_TO_DBM, power_rx_interest),
 								ConvertPower(PW_TO_DBM, max_pw_interference),
 								ConvertPower(LINEAR_TO_DB,current_sinr));
@@ -1424,7 +1542,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								current_sinr, capture_effect, current_pd, power_rx_interest, constant_per,
 								node_id, capture_effect_model);
 
-							int power_condition (ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > sensitivity_default);
+							int power_condition (ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[current_primary_channel]) > sensitivity_default);
 
 							if (loss_reason == PACKET_NOT_LOST && power_condition) {	// Packet IS NOT LOST
 
@@ -1441,7 +1559,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									loss_reason_sr = IsPacketLost(current_primary_channel, notification, notification,
 										current_sinr, capture_effect, potential_obss_pd_threshold, power_interference, constant_per,
 										node_id, capture_effect_model);
-									power_condition_sr = ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]) > potential_obss_pd_threshold;
+									power_condition_sr = ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[current_primary_channel]) > potential_obss_pd_threshold;
 								}
 								if (loss_reason_sr != PACKET_NOT_LOST && power_condition_sr) {
 									txop_sr_identified = TRUE;	// TXOP identified!
@@ -1694,7 +1812,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									cts_duration = notification.tx_info.cts_duration;
 									current_left_channel = notification.left_channel;
 									current_right_channel = notification.right_channel;
-									node_state = STATE_RX_RTS;
+									state_manager_.SetStateFromInt(STATE_RX_RTS);
+						node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 									receiving_from_node_id = notification.source_id;
 									receiving_packet_id = notification.packet_id;
 									// Pause backoff as node has began a reception
@@ -1750,8 +1869,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //						SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
 
 					// Compute max interference (the highest one perceived in the reception channel range)
-					ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-						incoming_notification, node_state, power_received_per_node, &channel_power);
+					{
+						double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+							incoming_notification, node_state, power_received_per_node, &channel_power_ptr);
+					}
 
 					// Check if the ongoing reception is affected
 					current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
@@ -1759,7 +1881,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					LOGS(save_node_logs, node_logger.file,
 						"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm - current_sinr = %.2f dBm\n",
 						SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
-						ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
+						ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[channel_max_intereference]),
 						ConvertPower(PW_TO_DBM, power_rx_interest),
 						ConvertPower(PW_TO_DBM, max_pw_interference),
 						ConvertPower(LINEAR_TO_DB, current_sinr));
@@ -1792,7 +1914,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 									SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
 
 								 // If two or more packets sent at the same time
-								if(node_state == STATE_RX_RTS && notification.packet_type == PACKET_TYPE_RTS){
+								if(state_manager_.IsReceiving() && notification.packet_type == PACKET_TYPE_RTS){
 									if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
 										loss_reason = PACKET_LOST_BO_COLLISION;
 									}
@@ -1891,8 +2013,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					if(notification.packet_type == PACKET_TYPE_ACK){	// ACK packet transmission started
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							incoming_notification, node_state, power_received_per_node, &channel_power);
+						{
+							double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+								incoming_notification, node_state, power_received_per_node, &channel_power_ptr);
+						}
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
@@ -1927,7 +2052,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							// Cancel ACK timeout and go to STATE_RX_ACK while updating receiving info
 							trigger_ACK_timeout.Cancel();
-							node_state = STATE_RX_ACK;
+							state_manager_.SetStateFromInt(STATE_RX_ACK);
+							node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 							receiving_from_node_id = notification.source_id;
 							receiving_packet_id = notification.packet_id;
 
@@ -2008,8 +2134,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						power_rx_interest = power_received_per_node[notification.source_id];
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							incoming_notification, node_state, power_received_per_node, &channel_power);
+						{
+							double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+								incoming_notification, node_state, power_received_per_node, &channel_power_ptr);
+						}
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
@@ -2018,7 +2147,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 //							"%.15f;N%d;S%d;%s;%s P_sn = %f dBm (%f pW) - P_st= %f dBm (%f pW)"
 //							"- P_if = %f dBm (%f pW)\n",
 //							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-//							ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]), channel_power[channel_max_intereference],
+//							ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[channel_max_intereference]), channel_power[channel_max_intereference],
 //							ConvertPower(PW_TO_DBM, power_rx_interest), power_rx_interest, ConvertPower(PW_TO_DBM, max_pw_interference),
 //							max_pw_interference);
 
@@ -2057,7 +2186,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							// Cancel ACK timeout and go to STATE_RX_ACK while updating receiving info
 							trigger_CTS_timeout.Cancel();
-							node_state = STATE_RX_CTS;
+							state_manager_.SetStateFromInt(STATE_RX_CTS);
+							node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 							receiving_from_node_id = notification.source_id;
 							receiving_packet_id = notification.packet_id;
 
@@ -2141,8 +2271,11 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					if(notification.packet_type == PACKET_TYPE_DATA){	// DATA packet transmission started
 
 						// Compute max interference (the highest one perceived in the reception channel range)
-						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
-							incoming_notification, node_state, power_received_per_node, &channel_power);
+						{
+							double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+							ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+								incoming_notification, node_state, power_received_per_node, &channel_power_ptr);
+						}
 
 						// Check if notification has been lost due to interferences or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
@@ -2150,7 +2283,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						LOGS(save_node_logs, node_logger.file,
 							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %f dBm - P_if = %f dBm - current_sinr = %.2f dBm\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5, channel_max_intereference,
-							ConvertPower(PW_TO_DBM, channel_power[channel_max_intereference]),
+							ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[channel_max_intereference]),
 							ConvertPower(PW_TO_DBM, power_rx_interest),
 							ConvertPower(PW_TO_DBM, max_pw_interference),
 							ConvertPower(LINEAR_TO_DB, current_sinr));
@@ -2184,7 +2317,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
 							// Cancel DATA timeout and go to STATE_RX_DATA while updating receiving info
 							trigger_DATA_timeout.Cancel();
-							node_state = STATE_RX_DATA;
+							state_manager_.SetStateFromInt(STATE_RX_DATA);
+							node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 							receiving_from_node_id = notification.source_id;
 							receiving_packet_id = notification.packet_id;
 
@@ -2368,11 +2502,15 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			"%.15f;N%d;S%d;%s;%s Power sensed per channel BEFORE updating [dBm]: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
-		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-					&channel_power);
+				{
+					double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+					PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+						&channel_power_ptr);
+				}
 
 		// Update the power sensed at each channel
-		UpdateChannelsPower(&channel_power, notification, TX_FINISHED,
+		// Update the power sensed at each channel using channel manager (TX finished)
+		channel_manager_.UpdateChannelsPowerFromNotification(notification, TX_FINISHED,
 			central_frequency, path_loss_model, adjacent_channel_model, received_power_array[notification.source_id], node_id);
 
 		// -------------------------
@@ -2384,8 +2522,9 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			}
 		}
 		if(num_nodes_transmitting == 0){
+			double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
 			for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
-				channel_power[i] = 0;
+				channel_power_ptr[i] = 0;
 			}
 		}
 		// End of safety condition
@@ -2405,15 +2544,21 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
 			SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
-		PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-				&channel_power);
+				{
+					double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+					PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+						&channel_power_ptr);
+				}
 
 		// Call UpdatePowerSensedPerNode() ONLY for adding power (some node started)
 		UpdatePowerSensedPerNode(current_primary_channel, power_received_per_node, notification,
 			central_frequency, path_loss_model, received_power_array[notification.source_id], TX_FINISHED);
 
-		UpdateTimestampChannelFreeAgain(timestampt_channel_becomes_free, &channel_power,
-			current_pd, SimTime());
+		{
+			double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+			UpdateTimestampChannelFreeAgain(timestampt_channel_becomes_free, &channel_power_ptr,
+				current_pd, SimTime());
+		}
 
 //		if(save_node_logs) {
 //			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_free: ",
@@ -2442,13 +2587,17 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						&& !trigger_end_backoff.Active()){	// BO was paused and DIFS not initiated
 
 
-						int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_pd,
-								buffer.QueueSize()));
+					int resume;
+					{
+						double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+						resume = HandleBackoff(RESUME_TIMER, &channel_power_ptr, current_primary_channel, current_pd,
+							buffer.QueueSize());
+					}
 
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm (%f)\n",
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-							current_primary_channel, ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]), channel_power[current_primary_channel]);
+							current_primary_channel, ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[current_primary_channel]), channel_manager_.GetChannelPowersPtr()[current_primary_channel]);
 
 						if (resume) {	// BO can be resumed
 							// Sergio on 26/09/2017. EIFS vs NAV.
@@ -2493,11 +2642,16 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							notification.source_id);
 
 						// Generate and send ACK to transmitter after SIFS
-						node_state = STATE_TX_ACK;
+						state_manager_.SetStateFromInt(STATE_TX_ACK);
+						node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 
 						// Compute the NAV time
-						current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
-						current_nav_time = FixTimeOffset(current_nav_time,13,12); // Update the NAV time according to the time offsets
+						// Compute the NAV time using NAV manager
+						double computed_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
+						computed_nav_time = FixTimeOffset(computed_nav_time, 13, 12); // Update the NAV time according to the time offsets
+						nav_manager_.SetNAV(computed_nav_time, false, SimTime()); // Intra-BSS NAV
+						// Sync Node's current_nav_time with manager for backward compatibility
+						current_nav_time = nav_manager_.GetCurrentNAVDuration();
 
 						current_tx_duration = ack_duration;
 						current_destination_id = notification.source_id;
@@ -2586,17 +2740,19 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// Mark the previous transmission as successful
 						last_transmission_successful = 1;
 
-						// Whole data packet ACKed
-						++data_packets_acked;
-						++data_packets_acked_per_sta[current_destination_id-node_id-1];
+					// Whole data packet ACKed
+					++data_packets_acked;
+					int* data_packets_acked_per_sta_ptr = statistics_manager_.GetDataPacketsAckedPerStaPtr();
+					++data_packets_acked_per_sta_ptr[current_destination_id-node_id-1];
 
 						current_tx_duration = current_tx_duration + (notification.tx_duration + SIFS);	// Add ACK time to tx_duration
 
 						// Update packet statistics
 						for(int i = 0; i < limited_num_packets_aggregated; ++i){
 
-							++data_frames_acked;
-							++data_frames_acked_per_sta[current_destination_id-node_id-1];
+						++data_frames_acked;
+						int* data_frames_acked_per_sta_ptr = statistics_manager_.GetDataFramesAckedPerStaPtr();
+						++data_frames_acked_per_sta_ptr[current_destination_id-node_id-1];
 							++num_delay_measurements;
 							sum_delays = sum_delays + (SimTime() - buffer.GetFirstPacket().timestamp_generated);
 
@@ -2634,9 +2790,12 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 						// - Transmission succeeded ---> reset CW if binary exponential backoff is implemented
-						HandleContentionWindow(
-							cw_adaptation, RESET_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max,
-							&cw_stage_current, cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+						// Update contention window using backoff manager (reset on success)
+						backoff_manager_.UpdateContentionWindow(true);
+						// Sync Node variables with manager for backward compatibility
+						current_cw_min = backoff_manager_.GetCurrentCWMin();
+						current_cw_max = backoff_manager_.GetCurrentCWMax();
+						cw_stage_current = backoff_manager_.GetCurrentCWStage();
 
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -2696,7 +2855,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						LOGS(save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Checking if CTS can be sent: P_sen = %f dBm, pd = %f dBm.\n",
 							SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
-							ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]),
+							ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[current_primary_channel]),
 							ConvertPower(PW_TO_DBM, current_pd));
 
 
@@ -2708,32 +2867,40 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						int CTS_transmission_possible = FALSE;
 
-						GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free, current_left_channel,
-								current_right_channel, &channel_power, current_pd, timestampt_channel_becomes_free, SimTime(), PIFS);
+					{
+						double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+						int* channels_free_ptr = channel_manager_.GetChannelsFreePtr();
+						GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free_ptr, current_left_channel,
+							current_right_channel, &channel_power_ptr, current_pd, timestampt_channel_becomes_free, SimTime(), PIFS);
+					}
 
 						LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free after RTS: ",
 								SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 
+						int* channels_free_ptr_log = channel_manager_.GetChannelsFreePtr();
 						PrintOrWriteChannelsFree(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
-							channels_free);
+							channels_free_ptr_log);
 
-						GetTxChannels(channels_for_tx, current_dcb_policy, channels_free,
+						// Use channel manager to get transmission channels after RTS
+						int* channels_for_tx_ptr = channel_manager_.GetChannelsForTxPtr();
+						int* channels_free_ptr_tx = channel_manager_.GetChannelsFreePtr();
+						channel_manager_.GetTxChannels(channels_for_tx_ptr, current_dcb_policy,
 								current_left_channel, current_right_channel, current_primary_channel,
-								NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+								channel_aggregation_cca_model, channels_free_ptr_tx);
 
 						LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting after RTS: ",
 								SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 						PrintOrWriteChannelForTx(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
-							channels_for_tx);
+							channels_for_tx_ptr);
 
-						if(channels_for_tx[0] != TX_NOT_POSSIBLE){
+						if(channels_for_tx_ptr[0] != TX_NOT_POSSIBLE){
 
 							// Get the transmission channels
 							current_left_channel = GetFirstOrLastTrueElemOfArray(FIRST_TRUE_IN_ARRAY,
-								channels_for_tx, NUM_CHANNELS_KOMONDOR);
+								channels_for_tx_ptr, NUM_CHANNELS_KOMONDOR);
 							current_right_channel = GetFirstOrLastTrueElemOfArray(LAST_TRUE_IN_ARRAY,
-								channels_for_tx, NUM_CHANNELS_KOMONDOR);
+								channels_for_tx_ptr, NUM_CHANNELS_KOMONDOR);
 
 							CTS_transmission_possible = TRUE;
 
@@ -2750,7 +2917,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 								"%.15f;N%d;S%d;%s;%s Channel(s) is (are) clear! Sending CTS to N%d (STATE = %d) ...\n",
 								SimTime(), node_id, node_state, LOG_E14, LOG_LVL3, current_destination_id, node_state);
 
-							node_state = STATE_TX_CTS;
+							state_manager_.SetStateFromInt(STATE_TX_CTS);
+							node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 							// Generate and send CTS to transmitter after SIFS
 							current_destination_id = notification.source_id;
 							current_tx_duration = cts_duration;
@@ -2765,8 +2933,12 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 								num_channels_tx, notification.modulation_id, notification.tx_info.num_packets_aggregated,
 								frame_length, bits_ofdm_sym);
 
-							current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
-							current_nav_time = FixTimeOffset(current_nav_time,13,12); // Update the NAV time according to the time offsets
+							// Compute the NAV time using NAV manager
+							double computed_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
+							computed_nav_time = FixTimeOffset(computed_nav_time, 13, 12); // Update the NAV time according to the time offsets
+							nav_manager_.SetNAV(computed_nav_time, false, SimTime()); // Intra-BSS NAV
+							// Sync Node's current_nav_time with manager for backward compatibility
+							current_nav_time = nav_manager_.GetCurrentNAVDuration();
 
 							// ------------------------------------------------------------------------
 							// Sergio on 07 Dec 2017: add CTS transmission time to spectrum utilization
@@ -2861,7 +3033,8 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 								SimTime(), node_id, node_state, LOG_E14, LOG_LVL3,
 								notification.packet_id, notification.source_id);
 
-						node_state = STATE_TX_DATA;
+						state_manager_.SetStateFromInt(STATE_TX_DATA);
+						node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 
 						// Compute the NAV time
 						bits_ofdm_sym =  getNumberSubcarriers(current_right_channel - current_left_channel +1) *
@@ -2882,8 +3055,12 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							bits_ofdm_sym/IEEE_AX_OFDM_SYMBOL_GI32_DURATION * pow(10,-6));
 
 						// Compute the NAV time
-						current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
-						current_nav_time = FixTimeOffset(current_nav_time,13,12); // Update the NAV time according to the time offsets
+						// Compute the NAV time using NAV manager
+						double computed_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
+						computed_nav_time = FixTimeOffset(computed_nav_time, 13, 12); // Update the NAV time according to the time offsets
+						nav_manager_.SetNAV(computed_nav_time, false, SimTime()); // Intra-BSS NAV
+						// Sync Node's current_nav_time with manager for backward compatibility
+						current_nav_time = nav_manager_.GetCurrentNAVDuration();
 
 						// Generate and send DATA to transmitter after SIFS
 						current_destination_id = notification.source_id;
@@ -3080,12 +3257,13 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 			received_power_array[notification.source_id]));
 
 		// Select the modulation according to the SINR perceived corresponding to incoming transmitter
-		SelectMCSResponse(mcs_response, received_power_array[notification.source_id]);
+		int* mcs_response_ptr = mcs_manager_.GetMCSResponse();
+		SelectMCSResponse(mcs_response_ptr, received_power_array[notification.source_id]);
 
 		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s mcs_response for 1, 2, 4 and 8 channels: ",
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3);
 
-		PrintOrWriteArrayInt(mcs_response, 4, WRITE_LOG, save_node_logs,
+		PrintOrWriteArrayInt(mcs_response_ptr, 4, WRITE_LOG, save_node_logs,
 			print_node_logs, node_logger);
 
 		// Fill and send MCS response
@@ -3116,26 +3294,29 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 			SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
 
 		// Set receiver modulation to the received one
+		int** mcs_per_node_ptr = mcs_manager_.GetMCSPerNode();
 		for (int i = 0; i < NUM_OPTIONS_CHANNEL_LENGTH; ++i){
 			if (spatial_reuse_enabled && txop_sr_identified &&
 					notification.tx_info.modulation_schemes[i] == MODULATION_FORBIDDEN) {
 				// Force to use the minimum MCS in case of applying the SR operation and receiving the forbidden MCS
-				mcs_per_node[ix_aux][i] = MODULATION_BPSK_1_2;
+				mcs_per_node_ptr[ix_aux][i] = MODULATION_BPSK_1_2;
 			} else {
-				mcs_per_node[ix_aux][i] = notification.tx_info.modulation_schemes[i];
+				mcs_per_node_ptr[ix_aux][i] = notification.tx_info.modulation_schemes[i];
 			}
-			LOGS(save_node_logs,node_logger.file, "%d ", mcs_per_node[ix_aux][i]);
+			LOGS(save_node_logs,node_logger.file, "%d ", mcs_per_node_ptr[ix_aux][i]);
 		}
 
 		// Update performance measurements
 		if (first_time_requesting_mcs) {
+			int** mcs_per_node_ptr = mcs_manager_.GetMCSPerNode();
+			int mcs_index = (int) log2(max_channel_allowed-min_channel_allowed + 1);
 			double max_achievable_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
-				Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
-				Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
+				Mcs_array::modulation_bits[mcs_per_node_ptr[ix_aux][mcs_index]-1] *
+				Mcs_array::coding_rates[mcs_per_node_ptr[ix_aux][mcs_index]-1] *
 				IEEE_AX_SU_SPATIAL_STREAMS);
 			//	double max_achievable_bits_ofdm_sym (getNumberSubcarriers(NUM_CHANNELS_KOMONDOR) *
-			//	Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
-			//	Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
+			//	Mcs_array::modulation_bits[mcs_per_node_ptr[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
+			//	Mcs_array::coding_rates[mcs_per_node_ptr[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
 			//	IEEE_AX_SU_SPATIAL_STREAMS);
 			double max_achievable_throughput (max_achievable_bits_ofdm_sym / IEEE_AX_OFDM_SYMBOL_GI32_DURATION);
 			performance_report.max_bound_throughput = max_achievable_throughput;
@@ -3148,15 +3329,16 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 				min_channel_allowed, max_channel_allowed, max_achievable_throughput * pow(10,-6),
 				max_channel_allowed - min_channel_allowed + 1,
 				getNumberSubcarriers(current_right_channel - current_left_channel + 1),
-				mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1,
-				Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1],
-				Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1]);
+				mcs_per_node_ptr[ix_aux][mcs_index]-1,
+				Mcs_array::modulation_bits[mcs_per_node_ptr[ix_aux][mcs_index]-1],
+				Mcs_array::coding_rates[mcs_per_node_ptr[ix_aux][mcs_index]-1]);
 		}
 
 		// printf("\n");
 
 		// TODO: ADD LOGIC TO HANDLE WRONG SITUATIONS (cannot transmit over none of the channel combinations)
-		if(mcs_per_node[ix_aux][0] == -1) {
+		int** mcs_per_node_ptr_check = mcs_manager_.GetMCSPerNode();
+		if(mcs_per_node_ptr_check[ix_aux][0] == -1) {
 			// CANNOT TX EVEN FOR 1 CHANNEL
 			if(current_tx_power < ConvertPower(DBM_TO_PW,MAX_TX_POWER_DBM)) {
 //				current_tx_power ++;
@@ -3208,13 +3390,19 @@ void Node :: InportNewPacketGenerated(){
 						new_packet.packet_id, buffer.QueueSize(), PACKET_BUFFER_SIZE);
 
 				// Attempt to restart BO only if node didn't have any packet before a new packet was generated
-				if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
+				if(state_manager_.IsSensing() && buffer.QueueSize() == 1) {
 
-					if(trigger_end_backoff.Active()) remaining_backoff =
-							ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
+					if(trigger_end_backoff.Active()) {
+						double time_remaining = trigger_end_backoff.GetTime() - SimTime();
+						remaining_backoff = backoff_manager_.ComputeRemainingBackoffFromTime(time_remaining);
+					}
 
-					int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel, current_pd,
-							buffer.QueueSize()));
+					int resume;
+					{
+						double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+						resume = HandleBackoff(RESUME_TIMER, &channel_power_ptr, current_primary_channel, current_pd,
+							buffer.QueueSize());
+					}
 
 					if (resume) {
 						time_to_trigger = SimTime() + DIFS;
@@ -3271,13 +3459,19 @@ void Node :: InportNewPacketGenerated(){
 							PACKET_BUFFER_SIZE);
 
 					// Attempt to restart BO only if node didn't have any packet before a new packet was generated
-					if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
+					if(state_manager_.IsSensing() && buffer.QueueSize() == 1) {
 
-						if(trigger_end_backoff.Active()) remaining_backoff =
-								ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
+						if(trigger_end_backoff.Active()) {
+							double time_remaining = trigger_end_backoff.GetTime() - SimTime();
+							remaining_backoff = backoff_manager_.ComputeRemainingBackoffFromTime(time_remaining);
+						}
 
-						int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
-							current_pd, buffer.QueueSize()));
+						int resume;
+						{
+							double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+							resume = HandleBackoff(RESUME_TIMER, &channel_power_ptr, current_primary_channel,
+								current_pd, buffer.QueueSize());
+						}
 
 						if (resume) {
 							time_to_trigger = SimTime() + DIFS;
@@ -3332,7 +3526,7 @@ void Node :: EndBackoff(trigger_t &){
 		current_tx_power_sr = next_tx_power_limit;
 		// In order to request a new MCS (the tx power may have changed)
 		for(int n = 0; n < wlan.num_stas; n++) {
-			change_modulation_flag[n] = TRUE;
+			mcs_manager_.SetMCSChangeFlag(n, true);
 		}
 	} else {
 		// Use default values
@@ -3374,7 +3568,7 @@ void Node :: EndBackoff(trigger_t &){
 	for(int n = 0; n < wlan.num_stas; ++n) {
 		current_destination_id = wlan.list_sta_id[n];
 		// Receive the possible MCS to be used for each number of channels
-		if (change_modulation_flag[n]) {
+		if (mcs_manager_.IsMCSChangeNeeded(n)) {
 			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Requesting MCS to N%d\n",
 				SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, current_destination_id);
 			RequestMCS();
@@ -3393,20 +3587,27 @@ void Node :: EndBackoff(trigger_t &){
 	// Identify free channels
 	++num_tx_init_tried;
 
-	if (spatial_reuse_enabled && txop_sr_identified) {
-		GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free, min_channel_allowed,
-			max_channel_allowed, &channel_power, current_obss_pd_threshold, timestampt_channel_becomes_free, SimTime(), PIFS);
-	} else {
-		GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free, min_channel_allowed,
-			max_channel_allowed, &channel_power, current_pd, timestampt_channel_becomes_free, SimTime(), PIFS);
+	{
+		double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+		int* channels_free_ptr = channel_manager_.GetChannelsFreePtr();
+		if (spatial_reuse_enabled && txop_sr_identified) {
+			GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free_ptr, min_channel_allowed,
+				max_channel_allowed, &channel_power_ptr, current_obss_pd_threshold, timestampt_channel_becomes_free, SimTime(), PIFS);
+		} else {
+			GetChannelOccupancyByCCA(current_primary_channel, pifs_activated, channels_free_ptr, min_channel_allowed,
+				max_channel_allowed, &channel_power_ptr, current_pd, timestampt_channel_becomes_free, SimTime(), PIFS);
+		}
 	}
 
 	LOGS(save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
 		SimTime(), node_id, node_state, LOG_E18, LOG_LVL3);
 
-	PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
-		&channel_power);
+			{
+				double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+				PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, node_logger, print_node_logs,
+					&channel_power_ptr);
+			}
 
 //	if(save_node_logs) {
 //		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s timestampt_channel_becomes_frees: ",
@@ -3426,34 +3627,39 @@ void Node :: EndBackoff(trigger_t &){
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free (mind PIFS if activated): ",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 
+	int* channels_free_ptr_log = channel_manager_.GetChannelsFreePtr();
 	PrintOrWriteChannelsFree(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
-		channels_free);
+		channels_free_ptr_log);
 
 	// Identify the channel range to TX in depending on the channel bonding scheme and free channels
 	int ix_mcs_per_node (current_destination_id - wlan.list_sta_id[0]);
 
-	GetTxChannels(channels_for_tx, current_dcb_policy, channels_free,
+	// Use channel manager to get transmission channels (pass channels_free from GetChannelOccupancyByCCA)
+	int* channels_for_tx_ptr = channel_manager_.GetChannelsForTxPtr();
+	int* channels_free_ptr_tx = channel_manager_.GetChannelsFreePtr();
+	channel_manager_.GetTxChannels(channels_for_tx_ptr, current_dcb_policy,
 			min_channel_allowed, max_channel_allowed, current_primary_channel,
-			NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+			channel_aggregation_cca_model, channels_free_ptr_tx);
 
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting: ",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
 	PrintOrWriteChannelForTx(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
-		channels_for_tx);
+		channels_for_tx_ptr);
 
 	// Act according to possible (not possible) transmission
-	if(channels_for_tx[0] != TX_NOT_POSSIBLE) {
+	if(channels_for_tx_ptr[0] != TX_NOT_POSSIBLE) {
 		//&& current_modulation != MODULATION_FORBIDDEN){	// Transmission IS POSSIBLE
 
 		// Change to state "transmitting RTS"
-		node_state = STATE_TX_RTS;
+		state_manager_.SetStateFromInt(STATE_TX_RTS);
+		node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 
 		// Get the transmission channels
 		current_left_channel = GetFirstOrLastTrueElemOfArray(FIRST_TRUE_IN_ARRAY,
-			channels_for_tx, NUM_CHANNELS_KOMONDOR);
+			channels_for_tx_ptr, NUM_CHANNELS_KOMONDOR);
 		current_right_channel = GetFirstOrLastTrueElemOfArray(LAST_TRUE_IN_ARRAY,
-			channels_for_tx, NUM_CHANNELS_KOMONDOR);
+			channels_for_tx_ptr, NUM_CHANNELS_KOMONDOR);
 
 		LOGS(save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission is possible in range: %d - %d\n",
@@ -3467,7 +3673,8 @@ void Node :: EndBackoff(trigger_t &){
 		if(previous_num_channels != num_channels_tx) flag_change_in_tx_power = TRUE;
 
 		// Get the current modulation according to the channels selected for transmission
-		current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
+		int** mcs_per_node_ptr = mcs_manager_.GetMCSPerNode();
+		current_modulation = mcs_per_node_ptr[ix_mcs_per_node][ix_num_channels_used];
 
 		// ********************************************************
 		// Flexible packet aggregation
@@ -3561,9 +3768,12 @@ void Node :: EndBackoff(trigger_t &){
 
 		current_tx_duration = rts_duration;
 
-		// Compute the NAV time
-		current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
-		current_nav_time = FixTimeOffset(current_nav_time,13,12); // Update the NAV time according to the time offsets
+		// Compute the NAV time using NAV manager
+		double computed_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
+		computed_nav_time = FixTimeOffset(computed_nav_time, 13, 12); // Update the NAV time according to the time offsets
+		nav_manager_.SetNAV(computed_nav_time, false, SimTime()); // Intra-BSS NAV
+		// Sync Node's current_nav_time with manager for backward compatibility
+		current_nav_time = nav_manager_.GetCurrentNAVDuration();
 
 //		LOGS(save_node_logs,node_logger.file,
 //			"%.15f;N%d;S%d;%s;%s RTS duration: %.12f s - NAV duration = %.12f s\n",
@@ -3636,9 +3846,10 @@ void Node :: EndBackoff(trigger_t &){
 //			SimTime(), node_id, node_state, LOG_F04, LOG_LVL5,
 //			time_to_trigger, FixTimeOffset(time_to_trigger,13,12));
 
-		trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger,13,12));
-		++rts_cts_sent;
-		++rts_cts_sent_per_sta[current_destination_id-node_id-1];
+	trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger,13,12));
+	++rts_cts_sent;
+	int* rts_cts_sent_per_sta_ptr = statistics_manager_.GetRtsCtsSentPerStaPtr();
+	++rts_cts_sent_per_sta_ptr[current_destination_id-node_id-1];
 		trigger_start_backoff.Cancel();	// Safety instruction
 
 	} else {	// Transmission IS NOT POSSIBLE, compute a new backoff.
@@ -3675,7 +3886,8 @@ void Node :: MyTxFinished(trigger_t &){
 
 			trigger_CTS_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
 
-			node_state = STATE_WAIT_CTS;
+			state_manager_.SetStateFromInt(STATE_WAIT_CTS);
+			node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 
 			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s RTS #%d tx finished. Waiting for CTS until %.12f\n",
 				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2,
@@ -3695,7 +3907,8 @@ void Node :: MyTxFinished(trigger_t &){
 			// Set CTS timeout and change state to STATE_WAIT_DATA
 			time_to_trigger = SimTime() + SIFS + TIME_OUT_EXTRA_TIME;
 			trigger_DATA_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
-			node_state = STATE_WAIT_DATA;
+			state_manager_.SetStateFromInt(STATE_WAIT_DATA);
+			node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 
 			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s CTS %d tx finished. Waiting for DATA...\n",
 				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
@@ -3714,7 +3927,8 @@ void Node :: MyTxFinished(trigger_t &){
 			// Set ACK timeout and change state to STATE_WAIT_ACK
 			time_to_trigger = SimTime() + SIFS + TIME_OUT_EXTRA_TIME;
 			trigger_ACK_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
-			node_state = STATE_WAIT_ACK;
+			state_manager_.SetStateFromInt(STATE_WAIT_ACK);
+			node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 
 			LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DATA %d tx finished. Waiting for ACK...\n",
 				SimTime(), node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
@@ -3771,7 +3985,7 @@ void Node :: RequestMCS(){
 
 	int ix_aux (current_destination_id - wlan.list_sta_id[0]);	// Auxiliary variable for correcting the node id offset
 	// MCS of receiver is not pending anymore
-	change_modulation_flag[ix_aux] = FALSE;
+	mcs_manager_.ClearMCSChangeFlag(ix_aux);
 
 	//if(first_time_requesting_mcs) {
 	//	first_time_requesting_mcs = FALSE;
@@ -3810,7 +4024,7 @@ void Node :: SelectDestination(){
 Notification Node :: GenerateNotification(int packet_type, int destination_id, int packet_id,
 	int num_packets_aggregated, double timestamp_generated, double tx_duration){
 
-	Notification notification;
+	Notification notification = {};  // Zero-initialize to avoid uninitialized value errors
 
 	notification.packet_id = packet_id;				// ID of the first packet
 	notification.packet_type = packet_type;
@@ -3873,8 +4087,9 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 		}
 
 		case PACKET_TYPE_MCS_RESPONSE:{
+			int* mcs_response_ptr = mcs_manager_.GetMCSResponse();
 			for(int i = 0; i < 4; ++i) {
-				notification.tx_info.modulation_schemes[i] = mcs_response[i];
+				notification.tx_info.modulation_schemes[i] = mcs_response_ptr[i];
 			}
 			break;
 		}
@@ -3962,9 +4177,10 @@ void Node :: SendResponsePacket(trigger_t &){
 				SimTime(), node_id, node_state, LOG_I00, LOG_LVL3);
 			outportSelfStartTX(data_notification);
 			time_to_trigger = SimTime() + current_tx_duration;
-			trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger,13,12));
-			++data_packets_sent;
-			++data_packets_sent_per_sta[current_destination_id-node_id-1];
+		trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger,13,12));
+		++data_packets_sent;
+		int* data_packets_sent_per_sta_ptr = statistics_manager_.GetDataPacketsSentPerStaPtr();
+		++data_packets_sent_per_sta_ptr[current_destination_id-node_id-1];
 
 			// Update performance measurements
 			++performance_report.data_packets_sent;
@@ -3989,16 +4205,19 @@ void Node :: AbortRtsTransmission(){
 	}
 
 	num_tx_init_not_possible ++;
-	// Compute a new backoff and trigger a new DIFS
-	remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type,
-			current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic,
-			previous_backoff);
-
-	previous_backoff = remaining_backoff;	// Update the last used backoff
+	// Compute a new backoff using backoff manager
+	// Update manager with current deterministic backoff state if needed
+	remaining_backoff = backoff_manager_.ComputeNewBackoff(current_traffic_type);
+	// Sync Node variables with manager for backward compatibility
+	previous_backoff = backoff_manager_.GetPreviousBackoff();
+	current_cw_min = backoff_manager_.GetCurrentCWMin();
+	current_cw_max = backoff_manager_.GetCurrentCWMax();
+	cw_stage_current = backoff_manager_.GetCurrentCWStage();
 
 	expected_backoff += remaining_backoff;
 	num_new_backoff_computations++;
-	node_state = STATE_SENSING;
+	state_manager_.SetStateFromInt(STATE_SENSING);
+	node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
 		SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
@@ -4026,8 +4245,10 @@ void Node :: AckTimeout(trigger_t &){
 		}
 	}
 
+	int* data_packets_lost_per_sta_ptr = statistics_manager_.GetDataPacketsLostPerStaPtr();
+	int* rts_cts_lost_per_sta_ptr = statistics_manager_.GetRtsCtsLostPerStaPtr();
 	handlePacketLoss(PACKET_TYPE_DATA, total_time_lost_in_num_channels, total_time_lost_per_channel,
-		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
+		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta_ptr, &rts_cts_lost_per_sta_ptr, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
 
 	// Sergio on 16 July 2018: [AGENTS] add data packet lost for partial throughput computations
@@ -4052,9 +4273,19 @@ void Node :: AckTimeout(trigger_t &){
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 	// The CW only must be changed when ACK received or loss detected.
-	HandleContentionWindow(
-		cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
-		cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+	// Update contention window using backoff manager (increase on failure)
+	// For token-based backoff, use HandleContentionWindow directly
+	if (backoff_type == BACKOFF_TOKENIZED) {
+		HandleContentionWindow(
+			cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
+			cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+	} else {
+		backoff_manager_.UpdateContentionWindow(false);
+		// Sync Node variables with manager for backward compatibility
+		current_cw_min = backoff_manager_.GetCurrentCWMin();
+		current_cw_max = backoff_manager_.GetCurrentCWMax();
+		cw_stage_current = backoff_manager_.GetCurrentCWStage();
+	}
 
 	LOGS(save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -4069,8 +4300,10 @@ void Node :: AckTimeout(trigger_t &){
  */
 void Node :: CtsTimeout(trigger_t &){
 
+	int* data_packets_lost_per_sta_ptr = statistics_manager_.GetDataPacketsLostPerStaPtr();
+	int* rts_cts_lost_per_sta_ptr = statistics_manager_.GetRtsCtsLostPerStaPtr();
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
-		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
+		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta_ptr, &rts_cts_lost_per_sta_ptr, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
 
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
@@ -4086,9 +4319,19 @@ void Node :: CtsTimeout(trigger_t &){
 		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
 	// The CW only must be changed when ACK received or loss detected.
-	HandleContentionWindow(
-		cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
-		cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+	// Update contention window using backoff manager (increase on failure)
+	// For token-based backoff, use HandleContentionWindow directly
+	if (backoff_type == BACKOFF_TOKENIZED) {
+		HandleContentionWindow(
+			cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
+			cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+	} else {
+		backoff_manager_.UpdateContentionWindow(false);
+		// Sync Node variables with manager for backward compatibility
+		current_cw_min = backoff_manager_.GetCurrentCWMin();
+		current_cw_max = backoff_manager_.GetCurrentCWMax();
+		cw_stage_current = backoff_manager_.GetCurrentCWStage();
+	}
 
 	LOGS(save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -4121,8 +4364,10 @@ void Node :: CtsTimeout(trigger_t &){
  */
 void Node :: DataTimeout(trigger_t &){
 
+	int* data_packets_lost_per_sta_ptr = statistics_manager_.GetDataPacketsLostPerStaPtr();
+	int* rts_cts_lost_per_sta_ptr = statistics_manager_.GetRtsCtsLostPerStaPtr();
 	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
-		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
+		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta_ptr, &rts_cts_lost_per_sta_ptr, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
 
 	total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
@@ -4148,7 +4393,11 @@ void Node :: NavTimeout(trigger_t &){
 		"%.15f;N%d;S%d;%s;%s NAV TIMEOUT!\n",
 		SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
 
-	time_in_nav = time_in_nav + (SimTime() - last_time_not_in_nav);
+	// Clear NAV using NAV manager
+	nav_manager_.ClearNAV(SimTime());
+	// Sync Node variables with manager for backward compatibility
+	time_in_nav = nav_manager_.GetTotalTimeInNAV();
+	current_nav_time = nav_manager_.GetCurrentNAVDuration();
 
 	if(node_is_transmitter){
 
@@ -4158,10 +4407,15 @@ void Node :: NavTimeout(trigger_t &){
 		}
 		flag_apply_new_configuration = FALSE; // Turn flag off
 
-		node_state = STATE_SENSING;
+		state_manager_.SetStateFromInt(STATE_SENSING);
+		node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 
-		int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
-			current_pd, buffer.QueueSize()));
+		int resume;
+		{
+			double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+			resume = HandleBackoff(RESUME_TIMER, &channel_power_ptr, current_primary_channel,
+				current_pd, buffer.QueueSize());
+		}
 
 		// Update BO value according to TO extra time
 		if (resume) {
@@ -4209,27 +4463,20 @@ void Node :: PauseBackoff(){
 	} else {
 
 		if(trigger_end_backoff.Active()){	// If backoff trigger is active, freeze it
-
-			remaining_backoff = ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
-
-			++num_bo_interruptions;
+			// Use backoff manager to pause backoff
+			double time_remaining = trigger_end_backoff.GetTime() - SimTime();
+			backoff_manager_.PauseBackoff(time_remaining);
+			
+			// Sync Node variables with manager for backward compatibility
+			remaining_backoff = backoff_manager_.GetRemainingBackoff();
+			num_bo_interruptions = backoff_manager_.GetNumBackoffInterruptions();
 
 			LOGS(save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO is active. Freezing it from %.9f (%.2f slots) to %.9f (%.2f slots) -> BO interruptions = %d\n",
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-				(trigger_end_backoff.GetTime() - SimTime()) * pow(10,6),
-				(trigger_end_backoff.GetTime() - SimTime())/SLOT_TIME,
+				time_remaining * pow(10,6),
+				time_remaining/SLOT_TIME,
 				remaining_backoff * pow(10,6), remaining_backoff/SLOT_TIME, num_bo_interruptions);
-
-//			LOGS(save_node_logs,node_logger.file,
-//								"%.15f;N%d;S%d;%s;%s Original remaining BO: %.9f us\n",
-//								SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-//								(trigger_end_backoff.GetTime() - SimTime())*pow(10,6));
-
-//			LOGS(save_node_logs,node_logger.file,
-//					"%.15f;N%d;S%d;%s;%s Backoff is active --> freeze it at %.9f us (%.2f slots)\n",
-//					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-//					remaining_backoff * pow(10,6), remaining_backoff/SLOT_TIME);
 
 			trigger_end_backoff.Cancel();
 
@@ -4255,6 +4502,8 @@ void Node :: ResumeBackoff(trigger_t &){
 //	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DIFS finished\n",
 //					SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
 
+	// Resume backoff using manager - get remaining backoff value
+	remaining_backoff = backoff_manager_.ResumeBackoff();
 	time_to_trigger = SimTime() + remaining_backoff;
 
 	trigger_end_backoff.Set(FixTimeOffset(time_to_trigger,13,12));
@@ -4291,7 +4540,7 @@ void Node :: SpatialReuseOpportunityEnds(trigger_t &){
 	flag_change_in_tx_power = FALSE;
 	// Indicate that the MCS must be changed
 	for(int n = 0; n < wlan.num_stas; ++n) {
-		change_modulation_flag[n] = true;
+		mcs_manager_.SetMCSChangeFlag(n, true);
 	}
 
 	LOGS(save_node_logs,node_logger.file,
@@ -4404,8 +4653,21 @@ void Node :: UpdatePerformanceMeasurements(){
 	}
 
 	// RSSI received from each STA
-	if(node_type == NODE_TYPE_AP) UpdateRssiPerSta(wlan, rssi_per_sta, received_power_array, total_nodes_number);
-	performance_report.rssi_list_per_sta = rssi_per_sta;
+	if(node_type == NODE_TYPE_AP) {
+		UpdateRssiPerSta(wlan, rssi_per_sta, received_power_array, total_nodes_number);
+		// Copy data from Node's rssi_per_sta to performance_report's array (don't assign pointer to avoid double-free)
+		// performance_report has its own array allocated via SetSizeOfRssiPerStaList, so we copy the data
+		// Only copy if performance_report array is allocated and sizes match
+		if (performance_report.rssi_list_per_sta != NULL && rssi_per_sta != NULL && wlan.num_stas > 0) {
+			// Safe to copy - performance_report has its own allocated array
+			for (int i = 0; i < wlan.num_stas; ++i) {
+				performance_report.rssi_list_per_sta[i] = rssi_per_sta[i];
+			}
+		}
+	} else {
+		// For STAs, performance_report.rssi_list_per_sta is not used, so we don't need to set it
+		// performance_report.rssi_list_per_sta will remain NULL or point to its own allocated array
+	}
 
 	// -  Channel occupancy
 	double successful_occupancy(0.0);
@@ -4470,7 +4732,7 @@ void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configu
 		if(save_node_logs) WriteReceivedConfiguration(node_logger, header_str, new_configuration);
 		// Set flag to true in order to apply the new configuration next time the node restarts
 		flag_apply_new_configuration = TRUE;
-		if(node_state == STATE_SENSING) {
+		if(state_manager_.IsSensing()) {
 			// FORCE RESTART TO APPLY CHANGES
 			RestartNode(FALSE);
 		}
@@ -4507,7 +4769,7 @@ void Node :: ApplyNewConfiguration(Configuration &new_configuration) {
 	// Re-compute MCS according to the new configuration
 	if (node_type == NODE_TYPE_AP) {
 		for(int n = 0; n < wlan.num_stas; ++n) {
-			change_modulation_flag[n] = TRUE;
+			mcs_manager_.SetMCSChangeFlag(n, true);
 		}
 		// Broadcast the new configuration to the associated STAs
 		BroadcastNewConfigurationToStas(new_configuration);
@@ -4550,7 +4812,7 @@ void Node :: InportNewWlanConfigurationReceived(Configuration &received_configur
 
 //		if(node_state == STATE_SENSING) RestartNode(FALSE);
 		// Force restart
-		if(node_state == STATE_SENSING || node_state == STATE_NAV) {
+		if(state_manager_.IsSensing() || state_manager_.IsInNAV()) {
             RestartNode(FALSE);
 		}
 
@@ -4617,7 +4879,8 @@ void Node :: RestartNode(int called_by_time_out){
 	//PrintNodeInfo(INFO_DETAIL_LEVEL_2);
 
 	// Reinitialize parameters
-	node_state = STATE_SENSING;
+	state_manager_.SetStateFromInt(STATE_SENSING);
+	node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 	current_tx_duration = 0;
 	power_rx_interest = 0;
 	max_pw_interference = 0;
@@ -4642,9 +4905,14 @@ void Node :: RestartNode(int called_by_time_out){
 		++packet_id;
 
 		// In case of being an AP
-		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max,
-				backoff_type, current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic, previous_backoff);
-		previous_backoff = remaining_backoff;
+		// Compute backoff using backoff manager
+		// Note: deterministic backoff state should be synced before computing if needed
+		remaining_backoff = backoff_manager_.ComputeNewBackoff(current_traffic_type);
+		// Sync Node variables with manager for backward compatibility
+		previous_backoff = backoff_manager_.GetPreviousBackoff();
+		current_cw_min = backoff_manager_.GetCurrentCWMin();
+		current_cw_max = backoff_manager_.GetCurrentCWMax();
+		cw_stage_current = backoff_manager_.GetCurrentCWStage();
 		expected_backoff = expected_backoff + remaining_backoff;
 		++num_new_backoff_computations;
 
@@ -4675,16 +4943,19 @@ void Node :: RestartNode(int called_by_time_out){
 		LOGS(save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Checking if BO can be resumed. Pow(primary #%d) =  %.2f dBm\n",
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
-			current_primary_channel, ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]));
+			current_primary_channel, ConvertPower(PW_TO_DBM, channel_manager_.GetChannelPowersPtr()[current_primary_channel]));
 
 		// Freeze backoff immediately if primary channel is occupied
 		int resume;
-		if (spatial_reuse_enabled && txop_sr_identified) {
-			resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
-				current_obss_pd_threshold, buffer.QueueSize());
-		} else {
-			resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
-				current_pd, buffer.QueueSize());
+		{
+			double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+			if (spatial_reuse_enabled && txop_sr_identified) {
+				resume = HandleBackoff(RESUME_TIMER, &channel_power_ptr, current_primary_channel,
+					current_obss_pd_threshold, buffer.QueueSize());
+			} else {
+				resume = HandleBackoff(RESUME_TIMER, &channel_power_ptr, current_primary_channel,
+					current_pd, buffer.QueueSize());
+			}
 		}
 
 		// Check if node has to freeze the BO (if it is not already frozen)
@@ -4718,6 +4989,13 @@ void Node :: RestartNode(int called_by_time_out){
  */
 void Node:: StartSavingLogs(trigger_t &){
 	save_node_logs = TRUE;
+	// Initialize logging if not already initialized
+	if (!logging_manager_.IsLoggingEnabled()) {
+		sprintf(own_file_path,"%s_%s_N%d_%s.txt","../output/logs_output", simulation_code.c_str(), node_id, node_code.c_str());
+		logging_manager_.InitializeLogging(own_file_path, save_node_logs);
+		output_log_file = logging_manager_.GetLogger().file;
+		node_logger = logging_manager_.GetLogger();
+	}
 }
 
 /**
@@ -4733,7 +5011,8 @@ void Node:: HandleSlottedBackoffCollision() {
 	// Slotted BO collision (case where STA is receiving)
 	loss_reason = PACKET_LOST_BO_COLLISION;
 	if(!node_is_transmitter) {
-		node_state = STATE_SLEEP; // avoid listening to notifications until restart
+		state_manager_.SetStateFromInt(STATE_SLEEP); // avoid listening to notifications until restart
+		node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 		time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
 		trigger_restart_sta.Set(FixTimeOffset(time_to_trigger,13,12));
 	} else {
@@ -4759,8 +5038,8 @@ void Node:: RecoverFromCtsTimeout(trigger_t &) {
  * Measure the utilization of the buffer
  */
 void Node:: MeasureRho(trigger_t &){
-	// if ( (buffer.QueueSize() > 0) && (channel_power[current_primary_channel] < current_pd)){
-	if (node_state == STATE_SENSING && channel_power[current_primary_channel] < current_pd){
+	// if ( (buffer.QueueSize() > 0) && (channel_manager_.GetChannelPowersPtr()[current_primary_channel] < current_pd)){
+	if (state_manager_.IsSensing() && channel_manager_.GetChannelPowersPtr()[current_primary_channel] < current_pd){
 		LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s RHO: Sensing + free\n",
 			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 		++num_measures_rho;
@@ -4792,10 +5071,15 @@ void Node:: CallSensing(trigger_t &){
 	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s State changed to sensing due to NAV collision\n",
 		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
 
-	node_state = STATE_SENSING;
+	state_manager_.SetStateFromInt(STATE_SENSING);
+	node_state = state_manager_.GetStateAsInt(); // Sync for backward compatibility
 
-	int resume (HandleBackoff(RESUME_TIMER, &channel_power,
-		current_primary_channel, current_pd, buffer.QueueSize()));
+	int resume;
+	{
+		double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+		resume = HandleBackoff(RESUME_TIMER, &channel_power_ptr,
+			current_primary_channel, current_pd, buffer.QueueSize());
+	}
 
 	// Check if node has to freeze the BO (if it is not already frozen)
 	if (resume) {
@@ -5140,27 +5424,33 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				printf("%s average_waiting_time = %f (%f slots)\n", LOG_LVL2, average_waiting_time, average_waiting_time / SLOT_TIME);
 				printf("%s Expected BO = %f (%f slots)\n", LOG_LVL2, expected_backoff, expected_backoff / SLOT_TIME);
 
-				// REPORT PER EACH STA
-				printf("%s Per-STA report:\n", LOG_LVL2);
-				// Throughput
-				printf("%s Throughput: {", LOG_LVL3);
-				for(int n = 0; n < wlan.num_stas; ++n){
-					throughput_per_sta[n] = ((double)data_frames_acked_per_sta[n] * (double)frame_length) / SimTime();
-					printf("%.2f Mbps",  throughput_per_sta[n] * pow(10,-6));
-					if(n<wlan.num_stas-1) printf(", ");
-				}
-				printf("}\n%s RTS/CTS sent/lost: {", LOG_LVL3);
-				for(int n = 0; n < wlan.num_stas; ++n){
-					printf("%d/%d (%.2f %%)", rts_cts_sent_per_sta[n], rts_cts_lost_per_sta[n],
-						double(rts_cts_lost_per_sta[n] * 100)/double(rts_cts_sent_per_sta[n]));
-					if(n<wlan.num_stas-1) printf(", ");
-				}
-				printf("}\n%s Data packets sent/lost: {", LOG_LVL3);
-				for(int n = 0; n < wlan.num_stas; ++n){
-					printf("%d/%d (%.2f %%)", data_packets_sent_per_sta[n], data_packets_lost_per_sta[n],
-							double(data_packets_lost_per_sta[n] * 100)/double(data_packets_sent_per_sta[n]));
-					if(n<wlan.num_stas-1) printf(", ");
-				}
+			// REPORT PER EACH STA
+			printf("%s Per-STA report:\n", LOG_LVL2);
+			// Throughput
+			double* throughput_per_sta_ptr = statistics_manager_.GetThroughputPerStaPtr();
+			int* data_frames_acked_per_sta_ptr = statistics_manager_.GetDataFramesAckedPerStaPtr();
+			int* rts_cts_sent_per_sta_ptr = statistics_manager_.GetRtsCtsSentPerStaPtr();
+			int* rts_cts_lost_per_sta_ptr = statistics_manager_.GetRtsCtsLostPerStaPtr();
+			int* data_packets_sent_per_sta_ptr = statistics_manager_.GetDataPacketsSentPerStaPtr();
+			int* data_packets_lost_per_sta_ptr = statistics_manager_.GetDataPacketsLostPerStaPtr();
+			printf("%s Throughput: {", LOG_LVL3);
+			for(int n = 0; n < wlan.num_stas; ++n){
+				throughput_per_sta_ptr[n] = ((double)data_frames_acked_per_sta_ptr[n] * (double)frame_length) / SimTime();
+				printf("%.2f Mbps",  throughput_per_sta_ptr[n] * pow(10,-6));
+				if(n<wlan.num_stas-1) printf(", ");
+			}
+			printf("}\n%s RTS/CTS sent/lost: {", LOG_LVL3);
+			for(int n = 0; n < wlan.num_stas; ++n){
+				printf("%d/%d (%.2f %%)", rts_cts_sent_per_sta_ptr[n], rts_cts_lost_per_sta_ptr[n],
+					double(rts_cts_lost_per_sta_ptr[n] * 100)/double(rts_cts_sent_per_sta_ptr[n]));
+				if(n<wlan.num_stas-1) printf(", ");
+			}
+			printf("}\n%s Data packets sent/lost: {", LOG_LVL3);
+			for(int n = 0; n < wlan.num_stas; ++n){
+				printf("%d/%d (%.2f %%)", data_packets_sent_per_sta_ptr[n], data_packets_lost_per_sta_ptr[n],
+						double(data_packets_lost_per_sta_ptr[n] * 100)/double(data_packets_sent_per_sta_ptr[n]));
+				if(n<wlan.num_stas-1) printf(", ");
+			}
 				printf("}");
 				printf("\n\n");
 
@@ -5308,13 +5598,13 @@ void Node :: SaveSimulationPerformance() {
 
 	// Per-STA statistics
 	if(node_type == NODE_TYPE_AP) {
-		simulation_performance.throughput_per_sta = throughput_per_sta;
-		simulation_performance.data_packets_sent_per_sta = data_packets_sent_per_sta;
-		simulation_performance.rts_cts_sent_per_sta = rts_cts_sent_per_sta;
-		simulation_performance.data_packets_lost_per_sta = data_packets_lost_per_sta;
-		simulation_performance.rts_cts_lost_per_sta = rts_cts_lost_per_sta;
-		simulation_performance.data_packets_acked_per_sta = data_packets_acked_per_sta;
-		simulation_performance.data_frames_acked_per_sta = data_frames_acked_per_sta;
+		simulation_performance.throughput_per_sta = statistics_manager_.GetThroughputPerStaPtr();
+		simulation_performance.data_packets_sent_per_sta = statistics_manager_.GetDataPacketsSentPerStaPtr();
+		simulation_performance.rts_cts_sent_per_sta = statistics_manager_.GetRtsCtsSentPerStaPtr();
+		simulation_performance.data_packets_lost_per_sta = statistics_manager_.GetDataPacketsLostPerStaPtr();
+		simulation_performance.rts_cts_lost_per_sta = statistics_manager_.GetRtsCtsLostPerStaPtr();
+		simulation_performance.data_packets_acked_per_sta = statistics_manager_.GetDataPacketsAckedPerStaPtr();
+		simulation_performance.data_frames_acked_per_sta = statistics_manager_.GetDataFramesAckedPerStaPtr();
 		simulation_performance.rssi_list_per_sta = rssi_per_sta;
 		UpdatePerformanceMeasurements();
 		simulation_performance.max_received_power_in_ap_per_wlan = max_received_power_in_ap_per_wlan;
@@ -5355,6 +5645,58 @@ void Node :: SaveSimulationPerformance() {
  * Initialize all the necessary variables
  */
 void Node :: InitializeVariables() {
+
+	/*
+	 * MANAGER INITIALIZATION
+	 * - Initialize all managers with appropriate parameters
+	 * - Managers encapsulate functionality that was previously scattered throughout the code
+	 */
+	
+	// Initialize state manager - will sync state after node_state is set below
+	
+	// Initialize logging manager (will be fully initialized in StartSavingLogs if needed)
+	// Logging manager is ready to use, InitializeLogging() will be called when needed
+	
+	// Initialize channel manager
+	channel_manager_.Initialize(min_channel_allowed, max_channel_allowed);
+	// channel_power is now accessed through channel_manager_.GetChannelPowersPtr()
+	// No need to store a pointer - access directly through the manager
+	
+	// Initialize backoff manager
+	backoff_manager_.Initialize(pdf_backoff, backoff_type, cw_min_default, cw_max_default, 
+	                            cw_stage_max, cw_adaptation);
+	// Sync Node's backoff variables with manager for backward compatibility
+	remaining_backoff = backoff_manager_.GetRemainingBackoff();
+	previous_backoff = backoff_manager_.GetPreviousBackoff();
+	current_cw_min = backoff_manager_.GetCurrentCWMin();
+	current_cw_max = backoff_manager_.GetCurrentCWMax();
+	cw_stage_current = backoff_manager_.GetCurrentCWStage();
+	num_bo_interruptions = backoff_manager_.GetNumBackoffInterruptions();
+	
+	// Initialize NAV manager (ready to use, no initialization needed)
+	// Sync Node's current_nav_time with manager for backward compatibility
+	current_nav_time = nav_manager_.GetCurrentNAVDuration();
+	
+	// Initialize MCS manager
+	mcs_manager_.InitializeWithSTAs(wlan.num_stas);
+	
+	// Initialize statistics manager
+	statistics_manager_.InitializeWithParams(wlan.num_stas, NUM_CHANNELS_KOMONDOR, 
+	                                         max_channel_allowed - min_channel_allowed + 1);
+	
+	// Initialize spatial reuse manager
+	spatial_reuse_manager_.Initialize(bss_color, srg, non_srg_obss_pd, srg_obss_pd, sensitivity_default);
+	
+	// Initialize configuration manager (ready to use, no initialization needed)
+	
+	// Initialize transmission manager
+	transmission_manager_.Initialize(frame_length, max_num_packets_aggregated);
+	
+	// Initialize reception manager (ready to use, no initialization needed)
+	
+	/*
+	 * END OF MANAGER INITIALIZATION
+	 */
 
 	/*
 	 * HARDCODED VARIABLES FOR TESTING PURPOSES
@@ -5403,28 +5745,33 @@ void Node :: InitializeVariables() {
 	node_logger.file = node_logger.file;
 
 	// Arrays and other
-	channel_power = new double[NUM_CHANNELS_KOMONDOR];
+	// channel_power removed - access through channel_manager_.GetChannelPowersPtr() instead
+	// No need to allocate - channel_manager_ manages the memory
 	num_channels_allowed = (max_channel_allowed - min_channel_allowed + 1);
 	total_time_transmitting_per_channel = new double[NUM_CHANNELS_KOMONDOR];
 	last_total_time_transmitting_per_channel = new double[NUM_CHANNELS_KOMONDOR];
-	channels_free = new int[NUM_CHANNELS_KOMONDOR];
-	channels_for_tx = new int[NUM_CHANNELS_KOMONDOR];
+	// Channel arrays are now managed by NodeChannelManager (initialized via channel_manager_.InitializeChannels())
 	total_time_lost_per_channel = new double[NUM_CHANNELS_KOMONDOR];
 	last_total_time_lost_per_channel = new double[NUM_CHANNELS_KOMONDOR];
 	total_time_channel_busy_per_channel = new double[NUM_CHANNELS_KOMONDOR];
 	timestampt_channel_becomes_free = new double[NUM_CHANNELS_KOMONDOR];
 	num_trials_tx_per_num_channels = new int[NUM_CHANNELS_KOMONDOR];
-	for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
-		channel_power[i] = 0;
-		total_time_transmitting_per_channel[i] = 0;
-		last_total_time_transmitting_per_channel[i] = 0;
-		channels_free[i] = FALSE;
-		channels_for_tx[i] = FALSE;
-		total_time_lost_per_channel[i] = 0;
-		last_total_time_lost_per_channel[i] = 0;
-		timestampt_channel_becomes_free[i] = 0;
-		num_trials_tx_per_num_channels[i] = 0;
-		total_time_channel_busy_per_channel[i] = 0;
+	{
+		double* channel_power_ptr = channel_manager_.GetChannelPowersPtr();
+		int* channels_free_ptr = channel_manager_.GetChannelsFreePtr();
+		int* channels_for_tx_ptr = channel_manager_.GetChannelsForTxPtr();
+		for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
+			channel_power_ptr[i] = 0;
+			total_time_transmitting_per_channel[i] = 0;
+			last_total_time_transmitting_per_channel[i] = 0;
+			channels_free_ptr[i] = FALSE;
+			channels_for_tx_ptr[i] = FALSE;
+			total_time_lost_per_channel[i] = 0;
+			last_total_time_lost_per_channel[i] = 0;
+			timestampt_channel_becomes_free[i] = 0;
+			num_trials_tx_per_num_channels[i] = 0;
+			total_time_channel_busy_per_channel[i] = 0;
+		}
 	}
 
 	total_time_transmitting_in_num_channels = new double[NUM_CHANNELS_KOMONDOR];
@@ -5468,8 +5815,12 @@ void Node :: InitializeVariables() {
 
 	data_packets_acked = 0;
 	data_frames_acked = 0;
+	limited_num_packets_aggregated = 0;  // Initialize to avoid uninitialized value errors
 
+	// Initialize node state (sync with state manager)
 	node_state = STATE_SENSING;
+	state_manager_.SetStateFromInt(STATE_SENSING); // Sync state manager with initial state
+	
 	current_modulation = 1;
 	packet_id = 0;
 
@@ -5512,22 +5863,7 @@ void Node :: InitializeVariables() {
 
 	default_modulation = MODULATION_NONE;
 
-	mcs_response = new int[4];
-	for(int n = 0; n < 4; ++n){
-		mcs_response[n] = 0;
-	}
-
-	change_modulation_flag = new int[wlan.num_stas];
-	for(int n = 0; n < wlan.num_stas; ++n){
-		change_modulation_flag[n] = TRUE;
-	}
-	mcs_per_node = new int *[wlan.num_stas] ;
-	for( int i = 0 ; i < wlan.num_stas ; ++i ) mcs_per_node[i] = new int[NUM_OPTIONS_CHANNEL_LENGTH];
-	for ( int i=0; i< wlan.num_stas; ++i) {
-		for (int j=0; j< NUM_OPTIONS_CHANNEL_LENGTH; ++j) {
-			mcs_per_node[i][j] = -1;
-		}
-	}
+	// MCS arrays are now managed by NodeMCSManager (initialized via mcs_manager_.InitializeWithSTAs())
 
 	first_time_requesting_mcs = TRUE;
 
@@ -5585,23 +5921,7 @@ void Node :: InitializeVariables() {
 	// HARDCODED
 	last_measurements_window = 10;		// Time in seconds of the last performance observation window
 
-	throughput_per_sta = new double[wlan.num_stas];
-	data_packets_sent_per_sta = new int[wlan.num_stas];
-	rts_cts_sent_per_sta = new int[wlan.num_stas];
-	data_packets_lost_per_sta = new int[wlan.num_stas];
-	rts_cts_lost_per_sta = new int[wlan.num_stas];
-	data_packets_acked_per_sta = new int[wlan.num_stas];
-	data_frames_acked_per_sta = new int[wlan.num_stas];
-
-	for(int i = 0; i < wlan.num_stas; ++i){
-		throughput_per_sta[i] = 0;
-		data_packets_sent_per_sta[i] = 0;
-		rts_cts_sent_per_sta[i] = 0;
-		data_packets_lost_per_sta[i] = 0;
-		rts_cts_lost_per_sta[i] = 0;
-		data_packets_acked_per_sta[i] = 0;
-		data_frames_acked_per_sta[i] = 0;
-	}
+	// Statistics arrays are now managed by NodeStatisticsManager (initialized via statistics_manager_.InitializeWithParams())
 
 	performance_report.SetSizeOfChannelLists(NUM_CHANNELS_KOMONDOR);
 	performance_report.SetSizeOfRssiList(total_wlans_number);

@@ -10,6 +10,7 @@
 - [Authors](#authors)
 - [Introduction](#introduction)
 - [Overview](#overview)
+- [Installation](#installation)
 - [Usage](#usage)
 - [Validation](#validation)
 - [Contribute](#contribute)
@@ -53,81 +54,195 @@ An overview of the current modules available in Komondor is shown next:
 <img src="https://github.com/wn-upf/Komondor/blob/master/Documentation/Other/Images and resources/modules_overview.png">
 </p>
 
+## Installation
+
+### Prerequisites
+
+Komondor requires the following system dependencies:
+
+- **C++ Compiler**: GCC (g++) 4.8 or later, or Clang
+- **Build Tools**: `make` (GNU Make)
+- **Lexical Analyzer**: `flex` (Fast Lexical Analyzer)
+- **Operating System**: Linux, macOS, or Unix-like system
+
+#### Installing Dependencies
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install build-essential flex g++ make
+```
+
+**Fedora/RHEL/CentOS:**
+```bash
+sudo dnf install gcc-c++ make flex
+```
+
+**macOS (using Homebrew):**
+```bash
+brew install flex
+```
+
+### Automated Installation (Recommended)
+
+The easiest way to build Komondor is using the automated build script, which handles architecture detection, CompC++ compilation, and Komondor building automatically:
+
+```bash
+cd Code
+./build.sh
+```
+
+This script will:
+1. Check if the CompC++ compiler binary exists and matches your platform architecture
+2. Automatically rebuild CompC++ if needed (handles cross-platform compatibility)
+3. Verify all required dependencies are installed
+4. Build the Komondor simulator
+5. Provide clear error messages and guidance if any step fails
+
+**Note:** The build script automatically detects architecture mismatches (e.g., macOS binaries on Linux systems) and rebuilds the necessary components for your platform.
+
+### Manual Installation
+
+If you prefer to build manually or need more control over the build process:
+
+#### Step 1: Build CompC++ Compiler
+
+The CompC++ compiler is required to generate C++ code from Komondor's component-based source files.
+
+```bash
+cd Code/compcpp
+make clean
+make
+cp cxx ../COST/cxx
+```
+
+#### Step 2: Build Komondor
+
+```bash
+cd Code/main
+./build_local
+```
+
+Alternatively, use the Makefile:
+
+```bash
+cd Code/main
+make
+```
+
+### Verification
+
+After successful installation, verify the build:
+
+```bash
+cd Code/main
+ls -lh komondor_main
+./komondor_main --help  # If help is available
+```
+
+The Komondor executable should be located at `Code/main/komondor_main`.
+
+### Troubleshooting
+
+#### Architecture Mismatch Errors
+
+If you encounter errors like:
+```
+cannot execute binary file: Exec format error
+```
+
+This indicates that the CompC++ binary was compiled for a different architecture. The automated build script (`./build.sh`) will automatically detect and fix this issue. If building manually, rebuild CompC++ from source (see Manual Installation, Step 1).
+
+#### Missing Dependencies
+
+If the build fails due to missing dependencies, install them using your system's package manager (see Prerequisites section above).
+
+#### Clean Build
+
+To perform a clean rebuild from scratch:
+
+```bash
+# Clean CompC++ build
+cd Code/compcpp
+make clean
+
+# Clean Komondor build
+cd ../main
+make clean  # Removes komondor_main and komondor_main.cxx
+
+# Rebuild
+cd ..
+./build.sh
+```
+
+### Additional Resources
+
+- Detailed installation and execution instructions: [Komondor User's Guide](https://github.com/wn-upf/Komondor/blob/master/Documentation/User%20guide/LaTeX%20files/komondor_user_guide.pdf)
+- Build documentation: See `Code/BUILD_README.md` for detailed build instructions
+- Doxygen documentation: Available [here](http://htmlpreview.github.io/?https://github.com/wn-upf/Komondor/blob/master/Documentation/doxy/html/index.html)
+
 ## Usage
 
-Detailed installation and execution instructions can be found in the [Komondor User's Guide](https://github.com/wn-upf/Komondor/blob/master/Documentation/User%20guide/LaTeX%20files/komondor_user_guide.pdf).
+### Basic Simulation
 
-In short, to run Komondor, just build `komondor_main` and then execute it by following the next steps:
-
-### STEP 0: Go to ./Code/main and set permissions of the folder
-```
-$ cd ./Code/main
-$ chmod -R 777 <dirname>
+Run Komondor with the following command:
+```bash
+cd Code/main
+./komondor_main INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
 ```
 
-### STEP 1: Build Komondor
-#### OPTION a: Build Komondor with pre-built CompC++
-WARNING: Following instructions use a pre-built CompC++. The binary
-`Code/COST/cxx` is platform-dependent and might not work on your machine.
+**Parameters:**
+- `INPUT_FILE_NODES`: CSV file containing node information (position, channels, etc.). Must use semicolons as separators.
+- `OUTPUT_FILE_LOGS`: Path to the output file for simulation results (created if it doesn't exist).
+- `FLAG_SAVE_NODE_LOGS`: Save node logs to separate files (1) or not (0). **Note:** Enabling this flag increases execution time.
+- `FLAG_PRINT_SYSTEM_LOGS`: Print system logs to console (1) or not (0).
+- `FLAG_PRINT_NODE_LOGS`: Print node logs to console (1) or not (0).
+- `SIM_TIME`: Simulation time duration.
+- `SEED`: Random seed for simulation reproducibility.
 
+### Simulation with Intelligent Agents
 
-```
-$ ./build_local
-```
+To run Komondor with ML-based intelligent agents:
 
-#### OPTION b: Build Komondor and CompC++ from scratch using make
-Following instructions require [make](https://www.gnu.org/software/make/manual/make.html).
-
-```
-$ make
-```
-
-### STEP 2: Run Komondor
-Run Komondor simulator for the given input information (basic simulation)
-
-```
-$ ./komondor_main INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
+```bash
+./komondor_main INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
 ```
 
-The inputs are further described next:
-* ```INPUT_FILE_NODES```: file containing nodes information (e.g., position, channels allowed, etc.).The file must be a .csv with semicolons as separators.
-* ```OUTPUT_FILE_LOGS```: path to the output file to which write results at the end of the execution (if the file does not exist, the system will create it).
-* ```SIMULATION_CODE```: name given to the simulation, used to keep track of specific simulations during campaigns.
-* ```FLAG_SAVE_NODE_LOGS```: flag to indicate whether to save the node logs into separate files (1) or not (0). If this flag is activated, one file per node will be created.
-* ```FLAG_PRINT_SYSTEM_LOGS```: flag to indicate whether to print the system logs (1) or not (0).
-* ```FLAG_PRINT_NODE_LOGS```: flag to indicate whether to print the node logs (1) or not (0). 
-* ```SIM_TIME```: simulation time
-* ```SEED```: random seed the user wishes to use
+**Additional Parameters:**
+- `INPUT_FILE_AGENTS`: CSV file containing agent configuration parameters.
+- `FLAG_SAVE_AGENT_LOGS`: Save agent logs to separate files (1) or not (0).
+- `FLAG_PRINT_AGENT_LOGS`: Print agent logs to console (1) or not (0).
 
-IMPORTANT NOTE (!): Setting ```FLAG_SAVE_NODE_LOGS``` to TRUE (1) entails a larger execution time. 
+For detailed information about agents, see [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
 
-STEP 2-1: Run Komondor simulator with intelligent agents
+### Input Files
 
-Alternatively, and in order to indicate the usage of agents, the console input must add the following extra information:
+Input files are located in the `Code/input` directory:
 
+- **`input_nodes_conf.csv`**: Defines node parameters (ID, location, channels, etc.)
+- **`agents.csv`**: Defines agent configuration parameters (required for agent-based simulations)
+
+Additional configuration models are loaded from the `config_models` directory. See the [Komondor User's Guide](https://github.com/wn-upf/Komondor/blob/master/Documentation/User%20guide/LaTeX%20files/komondor_user_guide.pdf) for detailed input file specifications.
+
+### Output Files
+
+Simulation results are written to the `Code/output` directory, including:
+- System logs and statistics
+- Node-specific logs (if `FLAG_SAVE_NODE_LOGS` is enabled)
+- Agent logs (if agents are used and `FLAG_SAVE_AGENT_LOGS` is enabled)
+
+### Debugging Tools (Optional)
+
+For debugging and profiling:
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get install gdb valgrind
 ```
-$ ./komondor_main INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
-```
 
-The agent's operation has been summarized at [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
-
-### Input files
-
-There is an input file that is required for basic Komondor's execution. Input files are located at the "input" folder:
-
-* ```input_nodes_conf.csv```: define parameters such as the node ID, the node location, etc.
-* ```agents.csv```: define parameters used by the agents' operation. Refer to [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
-
-Apart from the input nodes file, different models are loaded through the "config_models" file (located [here](https://github.com/wn-upf/Komondor/blob/master/Code/config_models)).
-
-Regarding the output ("output" folder), some logs and statistics are created at the end of the execution.
-
-### Other installations
-
-Debugging: 
-
-```
-$ apt-get install gdb valgrind 
+**Fedora/RHEL/CentOS:**
+```bash
+sudo dnf install gdb valgrind
 ```
 
 ## Validation

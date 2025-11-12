@@ -209,6 +209,94 @@ struct Performance
 		}
 	}
 
+	/**
+	 * Clean up all allocated arrays
+	 * Call this method before the Performance object is destroyed
+	 */
+	void CleanupArrays(){
+		// Clean up channel-related arrays
+		if (num_trials_tx_per_num_channels != NULL) {
+			delete[] num_trials_tx_per_num_channels;
+			num_trials_tx_per_num_channels = NULL;
+		}
+		if (total_time_transmitting_per_channel != NULL) {
+			delete[] total_time_transmitting_per_channel;
+			total_time_transmitting_per_channel = NULL;
+		}
+		if (total_time_transmitting_in_num_channels != NULL) {
+			delete[] total_time_transmitting_in_num_channels;
+			total_time_transmitting_in_num_channels = NULL;
+		}
+		if (total_time_lost_per_channel != NULL) {
+			delete[] total_time_lost_per_channel;
+			total_time_lost_per_channel = NULL;
+		}
+		if (total_time_lost_in_num_channels != NULL) {
+			delete[] total_time_lost_in_num_channels;
+			total_time_lost_in_num_channels = NULL;
+		}
+		if (total_time_channel_busy_per_channel != NULL) {
+			delete[] total_time_channel_busy_per_channel;
+			total_time_channel_busy_per_channel = NULL;
+		}
+		if (last_total_time_transmitting_per_channel != NULL) {
+			delete[] last_total_time_transmitting_per_channel;
+			last_total_time_transmitting_per_channel = NULL;
+		}
+		if (last_total_time_lost_per_channel != NULL) {
+			delete[] last_total_time_lost_per_channel;
+			last_total_time_lost_per_channel = NULL;
+		}
+		
+		// Clean up RSSI arrays
+		if (rssi_list != NULL) {
+			delete[] rssi_list;
+			rssi_list = NULL;
+		}
+		if (max_received_power_in_ap_per_wlan != NULL) {
+			delete[] max_received_power_in_ap_per_wlan;
+			max_received_power_in_ap_per_wlan = NULL;
+		}
+		if (received_power_array != NULL) {
+			delete[] received_power_array;
+			received_power_array = NULL;
+		}
+		if (rssi_list_per_sta != NULL) {
+			delete[] rssi_list_per_sta;
+			rssi_list_per_sta = NULL;
+		}
+		
+		// Clean up per-STA arrays
+		if (throughput_per_sta != NULL) {
+			delete[] throughput_per_sta;
+			throughput_per_sta = NULL;
+		}
+		if (data_packets_sent_per_sta != NULL) {
+			delete[] data_packets_sent_per_sta;
+			data_packets_sent_per_sta = NULL;
+		}
+		if (rts_cts_sent_per_sta != NULL) {
+			delete[] rts_cts_sent_per_sta;
+			rts_cts_sent_per_sta = NULL;
+		}
+		if (data_packets_lost_per_sta != NULL) {
+			delete[] data_packets_lost_per_sta;
+			data_packets_lost_per_sta = NULL;
+		}
+		if (rts_cts_lost_per_sta != NULL) {
+			delete[] rts_cts_lost_per_sta;
+			rts_cts_lost_per_sta = NULL;
+		}
+		if (data_packets_acked_per_sta != NULL) {
+			delete[] data_packets_acked_per_sta;
+			data_packets_acked_per_sta = NULL;
+		}
+		if (data_frames_acked_per_sta != NULL) {
+			delete[] data_frames_acked_per_sta;
+			data_frames_acked_per_sta = NULL;
+		}
+	}
+
 };
 
 #endif

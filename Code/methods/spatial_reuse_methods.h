@@ -54,6 +54,9 @@
  *
  */
 
+#ifndef SPATIAL_REUSE_METHODS_H
+#define SPATIAL_REUSE_METHODS_H
+
 #include <stddef.h>
 #include <math.h>
 #include <iostream>
@@ -221,3 +224,5 @@ int CheckPowerConstraints(double current_obss_pd, double obss_pd_min, double obs
 		return 0;
 	}
 }
+
+#endif // SPATIAL_REUSE_METHODS_H
