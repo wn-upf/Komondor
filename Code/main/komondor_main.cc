@@ -87,7 +87,8 @@ component Komondor : public CostSimEng {
 
 		void Setup(double simulation_time_komondor, int save_node_logs, int save_agent_logs,
 			int print_node_logs, int print_system_logs, int print_agent_logs, const char *nodes_filename,
-			const char *script_filename, const char *simulation_code, int seed_console, int agents_enabled, const char *agents_filename);
+			const char *script_filename, const char *simulation_code, int seed_console, int agents_enabled,
+			const char *agents_filename, int mapc_enabled, const char *mapc_filename);
 		void Stop();
 		void Start();
 		void InputChecker();
@@ -97,6 +98,8 @@ component Komondor : public CostSimEng {
 
 		void GenerateAgents(const char *agents_filename, const char *simulation_code_console);
 		void GenerateCentralController(const char *agents_filename);
+
+		void GenerateMapcGroups(const char *mapc_filename);
 
 		int GetNumOfLines(const char *nodes_filename);
 		int GetNumOfNodes(const char *nodes_filename, int node_type, std::string wlan_code);
@@ -143,6 +146,7 @@ component Komondor : public CostSimEng {
 		int simulation_index;			///> Simulation index for selecting the type of output in scripts
 
 		int agents_enabled;				///> Determined according to the input (for generating agents or not)
+		int mapc_enabled;				///> Determined according to the input (for using MAPC or not)
 
 		// Public items (to shared with the agents)
 		public:
@@ -168,6 +172,7 @@ component Komondor : public CostSimEng {
 		std::string simulation_code;		///> Komondor simulation code
 		const char *nodes_input_filename;	///> Filename of the nodes (AP or Deterministic Nodes) input CSV
 		const char *agents_input_filename;	///> Filename of the agents input CSV
+		const char *mapc_input_filename;	///> Filename of the MAPC configuration CSV
 		FILE *script_output_file;			///> File for the whole input files included in the script TODO
 		Logger logger_script;				///> Logger for the script file (containing 1+ simulations) Readable version
 
@@ -198,7 +203,8 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 		int save_agent_logs_console, int print_system_logs_console, int print_node_logs_console,
 		int print_agent_logs_console, const char *nodes_input_filename_console,
 		const char *script_output_filename, const char *simulation_code_console, int seed_console,
-		int agents_enabled_console, const char *agents_input_filename_console){
+		int agents_enabled_console, const char *agents_input_filename_console,
+		int mapc_enabled_console, const char *mapc_input_filename_console) {
 
 	// Setup variables corresponding to the console's input
 	simulation_time_komondor = sim_time_console;
@@ -208,11 +214,13 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 	print_system_logs = print_system_logs_console;
 	print_agent_logs = print_agent_logs_console;
 	nodes_input_filename = nodes_input_filename_console;
+	mapc_input_filename = mapc_input_filename_console;
 	agents_input_filename = agents_input_filename_console;
 //	std::string simulation_code;
 //    simulation_code.append(ToString(simulation_code_console));
 	seed = seed_console;
 	agents_enabled = agents_enabled_console;
+	mapc_enabled = mapc_enabled_console;
 	total_wlans_number = 0;
 
     // Generate output files
@@ -296,6 +304,9 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 			}
 		}
 	}
+
+	// Generate MAPC groups
+	GenerateMapcGroups(mapc_input_filename);
 
 	// Generate agents (if enabled)
 	central_controller_flag = 0;
@@ -762,6 +773,66 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 		}
 
 		if (print_system_logs) printf("%s Nodes generated!\n", LOG_LVL3);
+}
+
+/**
+* Generate the MAPC groups, according to the MAPC config file
+ * @param "mapc_filename" [type char*]: filename of the MAPC input CSV
+*/
+void Komondor::GenerateMapcGroups(const char *mapc_filename) {
+
+    if (print_system_logs) printf("\n%s Reading MAPC configuration file '%s'...\n", LOG_LVL1, mapc_filename);
+
+    FILE* stream = fopen(mapc_filename, "r");
+    if (!stream) {
+        printf("[ERROR] MAPC file %s not found!\n", mapc_filename);
+        exit(-1);
+    }
+
+    char line[CHAR_BUFFER_SIZE];
+    int first_line_skipped = 0;
+	char* tmp_line;
+
+    while (fgets(line, CHAR_BUFFER_SIZE, stream)) {
+        if (!first_line_skipped) { first_line_skipped = 1; continue; } // Skip header
+        tmp_line = strdup(line);
+    	// 1. Parse Group ID and Method
+        int group_id = atoi(GetField(tmp_line, IX_MAPC_GROUP_ID));
+		// 2. Parse the MAPC scheme
+        std::string method = ToString(GetField(tmp_line, IX_MAPC_METHOD));
+        // 3. Parse Shared APs (Slaves) - Handle comma-separated list
+        std::string shared_ids_str = ToString(GetField(tmp_line, IX_MAPC_AP_IDS));
+        std::vector<int> shared_ap_list;
+        char* token = strtok((char*)shared_ids_str.c_str(), ",");
+        while (token != NULL) {
+            shared_ap_list.push_back(atoi(token));
+            token = strtok(NULL, ",");
+        }
+        // 4. Parse Parameters (Key-Value pairs for extensibility)
+        std::string params = ToString(GetField(tmp_line, IX_MAPC_EXTRA_PARAM));
+        free(tmp_line);
+
+    	// --- APPLY LOGIC BASED ON METHOD ---
+    	if (method == "CO_SR") {
+    		// Configure nodes for Co-SR
+     		// To do
+
+    		// Parse specific Co-SR params (e.g., OBSS_PD_MIN=-82)
+    		// To do
+
+    	} else if (method == "CO_TDMA") {
+    		// Configure nodes for Co-TDMA
+    		// To do
+
+    		// Parse specific Co-TDMA params (e.g., SLOT_DURATION)
+    		// To do
+
+    	} else if (method == "CO_BF") {
+    		// ...
+    	}
+    }
+    fclose(stream);
+    if (print_system_logs) printf("%s MAPC Groups configured!\n", LOG_LVL2);
 }
 
 /**
@@ -1355,14 +1426,15 @@ int main(int argc, char *argv[]){
 
 	printf("\n");
 	printf("*************************************************************************************\n");
-	printf("%s KOMONDOR Wireless Network Simulator\n", LOG_LVL1);
-	printf("%s Copyright (C) 2017-2022, and GNU GPL'd, by Sergio Barrachina & Francesc Wilhelmi\n", LOG_LVL1);
+	printf("%s KOM8NDOR Wireless Network Simulator\n", LOG_LVL1);
+	printf("%s Copyright (C) 2025-2030, and GNU GPL'd, by Francesc Wilhelmi & Sergio Barrachina\n", LOG_LVL1);
 	printf("%s GitHub repository: https://github.com/wn-upf/Komondor\n", LOG_LVL2);
 	printf("*************************************************************************************\n");
 	printf("\n\n");
 
 	// Input variables
 	char *nodes_input_filename;
+	char *mapc_input_filename;
 	char *agents_input_filename;
 	std::string script_output_filename;
 	std::string simulation_code;
@@ -1374,6 +1446,7 @@ int main(int argc, char *argv[]){
 	double sim_time;
 	int seed;
 	int agents_enabled;
+	int mapc_enabled;
 
 	total_nodes_number = 0;
 
@@ -1392,6 +1465,8 @@ int main(int argc, char *argv[]){
 		seed = atoi(argv[11]);
 		// Enable the operation of agents
 		agents_enabled = TRUE;
+		// Disable MAPC
+		mapc_enabled = FALSE;
 		if (print_system_logs) printf("%s FULL configuration entered per console (AGENTS ENABLED).\n", LOG_LVL1);
 	} else if(argc == NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS){	// Configuration without agents
 		nodes_input_filename = argv[1];
@@ -1402,6 +1477,22 @@ int main(int argc, char *argv[]){
 		print_node_logs = atoi(argv[6]);
 		sim_time = atof(argv[7]);
 		seed = atoi(argv[8]);
+		// Disable the operation of agents & MAPC
+		agents_enabled = FALSE;
+		mapc_enabled = FALSE;
+		if (print_system_logs) printf("%s FULL configuration entered per console (AGENTS DISABLED).\n", LOG_LVL1);
+	} else if(argc == NUM_FULL_ARGUMENTS_CONSOLE_MAPC_NO_AGENTS){	// Configuration without agents
+		nodes_input_filename = argv[1];
+		mapc_input_filename = argv[2];
+		script_output_filename = ToString(argv[3]);
+		simulation_code = ToString(argv[4]);
+		save_node_logs = atoi(argv[5]);
+		print_system_logs = atoi(argv[6]);
+		print_node_logs = atoi(argv[7]);
+		sim_time = atof(argv[8]);
+		seed = atoi(argv[9]);
+		// Enable MAPC
+		mapc_enabled = TRUE;
 		// Disable the operation of agents
 		agents_enabled = FALSE;
 		if (print_system_logs) printf("%s FULL configuration entered per console (AGENTS DISABLED).\n", LOG_LVL1);
@@ -1415,8 +1506,9 @@ int main(int argc, char *argv[]){
 		save_node_logs = DEFAULT_WRITE_NODE_LOGS;
 		print_system_logs = DEFAULT_PRINT_SYSTEM_LOGS;
 		print_node_logs = DEFAULT_PRINT_NODE_LOGS;
-		// Disable the operation of agents
+		// Disable the operation of agents & MAPC
 		agents_enabled = FALSE;
+		mapc_enabled = FALSE;
 		if (print_system_logs) printf("%s PARTIAL configuration entered per console. "
 			"Some parameters are set by DEFAULT.\n", LOG_LVL1);
 	} else if(argc == NUM_PARTIAL_ARGUMENTS_SCRIPT) {	// Partial configuration entered per console (useful for scripts)
@@ -1429,8 +1521,9 @@ int main(int argc, char *argv[]){
 		save_node_logs = DEFAULT_WRITE_NODE_LOGS;
 		print_system_logs = DEFAULT_PRINT_SYSTEM_LOGS;
 		print_node_logs = DEFAULT_PRINT_NODE_LOGS;
-		// Disable the operation of agents
+		// Disable the operation of agents & MAPC
 		agents_enabled = FALSE;
+		mapc_enabled = FALSE;
 		if (print_system_logs) printf("%s PARTIAL configuration entered per script. "
 			"Some parameters are set by DEFAULT.\n", LOG_LVL1);
 	} else {
@@ -1453,6 +1546,8 @@ int main(int argc, char *argv[]){
 	if (print_system_logs) {
 		printf("%s Komondor input configuration:\n", LOG_LVL1);
 		printf("%s nodes_input_filename: %s\n", LOG_LVL2, nodes_input_filename);
+		printf("%s mapc_enabled: %d\n", LOG_LVL2, mapc_enabled);
+		if (mapc_enabled) { printf("%s mapc_input_filename: %s\n", LOG_LVL2, mapc_input_filename); }
 		printf("%s agents_enabled: %d\n", LOG_LVL2, agents_enabled);
 		if (agents_enabled) { printf("%s agents_input_filename: %s\n", LOG_LVL2, agents_input_filename); }
 		printf("%s script_output_filename: %s\n", LOG_LVL2, script_output_filename.c_str());
@@ -1488,7 +1583,7 @@ int main(int argc, char *argv[]){
 	komondor_simulation.StopTime(sim_time);
 	komondor_simulation.Setup(sim_time, save_node_logs, save_agent_logs, print_system_logs,
 		print_node_logs, print_agent_logs, nodes_input_filename, script_output_filename.c_str(),
-		simulation_code.c_str(), seed, agents_enabled, agents_input_filename);
+		simulation_code.c_str(), seed, agents_enabled, agents_input_filename, mapc_enabled, mapc_input_filename);
 
 	printf("------------------------------------------\n");
 	printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());

@@ -474,6 +474,7 @@
 // CONSOLE ARGUMENTS
 #define NUM_FULL_ARGUMENTS_CONSOLE				12		///> Number of arguments entered per console corresponding to full config
 #define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	9		///> Number of arguments entered per console corresponding to full config (NO AGENTS)
+#define NUM_FULL_ARGUMENTS_CONSOLE_MAPC_NO_AGENTS 10 ///> Number of arguments entered per console corresponding to full config with MAPC (NO AGENTS)
 #define NUM_PARTIAL_ARGUMENTS_CONSOLE			4		///> Number of arguments entered per console corresponding to partial config
 #define NUM_PARTIAL_ARGUMENTS_SCRIPT			5		///> Number of arguments entered per script corresponding to partial config
 
@@ -487,6 +488,11 @@
 #define IX_PRINT_NODE_LOGS			8
 #define IX_SIMULATION_TIME			9
 #define IX_RANDOM_SEED				10
+
+#define IX_MAPC_GROUP_ID     1
+#define IX_MAPC_METHOD       2
+#define IX_MAPC_AP_IDS       3
+#define IX_MAPC_EXTRA_PARAM  4
 
 #define DEFAULT_SCRIPT_FILENAME		"./output/script_output.txt"
 #define DEFAULT_SIMULATION_CODE		"DEFAULT_SIM"
