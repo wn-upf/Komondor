@@ -83,6 +83,13 @@ class MultiArmedBandit {
 		double initial_epsilon;		///> Initial epsilon parameter (exploration coefficient)
 		double epsilon;				///> Epsilon parameter (exploration coefficient)
 
+		// Regret maching specific variables
+		double **regret_matrix;         // Matrix Q [current_action][other_action]
+		double *action_probs;           // Array with probabilities to select each action
+		double intertia;                // The inertia parameter (mu)
+		double S_CCA_DBM = -82.0;       // Standard preamble detection threshold
+		double MAX_THROUGHPUT = 400.0;  // Set this to your max expected Mbps
+
 	// Methods
 	public:
 
@@ -168,6 +175,15 @@ class MultiArmedBandit {
                     arm_ix = PickArmSequentially(num_arms, available_arms, current_arm);
                     break;
                 }
+				/*
+				 * Regret matching strategy:
+				 */
+				case STRATEGY_REGRET_MATCHING:{
+					// Pick an action according to Thompson sampling
+					arm_ix = PickArmRegretMatching();
+					break;
+				}
+
 				default:{
 					printf("[MAB] ERROR: '%d' is not a correct action-selection strategy!\n", action_selection_strategy);
 					PrintAvailableActionSelectionStrategies();
@@ -300,6 +316,27 @@ class MultiArmedBandit {
 			}
 //			printf("Selected action %d (available = %d)\n", action_ix, available_arms[action_ix]);
 			return action_ix;
+		}
+
+		/**
+		 * Select an action according to the Regret matching strategy
+		 * @return "action_ix" [type int]: index of the selected action
+		 */
+		int PickArmRegretMatching() {
+
+			double r = (double)rand() / RAND_MAX; // Random [0, 1]
+			double cumulative = 0.0;
+			int action_ix(-1);
+
+			for (int i = 0; i < num_arms; i++) {
+				cumulative += action_probs[i];
+				if (r <= cumulative) {
+					action_ix = i;
+					return action_ix;
+				}
+			}
+			return num_arms - 1; // Fallback
+
 		}
 
         /*******************/
@@ -441,6 +478,27 @@ class MultiArmedBandit {
 				estimated_reward_per_arm[i] = initial_reward;
 				times_arm_has_been_selected[i] = 0;
 			}
+
+			// REGRET MATCHING INITIALIZATION
+
+			// - Initialize intertia (stickiness)
+			inertia = 2.0 * MAX_THROUGHPUT * (num_arms - 1);
+
+			// - Initialize action probabilities (uniformly)
+			action_probs = new double[num_arms];
+			for (int i = 0; i < num_arms; i++) {
+				action_probs[i] = 1.0 / (double)num_arms;
+			}
+
+			// - Initialize Q Matrix
+			regret_matrix = new double *[num_arms];
+			for (int i = 0; i < num_arms; i++) {
+				regret_matrix[i] = new double[num_arms];
+				for (int j = 0; j < num_arms; j++) {
+					regret_matrix[i][j] = 0.0;
+				}
+			}
+
 		}
 
 };

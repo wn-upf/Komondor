@@ -130,15 +130,15 @@ component Agent : public TypeII{
 
 		Action *actions;					///> List of actions
 		int *list_of_available_actions;		///> List of the actions that are available
-		int num_arms;					///> Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
-		int num_arms_channel;			///> Number of channels available
-		int num_arms_sensitivity;		///> Number of PD levels available
-		int num_arms_tx_power;			///> Number of TX power levels available
+		int num_arms;						///> Number of actions (depends on the configuration parameters - pd, tx_power, channels, etc.)
+		int num_arms_channel;				///> Number of channels available
+		int num_arms_sensitivity;			///> Number of PD levels available
+		int num_arms_tx_power;				///> Number of TX power levels available
 		int num_arms_max_bandwidth;			///> Number of DCB policies available
 
 		// Other input parameters
 		int type_of_reward;					///> Type of reward
-		//int type_of_reward_cc;              ///> Type of reward chosen by the CC
+		//int type_of_reward_cc;            ///> Type of reward chosen by the CC
 		double time_between_requests; 		///> Time between two information requests to the AP (for a given measurement)
 
 		// Print/write variables

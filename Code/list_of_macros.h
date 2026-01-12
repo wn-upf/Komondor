@@ -431,6 +431,7 @@
 #define STRATEGY_THOMPSON_SAMPLING		2
 #define STRATEGY_UCB					3
 #define STRATEGY_SEQUENTIAL             4
+#define STRATEGY_REGRET_MATCHING        5
 
 #define MAX_TIME_INFORMATION_VALID		10 ///> Maximum amount of time (in seconds) the information of the network is considered to be valid
 

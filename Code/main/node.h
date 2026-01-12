@@ -5513,18 +5513,18 @@ void Node :: InitializeVariables() {
 	default_modulation = MODULATION_NONE;
 
 	mcs_response = new int[4];
-	for(int n = 0; n < 4; ++n){
+	for(int n = 0; n < 4; ++n) {
 		mcs_response[n] = 0;
 	}
 
 	change_modulation_flag = new int[wlan.num_stas];
-	for(int n = 0; n < wlan.num_stas; ++n){
+	for(int n = 0; n < wlan.num_stas; ++n) {
 		change_modulation_flag[n] = TRUE;
 	}
-	mcs_per_node = new int *[wlan.num_stas] ;
-	for( int i = 0 ; i < wlan.num_stas ; ++i ) mcs_per_node[i] = new int[NUM_OPTIONS_CHANNEL_LENGTH];
-	for ( int i=0; i< wlan.num_stas; ++i) {
-		for (int j=0; j< NUM_OPTIONS_CHANNEL_LENGTH; ++j) {
+	mcs_per_node = new int *[wlan.num_stas];
+	for(int i = 0 ; i < wlan.num_stas ; ++i) mcs_per_node[i] = new int[NUM_OPTIONS_CHANNEL_LENGTH];
+	for (int i = 0; i < wlan.num_stas; ++i) {
+		for (int j = 0; j < NUM_OPTIONS_CHANNEL_LENGTH; ++j) {
 			mcs_per_node[i][j] = -1;
 		}
 	}
