@@ -97,8 +97,6 @@ class MlModel {
 		RtotAlgorithm rtot_alg;					///> RTOT algorithm
 		CentralizedActionBanning action_banner;	///> Centralized action-banning
 
-		int last_action(-1);
-
 	// Methods
 	public:
 
@@ -148,16 +146,20 @@ class MlModel {
 		* @return "new_action" [type int]: index of the new selected action
 		*/
 		int ComputeIndividualConfiguration(int arm_ix, double reward,
-			Logger &agent_logger, double sim_time, int *available_arms) {
+			Logger &agent_logger, double sim_time, int *available_arms,
+			double *estimated_performance_per_action) {
 			int new_action(0);
 			switch(learning_mechanism) {
 				/* MULTI_ARMED_BANDITS */
 				case MULTI_ARMED_BANDITS: {
 					// Update the reward of the last played configuration
 					mab_agent.UpdateArmStatistics(arm_ix, reward);
+					// Update regret matching info (when used)
+					if(action_selection_strategy == STRATEGY_REGRET_MATCHING) {
+						mab_agent.UpdateRegretMatching(arm_ix, reward, estimated_performance_per_action);
+					}
 					// Select a new action according to the updated information
 					new_action = mab_agent.SelectNewAction(available_arms, arm_ix);
-					last_action = new_action;
 					break;
 				}
 				case RTOT_ALGORITHM: {

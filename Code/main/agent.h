@@ -135,6 +135,7 @@ component Agent : public TypeII{
 		int num_arms_sensitivity;			///> Number of PD levels available
 		int num_arms_tx_power;				///> Number of TX power levels available
 		int num_arms_max_bandwidth;			///> Number of DCB policies available
+		double *estimated_rewards;			///> Estimated performance/reward per action
 
 		// Other input parameters
 		int type_of_reward;					///> Type of reward
@@ -148,6 +149,9 @@ component Agent : public TypeII{
 
 		// RTOT
 		double margin_rtot;      ///> Margin for the RTOT mechanism (see https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8319274)
+
+		// Regret matching
+		double *estimated_performance_per_action; ///> Estimated performance per action (used in regret matching)
 
 	// Private items (just for internal agent operation)
 	private:
@@ -295,11 +299,18 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration, TRUE);
 	// 2 - Compute the reward based on the observed performance
 	processed_reward = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
+
 	//// 3 - Process the performance to obtain the corresponding reward according to the central controller
 	//if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
 
 	// Update the information of the current selected action
 	UpdateActionInformation(processed_configuration);
+
+	// Update estimated performance per action (regret matching alg.)
+	if (action_selection_strategy == STRATEGY_REGRET_MATCHING) {
+		pre_processor.ComputeEstimatedPerformanceAndRewards(
+			estimated_rewards, processed_configuration, processed_reward, performance.rssi_list);
+	}
 
 	// Write the action that is currently selected and its associated performance
 	if(save_agent_logs) {
@@ -562,17 +573,17 @@ void Agent :: ComputeNewConfiguration(){
 			switch(learning_mechanism) {
 				/* Multi-Armed Bandits */
 				case MULTI_ARMED_BANDITS:{
-					// Update the configuration according to the MABs operation
+					// the configuration according to the MABs operation
 					ml_output = ml_model.ComputeIndividualConfiguration
 						(processed_configuration, processed_reward, agent_logger,
-						SimTime(), list_of_available_actions);
+						SimTime(), list_of_available_actions, estimated_performance_per_action);
 					//PrintOrWriteAgentStatistics();
 					break;
 				}
 				case RTOT_ALGORITHM:{
                     ml_output = ml_model.ComputeIndividualConfiguration
 						(processed_configuration, processed_reward, agent_logger,
-						SimTime(), list_of_available_actions);
+						SimTime(), list_of_available_actions, 0);
 					break;
 				}
 				default:{
@@ -605,16 +616,20 @@ void Agent :: ComputeNewConfiguration(){
  * Update the Action object for the corresponding played action
  * @param "action_ix" [type int]: index of the selected action/configuration
  */
-void Agent :: UpdateActionInformation(int action_ix){
+void Agent :: UpdateActionInformation(int action_ix) {
+
 	// Current information
 	actions[action_ix].performance_since_last_cc_request = performance;
 	actions[action_ix].instantaneous_reward = processed_reward;
+
 	// Full run information
 	actions[action_ix].cumulative_reward += processed_reward;
 	++ actions[action_ix].times_played;
+
 	// Information since last CC request
 	actions[action_ix].cumulative_reward_since_last_cc_request += processed_reward;
 	++ actions[action_ix].times_played_since_last_cc_request;
+
 }
 
 /*****************************/
@@ -651,6 +666,12 @@ void Agent :: InitializeAgent() {
 	list_of_available_actions = new int[num_arms];
 	for (int i = 0; i < num_arms; ++i) {
 		list_of_available_actions[i] = 1;
+	}
+
+	// Initialize the estimated performance per action (regret matching)
+	estimated_rewards = new double[num_arms];
+	for (int i = 0; i < num_arms; ++i) {
+		estimated_rewards[i] = 0.0;
 	}
 
 }

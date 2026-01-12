@@ -372,6 +372,78 @@ class PreProcessor {
 			configuration->non_srg_obss_pd = ml_output;
 		}
 
+		/****************/
+		/****************/
+		/*  RM METHODS  */
+		/****************/
+		/****************/
+
+		/**
+        * Computes the counterfactual rewards for all actions (Regret Matching Estimator)
+        * @param "estimated_rewards" [type double*]: Output array to store the results
+        * @param "played_action_index" [type int]: The index of the action that was actually played
+        * @param "actual_reward" [type double]: The actual normalized reward measured
+        * @param "neighbor_rssi_list" [type double*]: List of RSSI (dBm) from detected neighbors
+        */
+        void ComputeEstimatedPerformanceAndRewards(double *estimated_rewards, int played_action_index,
+                                                  double actual_reward, double* neighbor_rssi_list) {
+
+			const double S_CCA_STD = -82.0;   		// Standard PD threshold (dBm)
+			const double K_HEAVY = 9.0;       		// Starvation penalty for hidden nodes
+			const double REF_NEIGHBOR_TX = 20.0;	// Assumed neighbor Tx Power (dBm) for path loss estimation
+
+			int num_neighbors = sizeof(neighbor_rssi_list) / sizeof(int);
+
+
+			int indexes[NUM_FEATURES_ACTIONS]; // Temporary array to hold the indices of the candidate action
+
+			for(int k = 0; k < num_arms; k++) {
+
+				// Use the ground truth for the played action
+				if (k == played_action_index) {
+					estimated_rewards[k] = actual_reward;
+					continue;
+				}
+
+				// 2. RETRIEVE ACTION PARAMETERS
+				// Extract indices for Channel, PD, TxPower, BW
+				index2values(indexes, k, num_arms_channel, num_arms_sensitivity,
+				num_arms_tx_power, num_arms_max_bandwidth);
+				// Get values (Note: These are likely in pW based on your logs, so we convert to dBm)
+				double P_tx_candidate_pW = list_of_tx_power_values[indexes[2]];
+				double S_sens_candidate_pW = list_of_pd_values[indexes[1]];
+				double P_tx_candidate_dBm = ConvertPower(PW_TO_DBM, P_tx_candidate_pW);
+				double S_sens_candidate_dBm = ConvertPower(PW_TO_DBM, S_sens_candidate_pW);
+
+				// 3. ESTIMATE AIRTIME
+				double contention_count = 1.0; // Start with ourselves
+				for (int n = 0; n < num_neighbors; n++) {
+					double rssi_neigh = neighbor_rssi_list[n]; // Access by index
+					// A. Do we hear them?
+					if (rssi_neigh >= S_sens_candidate_dBm) {
+						// B. Do they hear us? (Reciprocity Check)
+						double path_loss = REF_NEIGHBOR_TX - rssi_neigh;
+						double signal_at_neighbor = P_tx_candidate_dBm - path_loss;
+						double omega = 1.0;
+						// If our signal is too weak to trigger their CCA...
+						if (signal_at_neighbor < S_CCA_STD) {
+							omega = K_HEAVY; // Hidden Node Penalty
+						}
+						contention_count += omega;
+					}
+				}
+				double estimated_airtime = 1.0 / contention_count;
+
+				// 4. ESTIMATE REWARD
+				// Since 'actual_reward' is normalized (0-1) representing throughput/max_throughput,
+				// and estimated_airtime is also (0-1), we use airtime as the primary predictor.
+				estimated_rewards[k] = estimated_airtime;
+
+				printf("Estimated reward of %d: %f\n", k, estimated_rewards[k]);
+
+			}
+
+		}
 
 		/*************************/
 		/*************************/

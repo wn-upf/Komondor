@@ -84,11 +84,12 @@ class MultiArmedBandit {
 		double epsilon;				///> Epsilon parameter (exploration coefficient)
 
 		// Regret maching specific variables
-		double **regret_matrix;         // Matrix Q [current_action][other_action]
-		double *action_probs;           // Array with probabilities to select each action
-		double intertia;                // The inertia parameter (mu)
-		double S_CCA_DBM = -82.0;       // Standard preamble detection threshold
-		double MAX_THROUGHPUT = 400.0;  // Set this to your max expected Mbps
+		double **regret_matrix;         ///> Matrix Q [current_action][other_action]
+		double *estimated_reward_rm;    ///> Estimated rewards for regret matching
+		double *action_probs_rm;        ///> Array with probabilities to select each action
+		double mu;                		///> Inertia parameter
+		double S_CCA_DBM;       		///> Standard preamble detection threshold
+		double MAX_THROUGHPUT_MBPS;  	///> Set this to your max expected Mbps
 
 	// Methods
 	public:
@@ -129,14 +130,66 @@ class MultiArmedBandit {
 			}
 		}
 
+		void UpdateRegretMatching(int selected_action_ix, double reward, double *estimated_performance_per_action) {
+
+			// 1) Update estimated rewards
+			for (int k = 0; k < num_arms; k ++) {
+				if (k == selected_action_ix) {
+					estimated_reward_rm[k] = reward;
+				} else {
+					estimated_reward_rm[k] = estimated_performance_per_action[k];
+				}
+			}
+
+			// 2) Update regret matrix (Q)
+			for (int k = 0; k < num_arms; k++) {
+				regret_matrix[selected_action_ix][k] +=
+					action_probs_rm[selected_action_ix]*(estimated_reward_rm[k] - estimated_reward_rm[selected_action_ix]);
+				//regret_matrix[selected_action_ix][k] += (estimated_reward_rm[k] - estimated_reward_rm[selected_action_ix]);
+			}
+
+			// 3) Update action probabilities
+
+			//   3.1) Calculate sum of the positive part of the regrets for unplayed actions
+			double sum_positive_regrets = 0.0;
+			for (int k = 0; k < num_arms; k++) {
+				if (k != selected_action_ix) {
+					double q_val = regret_matrix[selected_action_ix][k];
+					if (q_val > 0) sum_positive_regrets += q_val;
+				}
+			}
+
+			//   3.2) Update the probabilities
+			for (int k = 0; k < num_arms; k++) {
+				if (k != selected_action_ix) {
+					// Switching probability
+					double q_val = regret_matrix[selected_action_ix][k];
+					action_probs_rm[k] = (q_val > 0) ? (q_val / mu) : 0.0;
+				} else {
+					// Staying probability (inertia)
+					action_probs_rm[k] = 1.0 - (sum_positive_regrets / mu);
+				}
+			}
+
+		}
+
+		double EstimatePerformanceRegretMatching(int action_ix) {
+
+			//double candidate_power = ;
+			//double candidate_sensitivity = ;
+
+			// TO BE DONE
+			return 0.0;
+
+		}
+
 		/**
 		* Select a new action according to the chosen action selection strategy
 		* @return "action_ix" [type int]: index of the selected action
 		*/
 		int SelectNewAction(int *available_arms, int current_arm) {
 			int arm_ix;
-			// Select an action according to the chosen strategy: TODO improve this part (now it is hardcoded)
-			//action_selection_strategy = STRATEGY_EGREEDY;
+			// Select an action according to the chosen strategy
 			switch(action_selection_strategy) {
 				/*
 				 * epsilon-greedy strategy:
@@ -179,7 +232,7 @@ class MultiArmedBandit {
 				 * Regret matching strategy:
 				 */
 				case STRATEGY_REGRET_MATCHING:{
-					// Pick an action according to Thompson sampling
+					// Pick an action according to Regret Matching
 					arm_ix = PickArmRegretMatching();
 					break;
 				}
@@ -327,10 +380,11 @@ class MultiArmedBandit {
 			double r = (double)rand() / RAND_MAX; // Random [0, 1]
 			double cumulative = 0.0;
 			int action_ix(-1);
-
+			//printf("Random number selected: %f\n", r);
 			for (int i = 0; i < num_arms; i++) {
-				cumulative += action_probs[i];
+				cumulative += action_probs_rm[i];
 				if (r <= cumulative) {
+					//printf("Action selected: %d\n", i);
 					action_ix = i;
 					return action_ix;
 				}
@@ -399,6 +453,12 @@ class MultiArmedBandit {
 						printf("\n%s Estimated reward per arm: ", LOG_LVL3);
 						for(int n = 0; n < num_arms; n++){
 							printf("%f  ", estimated_reward_per_arm[n]);
+						}
+						if (action_selection_strategy == STRATEGY_REGRET_MATCHING) {
+							printf("\n%s Probabilities per arm: ", LOG_LVL3);
+							for(int n = 0; n < num_arms; n++){
+								printf("%f  ", action_probs_rm[n]);
+							}
 						}
 						printf("\n");
 					}
@@ -481,13 +541,17 @@ class MultiArmedBandit {
 
 			// REGRET MATCHING INITIALIZATION
 
-			// - Initialize intertia (stickiness)
-			inertia = 2.0 * MAX_THROUGHPUT * (num_arms - 1);
+			// - Initialize parameters
+			S_CCA_DBM = -82.0;
+			MAX_THROUGHPUT_MBPS = 400.0;
+			mu = 2.0 * MAX_THROUGHPUT_MBPS * (num_arms - 1);
 
-			// - Initialize action probabilities (uniformly)
-			action_probs = new double[num_arms];
+			// - Initialize action probabilities (uniformly) and estimated rewards
+			action_probs_rm = new double[num_arms];
+			estimated_reward_rm = new double[num_arms];
 			for (int i = 0; i < num_arms; i++) {
-				action_probs[i] = 1.0 / (double)num_arms;
+				action_probs_rm[i] = 1.0 / (double)num_arms;
+				estimated_reward_rm[i] = 0.0;
 			}
 
 			// - Initialize Q Matrix

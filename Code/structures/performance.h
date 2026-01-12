@@ -115,7 +115,7 @@ struct Performance
 
 
 	// Per-STA statistics
-    int num_stas;                   ///> Number of STAs in the BSS
+    int num_stas;                   	///> Number of STAs in the BSS
 	double *throughput_per_sta;			///> Array containing the throughput delivered to each STA
 	int *data_packets_sent_per_sta;		///> Array containing the number of packets sent to each STA
 	int *rts_cts_sent_per_sta;			///> Array containing the number of RTS/CTS sent to each STA
