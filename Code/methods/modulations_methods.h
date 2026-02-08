@@ -58,6 +58,34 @@
 
 /**
 * Select the proper MCS per each number of channels based on the power received from transmitter
+* @param "ch_num_ix" [type int]: index of number of channels being used (0->1, 1->2, 2->4, 3->8)
+* @param "power_rx_interest_dbm" [type double]: power received of interest in dBm
+*/
+int ComputeMcs(int ch_num_ix, double pw_rx_intereset_dbm) {
+
+	int mcs(MODULATION_FORBIDDEN);
+
+	//if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_FORBIDDEN; }
+	if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs = MODULATION_BPSK_1_2; }
+	else if (pw_rx_intereset_dbm >= -82 + (ch_num_ix*3) && pw_rx_intereset_dbm < -79 +(ch_num_ix*3)){mcs = MODULATION_BPSK_1_2;}
+	else if (pw_rx_intereset_dbm >= -79 + (ch_num_ix*3) && pw_rx_intereset_dbm < -77 +(ch_num_ix*3)){mcs = MODULATION_QPSK_1_2;}
+	else if (pw_rx_intereset_dbm >= -77 + (ch_num_ix*3) && pw_rx_intereset_dbm < -74 +(ch_num_ix*3)){mcs = MODULATION_QPSK_3_4;}
+	else if (pw_rx_intereset_dbm >= -74 + (ch_num_ix*3) && pw_rx_intereset_dbm < -70 +(ch_num_ix*3)){mcs = MODULATION_16QAM_1_2;}
+	else if (pw_rx_intereset_dbm >= -70 + (ch_num_ix*3) && pw_rx_intereset_dbm < -66 +(ch_num_ix*3)){mcs = MODULATION_16QAM_3_4;}
+	else if (pw_rx_intereset_dbm >= -66 + (ch_num_ix*3) && pw_rx_intereset_dbm < -65 +(ch_num_ix*3)){mcs = MODULATION_64QAM_2_3;}
+	else if (pw_rx_intereset_dbm >= -65 + (ch_num_ix*3) && pw_rx_intereset_dbm < -64 +(ch_num_ix*3)){mcs = MODULATION_64QAM_3_4;}
+	else if (pw_rx_intereset_dbm >= -64 + (ch_num_ix*3) && pw_rx_intereset_dbm < -59 +(ch_num_ix*3)){mcs = MODULATION_64QAM_5_6;}
+	else if (pw_rx_intereset_dbm >= -59 + (ch_num_ix*3) && pw_rx_intereset_dbm < -57 +(ch_num_ix*3)){mcs = MODULATION_256QAM_3_4;}
+	else if (pw_rx_intereset_dbm >= -57 + (ch_num_ix*3) && pw_rx_intereset_dbm < -54 +(ch_num_ix*3)){mcs = MODULATION_256QAM_5_6;}
+	else if (pw_rx_intereset_dbm >= -54 + (ch_num_ix*3) && pw_rx_intereset_dbm < -52 +(ch_num_ix*3)){mcs = MODULATION_1024QAM_3_4;}
+	else { mcs = MODULATION_1024QAM_5_6;}
+
+	return mcs;
+
+}
+
+/**
+* Select the proper MCS per each number of channels based on the power received from transmitter
 * @param "mcs_response" [type int*]: array containing the MCS to be used for each number of channels
 * @param "power_rx_interest" [type double]: power received of interest
 */
@@ -65,23 +93,10 @@ void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
 
 	double pw_rx_intereset_dbm (ConvertPower(PW_TO_DBM, power_rx_interest));
 
-	for ( int ch_num_ix = 0; ch_num_ix < 4; ++ ch_num_ix ){	// For 1, 2, 4 and 8 channels
-
-		//if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_FORBIDDEN; }
-		if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_BPSK_1_2; }
-		else if (pw_rx_intereset_dbm >= -82 + (ch_num_ix*3) && pw_rx_intereset_dbm < -79 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_BPSK_1_2;}
-		else if (pw_rx_intereset_dbm >= -79 + (ch_num_ix*3) && pw_rx_intereset_dbm < -77 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_1_2;}
-		else if (pw_rx_intereset_dbm >= -77 + (ch_num_ix*3) && pw_rx_intereset_dbm < -74 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_3_4;}
-		else if (pw_rx_intereset_dbm >= -74 + (ch_num_ix*3) && pw_rx_intereset_dbm < -70 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_16QAM_1_2;}
-		else if (pw_rx_intereset_dbm >= -70 + (ch_num_ix*3) && pw_rx_intereset_dbm < -66 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_16QAM_3_4;}
-		else if (pw_rx_intereset_dbm >= -66 + (ch_num_ix*3) && pw_rx_intereset_dbm < -65 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_2_3;}
-		else if (pw_rx_intereset_dbm >= -65 + (ch_num_ix*3) && pw_rx_intereset_dbm < -64 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_3_4;}
-		else if (pw_rx_intereset_dbm >= -64 + (ch_num_ix*3) && pw_rx_intereset_dbm < -59 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_5_6;}
-		else if (pw_rx_intereset_dbm >= -59 + (ch_num_ix*3) && pw_rx_intereset_dbm < -57 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_256QAM_3_4;}
-		else if (pw_rx_intereset_dbm >= -57 + (ch_num_ix*3) && pw_rx_intereset_dbm < -54 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_256QAM_5_6;}
-		else if (pw_rx_intereset_dbm >= -54 + (ch_num_ix*3) && pw_rx_intereset_dbm < -52 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_1024QAM_3_4;}
-		else { mcs_response[ch_num_ix] = MODULATION_1024QAM_5_6;}
+	for (int ch_num_ix = 0; ch_num_ix < 4; ++ ch_num_ix) {	// For 1, 2, 4 and 8 channels
+		mcs_response[ch_num_ix] = ComputeMcs(ch_num_ix, pw_rx_intereset_dbm);
 	}
+
 }
 
 /**

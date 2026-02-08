@@ -78,7 +78,7 @@ class PreProcessor {
 		int num_arms_sensitivity;		///> Number of sensitivity actions
 		int num_arms_tx_power;			///> Number of transmission power actions
 		int num_arms_max_bandwidth;		///> Number of max bandwidth actions
-		int *indexes_selected_arm;			///> Indexes for each parameter that conform the current selected arm
+		int *indexes_selected_arm;		///> Indexes for each parameter that conform the current selected arm
 
 	// Private items
 	private:
@@ -160,6 +160,19 @@ class PreProcessor {
 						reward = 0;
 					} else {
 						reward = (double) performance.throughput/performance.max_bound_throughput;
+					}
+					break;
+				}
+				/* REWARD_TYPE_LOG_THROUGHPUT:
+				 * - Th log of the throughput experienced during the last period is taken into account
+				 * - The reward must be bounded by the maximum throughput that would be experienced
+				 * 	 (e.g., consider the data rate granted by the modulation and the total time)
+				 */
+				case REWARD_TYPE_LOG_THROUGHPUT:{
+					if (performance.max_bound_throughput == 0) {
+						reward = 0;
+					} else {
+						reward = (double) log(1 + performance.throughput/performance.max_bound_throughput);
 					}
 					break;
 				}
@@ -383,66 +396,153 @@ class PreProcessor {
         * @param "estimated_rewards" [type double*]: Output array to store the results
         * @param "played_action_index" [type int]: The index of the action that was actually played
         * @param "actual_reward" [type double]: The actual normalized reward measured
-        * @param "neighbor_rssi_list" [type double*]: List of RSSI (dBm) from detected neighbors
+        * @param "neighbor_rssi_list_mw" [type double*]: List of RSSI (mW) from detected neighbors
         */
-        void ComputeEstimatedPerformanceAndRewards(double *estimated_rewards, int played_action_index,
-                                                  double actual_reward, double* neighbor_rssi_list) {
+        void ComputeEstimatedPerformanceAndRewardsRM(int agent_id, double *estimated_rewards, int played_action_index,
+                                                  double actual_reward, double* neighbor_rssi_list_mw, double* max_neighbor_rssi_list_mw, int num_nodes,
+                                                  double* rssi_list_per_sta, double max_throughput_bps, double ap_sta_dist,
+                                                  double central_frequency, int path_loss_model) {
 
-			const double S_CCA_STD = -82.0;   		// Standard PD threshold (dBm)
-			const double K_HEAVY = 9.0;       		// Starvation penalty for hidden nodes
-			const double REF_NEIGHBOR_TX = 20.0;	// Assumed neighbor Tx Power (dBm) for path loss estimation
+            const double S_CCA_STD = -82.0;         // Standard PD threshold (dBm)
+            const double K_HEAVY = 2*num_nodes;     // Starvation penalty for hidden nodes
+            const double REF_TX_POWER = 20.0;		// Ref. transmission power (dBm)
+			double omega = 1.0;
+			double alpha = 1.0;		// Weight given to optimistic estimates --> TODO: Can be tuned according to real performance (when not meeting the expectations)
+			
+			//printf("AGENT %d\n", agent_id);
+            int indexes[NUM_FEATURES_ACTIONS]; // Array to hold the indices of the candidate action
 
-			int num_neighbors = sizeof(neighbor_rssi_list) / sizeof(int);
+			// Iterate over all the actions
+            for(int k = 0; k < num_arms; k++) {
+                if (k == played_action_index) {
+					// Use the ground truth for the played action
+                    estimated_rewards[k] = actual_reward;
+                } else {
+                    // Extract action indices for PD and TxPower
+                    index2values(indexes, k, num_arms_channel, num_arms_sensitivity,
+                        num_arms_tx_power, num_arms_max_bandwidth);
+                    double P_tx_candidate_pW = list_of_tx_power_values[indexes[2]];
+                    double S_sens_candidate_pW = list_of_pd_values[indexes[1]];
+                    double P_tx_candidate_dBm = ConvertPower(PW_TO_DBM, P_tx_candidate_pW);
+                    double S_sens_candidate_dBm = ConvertPower(PW_TO_DBM, S_sens_candidate_pW);
+					//printf(" * Arm %d {%f, %f}\n", k, P_tx_candidate_dBm, S_sens_candidate_dBm);    
 
+                    // Estimate the RSSI at the STA of the BSS
+                    double estimated_rssi_sta = ComputePowerReceived(ap_sta_dist, P_tx_candidate_pW,
+                        central_frequency, path_loss_model);
+					
+					// Estimate the airtime under the current setup
+					double estimated_airtime = EstimateAirtimeRm(agent_id, num_nodes, 
+						neighbor_rssi_list_mw, max_neighbor_rssi_list_mw, REF_TX_POWER, S_CCA_STD, K_HEAVY, omega,
+						P_tx_candidate_dBm, S_sens_candidate_dBm, estimated_rssi_sta, REF_TX_POWER, S_CCA_STD);
 
-			int indexes[NUM_FEATURES_ACTIONS]; // Temporary array to hold the indices of the candidate action
+                    // Estimate the data rate under the current setup
+					// printf(" - rssi STA = %f\n", ConvertPower(PW_TO_DBM, estimated_rssi_sta));
+                    double estimated_data_rate = EstimateDataRateRm(estimated_rssi_sta);                               
 
-			for(int k = 0; k < num_arms; k++) {
-
-				// Use the ground truth for the played action
-				if (k == played_action_index) {
-					estimated_rewards[k] = actual_reward;
-					continue;
-				}
-
-				// 2. RETRIEVE ACTION PARAMETERS
-				// Extract indices for Channel, PD, TxPower, BW
-				index2values(indexes, k, num_arms_channel, num_arms_sensitivity,
-				num_arms_tx_power, num_arms_max_bandwidth);
-				// Get values (Note: These are likely in pW based on your logs, so we convert to dBm)
-				double P_tx_candidate_pW = list_of_tx_power_values[indexes[2]];
-				double S_sens_candidate_pW = list_of_pd_values[indexes[1]];
-				double P_tx_candidate_dBm = ConvertPower(PW_TO_DBM, P_tx_candidate_pW);
-				double S_sens_candidate_dBm = ConvertPower(PW_TO_DBM, S_sens_candidate_pW);
-
-				// 3. ESTIMATE AIRTIME
-				double contention_count = 1.0; // Start with ourselves
-				for (int n = 0; n < num_neighbors; n++) {
-					double rssi_neigh = neighbor_rssi_list[n]; // Access by index
-					// A. Do we hear them?
-					if (rssi_neigh >= S_sens_candidate_dBm) {
-						// B. Do they hear us? (Reciprocity Check)
-						double path_loss = REF_NEIGHBOR_TX - rssi_neigh;
-						double signal_at_neighbor = P_tx_candidate_dBm - path_loss;
-						double omega = 1.0;
-						// If our signal is too weak to trigger their CCA...
-						if (signal_at_neighbor < S_CCA_STD) {
-							omega = K_HEAVY; // Hidden Node Penalty
+					// 4. ESTIMATE THE POTENTIAL OF THE ACTION
+					double max_potential_airtime = 0.0;
+					for (int n = 0; n < num_nodes; ++n) {
+						if (n != agent_id) {							
+							for (int j = 0; j < num_arms; ++j) {
+								// - Extract action indices for PD and TxPower of node "n"
+								index2values(indexes, j, num_arms_channel, num_arms_sensitivity,
+									num_arms_tx_power, num_arms_max_bandwidth);
+								double P_tx_neighbor_pW = list_of_tx_power_values[indexes[2]];
+								double S_sens_neighbor_pW = list_of_pd_values[indexes[1]];
+								double P_tx_neighbor_dBm = ConvertPower(PW_TO_DBM, P_tx_neighbor_pW);
+								double S_sens_neighbor_dBm = ConvertPower(PW_TO_DBM, S_sens_neighbor_pW);
+								// printf("  + Node%d hypothetical conf. = {%f, %f}\n", n, P_tx_neighbor_dBm, S_sens_neighbor_dBm);
+								// - Estimate the performance when the other agents play other actions		
+								double estimated_airtime_potential = EstimateAirtimeRm(agent_id, num_nodes, 
+									neighbor_rssi_list_mw, max_neighbor_rssi_list_mw, REF_TX_POWER, S_CCA_STD, K_HEAVY, omega,
+									P_tx_candidate_dBm, S_sens_candidate_dBm, estimated_rssi_sta,
+									P_tx_neighbor_dBm, S_sens_neighbor_dBm);
+								// printf("   -> estimated_airtime_potential = %f\n", estimated_airtime_potential);
+								if (estimated_airtime_potential > max_potential_airtime) {
+									max_potential_airtime = estimated_airtime_potential;
+								}
+							}
 						}
+					}
+
+					//printf("  -> estimated_airtime = %f\n", estimated_airtime);
+					//printf("  -> max_potential_airtime = %f\n", max_potential_airtime);
+					//printf("  -> estimated_data_rate = %f\n", estimated_data_rate);      
+
+                    // 4. ESTIMATE THE REWARD
+					double realistic_estimate = (estimated_airtime * estimated_data_rate)
+						/ (max_throughput_bps* pow(10,-6));
+					double optimistic_estimate = (max_potential_airtime * estimated_data_rate)
+					 	/ (max_throughput_bps* pow(10,-6));
+                    estimated_rewards[k] =  (1-alpha) * realistic_estimate + alpha * optimistic_estimate;
+
+                }
+            }
+
+        }
+
+		double EstimateAirtimeRm(int agent_id, int num_nodes, double *neighbor_rssi_list_mw, 
+							double *max_neighbor_rssi_list_mw, double REF_TX_POWER, double S_CCA_STD, double K_HEAVY, 
+							double omega, double P_tx_candidate_dBm, double S_sens_candidate_dBm, double estimated_rssi_sta,
+							double optimistic_neighbor_power_dBm, double optimistic_neighbor_PD_dBm){	
+										
+			double contention_count = 1.0;
+			double unfairness_penalty = 1.0;
+			double capture_effect_condition = 1.0;
+			const double CAPTURE_THRESHOLD_DB = 10.0;  
+			for (int n = 0; n < num_nodes; n++) {											
+				if(n != agent_id) {	
+					double max_rssi_neigh_dBm = ConvertPower(PW_TO_DBM, max_neighbor_rssi_list_mw[n]);
+					double rssi_neigh_dBm = ConvertPower(PW_TO_DBM, neighbor_rssi_list_mw[n]);
+					double estimated_path_loss = REF_TX_POWER - max_rssi_neigh_dBm; // Worst-case path loss (assuming max. power)	
+					double optimistic_rssi_neigh_dBm = rssi_neigh_dBm - (REF_TX_POWER-optimistic_neighbor_power_dBm);
+					double signal_at_neighbor = P_tx_candidate_dBm - estimated_path_loss;
+					// printf("    - Neighbor %d\n", n);
+					// printf("    	+ rssi_neigh_dBm = %f\n", rssi_neigh_dBm);
+					// printf("     	+ optimistic_rssi_neigh_dBm = %f\n", optimistic_rssi_neigh_dBm);
+					// printf("     	+ estimated_path_loss = %f\n", estimated_path_loss);							
+					// printf("     	+ signal_at_neighbor = %f\n", signal_at_neighbor);
+					// Do we hear the other nodes?
+					if (optimistic_rssi_neigh_dBm >= S_sens_candidate_dBm) {
 						contention_count += omega;
 					}
+					else {
+						// 2. ESTIMATE UNFAIRNESS
+						// We ingore the neighbors, but do they hear us? (reciprocity Check)    
+						if (signal_at_neighbor >= optimistic_neighbor_PD_dBm) {
+							unfairness_penalty = K_HEAVY; // Hidden Node Penalty
+						}
+						// C. Can the others' interference destroy our packet? 
+						// - Calculate our expected signal strength at our own receiver (STA)
+						double my_signal_dBm = ConvertPower(PW_TO_DBM, estimated_rssi_sta);  
+						// - Calculate the SINR (Signal to Interference Ratio)
+						double estimated_sinr = my_signal_dBm - optimistic_rssi_neigh_dBm;                                 
+						// - Check Capture Effect threshold						           
+						if (estimated_sinr > CAPTURE_THRESHOLD_DB) {
+							// No penalty added
+						} else {
+							//printf("Penalty by collisions (estimated_sinr = %f)\n", estimated_sinr);
+							if (rssi_neigh_dBm > -95.0) { // Only if they are actually active
+								capture_effect_condition = 0.0;
+							}                                    
+						}
+					}
 				}
-				double estimated_airtime = 1.0 / contention_count;
-
-				// 4. ESTIMATE REWARD
-				// Since 'actual_reward' is normalized (0-1) representing throughput/max_throughput,
-				// and estimated_airtime is also (0-1), we use airtime as the primary predictor.
-				estimated_rewards[k] = estimated_airtime;
-
-				printf("Estimated reward of %d: %f\n", k, estimated_rewards[k]);
-
 			}
+			double estimated_airtime = ((1/unfairness_penalty) * capture_effect_condition) / contention_count;
+			return estimated_airtime;
+		}
 
+		double EstimateDataRateRm(double estimated_rssi_sta){			
+			int estimated_mcs = ComputeMcs(0, ConvertPower(PW_TO_DBM, estimated_rssi_sta));
+			// printf("  - estimated_mcs = %d\n", estimated_mcs);
+			int bits_ofdm_sym =  getNumberSubcarriers(1) *
+				Mcs_array::modulation_bits[estimated_mcs-1] *
+				Mcs_array::coding_rates[estimated_mcs-1] *
+				IEEE_AX_SU_SPATIAL_STREAMS;
+			double estimated_data_rate = bits_ofdm_sym/IEEE_AX_OFDM_SYMBOL_GI32_DURATION * pow(10,-6);
+			return estimated_data_rate; 
 		}
 
 		/*************************/

@@ -135,6 +135,8 @@ struct TxInfo
 struct Notification
 {
 	// Always read in destination
+	int node_type;				///> Type of device (NODE_TYPE_AP or NODE_TYPE_STA)
+	int wlan_id;
 	int packet_id;				///> Packet identifier of the first frame
 	int packet_type;			///> Type of packet: Data, ACK, etc.
 	int source_id;				///> Node id of the source

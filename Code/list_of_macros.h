@@ -400,6 +400,7 @@
 #define REWARD_TYPE_MIN_DELAY			5	///> Minimum experienced delay
 #define REWARD_TYPE_AVERAGE_DELAY		6	///> Average experienced delay
 #define REWARD_TYPE_CHANNEL_OCCUPANCY 	7	///> Average channel occupancy ratio
+#define REWARD_TYPE_LOG_THROUGHPUT      8   ///> Log throughput
 
 // Agent modes
 #define AGENT_MODE_DECENTRALIZED 	0	///> Agents are independent entities that follow their own learning procedure

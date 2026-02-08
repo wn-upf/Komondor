@@ -47,6 +47,7 @@
 
 Code/output/.keep
 Code/output/
+Code/input/
 !.gitignore
 
 Code/main/komondor_main

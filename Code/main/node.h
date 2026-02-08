@@ -189,7 +189,7 @@ component Node : public TypeII{
 		int current_modulation;				///> Current_modulation used by nodes
 		int channel_max_intereference;		///> Channel of interest suffering maximum interference
 		double central_frequency;			///> Central frequency (Hz)
-		int path_loss_model;				///> Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
+		int path_loss_model;				///> Path loss model (e.g., 0: free-space, 1: Okumura-Hata model - Uban areas)
 
 		// Data rate - modulations
 		int modulation_rates[4][12];		///> Modulation rates in bps used in IEEE 802.11ax
@@ -218,6 +218,8 @@ component Node : public TypeII{
 
 		double *distances_array;					///> Distance with respect to other nodes
 		double *received_power_array;				///> Power received from the other nodes
+		double *received_power_ap_array;			///> Power received from the other APs
+		double *max_received_power_ap_array;		///> Max. power received from the other APs
 		double *max_received_power_in_ap_per_wlan;	///> Maximum power received from each WLAN
 
 		double *rssi_per_sta;	///> RSSI per STA in the WLAN
@@ -744,17 +746,20 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 
         // Update 'power received' array in case a new tx power is used
 //        if(node_id == 0) printf("notification.tx_info.flag_change_in_tx_power = %d\n", notification.tx_info.flag_change_in_tx_power);
-        if (notification.tx_info.flag_change_in_tx_power) {
+		
+		// Update 'power received' array in case a new tx power is used
+		if (notification.tx_info.flag_change_in_tx_power) {
             received_power_array[notification.source_id] =
                 ComputePowerReceived(distances_array[notification.source_id],
                 notification.tx_info.tx_power, central_frequency, path_loss_model);
         }
 
-		// Update 'power received' array in case a new tx power is used
-		if (notification.tx_info.flag_change_in_tx_power) {
-			received_power_array[notification.source_id] =
-				ComputePowerReceived(distances_array[notification.source_id],
-				notification.tx_info.tx_power, central_frequency, path_loss_model);
+		// Update the power sensed from APs
+		if(notification.node_type == NODE_TYPE_AP) {
+			received_power_ap_array[notification.wlan_id] = received_power_array[notification.source_id]; 	
+			if (received_power_ap_array[notification.wlan_id] > max_received_power_ap_array[notification.wlan_id]) {
+				max_received_power_ap_array[notification.wlan_id] = received_power_ap_array[notification.wlan_id];
+			}
 		}
 
 		// Update the power sensed at each channel
@@ -884,7 +889,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
 							ConvertPower(LINEAR_TO_DB, current_sinr));
 
-						// Check if notification has been lost due to interferences or weak signal strength
+						// Check if notification has been lost due to interference or weak signal strength
 						loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, current_pd,
 								power_rx_interest, constant_per, node_id, capture_effect_model);
@@ -1199,7 +1204,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 								ConvertPower(PW_TO_DBM, power_rx_interest),
 								ConvertPower(PW_TO_DBM, max_pw_interference));
 
-							// Check if notification has been lost due to interferences or weak signal strength
+							// Check if notification has been lost due to interference or weak signal strength
 							// TODO: method for checking whether the detected transmission can be decoded or not
 							loss_reason = IsPacketLost(current_primary_channel, notification, notification,
 								current_sinr, capture_effect, current_pd,
@@ -1625,7 +1630,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					// Update the SINR
 					current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
 
-					// Check if ongoing notification has been lost due to interferences caused by new transmission
+					// Check if ongoing notification has been lost due to interference caused by new transmission
 					loss_reason = IsPacketLost(current_primary_channel, incoming_notification, notification,
 						current_sinr, capture_effect, current_pd,
 						power_rx_interest, constant_per, node_id, capture_effect_model);
@@ -1788,7 +1793,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 							case CE_DEFAULT:{
 								// Collision by hidden node
 								LOGS(save_node_logs, node_logger.file,
-									"%.15f;N%d;S%d;%s;%s Collision by interferences!\n",
+									"%.15f;N%d;S%d;%s;%s Collision by interference!\n",
 									SimTime(), node_id, node_state, LOG_D19, LOG_LVL4);
 
 								 // If two or more packets sent at the same time
@@ -1894,7 +1899,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
 							incoming_notification, node_state, power_received_per_node, &channel_power);
 
-						// Check if notification has been lost due to interferences or weak signal strength
+						// Check if notification has been lost due to interference or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
 
 						// TODO: method for checking whether the detected transmission can be decoded or not
@@ -2011,7 +2016,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
 							incoming_notification, node_state, power_received_per_node, &channel_power);
 
-						// Check if notification has been lost due to interferences or weak signal strength
+						// Check if notification has been lost due to interference or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
 
 //						LOGS(save_node_logs, node_logger.file,
@@ -2144,7 +2149,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 						ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
 							incoming_notification, node_state, power_received_per_node, &channel_power);
 
-						// Check if notification has been lost due to interferences or weak signal strength
+						// Check if notification has been lost due to interference or weak signal strength
 						current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
 
 						LOGS(save_node_logs, node_logger.file,
@@ -2756,7 +2761,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							current_tx_duration = cts_duration;
 
 							// Compute the NAV time
-							bits_ofdm_sym =  getNumberSubcarriers(current_right_channel - current_left_channel +1) *
+							bits_ofdm_sym =  getNumberSubcarriers(current_right_channel - current_left_channel + 1) *
 								Mcs_array::modulation_bits[notification.modulation_id-1] *
 								Mcs_array::coding_rates[notification.modulation_id-1] *
 								IEEE_AX_SU_SPATIAL_STREAMS;
@@ -3812,6 +3817,8 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 
 	Notification notification;
 
+	notification.node_type = node_type;
+	notification.wlan_id = wlan.wlan_id;
 	notification.packet_id = packet_id;				// ID of the first packet
 	notification.packet_type = packet_type;
 	notification.source_id = node_id;
@@ -4345,11 +4352,13 @@ void Node :: GenerateConfiguration(){
 	// Capabilities
 	Capabilities capabilities;
 	capabilities.node_code = node_code.c_str();
+	capabilities.central_frequency = central_frequency;
 	capabilities.node_id = node_id;
 	capabilities.x = x;
 	capabilities.y = y;
 	capabilities.z = z;
 	capabilities.node_type = node_type;
+	capabilities.path_loss_model = path_loss_model;
 	capabilities.primary_channel = current_primary_channel;
 	capabilities.min_channel_allowed = min_channel_allowed;
 	capabilities.max_channel_allowed = max_channel_allowed;
@@ -4357,6 +4366,13 @@ void Node :: GenerateConfiguration(){
 	capabilities.tx_power_default = tx_power_default;
 	capabilities.sensitivity_default = sensitivity_default;
 	capabilities.current_max_bandwidth = current_max_bandwidth;
+
+	// HARDCODED FOR REGRET MATCHING (ONLY DISTANCE BETWEEN THE FIRST STA AND THE AP)
+	if (node_type == NODE_TYPE_AP) {
+		capabilities.ap_sta_dist = distances_array[node_id+1];
+	} else {
+		capabilities.ap_sta_dist = distances_array[node_id-1];
+	}
 
 	// Configuration
 	configuration.capabilities = capabilities;
@@ -4374,7 +4390,7 @@ void Node :: GenerateConfiguration(){
 	configuration.bss_color = bss_color;
 	configuration.srg = srg;
 	configuration.non_srg_obss_pd = non_srg_obss_pd;
-	configuration.srg_obss_pd = srg_obss_pd;
+	configuration.srg_obss_pd = srg_obss_pd;	
 
 }
 
@@ -4399,7 +4415,11 @@ void Node :: UpdatePerformanceMeasurements(){
 
 	// - Max RSSI received per WLAN
 	for (int i = 0 ; i < total_wlans_number; ++ i) {
-		performance_report.rssi_list[i] = max_received_power_in_ap_per_wlan[i];
+		//if(node_id == 0) printf("RSSI[%d] = %f dBm\n", i, ConvertPower(MW_TO_DBM, performance_report.rssi_list[i]));
+		performance_report.rssi_list[i] = received_power_ap_array[i];
+		performance_report.max_rssi_list[i] = max_received_power_ap_array[i];
+		LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Max. RSSI perceived from WLAN %d = %f\n",
+			SimTime(), node_id, node_state, LOG_F02, LOG_LVL2, i, ConvertPower(PW_TO_DBM, performance_report.rssi_list[i]));
 		performance_report.max_received_power_in_ap_per_wlan[i] = max_received_power_in_ap_per_wlan[i];
 	}
 
@@ -4468,6 +4488,13 @@ void Node :: InportReceiveConfigurationFromAgent(Configuration &received_configu
 		new_configuration = received_configuration;
 		if(save_node_logs) WriteNodeConfiguration(node_logger, header_str);
 		if(save_node_logs) WriteReceivedConfiguration(node_logger, header_str, new_configuration);
+		// Ask for a new MCS if the transmit power has changed
+		if (current_tx_power != new_configuration.selected_tx_power) {
+			for(int n = 0; n < wlan.num_stas; ++n) {
+				change_modulation_flag[n] = TRUE;
+			}
+			flag_change_in_tx_power = TRUE;
+		}
 		// Set flag to true in order to apply the new configuration next time the node restarts
 		flag_apply_new_configuration = TRUE;
 		if(node_state == STATE_SENSING) {
@@ -5318,9 +5345,6 @@ void Node :: SaveSimulationPerformance() {
 		simulation_performance.rssi_list_per_sta = rssi_per_sta;
 		UpdatePerformanceMeasurements();
 		simulation_performance.max_received_power_in_ap_per_wlan = max_received_power_in_ap_per_wlan;
-//		for (int i = 0; i < total_wlans_number; i++) {
-//			printf("simulation_performance.rssi_list[%d] = %f dBm\n",i,ConvertPower(PW_TO_DBM,simulation_performance.rssi_list[i]));
-//		}
 	}
 	simulation_performance.received_power_array = received_power_array;
 
@@ -5425,6 +5449,13 @@ void Node :: InitializeVariables() {
 		timestampt_channel_becomes_free[i] = 0;
 		num_trials_tx_per_num_channels[i] = 0;
 		total_time_channel_busy_per_channel[i] = 0;
+	}
+
+	received_power_ap_array = new double[total_wlans_number];
+	max_received_power_ap_array = new double[total_wlans_number];
+	for(int i = 0; i < total_wlans_number; ++i) {
+		received_power_ap_array[i] = 0;
+		max_received_power_ap_array[i] = 0;
 	}
 
 	total_time_transmitting_in_num_channels = new double[NUM_CHANNELS_KOMONDOR];

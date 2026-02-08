@@ -88,8 +88,7 @@ class MultiArmedBandit {
 		double *estimated_reward_rm;    ///> Estimated rewards for regret matching
 		double *action_probs_rm;        ///> Array with probabilities to select each action
 		double mu;                		///> Inertia parameter
-		double S_CCA_DBM;       		///> Standard preamble detection threshold
-		double MAX_THROUGHPUT_MBPS;  	///> Set this to your max expected Mbps
+		double max_throughput;  		///> Set this to your max expected Mbps
 
 	// Methods
 	public:
@@ -105,7 +104,7 @@ class MultiArmedBandit {
 		* @param "action_ix" [type int]: index of the action to be updated
 		* @param "reward" [type double]: last reward observed from the action of interest
 		*/
-		void UpdateArmStatistics(int action_ix, double reward){
+		void UpdateArmStatistics(int action_ix, double reward) {
 
 			if(action_ix >= 0) { // Avoid indexing errors
 				// Update the reward for the chosen arm
@@ -118,71 +117,73 @@ class MultiArmedBandit {
 				average_reward_per_arm[action_ix] = cumulative_reward_per_arm[action_ix] /
 					times_arm_has_been_selected[action_ix];
 				// Update the estimated reward per arm
-				//estimated_reward_per_arm[action_ix] = cumulative_reward_per_arm[action_ix] /
-				//		(times_arm_has_been_selected[action_ix] + 1);
 				estimated_reward_per_arm[action_ix] = ( (estimated_reward_per_arm[action_ix]*(times_arm_has_been_selected[action_ix]-1))
 														+ reward ) / ( (times_arm_has_been_selected[action_ix]-1) + 2 );
-				//(estimated_reward_per_arm[action_ix] + reward)
-				//								/ (double)(times_arm_has_been_selected[action_ix] + 2);
 			} else {
 				printf("[MAB] ERROR: The action ix (%d) is not correct!\n", action_ix);
 				exit(EXIT_FAILURE);
 			}
+
 		}
 
-		void UpdateRegretMatching(int selected_action_ix, double reward, double *estimated_performance_per_action) {
+		void UpdateRegretMatching(int selected_action_ix, double *estimated_rewards) {
+
+			double decay_factor = 0.95;
 
 			// 1) Update estimated rewards
 			for (int k = 0; k < num_arms; k ++) {
-				if (k == selected_action_ix) {
-					estimated_reward_rm[k] = reward;
-				} else {
-					estimated_reward_rm[k] = estimated_performance_per_action[k];
-				}
+				estimated_reward_rm[k] = estimated_rewards[k];
 			}
 
-			// 2) Update regret matrix (Q)
+			// 2) Update CUMULATIVE regret matrix (Q)
 			for (int k = 0; k < num_arms; k++) {
-				regret_matrix[selected_action_ix][k] +=
-					action_probs_rm[selected_action_ix]*(estimated_reward_rm[k] - estimated_reward_rm[selected_action_ix]);
-				//regret_matrix[selected_action_ix][k] += (estimated_reward_rm[k] - estimated_reward_rm[selected_action_ix]);
+				regret_matrix[selected_action_ix][k] *= decay_factor;
+				double instant_regret = estimated_reward_rm[k] - estimated_reward_rm[selected_action_ix];
+        		regret_matrix[selected_action_ix][k] += instant_regret;
+				// RM+ trick for stability: If regret drops below zero, reset it to stop "negative momentum"
+				if (regret_matrix[selected_action_ix][k] < 0) regret_matrix[selected_action_ix][k] = 0;
 			}
 
-			// 3) Update action probabilities
-
-			//   3.1) Calculate sum of the positive part of the regrets for unplayed actions
-			double sum_positive_regrets = 0.0;
+			// 3) Calculate Sum of Positive CUMULATIVE Regrets
+			double sum_positive_cum_regrets = 0.0;			
 			for (int k = 0; k < num_arms; k++) {
 				if (k != selected_action_ix) {
-					double q_val = regret_matrix[selected_action_ix][k];
-					if (q_val > 0) sum_positive_regrets += q_val;
+					double cum_regret = regret_matrix[selected_action_ix][k];
+					if (cum_regret > 0) {
+						sum_positive_cum_regrets += cum_regret;
+					}
 				}
 			}
+			// printf("sum_positive_cum_regrets (agent %d) = %f\n", agent_id, sum_positive_cum_regrets);
+			double effective_mu = mu; 
+			if (sum_positive_cum_regrets > mu) {
+				effective_mu = sum_positive_cum_regrets; 	// Dynamic mu update
+			}
 
-			//   3.2) Update the probabilities
+			// 4) Update action probabilities
+			//printf("Action probability (agent %d): ", agent_id);
 			for (int k = 0; k < num_arms; k++) {
 				if (k != selected_action_ix) {
-					// Switching probability
-					double q_val = regret_matrix[selected_action_ix][k];
-					action_probs_rm[k] = (q_val > 0) ? (q_val / mu) : 0.0;
+					// Switching probability based on CUMULATIVE regret
+					double cum_regret = regret_matrix[selected_action_ix][k];
+					if (cum_regret > 0) {
+						// Use effective_mu to ensure this never exceeds 1.0
+						action_probs_rm[k] = cum_regret / effective_mu;
+					} else {
+						action_probs_rm[k] = 0.0;
+					}
 				} else {
-					// Staying probability (inertia)
-					action_probs_rm[k] = 1.0 - (sum_positive_regrets / mu);
+					// Staying probability
+					action_probs_rm[k] = 1.0 - (sum_positive_cum_regrets / effective_mu);
 				}
+				// Safety check
+				if (action_probs_rm[k] < 0.0) action_probs_rm[k] = 0.0;
+				if (action_probs_rm[k] > 1.0) action_probs_rm[k] = 1.0;
+				//printf("A%d = %f - ", k, action_probs_rm[k]);
 			}
-
-		}
-
-		double EstimatePerformanceRegretMatching(int action_ix) {
-
-			//double candidate_power = ;
-			//double candidate_sensitivity = ;
-
-			// TO BE DONE
-			return 0.0;
-
-		}
-
+			//printf("\n");				            
+        }
+		
 		/**
 		* Select a new action according to the chosen action selection strategy
 		* @return "action_ix" [type int]: index of the selected action
@@ -243,9 +244,7 @@ class MultiArmedBandit {
 					exit(EXIT_FAILURE);
 				}
 			}
-            // Increase the number of iterations
             ++ num_iterations;
-            // Return the selected action
 			return arm_ix;
 		}
 
@@ -377,19 +376,29 @@ class MultiArmedBandit {
 		 */
 		int PickArmRegretMatching() {
 
-			double r = (double)rand() / RAND_MAX; // Random [0, 1]
-			double cumulative = 0.0;
-			int action_ix(-1);
-			//printf("Random number selected: %f\n", r);
-			for (int i = 0; i < num_arms; i++) {
-				cumulative += action_probs_rm[i];
-				if (r <= cumulative) {
-					//printf("Action selected: %d\n", i);
+			// double r = (double)rand() / RAND_MAX; // Random [0, 1]
+			// double cumulative = 0.0;
+			// int action_ix(-1);
+			// //printf("Random number selected: %f\n", r);
+			// for (int i = 0; i < num_arms; i++) {
+			// 	cumulative += action_probs_rm[i];
+			// 	if (r <= cumulative) {
+			// 		//printf("Action selected: %d\n", i);
+			// 		action_ix = i;
+			// 		return action_ix;
+			// 	}
+			// }
+			// return num_arms - 1; // Fallback
+
+			double max_prob = 0.0;
+			double action_ix = -1;
+			for (int i = 0; i < num_arms; ++i) {
+				if(action_probs_rm[i] > max_prob) {
+					max_prob = action_probs_rm[i];
 					action_ix = i;
-					return action_ix;
 				}
 			}
-			return num_arms - 1; // Fallback
+			return action_ix;
 
 		}
 
@@ -542,16 +551,15 @@ class MultiArmedBandit {
 			// REGRET MATCHING INITIALIZATION
 
 			// - Initialize parameters
-			S_CCA_DBM = -82.0;
-			MAX_THROUGHPUT_MBPS = 400.0;
-			mu = 2.0 * MAX_THROUGHPUT_MBPS * (num_arms - 1);
+			// mu = 2.0 * max_throughput*pow(10,-6) * (num_arms - 1);
+			mu = 2 * (num_arms - 1);
 
 			// - Initialize action probabilities (uniformly) and estimated rewards
 			action_probs_rm = new double[num_arms];
 			estimated_reward_rm = new double[num_arms];
 			for (int i = 0; i < num_arms; i++) {
 				action_probs_rm[i] = 1.0 / (double)num_arms;
-				estimated_reward_rm[i] = 0.0;
+				estimated_reward_rm[i] = 1.0;
 			}
 
 			// - Initialize Q Matrix

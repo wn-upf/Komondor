@@ -230,10 +230,25 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 	}
 
 	// Script output (Readable)
-	script_output_file = fopen(script_output_filename, "at");	// Script output is removed when script is executed
-	logger_script.save_logs = SAVE_LOG;
-	logger_script.file = script_output_file;
-	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)", LOG_LVL1, simulation_code_console, seed);
+	// 1. Open the file
+	script_output_file = fopen(script_output_filename, "at");
+	// 2. CHECK if it opened successfully
+	if (script_output_file != NULL) {
+    	logger_script.save_logs = SAVE_LOG;
+    	logger_script.file = script_output_file;
+    	// SAFE to write now
+    	fprintf(logger_script.file, "%s KOMONDOR SIMULATION '%s' (seed %d)",
+        	LOG_LVL1, simulation_code_console, seed);
+	} else {
+    	// 3. Handle the error (Print to console so you don't lose the info)
+    	printf("WARNING: Could not open log file '%s'. Writing to console instead.\n", script_output_filename);
+	    // Optional: Print the EXACT bytes of the filename to check for hidden characters
+    	printf("DEBUG Path: ");
+    	for (int i = 0; script_output_filename[i] != 0; i++) {
+        	printf("[%d]", (unsigned char)script_output_filename[i]);
+    	}
+    	printf("\n");
+	}
 
 	// Read system (environment) file
 	SetupEnvironmentByReadingConfigFile();
@@ -396,8 +411,10 @@ void Komondor :: Stop(){
 	}
 
 	// Generate the output for scripts
-	GenerateScriptOutput(simulation_index, performance_per_node, configuration_per_node, logger_script,
-		total_wlans_number, total_nodes_number, wlan_container, simulation_time_komondor);
+	if (logger_script.file != NULL) {
+		GenerateScriptOutput(simulation_index, performance_per_node, configuration_per_node, logger_script,
+			total_wlans_number, total_nodes_number, wlan_container, simulation_time_komondor);
+	}
 
 	// End of logs
 	fclose(script_output_file);
@@ -888,6 +905,8 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 				// Agent ID
 				agent_container[agent_ix].agent_id = agent_ix;
 				agent_container[agent_ix].wlan_code = wlan_code.c_str();
+				// Num WLANs
+				agent_container[agent_ix].num_wlans = total_wlans_number;
 				// WLAN Id
 				for(int w=0; w < total_wlans_number; ++w){
 					if(strcmp(wlan_container[w].wlan_code.c_str(), agent_container[agent_ix].wlan_code.c_str()) == 0) {

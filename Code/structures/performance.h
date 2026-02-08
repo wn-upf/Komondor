@@ -94,6 +94,7 @@ struct Performance
 	// Environment statistics
 	double *max_received_power_in_ap_per_wlan;
     double *rssi_list;					///> List of RSSI received from each other WLAN
+	double *max_rssi_list;				///> List of the maximum RSSI received from each other WLAN
     double *received_power_array;		///> Array containing the power received by each node
     double total_channel_occupancy;
     double successful_channel_occupancy;
@@ -180,9 +181,11 @@ struct Performance
 	 */
 	void SetSizeOfRssiList(int total_wlans_number){
 		rssi_list = new double[total_wlans_number];
+		max_rssi_list = new double[total_wlans_number];
 		max_received_power_in_ap_per_wlan = new double[total_wlans_number];
 		for(int i = 0; i < total_wlans_number; ++i){
 			rssi_list[i] = 0;
+			max_rssi_list[i] = 0;
 			max_received_power_in_ap_per_wlan[i] = 0;
 		}
 	}

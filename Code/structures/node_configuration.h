@@ -62,6 +62,8 @@ struct Capabilities
 	int node_type;				///> Node type (e.g., AP, STA, ...)
 //	int destination_id;			///> Destination node id (for nodes not belonging to any WLAN)
 //	double traffic_load;		///> Average traffic load of the AP [packets/s]
+	double central_frequency;		///> Central frequency
+	int path_loss_model; 		///> Path loss model
 	int primary_channel;		///> Primary channel
 	int min_channel_allowed;	///> Min. allowed channel
 	int max_channel_allowed;	///> Max. allowed channel
@@ -69,6 +71,7 @@ struct Capabilities
 	double tx_power_default;	///> Default power transmission [pW]
 	double sensitivity_default;	///> Default pd	("sensitivity" threshold) [pW]
 	int current_max_bandwidth;	///> Selected max bandwidth [no. of channels]
+	double ap_sta_dist;			///> Distance between the AP and the STA
 
 	/**
 	 * Function to print the node's capabilities

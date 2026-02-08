@@ -114,6 +114,7 @@ component Agent : public TypeII{
 		std::string wlan_code;		///> WLAN code to which the agent belongs
 		int wlan_id;                ///> WLAN identifier to which the agent belongs
 		int num_stas;				///> Number of STAs associated to the WLAN
+		int num_wlans;				///> Number of WLANs
 
 		// Learning mechanism
 		int learning_mechanism;			///> Index of the chosen learning mechanism
@@ -151,7 +152,7 @@ component Agent : public TypeII{
 		double margin_rtot;      ///> Margin for the RTOT mechanism (see https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8319274)
 
 		// Regret matching
-		double *estimated_performance_per_action; ///> Estimated performance per action (used in regret matching)
+		double *estimated_rewards_rm; ///> Estimated reward per action (used in regret matching only)
 
 	// Private items (just for internal agent operation)
 	private:
@@ -289,6 +290,7 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 	// Save the Configuration and Performance reports received from the AP
 	configuration = received_configuration;
 	performance = received_performance;
+	performance.max_bound_throughput = max_throughput; // ONLY FOR REGRET MATCHING EXPERIMENTS!!!!
 
 	//printf("channel = %d / pd = %f / tx_power = %f / max_bandwidth = %d\n",
 	//		configuration.selected_primary_channel, ConvertPower(PW_TO_DBM, configuration.selected_pd),
@@ -308,8 +310,17 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	// Update estimated performance per action (regret matching alg.)
 	if (action_selection_strategy == STRATEGY_REGRET_MATCHING) {
-		pre_processor.ComputeEstimatedPerformanceAndRewards(
-			estimated_rewards, processed_configuration, processed_reward, performance.rssi_list);
+		pre_processor.ComputeEstimatedPerformanceAndRewardsRM(agent_id,
+			estimated_rewards_rm, processed_configuration, processed_reward,
+			performance.rssi_list, performance.max_rssi_list, num_wlans, performance.rssi_list_per_sta, max_throughput, 
+			configuration.capabilities.ap_sta_dist, configuration.capabilities.central_frequency, 
+			configuration.capabilities.path_loss_model);
+		//printf("estimated_rewards_rm (agent %d): ", agent_id);
+		//for (int k = 0; k < num_arms; k++) {
+		//	printf(" Arm %d=%f ", k, estimated_rewards_rm[k]);
+		//} 
+		//printf("\n");
+
 	}
 
 	// Write the action that is currently selected and its associated performance
@@ -576,7 +587,7 @@ void Agent :: ComputeNewConfiguration(){
 					// the configuration according to the MABs operation
 					ml_output = ml_model.ComputeIndividualConfiguration
 						(processed_configuration, processed_reward, agent_logger,
-						SimTime(), list_of_available_actions, estimated_performance_per_action);
+						SimTime(), list_of_available_actions, estimated_rewards_rm);
 					//PrintOrWriteAgentStatistics();
 					break;
 				}
@@ -670,8 +681,10 @@ void Agent :: InitializeAgent() {
 
 	// Initialize the estimated performance per action (regret matching)
 	estimated_rewards = new double[num_arms];
+	estimated_rewards_rm = new double[num_arms];
 	for (int i = 0; i < num_arms; ++i) {
 		estimated_rewards[i] = 0.0;
+		estimated_rewards_rm[i] = 0.0;
 	}
 
 }
@@ -722,6 +735,8 @@ void Agent :: InitializeMlModel() {
 	// MABs information
 	ml_model.num_channels = num_arms_channel;
 	ml_model.num_arms = num_arms;
+	max_throughput = 121875000; // bps, HARDCODED
+	ml_model.max_throughput = max_throughput;
 	// Logs
 	ml_model.save_logs = save_agent_logs;
 	ml_model.print_logs = print_agent_logs;

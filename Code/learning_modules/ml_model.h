@@ -89,6 +89,9 @@ class MlModel {
 		int num_stas;					///> Number of STAs in a BSS
 		double margin_rtot;				///> Margin [dB] used by the RTOT algorithm
 
+		// Regret matching
+		double max_throughput;
+
 	// Private items
 	private:
 
@@ -147,7 +150,7 @@ class MlModel {
 		*/
 		int ComputeIndividualConfiguration(int arm_ix, double reward,
 			Logger &agent_logger, double sim_time, int *available_arms,
-			double *estimated_performance_per_action) {
+			double *estimated_rewards) {
 			int new_action(0);
 			switch(learning_mechanism) {
 				/* MULTI_ARMED_BANDITS */
@@ -156,7 +159,7 @@ class MlModel {
 					mab_agent.UpdateArmStatistics(arm_ix, reward);
 					// Update regret matching info (when used)
 					if(action_selection_strategy == STRATEGY_REGRET_MATCHING) {
-						mab_agent.UpdateRegretMatching(arm_ix, reward, estimated_performance_per_action);
+						mab_agent.UpdateRegretMatching(arm_ix, estimated_rewards);
 					}
 					// Select a new action according to the updated information
 					new_action = mab_agent.SelectNewAction(available_arms, arm_ix);
@@ -211,6 +214,7 @@ class MlModel {
 					mab_agent.print_logs = print_logs;
 					mab_agent.action_selection_strategy = action_selection_strategy;
 					mab_agent.num_arms = num_arms;
+					mab_agent.max_throughput = max_throughput;
 					mab_agent.InitializeVariables();
 					break;
 				}
