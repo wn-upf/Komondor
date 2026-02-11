@@ -582,6 +582,7 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 					tmp_nodes = strdup(line_nodes);
 					std::string wlan_code_aux = ToString(GetField(tmp_nodes, IX_WLAN_CODE));
 					wlan_container[wlan_ix].wlan_code = wlan_code_aux;
+					wlan_container[wlan_ix].mapc_enabled = 0; // Set to 0 by default
 					++wlan_ix;
 					free(tmp_nodes);
 				}
@@ -799,35 +800,60 @@ void Komondor::GenerateMapcGroups(const char *mapc_filename) {
     	// 1. Parse Group ID and Method
         int group_id = atoi(GetField(tmp_line, IX_MAPC_GROUP_ID));
 		// 2. Parse the MAPC scheme
-        std::string method = ToString(GetField(tmp_line, IX_MAPC_METHOD));
+		tmp_line = strdup(line);
+        std::string method_str = ToString(GetField(tmp_line, IX_MAPC_METHOD));
+		int method_id = 0; 
+		if (method_str == "CO_SR") {
+			method_id = CO_SR;
+		} else if (method_str == "CO_BF") {
+			method_id = CO_BF;
+		} else if (method_str == "CO_TDMA") {
+			method_id = CO_TDMA;
+		} else if (method_str == "CO_RTWT") {
+			method_id = CO_RTWT;
+		}
         // 3. Parse Shared APs (Slaves) - Handle comma-separated list
-        std::string shared_ids_str = ToString(GetField(tmp_line, IX_MAPC_AP_IDS));
-        std::vector<int> shared_ap_list;
-        char* token = strtok((char*)shared_ids_str.c_str(), ",");
+		tmp_line = strdup(line);
+        std::string coordinated_ids_str = ToString(GetField(tmp_line, IX_MAPC_AP_IDS));
+		std::vector<int> coordinated_ap_list;
+        char* token = strtok((char*)coordinated_ids_str.c_str(), ",");
         while (token != NULL) {
-            shared_ap_list.push_back(atoi(token));
+            coordinated_ap_list.push_back(atoi(token));
             token = strtok(NULL, ",");
         }
+		// Update MAPC information of involved WLANs
+		for (size_t c = 0; c < coordinated_ap_list.size(); ++c) {
+			for (int w = 0; w < total_wlans_number; ++w) {
+				int current_wlan_id = atoi(wlan_container[w].wlan_code.c_str());
+        		if (current_wlan_id == coordinated_ap_list[c]) {
+					wlan_container[w].mapc_enabled = 1;
+					wlan_container[w].mapc_group_id = group_id;
+					wlan_container[w].mapc_method_id = method_id;
+				}
+			}
+		}
+		
         // 4. Parse Parameters (Key-Value pairs for extensibility)
+		tmp_line = strdup(line);
         std::string params = ToString(GetField(tmp_line, IX_MAPC_EXTRA_PARAM));
         free(tmp_line);
 
     	// --- APPLY LOGIC BASED ON METHOD ---
-    	if (method == "CO_SR") {
+    	if (method_str == "CO_SR") {
     		// Configure nodes for Co-SR
      		// To do
 
     		// Parse specific Co-SR params (e.g., OBSS_PD_MIN=-82)
     		// To do
 
-    	} else if (method == "CO_TDMA") {
+    	} else if (method_str == "CO_TDMA") {
     		// Configure nodes for Co-TDMA
     		// To do
 
     		// Parse specific Co-TDMA params (e.g., SLOT_DURATION)
     		// To do
 
-    	} else if (method == "CO_BF") {
+    	} else if (method_str == "CO_BF") {
     		// ...
     	}
     }

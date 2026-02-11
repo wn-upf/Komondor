@@ -382,6 +382,15 @@
 #define TX_PWR_REF			21		///> TX PWR REF (dBm)
 
 /* *****************************************
+ * * MULTI-ACCESS POINT COORDINATION       *
+ * *****************************************
+ */
+#define CO_SR       1
+#define CO_BF       2
+#define CO_TDMA     3
+#define CO_RTWT     4
+
+/* *****************************************
  * * AGENTS OPERATION AND MACHINE LERANING *
  * *****************************************
  */
@@ -474,7 +483,7 @@
 // CONSOLE ARGUMENTS
 #define NUM_FULL_ARGUMENTS_CONSOLE				12		///> Number of arguments entered per console corresponding to full config
 #define NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS	9		///> Number of arguments entered per console corresponding to full config (NO AGENTS)
-#define NUM_FULL_ARGUMENTS_CONSOLE_MAPC_NO_AGENTS 10 ///> Number of arguments entered per console corresponding to full config with MAPC (NO AGENTS)
+#define NUM_FULL_ARGUMENTS_CONSOLE_MAPC_NO_AGENTS 10    ///> Number of arguments entered per console corresponding to full config with MAPC (NO AGENTS)
 #define NUM_PARTIAL_ARGUMENTS_CONSOLE			4		///> Number of arguments entered per console corresponding to partial config
 #define NUM_PARTIAL_ARGUMENTS_SCRIPT			5		///> Number of arguments entered per script corresponding to partial config
 

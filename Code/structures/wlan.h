@@ -68,6 +68,11 @@ struct Wlan
 
 	int spatial_reuse_enabled;	///> Indicates whether the SR operation is enabled or not
 
+	// MAPC information
+	int mapc_enabled;
+	int mapc_group_id; 			///> MAPC group ID
+	int mapc_method_id;			///> MAPC scheme in place
+
 	/**
 	 * Set the size of the array list_sta_id
 	 * @param "num_stas" [type int]: total number of STAs
@@ -123,6 +128,11 @@ struct Wlan
 		printf("%s ap_id: %d\n", LOG_LVL4, ap_id);
 		printf("%s list of STAs IDs: ", LOG_LVL4);
 		PrintStaIds();
+		if (mapc_enabled) {
+			printf("%s MAPC Information:\n", LOG_LVL4);
+			printf("%s mapc_group_id: %d\n", LOG_LVL5, mapc_group_id);
+			printf("%s mapc_method_id: %d\n", LOG_LVL5, mapc_method_id);
+		}
 	}
 
 	/**
@@ -139,6 +149,11 @@ struct Wlan
 			fprintf(logger.file, "%s - list of STAs IDs: ", header_str.c_str());
 			WriteStaIds(logger);
 			fprintf(logger.file, "\n");
+			if (mapc_enabled) {
+				fprintf(logger.file, " - MAPC Information:\n");
+				fprintf(logger.file, "  * mapc_group_id: %d\n", mapc_group_id);
+				fprintf(logger.file, "  * mapc_method_id: %d\n", mapc_method_id);
+			}
 		}
 	}
 };
