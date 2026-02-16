@@ -782,83 +782,83 @@ void Komondor :: GenerateNodesByReadingInputFile(const char *nodes_filename) {
 */
 void Komondor::GenerateMapcGroups(const char *mapc_filename) {
 
-    if (print_system_logs) printf("\n%s Reading MAPC configuration file '%s'...\n", LOG_LVL1, mapc_filename);
 
     FILE* stream = fopen(mapc_filename, "r");
     if (!stream) {
-        printf("[ERROR] MAPC file %s not found!\n", mapc_filename);
-        exit(-1);
-    }
+        //printf("MAPC file %s not found!\n", mapc_filename);
+        //exit(-1);
+    } else {
+		if (print_system_logs) printf("\n%s Reading MAPC configuration file '%s'...\n", LOG_LVL1, mapc_filename);
+		char line[CHAR_BUFFER_SIZE];
+		int first_line_skipped = 0;
+		char* tmp_line;
 
-    char line[CHAR_BUFFER_SIZE];
-    int first_line_skipped = 0;
-	char* tmp_line;
-
-    while (fgets(line, CHAR_BUFFER_SIZE, stream)) {
-        if (!first_line_skipped) { first_line_skipped = 1; continue; } // Skip header
-        tmp_line = strdup(line);
-    	// 1. Parse Group ID and Method
-        int group_id = atoi(GetField(tmp_line, IX_MAPC_GROUP_ID));
-		// 2. Parse the MAPC scheme
-		tmp_line = strdup(line);
-        std::string method_str = ToString(GetField(tmp_line, IX_MAPC_METHOD));
-		int method_id = 0; 
-		if (method_str == "CO_SR") {
-			method_id = CO_SR;
-		} else if (method_str == "CO_BF") {
-			method_id = CO_BF;
-		} else if (method_str == "CO_TDMA") {
-			method_id = CO_TDMA;
-		} else if (method_str == "CO_RTWT") {
-			method_id = CO_RTWT;
-		}
-        // 3. Parse Shared APs (Slaves) - Handle comma-separated list
-		tmp_line = strdup(line);
-        std::string coordinated_ids_str = ToString(GetField(tmp_line, IX_MAPC_AP_IDS));
-		std::vector<int> coordinated_ap_list;
-        char* token = strtok((char*)coordinated_ids_str.c_str(), ",");
-        while (token != NULL) {
-            coordinated_ap_list.push_back(atoi(token));
-            token = strtok(NULL, ",");
-        }
-		// Update MAPC information of involved WLANs
-		for (size_t c = 0; c < coordinated_ap_list.size(); ++c) {
-			for (int w = 0; w < total_wlans_number; ++w) {
-				int current_wlan_id = atoi(wlan_container[w].wlan_code.c_str());
-        		if (current_wlan_id == coordinated_ap_list[c]) {
-					wlan_container[w].mapc_enabled = 1;
-					wlan_container[w].mapc_group_id = group_id;
-					wlan_container[w].mapc_method_id = method_id;
+		while (fgets(line, CHAR_BUFFER_SIZE, stream)) {
+			if (!first_line_skipped) { first_line_skipped = 1; continue; } // Skip header
+			tmp_line = strdup(line);
+			// 1. Parse Group ID and Method
+			int group_id = atoi(GetField(tmp_line, IX_MAPC_GROUP_ID));
+			// 2. Parse the MAPC scheme
+			tmp_line = strdup(line);
+			std::string method_str = ToString(GetField(tmp_line, IX_MAPC_METHOD));
+			int method_id = 0; 
+			if (method_str == "CO_SR") {
+				method_id = CO_SR;
+			} else if (method_str == "CO_BF") {
+				method_id = CO_BF;
+			} else if (method_str == "CO_TDMA") {
+				method_id = CO_TDMA;
+			} else if (method_str == "CO_RTWT") {
+				method_id = CO_RTWT;
+			}
+			// 3. Parse Shared APs (Slaves) - Handle comma-separated list
+			tmp_line = strdup(line);
+			std::string coordinated_ids_str = ToString(GetField(tmp_line, IX_MAPC_AP_IDS));
+			std::vector<int> coordinated_ap_list;
+			char* token = strtok((char*)coordinated_ids_str.c_str(), ",");
+			while (token != NULL) {
+				coordinated_ap_list.push_back(atoi(token));
+				token = strtok(NULL, ",");
+			}
+			// Update MAPC information of involved WLANs
+			for (size_t c = 0; c < coordinated_ap_list.size(); ++c) {
+				for (int w = 0; w < total_wlans_number; ++w) {
+					int current_wlan_id = atoi(wlan_container[w].wlan_code.c_str());
+					if (current_wlan_id == coordinated_ap_list[c]) {
+						wlan_container[w].mapc_enabled = 1;
+						wlan_container[w].mapc_group_id = group_id;
+						wlan_container[w].mapc_method_id = method_id;
+					}
 				}
 			}
+			
+			// 4. Parse Parameters (Key-Value pairs for extensibility)
+			tmp_line = strdup(line);
+			std::string params = ToString(GetField(tmp_line, IX_MAPC_EXTRA_PARAM));
+			free(tmp_line);
+
+			// --- APPLY LOGIC BASED ON METHOD ---
+			if (method_str == "CO_SR") {
+				// Configure nodes for Co-SR
+				// To do
+
+				// Parse specific Co-SR params (e.g., OBSS_PD_MIN=-82)
+				// To do
+
+			} else if (method_str == "CO_TDMA") {
+				// Configure nodes for Co-TDMA
+				// To do
+
+				// Parse specific Co-TDMA params (e.g., SLOT_DURATION)
+				// To do
+
+			} else if (method_str == "CO_BF") {
+				// ...
+			}
 		}
-		
-        // 4. Parse Parameters (Key-Value pairs for extensibility)
-		tmp_line = strdup(line);
-        std::string params = ToString(GetField(tmp_line, IX_MAPC_EXTRA_PARAM));
-        free(tmp_line);
-
-    	// --- APPLY LOGIC BASED ON METHOD ---
-    	if (method_str == "CO_SR") {
-    		// Configure nodes for Co-SR
-     		// To do
-
-    		// Parse specific Co-SR params (e.g., OBSS_PD_MIN=-82)
-    		// To do
-
-    	} else if (method_str == "CO_TDMA") {
-    		// Configure nodes for Co-TDMA
-    		// To do
-
-    		// Parse specific Co-TDMA params (e.g., SLOT_DURATION)
-    		// To do
-
-    	} else if (method_str == "CO_BF") {
-    		// ...
-    	}
-    }
-    fclose(stream);
-    if (print_system_logs) printf("%s MAPC Groups configured!\n", LOG_LVL2);
+		fclose(stream);
+		if (print_system_logs) printf("%s MAPC Groups configured!\n", LOG_LVL2);
+	}
 }
 
 /**

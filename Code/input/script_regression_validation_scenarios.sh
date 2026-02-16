@@ -4,41 +4,41 @@ SEED=1
 
 # define validation parameters
 ALLOWED_ERROR_TPT=1	# Allowed error in Mbps
-# Indexes - 1: Sce1a (agg), 2: Sce1a (no agg), 3: Sce1b (agg), 4: Sce1b (no agg)	
-values_basic_scenarios=(88.25 22.80 88.25 22.80)	
+# Indexes - 1: Sce1a (no agg), 2: Sce1a (agg), 3: Sce1b (no agg), 4: Sce1b (agg)	
+values_basic_scenarios=(22.80 88.25 22.80 88.25)	
 declare -A values_complex_scenarios
-# Sce2a (agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
-values_complex_scenarios[0,0]=42.11
-values_complex_scenarios[0,1]=41.18
-values_complex_scenarios[0,2]=41.70
 # Sce2a (no agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
-values_complex_scenarios[1,0]=9.76
-values_complex_scenarios[1,1]=9.76
-values_complex_scenarios[1,2]=9.76
-# Sce2b (agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
-values_complex_scenarios[2,0]=108.83
-values_complex_scenarios[2,1]=1.53
-values_complex_scenarios[2,2]=108.84
+values_complex_scenarios[0,0]=9.76
+values_complex_scenarios[0,1]=9.76
+values_complex_scenarios[0,2]=9.76
+# Sce2a (agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
+values_complex_scenarios[1,0]=42.11
+values_complex_scenarios[1,1]=41.18
+values_complex_scenarios[1,2]=41.70
 # Sce2b (no agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
-values_complex_scenarios[3,0]=20.87
-values_complex_scenarios[3,1]=3.53
-values_complex_scenarios[3,2]=20.87
-# Sce2c (agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
-values_complex_scenarios[4,0]=110.21
-values_complex_scenarios[4,1]=67.32
-values_complex_scenarios[4,2]=110.20
+values_complex_scenarios[2,0]=20.87
+values_complex_scenarios[2,1]=3.53
+values_complex_scenarios[2,2]=20.87
+# Sce2b (agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
+values_complex_scenarios[3,0]=108.83
+values_complex_scenarios[3,1]=1.53
+values_complex_scenarios[3,2]=108.84
 # Sce2c (no agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
-values_complex_scenarios[5,0]=23.52
-values_complex_scenarios[5,1]=18.51
-values_complex_scenarios[5,2]=23.53
-# Sce2d (agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
-values_complex_scenarios[6,0]=110.21
-values_complex_scenarios[6,1]=110.20
-values_complex_scenarios[6,2]=110.22
+values_complex_scenarios[4,0]=23.52
+values_complex_scenarios[4,1]=18.51
+values_complex_scenarios[4,2]=23.53
+# Sce2c (agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
+values_complex_scenarios[5,0]=110.21
+values_complex_scenarios[5,1]=67.32
+values_complex_scenarios[5,2]=110.20
 # Sce2d (no agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
-values_complex_scenarios[7,0]=23.53
-values_complex_scenarios[7,1]=23.52
-values_complex_scenarios[7,2]=23.53	
+values_complex_scenarios[6,0]=23.53
+values_complex_scenarios[6,1]=23.52
+values_complex_scenarios[6,2]=23.53	
+# Sce2d (agg) - Indexes: 0: WLAN_A, 1: WLAN_B, 2: WLAN_C
+values_complex_scenarios[7,0]=110.21
+values_complex_scenarios[7,1]=110.20
+values_complex_scenarios[7,2]=110.22
 # Sce3 - Indexes: 0: Sce3a (20MHz), Sce3b (40MHz), Sce3c (80MHz), Sce3d (160MHz)
 ALLOWED_ERROR_RSSI=0.1
 values_channel_bonding_scenarios=(-108.23 -111.24 -114.25 -117.26)	
