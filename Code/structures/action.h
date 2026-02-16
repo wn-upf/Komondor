@@ -47,11 +47,11 @@
  * action.h: this file defines an action to be used by intelligent agents in Multi-Armed Bandits
  */
 
-#include "../list_of_macros.h"
-#include "logger.h"
-
 #ifndef _AUX_ACTION_
 #define _AUX_ACTION_
+
+#include "../list_of_macros.h"
+#include "logger.h"
 
 // Action info
 struct Action
@@ -131,13 +131,13 @@ struct Action
     /**
      * Print the statistics collected for the controller (using CC iterations)
      */
-        void PrintControllerStatistics() {
-            printf("------------\n Information since last CC request (a%d):\n", id);
-            printf(" * cumulative_reward_since_last_request = %f\n", cumulative_reward_since_last_cc_request);
-            printf(" * times_played_since_last_request = %d\n", times_played_since_last_cc_request);
-            printf(" * average_reward_since_last_request = %f\n", average_reward_since_last_cc_request);
-            printf("------------\n");
-        }
+    void PrintControllerStatistics() {
+        printf("------------\n Information since last CC request (a%d):\n", id);
+        printf(" * cumulative_reward_since_last_request = %f\n", cumulative_reward_since_last_cc_request);
+        printf(" * times_played_since_last_request = %d\n", times_played_since_last_cc_request);
+        printf(" * average_reward_since_last_request = %f\n", average_reward_since_last_cc_request);
+        printf("------------\n");
+    }
 
     /**
      * Write the action to the agent logs file

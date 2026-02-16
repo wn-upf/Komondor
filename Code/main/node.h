@@ -2756,7 +2756,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							current_tx_duration = cts_duration;
 
 							// Compute the NAV time
-							bits_ofdm_sym =  getNumberSubcarriers(current_right_channel - current_left_channel +1) *
+							bits_ofdm_sym =  GetNumberSubcarriers(current_right_channel - current_left_channel +1) *
 								Mcs_array::modulation_bits[notification.modulation_id-1] *
 								Mcs_array::coding_rates[notification.modulation_id-1] *
 								IEEE_AX_SU_SPATIAL_STREAMS;
@@ -2864,7 +2864,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						node_state = STATE_TX_DATA;
 
 						// Compute the NAV time
-						bits_ofdm_sym =  getNumberSubcarriers(current_right_channel - current_left_channel +1) *
+						bits_ofdm_sym =  GetNumberSubcarriers(current_right_channel - current_left_channel +1) *
 							Mcs_array::modulation_bits[notification.modulation_id-1] *
 							Mcs_array::coding_rates[notification.modulation_id-1] *
 							IEEE_AX_SU_SPATIAL_STREAMS;
@@ -3129,11 +3129,11 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 
 		// Update performance measurements
 		if (first_time_requesting_mcs) {
-			double max_achievable_bits_ofdm_sym (getNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
+			double max_achievable_bits_ofdm_sym (GetNumberSubcarriers(max_channel_allowed - min_channel_allowed + 1) *
 				Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
 				Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1] *
 				IEEE_AX_SU_SPATIAL_STREAMS);
-			//	double max_achievable_bits_ofdm_sym (getNumberSubcarriers(NUM_CHANNELS_KOMONDOR) *
+			//	double max_achievable_bits_ofdm_sym (GetNumberSubcarriers(NUM_CHANNELS_KOMONDOR) *
 			//	Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
 			//	Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(NUM_CHANNELS_KOMONDOR)]-1] *
 			//	IEEE_AX_SU_SPATIAL_STREAMS);
@@ -3147,7 +3147,7 @@ void Node :: InportMCSResponseReceived(Notification &notification){
 				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
 				min_channel_allowed, max_channel_allowed, max_achievable_throughput * pow(10,-6),
 				max_channel_allowed - min_channel_allowed + 1,
-				getNumberSubcarriers(current_right_channel - current_left_channel + 1),
+				GetNumberSubcarriers(current_right_channel - current_left_channel + 1),
 				mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1,
 				Mcs_array::modulation_bits[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1],
 				Mcs_array::coding_rates[mcs_per_node[ix_aux][(int) log2(max_channel_allowed-min_channel_allowed + 1)]-1]);
@@ -3491,7 +3491,7 @@ void Node :: EndBackoff(trigger_t &){
 		}
 
 		// data rate depending on CB and streams: Nsc * ym * yc * SUSS
-		bits_ofdm_sym =  getNumberSubcarriers(num_channels_tx) *
+		bits_ofdm_sym =  GetNumberSubcarriers(num_channels_tx) *
 			Mcs_array::modulation_bits[current_modulation-1] *
 			Mcs_array::coding_rates[current_modulation-1] *
 			IEEE_AX_SU_SPATIAL_STREAMS;
@@ -4343,7 +4343,7 @@ void Node :: InportNewSpatialReuseConfiguration(Configuration &received_configur
 void Node :: GenerateConfiguration(){
 
 	// Capabilities
-	Capabilities capabilities;
+	NodeCapabilities capabilities;
 	capabilities.node_code = node_code.c_str();
 	capabilities.node_id = node_id;
 	capabilities.x = x;

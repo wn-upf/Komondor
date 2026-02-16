@@ -44,93 +44,50 @@
  */
 
 /**
- * modulations.h: this file defines modulations and MCS parameters
+ * agent_capabilities.h: this file defines the capabilities of a learning agent
  */
 
-#ifndef _MCS_CONFIGURATION_
-#define _MCS_CONFIGURATION_
+#ifndef _AUX_AGENT_CAPABILITIES_
+#define _AUX_AGENT_CAPABILITIES_
 
-struct Mcs_array {
-   static const int modulation_bits[12];
-   static const double coding_rates[12];
-};
+#include "../list_of_macros.h"
+#include "logger.h"
 
-// Sergio on 5 Oct 2017
-// - Include MCS indeces corresponding to IEEE 802.11ax
-const int Mcs_array::modulation_bits[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-	1,	// MCS 0
-	2,	// MCS 1
-	2,	// MCS 2
-	4,	// MCS 3
-	4,	// MCS 4
-	6,	// MCS 5
-	6,	// MCS 6
-	6,	// MCS 7
-	8,	// MCS 8
-	8,	// MCS 9
-	10,	// MCS 10
-	10	// MCS 11
-};
+struct AgentCapabilities
+{
+	int agent_id;					///> Agent identifier
+	double time_between_requests;	///> Time between requests to the AP [s]
+	int num_arms;					///> Number of actions (arms) available to the agent
+	int *available_actions;			///> Array of available action indices
 
-const double Mcs_array::coding_rates[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-	1/double(2),	// MCS 0
-	1/double(2),	// MCS 1
-	3/double(4),	// MCS 2
-	1/double(2),	// MCS 3
-	3/double(4),	// MCS 4
-	1/double(2),	// MCS 5
-	2/double(3),	// MCS 6
-	3/double(4),	// MCS 7
-	3/double(4),	// MCS 8
-	5/double(6),	// MCS 9
-	3/double(4),	// MCS 10
-	5/double(6)		// MCS 11
-};
-
-/**
- *  Provide the number of subcarriers used for each number of channels in the IEEE 802.11ax
- *  @param "num_channels" [type int]: number of channels used for transmission
- *  @return "num_subcarriers" [type int]: number of subcarriers to be used
- */
-int GetNumberSubcarriers(int num_channels){
-
-	int num_subcarriers;
-
-	switch(num_channels){
-
-		// 1 channel - 20 MHz
-		case 1:{
-			num_subcarriers = 234;
-			break;
-		}
-
-		// 2 channels - 40 MHz
-		case 2:{
-			num_subcarriers = 468;
-			break;
-		}
-
-		// 4 channels - 80 MHz
-		case 4:{
-			num_subcarriers = 980;
-			break;
-		}
-
-		// 8 channels - 160 MHz
-		case 8:{
-			num_subcarriers = 1960;
-			break;
-		}
-
-		default:{
-			printf("ERROR: unsupported number of channels (%d)\n", num_channels);
-			exit(EXIT_FAILURE);
-		}
-
+	/**
+	 * Set the size of the available actions array
+	 * @param "num_arms" [type int]: total number of actions
+	 */
+	void SetSizeOfActionsArray(int num_arms){
+		this->num_arms = num_arms;
+		available_actions = new int[num_arms];
 	}
 
-	return num_subcarriers;
+	/**
+	 * Function to print the agent's capabilities
+	 */
+	void PrintAgentCapabilities(){
+		printf("%s Information of agent %d:\n", LOG_LVL3, agent_id);
+		printf("%s time_between_requests = %f\n", LOG_LVL4, time_between_requests);
+		printf("\n");
+	}
 
-}
+	/**
+	 * Function to write the agent's capabilities
+	 * @param "logger" [type Logger]: logger object for printing logs into a file
+	 * @param "sim_time" [type double]: current simulation time
+	 */
+	void WriteAgentCapabilities(Logger logger, double sim_time){
+		fprintf(logger.file, "%.15f;A%d;%s;%s Agent information:\n", sim_time, agent_id, LOG_F00, LOG_LVL3);
+		fprintf(logger.file, "%.15f;A%d;%s;%s time_between_requests = %f\n",
+			sim_time, agent_id, LOG_F00, LOG_LVL4, time_between_requests);
+	}
+};
 
 #endif

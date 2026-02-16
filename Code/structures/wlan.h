@@ -150,9 +150,9 @@ struct Wlan
 			WriteStaIds(logger);
 			fprintf(logger.file, "\n");
 			if (mapc_enabled) {
-				fprintf(logger.file, " - MAPC Information:\n");
-				fprintf(logger.file, "  * mapc_group_id: %d\n", mapc_group_id);
-				fprintf(logger.file, "  * mapc_method_id: %d\n", mapc_method_id);
+				fprintf(logger.file, "%s - MAPC Information:\n", header_str.c_str());
+				fprintf(logger.file, "%s  * mapc_group_id: %d\n", header_str.c_str(), mapc_group_id);
+				fprintf(logger.file, "%s  * mapc_method_id: %d\n", header_str.c_str(), mapc_method_id);
 			}
 		}
 	}

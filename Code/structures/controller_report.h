@@ -7,7 +7,7 @@
  * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
  * Everyone is permitted to copy and distribute verbatim copies
  * of this license document, but changing it is not allowed.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -47,13 +47,13 @@
  * controller_report.h: this file defines the report maintained by the CC
  */
 
-#include "../list_of_macros.h"
-#include "logger.h"
-
 #ifndef _AUX_CC_REPORT_
 #define _AUX_CC_REPORT_
 
-// Action info
+#include "../list_of_macros.h"
+#include "logger.h"
+
+// Controller report info
 struct ControllerReport
 {
 
@@ -77,7 +77,7 @@ struct ControllerReport
 	int *most_played_action_per_agent;			///> Array containing the most played action by each agent
 
 	/**
-	* Print or write the list of banned actions
+	* Print or write the list of available actions
 	* @param "write_or_print" [type int]: variable to indicate whether to print on the  console or to write on the the output logs file
 	* @param "logger" [type Logger]: logger object to write on the output file
 	* @param "save_logs" [type int]: boolean indicating whether to save logs or not
@@ -104,7 +104,6 @@ struct ControllerReport
 					LOGS(save_logs, logger.file, "%.15f;CC;%s;%s Agent %d: ", sim_time, LOG_C00, LOG_LVL3, i);
 					for(int j = 0; j < max_number_of_actions; ++j) {
 						LOGS(save_logs, logger.file, " %d ", list_of_available_actions_per_agent[i][j]);
-						printf(" %d ", list_of_available_actions_per_agent[i][j]);
 					}
 					LOGS(save_logs, logger.file, "\n");
 				}

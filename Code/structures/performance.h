@@ -44,7 +44,7 @@
  */
 
  /**
- * performance_metrics.h: this file defines the performance object used for statistics and the agents operation
+ * performance.h: this file defines the performance object used for statistics and the agents operation
  */
 
 #ifndef _AUX_PERFORMANCE_
