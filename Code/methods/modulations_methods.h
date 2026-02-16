@@ -63,24 +63,38 @@
 */
 void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
 
-	double pw_rx_intereset_dbm (ConvertPower(PW_TO_DBM, power_rx_interest));
+	// RSSI thresholds (dBm, baseline for 20 MHz / ch_num_ix=0).
+	// For wider bandwidths add ch_num_ix*3 dB to each threshold.
+	// The first two original branches both mapped to BPSK_1_2 (below -82 and -82..-79),
+	// so they are merged: anything below -79 → BPSK_1_2.
+	static const int N_THRESHOLDS = 11;
+	static const double MCS_THRESHOLDS[N_THRESHOLDS] = {
+		-79, -77, -74, -70, -66, -65, -64, -59, -57, -54, -52
+	};
+	static const int MCS_VALUES[N_THRESHOLDS + 1] = {
+		MODULATION_BPSK_1_2,    // <  -79
+		MODULATION_QPSK_1_2,    // >= -79, < -77
+		MODULATION_QPSK_3_4,    // >= -77, < -74
+		MODULATION_16QAM_1_2,   // >= -74, < -70
+		MODULATION_16QAM_3_4,   // >= -70, < -66
+		MODULATION_64QAM_2_3,   // >= -66, < -65
+		MODULATION_64QAM_3_4,   // >= -65, < -64
+		MODULATION_64QAM_5_6,   // >= -64, < -59
+		MODULATION_256QAM_3_4,  // >= -59, < -57
+		MODULATION_256QAM_5_6,  // >= -57, < -54
+		MODULATION_1024QAM_3_4, // >= -54, < -52
+		MODULATION_1024QAM_5_6  // >= -52
+	};
 
-	for ( int ch_num_ix = 0; ch_num_ix < 4; ++ ch_num_ix ){	// For 1, 2, 4 and 8 channels
+	double pw_rx_dbm = ConvertPower(PW_TO_DBM, power_rx_interest);
 
-		//if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_FORBIDDEN; }
-		if(pw_rx_intereset_dbm < -82 +(ch_num_ix*3)){ mcs_response[ch_num_ix] = MODULATION_BPSK_1_2; }
-		else if (pw_rx_intereset_dbm >= -82 + (ch_num_ix*3) && pw_rx_intereset_dbm < -79 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_BPSK_1_2;}
-		else if (pw_rx_intereset_dbm >= -79 + (ch_num_ix*3) && pw_rx_intereset_dbm < -77 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_1_2;}
-		else if (pw_rx_intereset_dbm >= -77 + (ch_num_ix*3) && pw_rx_intereset_dbm < -74 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_QPSK_3_4;}
-		else if (pw_rx_intereset_dbm >= -74 + (ch_num_ix*3) && pw_rx_intereset_dbm < -70 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_16QAM_1_2;}
-		else if (pw_rx_intereset_dbm >= -70 + (ch_num_ix*3) && pw_rx_intereset_dbm < -66 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_16QAM_3_4;}
-		else if (pw_rx_intereset_dbm >= -66 + (ch_num_ix*3) && pw_rx_intereset_dbm < -65 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_2_3;}
-		else if (pw_rx_intereset_dbm >= -65 + (ch_num_ix*3) && pw_rx_intereset_dbm < -64 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_3_4;}
-		else if (pw_rx_intereset_dbm >= -64 + (ch_num_ix*3) && pw_rx_intereset_dbm < -59 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_64QAM_5_6;}
-		else if (pw_rx_intereset_dbm >= -59 + (ch_num_ix*3) && pw_rx_intereset_dbm < -57 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_256QAM_3_4;}
-		else if (pw_rx_intereset_dbm >= -57 + (ch_num_ix*3) && pw_rx_intereset_dbm < -54 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_256QAM_5_6;}
-		else if (pw_rx_intereset_dbm >= -54 + (ch_num_ix*3) && pw_rx_intereset_dbm < -52 +(ch_num_ix*3)){mcs_response[ch_num_ix] = MODULATION_1024QAM_3_4;}
-		else { mcs_response[ch_num_ix] = MODULATION_1024QAM_5_6;}
+	for (int ch_num_ix = 0; ch_num_ix < 4; ++ch_num_ix) {	// For 1, 2, 4 and 8 channels
+		double offset = ch_num_ix * 3.0;
+		int ix;
+		for (ix = 0; ix < N_THRESHOLDS; ++ix) {
+			if (pw_rx_dbm < MCS_THRESHOLDS[ix] + offset) break;
+		}
+		mcs_response[ch_num_ix] = MCS_VALUES[ix];
 	}
 }
 

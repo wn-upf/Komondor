@@ -66,7 +66,7 @@ double	Exponential(double mean){ return -mean*log(Random());}
 * @param "bits_ofdm_sym" [type double]: bits of an OFDM symbol
 * @return "limited_num_packets_aggregated" [type int]: limited number of packets aggregated
 */
-int findMaximumPacketsAggregated(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
+int FindMaximumPacketsAggregated(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
 
 	double data_duration;
 	int limited_num_packets_aggregated (num_packets_aggregated);
@@ -133,7 +133,7 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 * @param "bits_ofdm_sym_legacy" [type double]: bits of a legacy OFDM symbol
 * @return "rts_duration" [type double]: transmission time of an RTS packet
 */
-double computeRtsTxTime80211ax(double bits_ofdm_sym_legacy){
+double ComputeRtsTxTime80211ax(double bits_ofdm_sym_legacy){
 
 //	double rts_duration (IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 //		(double) IEEE_AX_RTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
@@ -148,7 +148,7 @@ double computeRtsTxTime80211ax(double bits_ofdm_sym_legacy){
 * @param "bits_ofdm_sym_legacy" [type double]: bits of a legacy OFDM symbol
 * @return "cts_duration" [type double]: transmission time of an CTS packet
 */
-double computeCtsTxTime80211ax(double bits_ofdm_sym_legacy){
+double ComputeCtsTxTime80211ax(double bits_ofdm_sym_legacy){
 
 //	double cts_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 //			(double) IEEE_AX_CTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
@@ -167,7 +167,7 @@ double computeCtsTxTime80211ax(double bits_ofdm_sym_legacy){
 * @param "bits_ofdm_sym" [type double]: bits of an OFDM symbol
 * @return "data_duration" [type double]: transmission time of a data packet
 */
-double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
+double ComputeDataTxTime80211ax(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
 
 	double data_duration;
 
@@ -205,26 +205,20 @@ double computeDataTxTime80211ax(int num_packets_aggregated, int data_packet_leng
 * @param "bits_ofdm_sym_legacy" [type double]: bits of a legacy OFDM symbol
 * @return "ack_duration" [type double]: transmission time of an ACK packet
 */
-double computeAckTxTime80211ax(int num_packets_aggregated, double bits_ofdm_sym_legacy){
+double ComputeAckTxTime80211ax(int num_packets_aggregated, double bits_ofdm_sym_legacy){
 
 	double ack_duration;
 
 	if(num_packets_aggregated == 1){
 		ack_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 			(double) IEEE_AX_ACK_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
-
-		ack_duration = 28 / pow(10,6);
-
+		//ack_duration = 28 / pow(10,6);
 	} else {
 		ack_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 			(double) IEEE_AX_BACK_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
-
-		ack_duration = 32 / pow(10,6);
-
+		//ack_duration = 32 / pow(10,6);
 	}
-
-	//printf("ACK = %f\n", ack_duration * pow(10,6));
-	ack_duration = 32 / pow(10,6);
+	ack_duration = 32 / pow(10,6); // HARDCODED TO 32 micro-seconds (TO DO: Check how to adapt this)
 	return ack_duration;
 
 }
@@ -299,10 +293,10 @@ void ComputeFramesDuration(double *rts_duration, double *cts_duration,
 	int num_packets_aggregated, int data_packet_length, int bits_ofdm_sym){
 
 	// Compute the duration of each frame
-	*rts_duration = computeRtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
-	*cts_duration = computeCtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
-	*data_duration = computeDataTxTime80211ax(num_packets_aggregated,
+	*rts_duration = ComputeRtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
+	*cts_duration = ComputeCtsTxTime80211ax(IEEE_BITS_OFDM_SYM_LEGACY);
+	*data_duration = ComputeDataTxTime80211ax(num_packets_aggregated,
 			data_packet_length, bits_ofdm_sym);
-	*ack_duration = computeAckTxTime80211ax(num_packets_aggregated, IEEE_BITS_OFDM_SYM_LEGACY);
+	*ack_duration = ComputeAckTxTime80211ax(num_packets_aggregated, IEEE_BITS_OFDM_SYM_LEGACY);
 
 }

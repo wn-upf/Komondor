@@ -3497,7 +3497,7 @@ void Node :: EndBackoff(trigger_t &){
 			IEEE_AX_SU_SPATIAL_STREAMS;
 
 		// Update the number of packets to aggregate (just in case that the max PPDU is exceeded with the current MCS)
-		limited_num_packets_aggregated = findMaximumPacketsAggregated
+		limited_num_packets_aggregated = FindMaximumPacketsAggregated
 			(current_num_packets_aggregated, frame_length, bits_ofdm_sym);
 
 		LOGS(save_node_logs,node_logger.file,
@@ -4026,7 +4026,7 @@ void Node :: AckTimeout(trigger_t &){
 		}
 	}
 
-	handlePacketLoss(PACKET_TYPE_DATA, total_time_lost_in_num_channels, total_time_lost_per_channel,
+	HandlePacketLoss(PACKET_TYPE_DATA, total_time_lost_in_num_channels, total_time_lost_per_channel,
 		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
 
@@ -4069,7 +4069,7 @@ void Node :: AckTimeout(trigger_t &){
  */
 void Node :: CtsTimeout(trigger_t &){
 
-	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
+	HandlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
 		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
 
@@ -4121,7 +4121,7 @@ void Node :: CtsTimeout(trigger_t &){
  */
 void Node :: DataTimeout(trigger_t &){
 
-	handlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
+	HandlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
 		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_id, current_destination_id);
 
