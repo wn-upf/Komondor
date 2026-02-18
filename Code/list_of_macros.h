@@ -510,6 +510,11 @@
 #define DEFAULT_PRINT_SYSTEM_LOGS	1
 #define DEFAULT_PRINT_NODE_LOGS		1
 
+// InitializeVariables defaults (node.h)
+#define DEFAULT_BURST_RATE					10		///> Default burst rate [bursts/s]
+#define DEFAULT_BASE_BACKOFF_DETERMINISTIC	5		///> Default base backoff for deterministic mode
+#define DEFAULT_LAST_MEASUREMENTS_WINDOW	10.0	///> Default observation window for last-N-seconds stats [s]
+
 // File types
 #define FILE_TYPE_UNKNOWN		-1
 #define FILE_TYPE_APS			0
