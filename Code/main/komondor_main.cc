@@ -60,6 +60,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <getopt.h> // Required for parsing flags from user input
 
 #include ".././COST/cost.h"
 
@@ -365,7 +366,7 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 		}
 	}
 
-	// Connect the agents to the central controller, if applicable
+	// Connect the agents to the central controller, if enabled
 	if (agents_enabled && central_controller_flag) {
 		for(int w = 0; w < total_agents_number; ++w){
 			if(agent_container[w].agent_centralized && central_controller[0].controller_on) {
@@ -432,136 +433,114 @@ int main(int argc, char *argv[]){
 	printf("*************************************************************************************\n");
 	printf("\n\n");
 
-	// Input variables
-	char *nodes_input_filename;
-	char *mapc_input_filename;
-	char *agents_input_filename;
-	std::string script_output_filename;
-	std::string simulation_code;
-	int save_node_logs;
-	int save_agent_logs;
-	int print_system_logs;
-	int print_node_logs;
-	int print_agent_logs;
-	double sim_time;
-	int seed;
-	int agents_enabled;
-	int mapc_enabled;
-
-	// Get input variables per console
-	if(argc == NUM_FULL_ARGUMENTS_CONSOLE){	// Full configuration entered per console
-		nodes_input_filename = argv[1];
-		agents_input_filename = argv[2];
-		script_output_filename = ToString(argv[3]);
-		simulation_code = ToString(argv[4]);
-		save_node_logs = atoi(argv[5]);
-		save_agent_logs = atoi(argv[6]);
-		print_system_logs = atoi(argv[7]);
-		print_node_logs = atoi(argv[8]);
-		print_agent_logs = atoi(argv[9]);
-		sim_time = atof(argv[10]);
-		seed = atoi(argv[11]);
-		// Enable the operation of agents
-		agents_enabled = TRUE;
-		// Disable MAPC
-		mapc_enabled = FALSE;
-		if (print_system_logs) printf("%s FULL configuration entered per console (AGENTS ENABLED).\n", LOG_LVL1);
-	} else if(argc == NUM_FULL_ARGUMENTS_CONSOLE_NO_AGENTS){	// Configuration without agents
-		nodes_input_filename = argv[1];
-		script_output_filename = ToString(argv[2]);
-		simulation_code = ToString(argv[3]);
-		save_node_logs = atoi(argv[4]);
-		print_system_logs = atoi(argv[5]);
-		print_node_logs = atoi(argv[6]);
-		sim_time = atof(argv[7]);
-		seed = atoi(argv[8]);
-		// Disable the operation of agents & MAPC
-		agents_enabled = FALSE;
-		mapc_enabled = FALSE;
-		if (print_system_logs) printf("%s FULL configuration entered per console (AGENTS DISABLED).\n", LOG_LVL1);
-	} else if(argc == NUM_FULL_ARGUMENTS_CONSOLE_MAPC_NO_AGENTS){	// Configuration without agents
-		nodes_input_filename = argv[1];
-		mapc_input_filename = argv[2];
-		script_output_filename = ToString(argv[3]);
-		simulation_code = ToString(argv[4]);
-		save_node_logs = atoi(argv[5]);
-		print_system_logs = atoi(argv[6]);
-		print_node_logs = atoi(argv[7]);
-		sim_time = atof(argv[8]);
-		seed = atoi(argv[9]);
-		// Enable MAPC
-		mapc_enabled = TRUE;
-		// Disable the operation of agents
-		agents_enabled = FALSE;
-		if (print_system_logs) printf("%s FULL configuration entered per console (AGENTS DISABLED).\n", LOG_LVL1);
-	} else if(argc == NUM_PARTIAL_ARGUMENTS_CONSOLE) {	// Partial configuration entered per console
-		nodes_input_filename = argv[1];
-		sim_time = atof(argv[2]);
-		seed = atoi(argv[3]);
-		// Default values
-		script_output_filename.append(ToString(DEFAULT_SCRIPT_FILENAME));
-		simulation_code.append(ToString(DEFAULT_SIMULATION_CODE));
-		save_node_logs = DEFAULT_WRITE_NODE_LOGS;
-		print_system_logs = DEFAULT_PRINT_SYSTEM_LOGS;
-		print_node_logs = DEFAULT_PRINT_NODE_LOGS;
-		// Disable the operation of agents & MAPC
-		agents_enabled = FALSE;
-		mapc_enabled = FALSE;
-		if (print_system_logs) printf("%s PARTIAL configuration entered per console. "
-			"Some parameters are set by DEFAULT.\n", LOG_LVL1);
-	} else if(argc == NUM_PARTIAL_ARGUMENTS_SCRIPT) {	// Partial configuration entered per console (useful for scripts)
-		nodes_input_filename = argv[1];
-		simulation_code = ToString(argv[2]);	// For scripts --> useful to identify simulations
-		sim_time = atof(argv[3]);
-		seed = atoi(argv[4]);
-		// Default values
-		script_output_filename.append(ToString(DEFAULT_SCRIPT_FILENAME));
-		save_node_logs = DEFAULT_WRITE_NODE_LOGS;
-		print_system_logs = DEFAULT_PRINT_SYSTEM_LOGS;
-		print_node_logs = DEFAULT_PRINT_NODE_LOGS;
-		// Disable the operation of agents & MAPC
-		agents_enabled = FALSE;
-		mapc_enabled = FALSE;
-		if (print_system_logs) printf("%s PARTIAL configuration entered per script. "
-			"Some parameters are set by DEFAULT.\n", LOG_LVL1);
-	} else {
-		printf("%sERROR: Console arguments were not set properly!\n "
-			" + For FULL configuration setting without agents, execute\n"
-			"    ./Komondor -system_input_filename -nodes_input_filename -script_output_filename "
-			"-simulation_code -save_node_logs -print_node_logs -print_system_logs "
-			"-sim_time -seed\n"
-			" + For FULL configuration setting with agents, execute\n"
-			"    ./Komondor -system_input_filename -nodes_input_filename -agents_input_filename -script_output_filename "
-			"-simulation_code -save_node_logs -save_agent_logs -print_node_logs -print_system_logs "
-			"-print_agent_logs -sim_time -seed\n"
-			" + For PARTIAL configuration setting, execute\n"
-			"    ./KomondorSimulation -system_input_filename -nodes_input_filename -sim_time -seed\n"
-			" + For PARTIAL configuration setting (SCRIPTS), execute\n"
-			"    ./KomondorSimulation -system_input_filename -nodes_input_filename -simulation_code -sim_time -seed\n", LOG_LVL1);
-		return(-1);
-	}
-
-	if (print_system_logs) {
-		printf("%s Komondor input configuration:\n", LOG_LVL1);
-		printf("%s nodes_input_filename: %s\n", LOG_LVL2, nodes_input_filename);
-		printf("%s mapc_enabled: %d\n", LOG_LVL2, mapc_enabled);
-		if (mapc_enabled) { printf("%s mapc_input_filename: %s\n", LOG_LVL2, mapc_input_filename); }
-		printf("%s agents_enabled: %d\n", LOG_LVL2, agents_enabled);
-		if (agents_enabled) { printf("%s agents_input_filename: %s\n", LOG_LVL2, agents_input_filename); }
-		printf("%s script_output_filename: %s\n", LOG_LVL2, script_output_filename.c_str());
-		printf("%s simulation_code: %s\n", LOG_LVL2, simulation_code.c_str());
-		printf("%s save_node_logs: %d\n", LOG_LVL2, save_node_logs);
-		printf("%s print_system_logs: %d\n", LOG_LVL2, print_system_logs);
-		printf("%s print_node_logs: %d\n", LOG_LVL2, print_node_logs);
-		printf("%s sim_time: %f s\n", LOG_LVL2, sim_time);
-		printf("%s seed: %d\n", LOG_LVL2, seed);
-	}
 
 
+
+
+
+
+
+
+
+
+	// -------------------------------------------------------
+    // 1. SET DEFAULTS 
+    // -------------------------------------------------------
+    std::string nodes_input_filename = "";      // Mandatory
+    std::string agents_input_filename = "";     // Optional
+    std::string mapc_input_filename = "";       // Optional
+    std::string script_output_filename = "../output/default_output.txt";
+    std::string simulation_code = "SIM_001";
+    
+    int save_node_logs = 0;
+    int save_agent_logs = 0;
+    int print_system_logs = 1; // Default to ON for visibility
+    int print_node_logs = 1;
+    int print_agent_logs = 1;
+    
+    double sim_time = 10.0;
+    int seed = 1;
+
+    // "Modes" are now just flags. Default to false.
+    int agents_enabled = 0;
+    int mapc_enabled = 0;
+
+    // -------------------------------------------------------
+    // 2. DEFINE FLAGS
+    // -------------------------------------------------------
+    static struct option long_options[] = {
+        // Essential Inputs
+        {"nodes",     required_argument, 0, 'n'},
+        {"time",      required_argument, 0, 't'},
+        {"seed",      required_argument, 0, 's'},
+        {"code",      required_argument, 0, 'c'},
+        {"out",       required_argument, 0, 'o'},
+
+        // Optional Features (Modes)
+        {"agents",    required_argument, 0, 'a'}, // Providing this ENABLES agents
+        {"mapc",      required_argument, 0, 'm'}, // Providing this ENABLES MAPC
+
+        // Flags (0/1)
+        {"logs-sys",  required_argument, 0, 'L'}, 
+        {"logs-node", required_argument, 0, 'l'},
+        {"save-node", required_argument, 0, 'S'},
+        
+        // Help
+        {"help",      no_argument,       0, 'h'},
+        {0, 0, 0, 0}
+    };
+
+    // -------------------------------------------------------
+    // 3. PARSE ARGUMENTS
+    // -------------------------------------------------------
+    int opt;
+    int option_index = 0;
+
+    while ((opt = getopt_long(argc, argv, "n:t:s:c:o:a:m:L:l:S:h", long_options, &option_index)) != -1) {
+        switch (opt) {
+            case 'n': nodes_input_filename = optarg; break;
+            case 't': sim_time = atof(optarg); break;
+            case 's': seed = atoi(optarg); break;
+            case 'c': simulation_code = optarg; break;
+            case 'o': script_output_filename = optarg; break;
+            
+            // Auto-enable modes if file is provided
+            case 'a': 
+                agents_input_filename = optarg; 
+                agents_enabled = 1; 
+                break;
+            case 'm': 
+                mapc_input_filename = optarg; 
+                mapc_enabled = 1; 
+                break;
+
+            // Logging
+            case 'L': print_system_logs = atoi(optarg); break;
+            case 'l': print_node_logs = atoi(optarg); break;
+            case 'S': save_node_logs = atoi(optarg); break;
+
+            case 'h':
+            default:
+                printf("Usage: ./Komondor --nodes <file> [OPTIONS]\n");
+                printf("  --nodes <file>   : Input nodes file (Required)\n");
+                printf("  --agents <file>  : Input agents file (Enables Agents)\n");
+                printf("  --mapc <file>    : Input MAPC file (Enables MAPC)\n");
+                printf("  --time <sec>     : Sim time (Default: 10.0)\n");
+                printf("  --seed <int>     : Random seed (Default: 1)\n");
+                exit(0);
+        }
+    }
+
+    // -------------------------------------------------------
+    // 4. VALIDATION
+    // -------------------------------------------------------
+    if (nodes_input_filename.empty()) {
+        printf("ERROR: You must provide a nodes file using --nodes or -n\n");
+        exit(-1);
+    }
+    
 	// Create output directory if not exists
-
 	struct stat st = {0};
-
 	if (stat("../output/", &st) == -1) {
 		printf("- Output folder does not exist --> creating it...\n");
 	    mkdir("../output/", 0777);
@@ -573,20 +552,44 @@ int main(int argc, char *argv[]){
 		}
 	}
 
+	// -------------------------------------------------------
+    // 5. RUN SIMULATION
+    // -------------------------------------------------------
 
-	// Generate a Komondor component to start the simulation
-	Komondor komondor_simulation;
-	komondor_simulation.Seed = seed;
-	srand(seed); // Needed for ensuring randomness dependency on seed
+    Komondor komondor_simulation;
+    
+    // If you implemented the struct from the previous step, fill it here:
+    // komondor_simulation.config.simulation_time = sim_time;
+    // komondor_simulation.config.seed = seed;
+
 	komondor_simulation.StopTime(sim_time);
-	komondor_simulation.Setup(sim_time, save_node_logs, save_agent_logs, print_system_logs,
-		print_node_logs, print_agent_logs, nodes_input_filename, script_output_filename.c_str(),
-		simulation_code.c_str(), seed, agents_enabled, agents_input_filename, mapc_enabled, mapc_input_filename);
+	
+    komondor_simulation.Setup(
+        sim_time, 
+        save_node_logs, 
+        save_agent_logs, 
+        print_system_logs,
+        print_node_logs, 
+        print_agent_logs, 
+        nodes_input_filename.c_str(), 
+        script_output_filename.c_str(),
+        simulation_code.c_str(), 
+        seed, 
+        agents_enabled, 
+        agents_input_filename.c_str(), 
+        mapc_enabled, 
+        mapc_input_filename.c_str()
+    );
 
-	printf("------------------------------------------\n");
-	printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());
+    printf("------------------------------------------\n");
+    printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());
+    if(agents_enabled) printf("%s Agents: ENABLED\n", LOG_LVL1);
+    if(mapc_enabled)   printf("%s MAPC:   ENABLED\n", LOG_LVL1);
 
-	komondor_simulation.Run();
+    komondor_simulation.Run();
 
-	return(0);
+    return 0;
+
+
+
 };

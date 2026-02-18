@@ -78,7 +78,7 @@ for (( executing_ix_nodes=0; executing_ix_nodes < (nodes_file_ix + 1); executing
 do 
 	echo ""
 	echo "- EXECUTING ${array_nodes[executing_ix_nodes]} (${executing_ix_nodes}/${nodes_file_ix})"
-	./komondor_main ../input/validation/basic_scenarios/${array_nodes[executing_ix_nodes]} ../output/script_output_basic_scenarios.txt sim_${executing_ix_nodes}.csv 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
+	./komondor_main --nodes ../input/validation/basic_scenarios/${array_nodes[executing_ix_nodes]} --out ../output/script_output_basic_scenarios.txt --code sim_${executing_ix_nodes}.csv --logs-sys 1 --logs-node 1 --save-node 0 --time $SIM_TIME --seed $SEED >> ../output/logs_console.txt
 done
 
 ##### PART 2: COMPLEX SCENARIOS
@@ -108,8 +108,7 @@ for (( executing_ix_nodes=0; executing_ix_nodes < (nodes_file_ix + 1); executing
 do 
 	echo ""
 	echo "- EXECUTING ${array_nodes[executing_ix_nodes]} (${executing_ix_nodes}/${nodes_file_ix})"
-	./komondor_main ../input/validation/complex_scenarios/${array_nodes[executing_ix_nodes]} ../output/script_output_complex_scenarios.txt sim_${executing_ix_nodes}.csv 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
-
+	./komondor_main --nodes ../input/validation/complex_scenarios/${array_nodes[executing_ix_nodes]} --out ../output/script_output_complex_scenarios.txt --code sim_${executing_ix_nodes}.csv --logs-sys 1 --logs-node 1 --save-node 0 --time $SIM_TIME --seed $SEED >> ../output/logs_console.txt
 done
 
 ##### PART 3: CHANNEL BONDING SCENARIOS
@@ -139,8 +138,7 @@ for (( executing_ix_nodes=0; executing_ix_nodes < (nodes_file_ix + 1); executing
 do 
 	echo ""
 	echo "- EXECUTING ${array_nodes[executing_ix_nodes]} (${executing_ix_nodes}/${nodes_file_ix})"
-	./komondor_main ../input/validation/channel_bonding_scenarios/${array_nodes[executing_ix_nodes]} ../output/script_output_channel_bonding_scenarios.txt sim_${executing_ix_nodes}.csv 0 0 1 $SIM_TIME $SEED >> ../output/logs_console.txt
-
+	./komondor_main --nodes ../input/validation/channel_bonding_scenarios/${array_nodes[executing_ix_nodes]} --out ../output/script_output_channel_bonding_scenarios.txt --code sim_${executing_ix_nodes}.csv --logs-sys 1 --logs-node 1 --save-node 0 --time $SIM_TIME --seed $SEED >> ../output/logs_console.txt
 done
 
 #### VALIDATION
