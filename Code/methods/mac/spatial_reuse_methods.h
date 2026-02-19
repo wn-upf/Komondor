@@ -58,8 +58,8 @@
 #include <math.h>
 #include <iostream>
 
-#include "../list_of_macros.h"
-#include "auxiliary_methods.h"
+#include "../../list_of_macros.h"
+#include "../utils/auxiliary_methods.h"
 
 /**
 * Check whether the received notification is an intra-BSS, an inter-BSS, an SRG or a non-SRG frame

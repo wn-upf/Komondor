@@ -28,8 +28,8 @@
  */
 
 #include <math.h>
-#include "../list_of_macros.h"
-#include "auxiliary_methods.h"
+#include "../../list_of_macros.h"
+#include "../utils/auxiliary_methods.h"
 
 #ifndef _CHANNEL_BONDING_METHODS_
 #define _CHANNEL_BONDING_METHODS_

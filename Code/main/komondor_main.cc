@@ -415,7 +415,7 @@ void Komondor :: Stop(){
 /*******************/
 /* Include methods */
 /*******************/
-#include "../methods/output_generation_methods.h"
+#include "../methods/utils/output_generation_methods.h"
 #include "../methods/input_methods/input_validator.h"
 #include "../methods/input_methods/print_and_write_methods.h"
 #include "../methods/input_methods/input_loader.h"

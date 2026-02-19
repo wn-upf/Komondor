@@ -49,7 +49,7 @@
  * - This file contains the methods employed by intelligent agents
  */
 
-#include "../list_of_macros.h"
+#include "../../list_of_macros.h"
 
 #ifndef _AUX_AGENT_METHODS_
 #define _AUX_AGENT_METHODS_

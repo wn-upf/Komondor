@@ -55,7 +55,7 @@
 #include <string>
 #include <sstream>
 
-#include "../list_of_macros.h"
+#include "../../list_of_macros.h"
 
 #ifndef _AUX_METHODS_
 #define _AUX_METHODS_

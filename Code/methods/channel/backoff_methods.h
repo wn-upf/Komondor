@@ -52,7 +52,7 @@
 #include <math.h>
 #include <algorithm>
 #include <stddef.h>
-#include "../list_of_macros.h"
+#include "../../list_of_macros.h"
 
 // Exponential redefinition for convenience
 double	Random2( double v=1.0)	{ return v*drand48();}
@@ -234,64 +234,76 @@ int HandleBackoff(int pause_or_resume, double **channel_power, int primary_chann
 }
 
 /**
+ * Double the contention window (Binary Exponential Backoff), capped at cw_stage_max.
+ * Used on each failed transmission attempt for BACKOFF_CUSTOM, BACKOFF_REPEAT_BO, BACKOFF_ECA.
+ */
+static void BinExpBackoffIncrease(int *cw_stage_current, int *current_cw_min,
+		int *current_cw_max, int cw_min_default, int cw_max_default, int cw_stage_max) {
+	if (*cw_stage_current < cw_stage_max) {
+		*cw_stage_current += 1;
+		*current_cw_min = cw_min_default * pow(2, *cw_stage_current);
+		*current_cw_max = cw_max_default * pow(2, *cw_stage_current);
+	}
+}
+
+/**
+ * Reset the contention window to its default values.
+ * Used on successful transmission for BACKOFF_CUSTOM.
+ */
+static void DefaultCwReset(int *cw_stage_current, int *current_cw_min,
+		int *current_cw_max, int cw_min_default, int cw_max_default) {
+	*cw_stage_current = 0;
+	*current_cw_min = cw_min_default;
+	*current_cw_max = cw_max_default;
+}
+
+/**
 * Increase or decrease the contention window. CW adaptation: http://article.sapub.org/pdf/10.5923.j.jwnc.20130301.01.pdf
 * @param "cw_adaptation" [type int]: boolean indicating whether CW adaptation is enabled or not
 * @param "increase_or_reset" [type int]: flag indicating whether the CW should be increased or reseted
-* @param "deterministic_bo_active" [type int]: flag indicating whether deterministic BO is actived or not (to be modified by this method, only for BACKOFF_DETERMINISTIC_QUALCOMM)
-* @param "current_cw_min" [type int]: pointer to the current minimum CW (to be modified by this method)
-* @param "current_cw_max" [type int]: pointer to the current maximum CW (to be modified by this method)
-* @param "cw_stage_current" [type int]: pointer to the current CW stage (to be modified by this method)
+* @param "deterministic_bo_active" [type int*]: flag indicating whether deterministic BO is actived or not (to be modified by this method, only for BACKOFF_DETERMINISTIC_QUALCOMM)
+* @param "current_cw_min" [type int*]: pointer to the current minimum CW (to be modified by this method)
+* @param "current_cw_max" [type int*]: pointer to the current maximum CW (to be modified by this method)
+* @param "cw_stage_current" [type int*]: pointer to the current CW stage (to be modified by this method)
 * @param "cw_min_default" [type int]: default minimum CW
 * @param "cw_max_default" [type int]: default maximum CW
-* @param "cw_stage_max" [type int]: maximum CW stage (only for BACKOFF_CUSTOM
+* @param "cw_stage_max" [type int]: maximum CW stage (only for BACKOFF_CUSTOM)
+* @param "distance_to_token" [type int]: distance to token (only for BACKOFF_TOKENIZED)
 * @param "backoff_type" [type int]: type of backoff used
 */
 void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int *deterministic_bo_active, int *current_cw_min,
 		int *current_cw_max, int *cw_stage_current, int cw_min_default, int cw_max_default, int cw_stage_max,
 		int distance_to_token, int backoff_type) {
 
-	// Select the CW parameters depending on the traffic to be transmitted
-	switch(backoff_type){
+	switch (backoff_type) {
 
-		// CUSTOM (DEFAULT)
-		case BACKOFF_CUSTOM:{
-			// Apply CW adaptation when needed
-			if(cw_adaptation == TRUE){
-				switch(increase_or_reset){
-					case INCREASE_CW:{	// Increase the CW values exponentially
-						if(*cw_stage_current < cw_stage_max){
-							*cw_stage_current = *cw_stage_current + 1;
-							*current_cw_min = cw_min_default * pow(2, *cw_stage_current);
-							*current_cw_max = cw_max_default * pow(2, *cw_stage_current);
-						}
+		// CUSTOM (DEFAULT): exponential backoff on failure, reset on success
+		case BACKOFF_CUSTOM:
+			if (cw_adaptation == TRUE) {
+				switch (increase_or_reset) {
+					case INCREASE_CW:
+						BinExpBackoffIncrease(cw_stage_current, current_cw_min, current_cw_max,
+							cw_min_default, cw_max_default, cw_stage_max);
 						break;
-					}
-					case RESET_CW:{  // Reset the CW to the default values
-						*cw_stage_current = 0;
-						*current_cw_min = cw_min_default;
-						*current_cw_max = cw_max_default;
+					case RESET_CW:
+						DefaultCwReset(cw_stage_current, current_cw_min, current_cw_max,
+							cw_min_default, cw_max_default);
 						break;
-					}
-					default:{
+					default:
 						printf("ERROR in HandleContentionWindow: Unknown operation on contention window!\n");
 						exit(EXIT_FAILURE);
-						break;
-					}
 				}
-			} else {
-				// Constant CW - do nothing: keep the CW values
 			}
+			// else: constant CW — do nothing
 			break;
-		}
 
-		// EDCA
-		case BACKOFF_EDCA:{
-			// Do nothing - No adaptation is required for this backoff model
+		// EDCA and SYNCHRONIZED: no CW adaptation
+		case BACKOFF_EDCA:
+		case BACKOFF_SYNCHRONIZED:
 			break;
-		}
 
-		// Token-based BO
-		case BACKOFF_TOKENIZED:{
+		// Token-based: CW set by position in token ring
+		case BACKOFF_TOKENIZED:
 			if (distance_to_token == 0) {
 				*current_cw_min = (distance_to_token+1)*cw_max_default - cw_max_default;
 				*current_cw_max = (distance_to_token+1)*cw_max_default;
@@ -300,93 +312,44 @@ void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int *deter
 				*current_cw_max = (distance_to_token+1)*cw_max_default + 1;
 			}
 			break;
-		}
 
-		// Deterministic BO (Qualcomm) - https://mentor.ieee.org/802.11/dcn/24/11-24-0031-00-00bn-deterministic-backoff.pptx
-		case BACKOFF_DETERMINISTIC_QUALCOMM:{
-			// "Increase or reset" is used as an indication for enabling/disabling the deterministic backoff
-			switch(increase_or_reset){
-				case INCREASE_CW:{
-					*deterministic_bo_active = 0;
-					break;
-				}
-				case RESET_CW:{
-					*deterministic_bo_active = 1;
-					break;
-				}
-				default:{
+		// Deterministic BO (Qualcomm): increase_or_reset toggles the deterministic flag only
+		// https://mentor.ieee.org/802.11/dcn/24/11-24-0031-00-00bn-deterministic-backoff.pptx
+		case BACKOFF_DETERMINISTIC_QUALCOMM:
+			switch (increase_or_reset) {
+				case INCREASE_CW: *deterministic_bo_active = 0; break;
+				case RESET_CW:    *deterministic_bo_active = 1; break;
+				default:
 					printf("ERROR in HandleContentionWindow: Unknown operation on contention window!\n");
 					exit(EXIT_FAILURE);
-					break;
-				}
 			}
 			break;
-		}
 
-		// Repeat BO
-		// - If the last TX is successful, the same BO value is used, so deterministic_bo_active is set to true (1).
-		// - Otherwise, a random backoff is used, so deterministic_bo_active is set to false (0)
-		case BACKOFF_REPEAT_BO:{
-			// "Increase or reset" is used as an indication for enabling/disabling the deterministic backoff
-			switch(increase_or_reset){
-				case INCREASE_CW:{
-					if(*cw_stage_current < cw_stage_max){
-						*cw_stage_current = *cw_stage_current + 1;
-						*current_cw_min = cw_min_default * pow(2, *cw_stage_current);
-						*current_cw_max = cw_max_default * pow(2, *cw_stage_current);
-					}
+		// REPEAT_BO and ECA share identical behavior:
+		//   failure → double CW + disable deterministic mode
+		//   success → enable deterministic mode (reuse last backoff / half-CW)
+		// REPEAT_BO: https://arxiv.org/pdf/1512.02062
+		// ECA:       https://arxiv.org/pdf/1311.0787
+		case BACKOFF_REPEAT_BO:
+		case BACKOFF_ECA:
+			switch (increase_or_reset) {
+				case INCREASE_CW:
+					BinExpBackoffIncrease(cw_stage_current, current_cw_min, current_cw_max,
+						cw_min_default, cw_max_default, cw_stage_max);
 					*deterministic_bo_active = 0;
 					break;
-				}
-				case RESET_CW:{
+				case RESET_CW:
 					*deterministic_bo_active = 1;
 					break;
-				}
-				default:{
+				default:
 					printf("ERROR in HandleContentionWindow: Unknown operation on contention window!\n");
 					exit(EXIT_FAILURE);
-					break;
-				}
 			}
 			break;
-		}
 
-		// ECA (https://arxiv.org/pdf/1512.02062
-		case BACKOFF_ECA:{
-			// "Increase or reset" is used as an indication for enabling/disabling the deterministic backoff
-			switch(increase_or_reset){
-				case INCREASE_CW:{
-					if(*cw_stage_current < cw_stage_max){
-						*cw_stage_current = *cw_stage_current + 1;
-						*current_cw_min = cw_min_default * pow(2, *cw_stage_current);
-						*current_cw_max = cw_max_default * pow(2, *cw_stage_current);
-					}
-					*deterministic_bo_active = 0;
-					break;
-				}
-				case RESET_CW:{
-					*deterministic_bo_active = 1;
-					break;
-				}
-				default:{
-					printf("ERROR in HandleContentionWindow: Unknown operation on contention window!\n");
-					exit(EXIT_FAILURE);
-					break;
-				}
-			}
-			break;
-		}
-
-		// SYNCHRONIZED BACKOFF
-		case BACKOFF_SYNCHRONIZED:{
-			// Do nothing
-			break;
-		}
-
-		default:{
+		default:
 			printf("ERROR in HandleContentionWindow: Unknown backoff type.\n");
 			exit(EXIT_FAILURE);
-		}
 	}
 
 }

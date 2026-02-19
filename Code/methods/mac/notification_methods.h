@@ -54,7 +54,7 @@
 #include <math.h>
 #include <algorithm>
 #include <stddef.h>
-#include "../list_of_macros.h"
+#include "../../list_of_macros.h"
 
 /**
 * Generate the TxInfo struct in a Notification

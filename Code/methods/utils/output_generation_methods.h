@@ -28,11 +28,11 @@
 #include <sstream>
 #include <iomanip>
 
-#include "../list_of_macros.h"
-#include "../structures/performance.h"
-#include "../structures/node_configuration.h"
-#include "../structures/wlan.h"
-#include "power_channel_methods.h"
+#include "../../list_of_macros.h"
+#include "../../structures/performance.h"
+#include "../../structures/node_configuration.h"
+#include "../../structures/wlan.h"
+#include "../channel/power_channel_methods.h"
 
 #ifndef _OUT_METHODS_
 #define _OUT_METHODS_

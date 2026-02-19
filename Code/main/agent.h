@@ -61,8 +61,8 @@
 #include "../structures/node_configuration.h"
 #include "../structures/performance.h"
 #include "../structures/action.h"
-#include "../methods/auxiliary_methods.h"
-#include "../methods/agent_methods.h"
+#include "../methods/utils/auxiliary_methods.h"
+#include "../methods/agent/agent_methods.h"
 
 #include "../learning_modules/pre_processor.h"
 #include "../learning_modules/ml_model.h"

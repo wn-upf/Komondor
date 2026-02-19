@@ -26,9 +26,9 @@
 #include <math.h>
 #include <iostream>
 
-#include "../list_of_macros.h"
-#include "../structures/modulations.h"
-#include "auxiliary_methods.h"
+#include "../../list_of_macros.h"
+#include "../../structures/modulations.h"
+#include "../utils/auxiliary_methods.h"
 
 #ifndef _POWER_METHODS_
 #define _POWER_METHODS_
@@ -516,8 +516,8 @@ void UpdateTimestampChannelFreeAgain(double *timestampt_channel_becomes_free, do
 // Logging utilities
 // ===========================================================================
 
-void PrintOrWriteChannelPower(int write_or_print, int save_node_logs, Logger node_logger,
-	int print_node_logs, double **channel_power){
+void PrintOrWriteChannelPower(int write_or_print, int save_node_logs, int print_node_logs,
+	Logger node_logger, double **channel_power){
 	switch(write_or_print){
 		case PRINT_LOG:{
 			if(print_node_logs){
@@ -564,7 +564,7 @@ void PrintOrWriteNodesTransmitting(int write_or_print, int save_node_logs, int p
 			if(print_node_logs){
 				printf("Nodes transmitting: ");
 				for(int n = 0; n < total_nodes_number; ++n)
-					if(nodes_transmitting[n] == TRUE) printf("%d  ", nodes_transmitting[n]);
+					if(nodes_transmitting[n] == TRUE) printf("N%d  ", n);
 				printf("\n");
 			}
 			break;

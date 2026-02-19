@@ -54,7 +54,7 @@
 #include <stdlib.h>
 
 #include "../list_of_macros.h"
-#include "../methods/auxiliary_methods.h"
+#include "../methods/utils/auxiliary_methods.h"
 
 // Agent component: "TypeII" represents components that are aware of the existence of the simulated time.
 component TrafficGenerator : public TypeII{

@@ -52,7 +52,7 @@
 
 #include <string>
 #include "../list_of_macros.h"
-#include "../methods/power_channel_methods.h"
+#include "../methods/channel/power_channel_methods.h"
 #include "logger.h"
 
 struct NodeCapabilities
