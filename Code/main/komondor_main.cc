@@ -132,7 +132,6 @@ component Komondor : public CostSimEng {
 		double simulation_time_komondor;	///> Simulation time [s]
 
 		// Parameters regarding system model
-		int pdf_backoff;				///> Probability distribution type of the backoff (0: exponential, 1: deterministic)
 		int pdf_tx_time;				///> Probability distribution type of the transmission time (0: exponential, 1: deterministic)
 		int path_loss_model;			///> Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 		int adjacent_channel_model;		///> Co-channel interference model
@@ -433,16 +432,6 @@ int main(int argc, char *argv[]){
 	printf("*************************************************************************************\n");
 	printf("\n\n");
 
-
-
-
-
-
-
-
-
-
-
 	// -------------------------------------------------------
     // 1. SET DEFAULTS 
     // -------------------------------------------------------
@@ -481,9 +470,10 @@ int main(int argc, char *argv[]){
         {"mapc",      required_argument, 0, 'm'}, // Providing this ENABLES MAPC
 
         // Flags (0/1)
-        {"logs-sys",  required_argument, 0, 'L'}, 
-        {"logs-node", required_argument, 0, 'l'},
-        {"save-node", required_argument, 0, 'S'},
+        {"logs-sys",  	required_argument, 0, 'L'}, 
+        {"logs-node", 	required_argument, 0, 'l'},
+        {"save-node", 	required_argument, 0, 'S'},
+		{"save-agent", 	required_argument, 0, 'A'},
         
         // Help
         {"help",      no_argument,       0, 'h'},

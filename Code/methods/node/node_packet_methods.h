@@ -97,7 +97,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 	notification.tx_duration = tx_duration;
 	notification.tx_info.total_tx_power = current_tx_power;
 
-	if(first_time_requesting_mcs) {
+	if(packet_type == PACKET_TYPE_MCS_REQUEST && first_time_requesting_mcs) {
 		notification.left_channel = current_primary_channel;
 		notification.right_channel = current_primary_channel;
 		//first_time_requesting_mcs = FALSE;
@@ -151,7 +151,7 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 		}
 
 		case PACKET_TYPE_MCS_RESPONSE:{
-			for(int i = 0; i < 4; ++i) {
+			for(int i = 0; i < NUM_OPTIONS_CHANNEL_LENGTH; ++i) {
 				notification.tx_info.modulation_schemes[i] = mcs_response[i];
 			}
 			break;

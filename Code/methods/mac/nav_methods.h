@@ -7,7 +7,7 @@
  * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
  * Everyone is permitted to copy and distribute verbatim copies
  * of this license document, but changing it is not allowed.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -43,100 +43,65 @@
  * -----------------------------------------------------------------
  */
 
-/**
- * modulations.h: this file defines modulations and MCS parameters
+ /**
+ * time_methods.h: this file contains functions related to the main Komondor's operation
+ *
+ * - This file contains the methods related to "time" operations
  */
 
-#ifndef _MCS_CONFIGURATION_
-#define _MCS_CONFIGURATION_
-
-struct Mcs_array {
-   static const int modulation_bits[12];
-   static const double coding_rates[12];
-};
-
-// Sergio on 5 Oct 2017
-// - Include MCS indeces corresponding to IEEE 802.11ax
-const int Mcs_array::modulation_bits[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-	1,	// MCS 0
-	2,	// MCS 1
-	2,	// MCS 2
-	4,	// MCS 3
-	4,	// MCS 4
-	6,	// MCS 5
-	6,	// MCS 6
-	6,	// MCS 7
-	8,	// MCS 8
-	8,	// MCS 9
-	10,	// MCS 10
-	10	// MCS 11
-};
-
-const double Mcs_array::coding_rates[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-	1/double(2),	// MCS 0
-	1/double(2),	// MCS 1
-	3/double(4),	// MCS 2
-	1/double(2),	// MCS 3
-	3/double(4),	// MCS 4
-	1/double(2),	// MCS 5
-	2/double(3),	// MCS 6
-	3/double(4),	// MCS 7
-	3/double(4),	// MCS 8
-	5/double(6),	// MCS 9
-	3/double(4),	// MCS 10
-	5/double(6)		// MCS 11
-};
+#include <math.h>
+#include <algorithm>
+#include <stddef.h>
+#include "../../list_of_macros.h"
 
 /**
- *  Provide the number of subcarriers used for each number of channels in the IEEE 802.11ax
- *  @param "num_channels" [type int]: number of channels used for transmission
- *  @return "num_subcarriers" [type int]: number of subcarriers to be used
- */
-int GetNumberSubcarriers(int num_channels){
+* Compute the NAV time for the RTS and CTS packets
+* @param "node_state" [type int]: node state
+* @param "rts_duration" [type double]: duration of the RTS packet
+* @param "cts_duration" [type double]: duration of the CTS packet
+* @param "data_duration" [type double]: duration of the DATA packet
+* @param "ack_duration" [type double]: duration of the ACK packet
+* @param "sifs" [type double]: duration of the SIFS
+* @return "nav_time" [type double]: NAV time
+*/
+double ComputeNavTime(int node_state, double rts_duration, double cts_duration,
+	double data_duration, double ack_duration, double sifs){
 
-	int num_subcarriers;
+	double nav_time;
 
-	switch(num_channels){
+	switch(node_state){
 
-		// 1 channel - 20 MHz
-		case 1:{
-			num_subcarriers = 234;
+		case STATE_TX_RTS:{
+			// RTS duration taking into account due to trigger is set at the very beginning of the RTS reception
+			nav_time = 3 * sifs + rts_duration + cts_duration + data_duration + ack_duration;
 			break;
 		}
 
-		// 2 channels - 40 MHz
-		case 2:{
-			num_subcarriers = 468;
+		case STATE_TX_CTS:{
+			// CTS duration taking into account due to trigger is set at the very beginning of the CTS reception
+			nav_time = 2 * sifs + cts_duration + data_duration + ack_duration;
 			break;
 		}
 
-		// 4 channels - 80 MHz
-		case 4:{
-			num_subcarriers = 980;
+		case STATE_TX_DATA:{
+			// DATA duration taking into account due to trigger is set at the very beginning of the DATA reception
+			nav_time = sifs + data_duration + ack_duration;
 			break;
 		}
 
-		// 8 channels - 160 MHz
-		case 8:{
-			num_subcarriers = 1960;
-			break;
-		}
-
-		// 16 channels - 320 MHz
-		case 16:{
-			num_subcarriers = 3920;
+		case STATE_TX_ACK:{
+			// ACK duration taking into account due to trigger is set at the very beginning of the ACK reception
+			nav_time = ack_duration;
 			break;
 		}
 
 		default:{
-			printf("ERROR: unsupported number of channels (%d)\n", num_channels);
+
+			printf("ERROR: Unreachable state\n");
 			exit(EXIT_FAILURE);
 		}
-
 	}
 
-	return num_subcarriers;
+	return nav_time;
 
 }
-
-#endif

@@ -159,7 +159,7 @@
 // Boundary channels
 #define FIRST_TRUE_IN_ARRAY 		0	///> Search first element '1' in an array
 #define LAST_TRUE_IN_ARRAY			1	///> Search last element '1' in an array
-#define NUM_OPTIONS_CHANNEL_LENGTH	4	///> Number of options of channel lengths (1, 2, 4, 8)
+#define NUM_OPTIONS_CHANNEL_LENGTH	5	///> Number of options of channel lengths (1, 2, 4, 8, 16)
 
 // Channel free - occupied
 #define CHANNEL_OCCUPIED	0
@@ -204,18 +204,19 @@
 #define CB_SCB_LOG2					2	///> Log2 SCB:  if all channels accepted by the log2 mapping are FREE, transmit. If not, generate a new backoff.
 #define CB_ALWAYS_MAX				3	///> Always-max (DCB): TX in all the free channels contiguous to the primary channel
 #define CB_ALWAYS_MAX_LOG2			4	///> Log2 Always-max (DCB): TX in the larger channel range allowed by the log2 mapping
-#define CB_ALWAYS_MAX_LOG2_MCS		5	///> Log2 Always-max (DCB) with optimal MCS: picks the channel range + MCS providing max throughput
-#define CB_PROB_UNIFORM_LOG2		6	///> Log2 probabilistic uniform: pick with same probabilty any available channel range
+#define CB_PROB_UNIFORM_LOG2		5	///> Log2 probabilistic uniform: pick with same probabilty any available channel range
 
 #define CHANNEL_AGGREGATION_CCA_SAME 0	///> Same CCA (e.g., -82 dBm) is applied to every 20-MHz channel
 #define CHANNEL_AGGREGATION_CCA_11AX 1	///> Different CCA (i.e., -82, 79, -72...) is applied depending on primary and secondary
 
-#define CCA_PRIMARY_20MHZ	-82			///> CCA for primary channel of width 20 MHz (in 40 MHz)
-#define CCA_SECONDARY_20MHZ	-72			///> CCA for secondary channel of width 20 MHz (in 40 MHz)
-#define CCA_PRIMARY_40MHZ	-79			///> CCA for primary channel of width 40 MHz (in 80 MHz)
-#define CCA_SECONDARY_40MHZ	-72			///> CCA for primary channel of width 40 MHz (in 80 MHz)
-#define CCA_PRIMARY_80MHZ	-76			///> CCA for primary channel of width 80 MHz (in 160 MHz)
-#define CCA_SECONDARY_80MHZ	-69			///> CCA for primary channel of width 80 MHz (in 160 MHz)
+#define CCA_PRIMARY_20MHZ	    -82			///> CCA for primary channel of width 20 MHz (in 40 MHz)
+#define CCA_SECONDARY_20MHZ	    -72			///> CCA for secondary channel of width 20 MHz (in 40 MHz)
+#define CCA_PRIMARY_40MHZ	    -79			///> CCA for primary channel of width 40 MHz (in 80 MHz)
+#define CCA_SECONDARY_40MHZ	    -69			///> CCA for primary channel of width 40 MHz (in 80 MHz)
+#define CCA_PRIMARY_80MHZ	    -76			///> CCA for primary channel of width 80 MHz (in 160 MHz)
+#define CCA_SECONDARY_80MHZ	    -66			///> CCA for primary channel of width 80 MHz (in 160 MHz)
+#define CCA_PRIMARY_160MHZ	    -73			///> CCA for primary channel of width 160 MHz (in 320 MHz)
+#define CCA_SECONDARY_160MHZ    -63			///> CCA for primary channel of width 160 MHz (in 320 MHz)
 
 // Adjacent channel interference model
 #define ADJACENT_CHANNEL_NONE		0	///> No adjacent channel interference
@@ -271,7 +272,7 @@
 #define IEEE_802_11_BN			3
 
 // Backoff types
-#define BACKOFF_CUSTOM					0
+#define BACKOFF_DCF					    0
 #define BACKOFF_EDCA					1
 #define BACKOFF_TOKENIZED				2
 #define BACKOFF_DETERMINISTIC_QUALCOMM	3
@@ -294,7 +295,7 @@
 
 // Physical parameters
 #define SPEED_LIGHT			3*pow(10,8)	///> Speed of light [m/s]
-#define NUM_CHANNELS_KOMONDOR	8   ///> Total number of frequency channels
+#define NUM_CHANNELS_KOMONDOR	16   ///> Total number of frequency channels
 #define CHANNEL_BW_MHZ			20	///> Bandwidth of a basic channel [MHz]
 #define NOISE_LEVEL_DBM			-95	///> Noise level [dBm]
 #define ANTENNA_RX_GAIN_DB 		0	///> Antenna receiption gain [dB]

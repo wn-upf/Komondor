@@ -33,57 +33,10 @@
 #include "../../structures/node_configuration.h"
 #include "../../structures/wlan.h"
 #include "../channel/power_channel_methods.h"
+#include "../../structures/simulation_stats.h"
 
 #ifndef _OUT_METHODS_
 #define _OUT_METHODS_
-
-// ===========================================================================
-// Aggregated statistics (replaces the former module-scope global variables)
-// ===========================================================================
-
-struct SimulationStats {
-	int    total_data_packets_sent;
-	double total_num_packets_generated;
-	double total_throughput;
-	int    ix_wlan_min_throughput;
-	double min_throughput;
-	double max_throughput;
-	double proportional_fairness;
-	double jains_fairness;
-	double jains_fairness_aux;
-	int    total_rts_lost_slotted_bo;
-	int    total_rts_cts_sent;
-	double total_prob_slotted_bo_collision;
-	int    total_num_tx_init_not_possible;
-	double total_delay;
-	double max_delay;
-	double min_delay;
-	double total_bandiwdth_tx;   ///< typo preserved from original
-	double av_expected_backoff;
-	double av_expected_waiting_time;
-
-	SimulationStats() :
-		total_data_packets_sent(0),
-		total_num_packets_generated(0),
-		total_throughput(0),
-		ix_wlan_min_throughput(99999),
-		min_throughput(999999999999999999.0),
-		max_throughput(0),
-		proportional_fairness(0),
-		jains_fairness(0),
-		jains_fairness_aux(0),
-		total_rts_lost_slotted_bo(0),
-		total_rts_cts_sent(0),
-		total_prob_slotted_bo_collision(0),
-		total_num_tx_init_not_possible(0),
-		total_delay(0),
-		max_delay(0),
-		min_delay(9999999999.0),
-		total_bandiwdth_tx(0),
-		av_expected_backoff(0),
-		av_expected_waiting_time(0)
-	{}
-};
 
 // ===========================================================================
 // Statistics computation
@@ -211,7 +164,7 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 }
 
 // ===========================================================================
-// Per-format output functions
+// Per-formatted output functions
 // ===========================================================================
 
 // case 0: toy scenarios — throughput and collision probability for 2 WLANs

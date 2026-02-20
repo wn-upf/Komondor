@@ -7,7 +7,7 @@
  * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
  * Everyone is permitted to copy and distribute verbatim copies
  * of this license document, but changing it is not allowed.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -43,100 +43,54 @@
  * -----------------------------------------------------------------
  */
 
-/**
- * modulations.h: this file defines modulations and MCS parameters
+ /**
+ * simulation_stats.h: this file defines simulation metrics to be outputted
  */
 
-#ifndef _MCS_CONFIGURATION_
-#define _MCS_CONFIGURATION_
+// ===========================================================================
+// Aggregated statistics (replaces the former module-scope global variables)
+// ===========================================================================
 
-struct Mcs_array {
-   static const int modulation_bits[12];
-   static const double coding_rates[12];
+struct SimulationStats {
+	int    total_data_packets_sent;
+	double total_num_packets_generated;
+	double total_throughput;
+	int    ix_wlan_min_throughput;
+	double min_throughput;
+	double max_throughput;
+	double proportional_fairness;
+	double jains_fairness;
+	double jains_fairness_aux;
+	int    total_rts_lost_slotted_bo;
+	int    total_rts_cts_sent;
+	double total_prob_slotted_bo_collision;
+	int    total_num_tx_init_not_possible;
+	double total_delay;
+	double max_delay;
+	double min_delay;
+	double total_bandiwdth_tx;   ///< typo preserved from original
+	double av_expected_backoff;
+	double av_expected_waiting_time;
+
+	SimulationStats() :
+		total_data_packets_sent(0),
+		total_num_packets_generated(0),
+		total_throughput(0),
+		ix_wlan_min_throughput(99999),
+		min_throughput(999999999999999999.0),
+		max_throughput(0),
+		proportional_fairness(0),
+		jains_fairness(0),
+		jains_fairness_aux(0),
+		total_rts_lost_slotted_bo(0),
+		total_rts_cts_sent(0),
+		total_prob_slotted_bo_collision(0),
+		total_num_tx_init_not_possible(0),
+		total_delay(0),
+		max_delay(0),
+		min_delay(9999999999.0),
+		total_bandiwdth_tx(0),
+		av_expected_backoff(0),
+		av_expected_waiting_time(0)
+	{}
 };
-
-// Sergio on 5 Oct 2017
-// - Include MCS indeces corresponding to IEEE 802.11ax
-const int Mcs_array::modulation_bits[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-	1,	// MCS 0
-	2,	// MCS 1
-	2,	// MCS 2
-	4,	// MCS 3
-	4,	// MCS 4
-	6,	// MCS 5
-	6,	// MCS 6
-	6,	// MCS 7
-	8,	// MCS 8
-	8,	// MCS 9
-	10,	// MCS 10
-	10	// MCS 11
-};
-
-const double Mcs_array::coding_rates[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-	1/double(2),	// MCS 0
-	1/double(2),	// MCS 1
-	3/double(4),	// MCS 2
-	1/double(2),	// MCS 3
-	3/double(4),	// MCS 4
-	1/double(2),	// MCS 5
-	2/double(3),	// MCS 6
-	3/double(4),	// MCS 7
-	3/double(4),	// MCS 8
-	5/double(6),	// MCS 9
-	3/double(4),	// MCS 10
-	5/double(6)		// MCS 11
-};
-
-/**
- *  Provide the number of subcarriers used for each number of channels in the IEEE 802.11ax
- *  @param "num_channels" [type int]: number of channels used for transmission
- *  @return "num_subcarriers" [type int]: number of subcarriers to be used
- */
-int GetNumberSubcarriers(int num_channels){
-
-	int num_subcarriers;
-
-	switch(num_channels){
-
-		// 1 channel - 20 MHz
-		case 1:{
-			num_subcarriers = 234;
-			break;
-		}
-
-		// 2 channels - 40 MHz
-		case 2:{
-			num_subcarriers = 468;
-			break;
-		}
-
-		// 4 channels - 80 MHz
-		case 4:{
-			num_subcarriers = 980;
-			break;
-		}
-
-		// 8 channels - 160 MHz
-		case 8:{
-			num_subcarriers = 1960;
-			break;
-		}
-
-		// 16 channels - 320 MHz
-		case 16:{
-			num_subcarriers = 3920;
-			break;
-		}
-
-		default:{
-			printf("ERROR: unsupported number of channels (%d)\n", num_channels);
-			exit(EXIT_FAILURE);
-		}
-
-	}
-
-	return num_subcarriers;
-
-}
-
-#endif

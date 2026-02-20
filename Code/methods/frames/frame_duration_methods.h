@@ -60,36 +60,6 @@ int	Random( int v)	{ return (int)(v*drand48()); }
 double	Exponential(double mean){ return -mean*log(Random());}
 
 /**
-* Compute the minimum number of packets to be transmitted within the maximum PPDU time (IEEE_AX_MAX_PPDU_DURATION)
-* @param "num_packets_aggregated" [type int]: current number of aggregated packets
-* @param "data_packet_length" [type int]: length of a data packet
-* @param "bits_ofdm_sym" [type double]: bits of an OFDM symbol
-* @return "limited_num_packets_aggregated" [type int]: limited number of packets aggregated
-*/
-int FindMaximumPacketsAggregated(int num_packets_aggregated, int data_packet_length, double bits_ofdm_sym){
-
-	double data_duration;
-	int limited_num_packets_aggregated (num_packets_aggregated);
-
-	while (limited_num_packets_aggregated > 0) {
-
-		data_duration = IEEE_AX_PHY_HE_SU_DURATION
-			+ ceil( ( (double) IEEE_AX_SF_LENGTH + (double) limited_num_packets_aggregated
-			* ( (double) IEEE_AX_MD_LENGTH + (double) IEEE_AX_MH_LENGTH + (double) data_packet_length ) )
-			/ bits_ofdm_sym ) * IEEE_AX_OFDM_SYMBOL_GI32_DURATION;
-
-		if(data_duration <= IEEE_AX_MAX_PPDU_DURATION) {
-			break;
-		} else {
-			limited_num_packets_aggregated--;
-		}
-	}
-
-	return limited_num_packets_aggregated;
-
-}
-
-/**
 * Compute the transmission time (just link rate) according to the number of channels used and packet length
 * @param "total_bits" [type int]: total number bits to be transmitted
 * @param "data_rate" [type int]: data rate employed
@@ -135,9 +105,6 @@ double ComputeTxTime(int total_bits, double data_rate, int pdf_tx_time){
 */
 double ComputeRtsTxTime80211ax(double bits_ofdm_sym_legacy){
 
-//	double rts_duration (IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
-//		(double) IEEE_AX_RTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
-
 	return (IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 		(double) IEEE_AX_RTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
 
@@ -149,11 +116,6 @@ double ComputeRtsTxTime80211ax(double bits_ofdm_sym_legacy){
 * @return "cts_duration" [type double]: transmission time of an CTS packet
 */
 double ComputeCtsTxTime80211ax(double bits_ofdm_sym_legacy){
-
-//	double cts_duration = IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
-//			(double) IEEE_AX_CTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY;
-
-//	printf("CTS = %f\n", cts_duration * pow(10,6));
 
 	return (IEEE_AX_PHY_LEGACY_DURATION + ceil((double) (IEEE_AX_SF_LENGTH +
 		(double) IEEE_AX_CTS_LENGTH) / bits_ofdm_sym_legacy) * IEEE_AX_OFDM_SYMBOL_LEGACY);
@@ -220,58 +182,6 @@ double ComputeAckTxTime80211ax(int num_packets_aggregated, double bits_ofdm_sym_
 	}
 	ack_duration = 32 / pow(10,6); // HARDCODED TO 32 micro-seconds (TO DO: Check how to adapt this)
 	return ack_duration;
-
-}
-
-/**
-* Compute the NAV time for the RTS and CTS packets
-* @param "node_state" [type int]: node state
-* @param "rts_duration" [type double]: duration of the RTS packet
-* @param "cts_duration" [type double]: duration of the CTS packet
-* @param "data_duration" [type double]: duration of the DATA packet
-* @param "ack_duration" [type double]: duration of the ACK packet
-* @param "sifs" [type double]: duration of the SIFS
-* @return "nav_time" [type double]: NAV time
-*/
-double ComputeNavTime(int node_state, double rts_duration, double cts_duration,
-	double data_duration, double ack_duration, double sifs){
-
-	double nav_time;
-
-	switch(node_state){
-
-		case STATE_TX_RTS:{
-			// RTS duration taking into account due to trigger is set at the very beginning of the RTS reception
-			nav_time = 3 * sifs + rts_duration + cts_duration + data_duration + ack_duration;
-			break;
-		}
-
-		case STATE_TX_CTS:{
-			// CTS duration taking into account due to trigger is set at the very beginning of the CTS reception
-			nav_time = 2 * sifs + cts_duration + data_duration + ack_duration;
-			break;
-		}
-
-		case STATE_TX_DATA:{
-			// DATA duration taking into account due to trigger is set at the very beginning of the DATA reception
-			nav_time = sifs + data_duration + ack_duration;
-			break;
-		}
-
-		case STATE_TX_ACK:{
-			// ACK duration taking into account due to trigger is set at the very beginning of the ACK reception
-			nav_time = ack_duration;
-			break;
-		}
-
-		default:{
-
-			printf("ERROR: Unreachable state\n");
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	return nav_time;
 
 }
 

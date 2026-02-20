@@ -8,7 +8,6 @@
 void Komondor :: PrintSystemInfo(){
 	if (print_system_logs){
 		printf("%s total_nodes_number = %d\n", LOG_LVL3, total_nodes_number);
-		printf("%s pdf_backoff = %d\n", LOG_LVL3, pdf_backoff);
 		printf("%s pdf_tx_time = %d\n", LOG_LVL3, pdf_tx_time);
 		printf("%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 		printf("%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);
@@ -23,7 +22,6 @@ void Komondor :: PrintSystemInfo(){
  */
 void Komondor :: WriteSystemInfo(Logger logger){
 	fprintf(logger.file, "%s total_nodes_number = %d\n", LOG_LVL3, total_nodes_number);
-	fprintf(logger.file, "%s pdf_backoff = %d\n", LOG_LVL3, pdf_backoff);
 	fprintf(logger.file, "%s pdf_tx_time = %d\n", LOG_LVL3, pdf_tx_time);
 	fprintf(logger.file, "%s path_loss_model = %d\n", LOG_LVL3, path_loss_model);
 	fprintf(logger.file, "%s adjacent_channel_model = %d\n", LOG_LVL3, adjacent_channel_model);

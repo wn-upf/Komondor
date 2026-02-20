@@ -42,7 +42,7 @@ void Node :: AbortRtsTransmission(){
 
 	num_tx_init_not_possible ++;
 	// Compute a new backoff and trigger a new DIFS
-	remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type,
+	remaining_backoff = ComputeBackoff(current_cw_min, current_cw_max, backoff_type,
 			current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic,
 			previous_backoff);
 
@@ -233,7 +233,7 @@ void Node :: RestartNode(int called_by_time_out){
 		++packet_id;
 
 		// In case of being an AP
-		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max,
+		remaining_backoff = ComputeBackoff(current_cw_min, current_cw_max,
 				backoff_type, current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic, previous_backoff);
 		previous_backoff = remaining_backoff;
 		expected_backoff = expected_backoff + remaining_backoff;

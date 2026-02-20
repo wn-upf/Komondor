@@ -60,7 +60,7 @@ void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
 
 	double pw_rx_dbm = ConvertPower(PW_TO_DBM, power_rx_interest);
 
-	for (int ch_num_ix = 0; ch_num_ix < 4; ++ch_num_ix) {	// For 1, 2, 4 and 8 channels
+	for (int ch_num_ix = 0; ch_num_ix < NUM_OPTIONS_CHANNEL_LENGTH; ++ch_num_ix) {	// For 20, 40, 80, 160, 320 MHz channels
 		double offset = ch_num_ix * 3.0;
 		int ix;
 		for (ix = 0; ix < N_THRESHOLDS; ++ix) {

@@ -7,7 +7,7 @@
  * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
  * Everyone is permitted to copy and distribute verbatim copies
  * of this license document, but changing it is not allowed.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -43,100 +43,46 @@
  * -----------------------------------------------------------------
  */
 
-/**
- * modulations.h: this file defines modulations and MCS parameters
+ /**
+ * edca_methods.h: this file contains functions for EDCA
  */
 
-#ifndef _MCS_CONFIGURATION_
-#define _MCS_CONFIGURATION_
-
-struct Mcs_array {
-   static const int modulation_bits[12];
-   static const double coding_rates[12];
-};
-
-// Sergio on 5 Oct 2017
-// - Include MCS indeces corresponding to IEEE 802.11ax
-const int Mcs_array::modulation_bits[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-	1,	// MCS 0
-	2,	// MCS 1
-	2,	// MCS 2
-	4,	// MCS 3
-	4,	// MCS 4
-	6,	// MCS 5
-	6,	// MCS 6
-	6,	// MCS 7
-	8,	// MCS 8
-	8,	// MCS 9
-	10,	// MCS 10
-	10	// MCS 11
-};
-
-const double Mcs_array::coding_rates[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-	1/double(2),	// MCS 0
-	1/double(2),	// MCS 1
-	3/double(4),	// MCS 2
-	1/double(2),	// MCS 3
-	3/double(4),	// MCS 4
-	1/double(2),	// MCS 5
-	2/double(3),	// MCS 6
-	3/double(4),	// MCS 7
-	3/double(4),	// MCS 8
-	5/double(6),	// MCS 9
-	3/double(4),	// MCS 10
-	5/double(6)		// MCS 11
-};
+#include <math.h>
+#include <algorithm>
+#include <stddef.h>
 
 /**
- *  Provide the number of subcarriers used for each number of channels in the IEEE 802.11ax
- *  @param "num_channels" [type int]: number of channels used for transmission
- *  @return "num_subcarriers" [type int]: number of subcarriers to be used
- */
-int GetNumberSubcarriers(int num_channels){
+* Compute a new backoff value
+* @param "traffic_type" [type int]: type of traffic for the upcoming channel access
+*/
+double ComputeBackoffEDCA(int traffic_type) {
 
-	int num_subcarriers;
+    int current_cw_min, current_cw_max;
 
-	switch(num_channels){
-
-		// 1 channel - 20 MHz
-		case 1:{
-			num_subcarriers = 234;
-			break;
-		}
-
-		// 2 channels - 40 MHz
-		case 2:{
-			num_subcarriers = 468;
-			break;
-		}
-
-		// 4 channels - 80 MHz
-		case 4:{
-			num_subcarriers = 980;
-			break;
-		}
-
-		// 8 channels - 160 MHz
-		case 8:{
-			num_subcarriers = 1960;
-			break;
-		}
-
-		// 16 channels - 320 MHz
-		case 16:{
-			num_subcarriers = 3920;
-			break;
-		}
-
-		default:{
-			printf("ERROR: unsupported number of channels (%d)\n", num_channels);
-			exit(EXIT_FAILURE);
-		}
-
-	}
-
-	return num_subcarriers;
+    // Get standard parameters regarding CW parameters
+    switch(traffic_type){
+        case AC_VO:{
+            current_cw_min = CW_MIN_AC_VO;
+            current_cw_max = CW_MAX_AC_VO;
+            break;
+        }
+        case AC_VI:{
+            current_cw_min = CW_MIN_AC_VI;
+            current_cw_max = CW_MAX_AC_VI;
+            break;
+        }
+        case AC_BE:{
+            current_cw_min = CW_MIN_AC_BE;
+            current_cw_max = CW_MAX_AC_BE;
+            break;
+        }
+        case AC_BK: default:{
+            current_cw_min = CW_MIN_AC_BK;
+            current_cw_max = CW_MAX_AC_BK;
+            break;
+        }
+    }
+    int num_slots (current_cw_min + (std::rand() % ( current_cw_max - current_cw_min + 1 )));
+    return num_slots * SLOT_TIME;
 
 }
-
-#endif

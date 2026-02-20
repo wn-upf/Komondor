@@ -57,9 +57,8 @@
 #include "../list_of_macros.h"
 #include "../methods/utils/auxiliary_methods.h"
 #include "../methods/channel/power_channel_methods.h"
-#include "../methods/channel/backoff_methods.h"
-#include "../methods/mac/notification_methods.h"
-#include "../methods/utils/time_methods.h"
+#include "../methods/mac/backoff_methods.h"
+#include "../methods/frames/notification_methods.h"
 #include "../methods/mac/spatial_reuse_methods.h"
 #include "../structures/notification.h"
 #include "../structures/logical_nack.h"
@@ -68,6 +67,13 @@
 #include "../structures/FIFO.h"
 #include "../structures/node_configuration.h"
 #include "../structures/performance.h"
+
+#include "../methods/mac/nack_methods.h"
+#include "../methods/mac/packet_loss_methods.h"
+#include "../methods/mac/nav_methods.h"
+
+#include "../methods/frames/frame_duration_methods.h"
+#include "../methods/frames/packet_aggregation_methods.h"
 
 #define __SAVELOGS__
 
@@ -223,7 +229,6 @@ component Node : public TypeII{
 		int traffic_model;					///> Traffic model (0: full buffer, 1: poisson, 2: deterministic)
 
 		// Channel access parameters
-		int pdf_backoff;					///> Probability distribution type of the backoff (0: exponential, 1: deterministic)
 		int backoff_type;					///> Type of Backoff (0: Slotted 1: Continuous)
 		int cw_adaptation;					///> CW adaptation (0: constant, 1: bineary exponential backoff)
 		int cw_min_default;					///> Minimum Contention Window set by default
@@ -2537,7 +2542,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						GetTxChannels(channels_for_tx, current_dcb_policy, channels_free,
 								current_left_channel, current_right_channel, current_primary_channel,
 								NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
-
+						
 						LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting after RTS: ",
 								SimTime(), node_id, node_state, LOG_F02, LOG_LVL2);
 
@@ -3097,7 +3102,6 @@ void Node :: EndBackoff(trigger_t &){
 	PrintOrWriteChannelPower(WRITE_LOG, save_node_logs, print_node_logs, node_logger,
 		&channel_power);
 
-
 	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free (mind PIFS if activated): ",
 		SimTime(), node_id, node_state, LOG_F02, LOG_LVL3);
 
@@ -3300,7 +3304,7 @@ void Node :: MyTxFinished(trigger_t &){
 
 /*****************************/
 /*****************************/
-/*  VARIABLE INITIALISATION  */
+/*  VARIABLE INITIALIZATION  */
 /*****************************/
 /*****************************/
 
@@ -3443,7 +3447,7 @@ void Node :: InitializeVariables() {
 
 	if(node_type == NODE_TYPE_AP) {
 		node_is_transmitter = TRUE;
-		remaining_backoff = ComputeBackoff(pdf_backoff, current_cw_min, current_cw_max, backoff_type,
+		remaining_backoff = ComputeBackoff(current_cw_min, current_cw_max, backoff_type,
 				current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic, -1);
 		previous_backoff = remaining_backoff;
 		expected_backoff += remaining_backoff;
@@ -3465,8 +3469,8 @@ void Node :: InitializeVariables() {
 
 	default_modulation = MODULATION_NONE;
 
-	mcs_response = new int[4];
-	for(int n = 0; n < 4; ++n){
+	mcs_response = new int[NUM_OPTIONS_CHANNEL_LENGTH];
+	for(int n = 0; n < NUM_OPTIONS_CHANNEL_LENGTH; ++n){
 		mcs_response[n] = 0;
 	}
 
@@ -3534,7 +3538,6 @@ void Node :: InitializeVariables() {
 	last_sum_delays = 0;
 	last_num_delay_measurements = 0;
 
-
 	last_measurements_window = DEFAULT_LAST_MEASUREMENTS_WINDOW;	// Time in seconds of the last performance observation window
 
 	throughput_per_sta = new double[wlan.num_stas];
@@ -3579,17 +3582,6 @@ void Node :: InitializeVariables() {
 	} else {
 		spatial_reuse_enabled = FALSE;
 	}
-//	// Hardcoded: indicate that WLANs other than WLAN A do not apply SR
-//	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
-//		spatial_reuse_enabled = FALSE;
-//	}
-//	// Hardcoded: Randomly decide whether an WLAN different than WLAN_A applies SR or not
-//	if (node_id >= 2 && node_type == NODE_TYPE_AP) {
-//		double r = ((double) rand() / (RAND_MAX));
-//		if (r > 0.5) {
-//			spatial_reuse_enabled = FALSE;
-//		}
-//	}
 	// In case of being an STA, request the SR configuration to the AP
 	if (node_type == NODE_TYPE_STA) {
 		outportRequestSpatialReuseConfiguration();
@@ -3618,9 +3610,7 @@ void Node :: InitializeVariables() {
 }
 
 /*****************************/
-/*  MODULAR IMPLEMENTATION   */
 /*  INCLUDES                 */
 /*****************************/
-// Node member function implementations — all pulled in via the aggregator.
-// See Code/methods/node_impl.h for the full list of impl-fragment files.
+// Node member function implementations -> all pulled in via the aggregator (see Code/methods/node_impl.h for the full list)
 #include "../methods/node/node_impl.h"

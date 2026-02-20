@@ -51,9 +51,9 @@
  * - Packet loss detection/handling is in packet_loss_methods.h (included below)
  */
 
-#include <math.h>
-#include <algorithm>
-#include <stddef.h>
+// #include <math.h>
+// #include <algorithm>
+// #include <stddef.h>
 #include "../../list_of_macros.h"
 
 /**
@@ -95,6 +95,3 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	return tx_info;
 
 }
-
-#include "nack_methods.h"
-#include "packet_loss_methods.h"
