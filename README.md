@@ -83,44 +83,83 @@ $ make
 ```
 
 ### STEP 2: Run Komondor
-Run Komondor simulator for the given input information (basic simulation)
 
-```
-$ ./komondor_main INPUT_FILE_NODES OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS SIM_TIME SEED
-```
+#### 2.1 Simulation flags
 
-The inputs are further described next:
-* ```INPUT_FILE_NODES```: file containing nodes information (e.g., position, channels allowed, etc.).The file must be a .csv with semicolons as separators.
-* ```OUTPUT_FILE_LOGS```: path to the output file to which write results at the end of the execution (if the file does not exist, the system will create it).
-* ```SIMULATION_CODE```: name given to the simulation, used to keep track of specific simulations during campaigns.
-* ```FLAG_SAVE_NODE_LOGS```: flag to indicate whether to save the node logs into separate files (1) or not (0). If this flag is activated, one file per node will be created.
-* ```FLAG_PRINT_SYSTEM_LOGS```: flag to indicate whether to print the system logs (1) or not (0).
-* ```FLAG_PRINT_NODE_LOGS```: flag to indicate whether to print the node logs (1) or not (0). 
-* ```SIM_TIME```: simulation time
-* ```SEED```: random seed the user wishes to use
+Komondor uses both short flags (e.g., -n) and long flags (e.g., --nodes).
 
-IMPORTANT NOTE (!): Setting ```FLAG_SAVE_NODE_LOGS``` to TRUE (1) entails a larger execution time. 
+Long Flag,Short Flag,Argument,Description,Default
+--nodes,-n,<file>,Required. Path to the nodes input file.,N/A
+--time,-t,<float>,Total simulation time in seconds.,10.0
+--seed,-s,<int>,Random seed for stochastic processes.,1
+--code,-c,<string>,Unique simulation identifier code.,SIM_001
+--out,-o,<file>,Path for the output script/results.,../output/default_output.txt
 
-STEP 2-1: Run Komondor simulator with intelligent agents
+Logging & Debugging (use 1 to enable and 0 to disable):
 
-Alternatively, and in order to indicate the usage of agents, the console input must add the following extra information:
+--logs-sys <0/1> (-L): Print system-level logs to the console (Default: 1).
 
-```
-$ ./komondor_main INPUT_FILE_NODES INPUT_FILE_AGENTS OUTPUT_FILE_LOGS FLAG_SAVE_NODE_LOGS FLAG_SAVE_AGENT_LOGS FLAG_PRINT_SYSTEM_LOGS FLAG_PRINT_NODE_LOGS FLAG_PRINT_AGENT_LOGS SIM_TIME SEED
-```
+--logs-node <0/1> (-l): Print node-specific logs to the console (Default: 1).
 
-The agent's operation has been summarized at [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
+--save-node <0/1> (-S): Save node logs to a file. IMPORTANT NOTE (!): Setting --save-node to TRUE (1) entails larger execution times. 
 
-### Input files
+Optional modes:
 
-There is an input file that is required for basic Komondor's execution. Input files are located at the "input" folder:
+--agents <file> (-a): Enables Agent-based features using the specified input file.
 
-* ```input_nodes_conf.csv```: define parameters such as the node ID, the node location, etc.
-* ```agents.csv```: define parameters used by the agents' operation. Refer to [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
+--save-agent <0/1> (-A): Save agent-specific logs to a file.
+
+--mapc <file> (-m): Enables Multi-AP Coordination (MAPC) features using the specified input file.
+
+#### 2.2 Input files
+
+Komondor uses input files to define the simulation setup, including participating nodes, their capabilities, and traffic requirements, to name a few examples.
+
+Input files are located in the "/Komondor/Code/input" folder.
+
+Types of inputs include:
+* Node configuration: define parameters such as the node ID, the node location, etc.
+    * Example of agents input file: [```input_nodes.csv```](https://github.com/wn-upf/Komondor/blob/master/Code/input/input_example/input_nodes.csv)
+* Agent configuration: define parameters used by the agents' operation. Refer to [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
+    * Example of agents input file: [```agents.csv```](https://github.com/wn-upf/Komondor/blob/master/Code/input/input_example/agents.csv)
+* MAPC configuration: define the parameters used which Multi-Access Point Coordination (MAPC) is enabled.
+    * Example of MAPC input file: to be done
 
 Apart from the input nodes file, different models are loaded through the "config_models" file (located [here](https://github.com/wn-upf/Komondor/blob/master/Code/config_models)).
 
+#### 2.3 Output 
+
 Regarding the output ("output" folder), some logs and statistics are created at the end of the execution.
+
+#### 2.4 Simulation examples
+
+##### Basic simulation
+
+Run a basic simulation with Komondor for a given nodes configuration file (a .csv file like [this](https://github.com/wn-upf/Komondor/blob/master/Code/input/input_example/input_nodes.csv) containing all the necessary information about the nodes).
+
+From path /Komondor/Code/main, you should run:
+
+```
+$ ./komondor_main --nodes INPUT_FILE_NODES
+```
+
+Where INPUT_FILE_NODES = '../input/input_example/input_nodes.csv' if you use the example file.
+
+##### Standard simulation
+
+Run a 30-second simulation with a specific seed and custom output name:
+
+./Komondor -n scenario.txt -t 30.0 -s 42 -o ../output/my_results.txt
+
+##### Simulation with agents
+
+Run a simulation with Agents:
+
+./Komondor --nodes INPUT_FILE_NODES --agents INPUT_AGENTS_FILE --save-agents 1
+
+Where INPUT_AGENTS_FILE = '../input/input_example/agents.csv' if you use the example file.
+
+The agent's operation has been summarized at [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
 
 ### Other installations
 
