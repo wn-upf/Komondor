@@ -70,7 +70,6 @@ $ chmod -R 777 <dirname>
 WARNING: Following instructions use a pre-built CompC++. The binary
 `Code/COST/cxx` is platform-dependent and might not work on your machine.
 
-
 ```
 $ ./build_local
 ```
@@ -88,41 +87,42 @@ $ make
 
 Komondor uses both short flags (e.g., -n) and long flags (e.g., --nodes).
 
-Long Flag,Short Flag,Argument,Description,Default
---nodes,-n,<file>,Required. Path to the nodes input file.,N/A
---time,-t,<float>,Total simulation time in seconds.,10.0
---seed,-s,<int>,Random seed for stochastic processes.,1
---code,-c,<string>,Unique simulation identifier code.,SIM_001
---out,-o,<file>,Path for the output script/results.,../output/default_output.txt
+| Long Flag | Short Flag | Argument | Description | Default |
+| :--- | :--- | :--- | :--- | :--- |
+| `--nodes` | `-n` | `<file>` | **Required.** Path to the nodes input file. | N/A |
+| `--time` | `-t` | `<float>` | Total simulation time in seconds. | `10.0` |
+| `--seed` | `-s` | `<int>` | Random seed for stochastic processes. | `1` |
+| `--code` | `-c` | `<string>`| Unique simulation identifier code. | `SIM_001` |
+| `--out` | `-o` | `<file>` | Path for the output script/results. | `../output/default_output.txt` |
 
 Logging & Debugging (use 1 to enable and 0 to disable):
 
---logs-sys <0/1> (-L): Print system-level logs to the console (Default: 1).
+`--logs-sys <0/1> (-L)`: Print system-level logs to the console (Default: 1).
 
---logs-node <0/1> (-l): Print node-specific logs to the console (Default: 1).
+`--logs-node <0/1> (-l)`: Print node-specific logs to the console (Default: 1).
 
---save-node <0/1> (-S): Save node logs to a file. IMPORTANT NOTE (!): Setting --save-node to TRUE (1) entails larger execution times. 
+`--save-node <0/1> (-S)`: Save node logs to a file. IMPORTANT NOTE (!): Setting --save-node to TRUE (1) entails larger execution times. 
 
 Optional modes:
 
---agents <file> (-a): Enables Agent-based features using the specified input file.
+`--agents <file> (-a)`: Enables Agent-based features using the specified input file.
 
---save-agent <0/1> (-A): Save agent-specific logs to a file.
+`--save-agent <0/1> (-A)`: Save agent-specific logs to a file.
 
---mapc <file> (-m): Enables Multi-AP Coordination (MAPC) features using the specified input file.
+`--mapc <file> (-m)`: Enables Multi-AP Coordination (MAPC) features using the specified input file.
 
 #### 2.2 Input files
 
 Komondor uses input files to define the simulation setup, including participating nodes, their capabilities, and traffic requirements, to name a few examples.
 
-Input files are located in the "/Komondor/Code/input" folder.
+Input files are located in the `/Komondor/Code/input` folder.
 
 Types of inputs include:
 * Node configuration: define parameters such as the node ID, the node location, etc.
     * Example of agents input file: [```input_nodes.csv```](https://github.com/wn-upf/Komondor/blob/master/Code/input/input_example/input_nodes.csv)
 * Agent configuration: define parameters used by the agents' operation. Refer to [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
     * Example of agents input file: [```agents.csv```](https://github.com/wn-upf/Komondor/blob/master/Code/input/input_example/agents.csv)
-* MAPC configuration: define the parameters used which Multi-Access Point Coordination (MAPC) is enabled.
+* MAPC configuration: define the parameters used for which Multi-Access Point Coordination (MAPC) is enabled.
     * Example of MAPC input file: to be done
 
 Apart from the input nodes file, different models are loaded through the "config_models" file (located [here](https://github.com/wn-upf/Komondor/blob/master/Code/config_models)).
@@ -149,13 +149,17 @@ Where INPUT_FILE_NODES = '../input/input_example/input_nodes.csv' if you use the
 
 Run a 30-second simulation with a specific seed and custom output name:
 
-./Komondor -n scenario.txt -t 30.0 -s 42 -o ../output/my_results.txt
+```
+./komondor_main -n scenario.txt -t 30.0 -s 777 -o ../output/my_results.txt
+```
 
 ##### Simulation with agents
 
 Run a simulation with Agents:
 
-./Komondor --nodes INPUT_FILE_NODES --agents INPUT_AGENTS_FILE --save-agents 1
+```
+./komondor_main --nodes INPUT_FILE_NODES --agents INPUT_AGENTS_FILE --save-agents 1
+```
 
 Where INPUT_AGENTS_FILE = '../input/input_example/agents.csv' if you use the example file.
 
@@ -190,6 +194,7 @@ Before executing the regression test, it is important to ensure that "simulation
 
 ## Academic/Education projects
 One of the main purposes of Komondor is to serve as an academic/educational tool. In what follows, we list the projects in which Komondor has been used as a simulation tool:
+* Wilhelmi, F., Bellalta, B., Casasnovas, M., Kijanka, A., & Calvo-Fullana, M. (2026). Decentralized Spatial Reuse Optimization in Wi-Fi: An Internal Regret Minimization Approach. (arXiv preprint arXiv:2602.08456)[https://arxiv.org/pdf/2602.08456].
 * Wilhelmi, F., Bellalta, B., Szott, S., Kosek-Szott, K., & Barrachina-Muñoz, S. (2025, May). Coordinated Multi-Armed Bandits for Improved Spatial Reuse in Wi-Fi. In 2025 IEEE International Conference on Machine Learning for Communication and Networking (ICMLCN) (pp. 1-6). IEEE. [(Download the paper here)](https://arxiv.org/abs/2412.03076)
 * Wilhelmi, F., Galati-Giordano, L., & F., G. (2025, March). “It's Your Turn”: A Novel Channel Contention Mechanism for Improving Wi-Fi's Reliability. In 2025 IEEE Wireless Communications and Networking Conference (WCNC) (pp. 1-6). IEEE. [(Download the paper here)](https://arxiv.org/abs/2410.07874)
 * Wilhelmi, F., Szott, S., Kosek-Szott, K., & Bellalta, B. (2024). Machine Learning and Wi-Fi: Unveiling the Path Toward AI/ML-Native IEEE 802.11 Networks. IEEE Communications Magazine. [(Download the paper here)]([https://arxiv.org/abs/2412.03076](https://arxiv.org/abs/2405.11504)
