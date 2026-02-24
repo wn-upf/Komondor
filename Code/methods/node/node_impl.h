@@ -20,7 +20,9 @@
  *   - node_mcs_methods.h         : SelectMCSResponse, NACK/MCS negotiation inports, traffic inport
  *   - node_timeout_methods.h     : ACK / CTS / Data / NAV timeout handlers
  *   - node_backoff_methods.h     : backoff scheduling, pause/resume, node restart, channel sensing
- *   - node_packet_methods.h      : packet generation, MCS request, GenerateNotification, SendResponsePacket
+ *   - node_packet_methods.h      : packet generation, MCS request, frame exchange sequence
+ *                                  (GenerateNotification, EndBackoff, MyTxFinished, PrepareNewTransmission,
+ *                                   ScheduleTransmission, InitiateBurstPackets, SendResponsePacket)
  */
 
 #ifndef NODE_IMPL_H

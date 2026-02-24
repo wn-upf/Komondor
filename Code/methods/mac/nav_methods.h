@@ -95,6 +95,18 @@ double ComputeNavTime(int node_state, double rts_duration, double cts_duration,
 			break;
 		}
 
+		case STATE_TX_ICF:{
+			// ICF initiates a MAPC exchange; NAV covers ICF+ICR+DATA+ACK (conservative, same formula as RTS)
+			nav_time = 3 * sifs + rts_duration + cts_duration + data_duration + ack_duration;
+			break;
+		}
+
+		case STATE_TX_TF:{
+			// TF triggers a DATA+ACK exchange
+			nav_time = sifs + data_duration + ack_duration;
+			break;
+		}
+
 		default:{
 
 			printf("ERROR: Unreachable state\n");

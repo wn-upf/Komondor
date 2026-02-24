@@ -45,14 +45,14 @@
 
 /**
  * node_configuration.h: this file defines the mutable runtime configuration of a node
- * - NodeCapabilities (static hardware/radio properties) is in node_capabilities.h
+ * - NodeParameters (node parameters / capabilities snapshot) is in node_parameters.h
  * - AgentCapabilities (learning agent parameters) is in agent_capabilities.h
  */
 
 #ifndef _AUX_CONFIGURATION_
 #define _AUX_CONFIGURATION_
 
-#include "node_capabilities.h"
+#include "node_parameters.h"
 #include "agent_capabilities.h"
 
 // Node's configuration
@@ -60,23 +60,18 @@ struct Configuration
 {
 	double timestamp;					///> Timestamp at which the configuration was saved
 
-	int selected_primary_channel;		///> Selected primary channel
-	double selected_pd;					///> Selected pd ("sensitivity" threshold) [pW]
-	double selected_tx_power;			///> Selected Tx Power [pW]
-	int selected_max_bandwidth;			///> Selected Max bandwidth [no. of channels]
+	// Agent-recommended values
+	int 	selected_primary_channel;	///> Selected primary channel
+	double 	selected_pd;				///> Selected pd ("sensitivity" threshold) [pW]
+	double 	selected_tx_power;			///> Selected Tx Power [pW]
+	int 	selected_max_bandwidth;		///> Selected Max bandwidth [no. of channels]
 
-	// Frames
-	int frame_length;					///> Length of a data frame [bits]
-	int max_num_packets_aggregated;		///> Maximum number of packets to aggregate (A-MPDU)
-
-	// Spatial reuse
+	//  - Spatial Reuse
 	int spatial_reuse_enabled;	///> Indicates whether the SR operation is enabled or not
-	int bss_color;				///> BSS color identifier
-	int srg;					///> Spatial Reuse Group (SRG) identifier
-	double non_srg_obss_pd; 	///> Threshold to be used for non-SRG transmissions
-	double srg_obss_pd; 		///> Threshold to be used for SRG transmissions
-
-	NodeCapabilities capabilities;
+	double non_srg_obss_pd; 	///> Non-SRG OBSS_PD recommendation [pW]
+	double srg_obss_pd; 		///> SRG OBSS_PD recommendation [pW]
+	
+	NodeParameters capabilities;		///> Node parameters snapshot (see node_parameters.h)
 	AgentCapabilities agent_capabilities;
 
 	/**

@@ -29,47 +29,47 @@ void Node :: AckTimeout(trigger_t &){
 	current_tx_duration += SIFS + TIME_OUT_EXTRA_TIME;		// Add ACK timeout to tx_duration
 
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
-		total_time_transmitting_per_channel[c] += SIFS + TIME_OUT_EXTRA_TIME;
+		node_stats.total_time_transmitting_per_channel[c] += SIFS + TIME_OUT_EXTRA_TIME;
 		// Measurements in the last part of the simulation
-		if (SimTime() > (simulation_time_komondor - last_measurements_window)) {
-			last_total_time_lost_per_channel[c] += SIFS + TIME_OUT_EXTRA_TIME;
+		if (SimTime() > (node_params.simulation_time_komondor - node_stats.last_measurements_window)) {
+			node_stats.last_total_time_lost_per_channel[c] += SIFS + TIME_OUT_EXTRA_TIME;
 		}
 	}
 
-	HandlePacketLoss(PACKET_TYPE_DATA, total_time_lost_in_num_channels, total_time_lost_per_channel,
-		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
-		current_left_channel,current_tx_duration, node_id, current_destination_id);
+	HandlePacketLoss(PACKET_TYPE_DATA, node_stats.total_time_lost_in_num_channels, node_stats.total_time_lost_per_channel,
+		node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
+		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
 
-	// Sergio on 16 July 2018: [AGENTS] add data packet lost for partial throughput computations
+	// Sergio on 16 July 2018: [AGENTS] add data packet lost for partial node_stats.throughput computations
 	// Update performance measurements
-	total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	node_stats.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
-		total_time_lost_per_channel[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+		node_stats.total_time_lost_per_channel[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 		performance_report.total_time_lost_per_channel[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	}
 	performance_report.data_packets_lost++;
 
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d lost\n",
-		SimTime(), node_id, node_state, LOG_D17, LOG_LVL4,
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d lost\n",
+		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL4,
 		packet_id);
 
-	LOGS(save_node_logs,node_logger.file,
+	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
-		SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
-	LOGS(save_node_logs,node_logger.file,
+		SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL4);
+	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s From CW = [%d-%d], b = %d, m = %d\n",
-		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
+		SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL5,
+		ca_state.current_cw_min, ca_state.current_cw_max, ca_state.cw_stage_current, node_params.cw_stage_max);
 	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
-		cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
-		cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+		node_params.cw_adaptation, INCREASE_CW, &ca_state.deterministic_bo_active, &ca_state.current_cw_min, &ca_state.current_cw_max, &ca_state.cw_stage_current,
+		node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type);
 
-	LOGS(save_node_logs,node_logger.file,
+	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
-		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
+		SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL5,
+		ca_state.current_cw_min, ca_state.current_cw_max, ca_state.cw_stage_current, node_params.cw_stage_max);
 
 	RestartNode(TRUE);
 }
@@ -79,47 +79,47 @@ void Node :: AckTimeout(trigger_t &){
  */
 void Node :: CtsTimeout(trigger_t &){
 
-	HandlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
-		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
-		current_left_channel,current_tx_duration, node_id, current_destination_id);
+	HandlePacketLoss(PACKET_TYPE_CTS, node_stats.total_time_lost_in_num_channels, node_stats.total_time_lost_per_channel,
+		node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
+		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
 
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
-		SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s CTS TIMEOUT! RTS-CTS packet lost\n",
-		SimTime(), node_id, node_state, LOG_D17, LOG_LVL2);
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
+		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL1);
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s CTS TIMEOUT! RTS-CTS packet lost\n",
+		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL2);
 
-	LOGS(save_node_logs,node_logger.file,
+	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
-		SimTime(), node_id, node_state, LOG_D08, LOG_LVL4);
-	LOGS(save_node_logs,node_logger.file,
+		SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL4);
+	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s From CW = [%d-%d], b = %d, m = %d\n",
-		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
+		SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL5,
+		ca_state.current_cw_min, ca_state.current_cw_max, ca_state.cw_stage_current, node_params.cw_stage_max);
 	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
-		cw_adaptation, INCREASE_CW, &deterministic_bo_active, &current_cw_min, &current_cw_max, &cw_stage_current,
-		cw_min_default, cw_max_default, cw_stage_max, distance_to_token, backoff_type);
+		node_params.cw_adaptation, INCREASE_CW, &ca_state.deterministic_bo_active, &ca_state.current_cw_min, &ca_state.current_cw_max, &ca_state.cw_stage_current,
+		node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type);
 
-	LOGS(save_node_logs,node_logger.file,
+	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
-		SimTime(), node_id, node_state, LOG_D08, LOG_LVL5,
-		current_cw_min, current_cw_max, cw_stage_current, cw_stage_max);
+		SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL5,
+		ca_state.current_cw_min, ca_state.current_cw_max, ca_state.cw_stage_current, node_params.cw_stage_max);
 
 	// Update TX time statistics
-	total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	node_stats.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	performance_report.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
-	total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	node_stats.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
-		total_time_transmitting_per_channel[c] += current_tx_duration;
+		node_stats.total_time_transmitting_per_channel[c] += current_tx_duration;
 		performance_report.total_time_transmitting_per_channel[c] += current_tx_duration;
-		total_time_lost_per_channel[c] += current_tx_duration;
+		node_stats.total_time_lost_per_channel[c] += current_tx_duration;
 		performance_report.total_time_lost_per_channel[c] += current_tx_duration;
 		// Measurements in the last part of the simulation
-		if (SimTime() > (simulation_time_komondor - last_measurements_window)) {
-			last_total_time_transmitting_per_channel[c] += current_tx_duration;
-			last_total_time_lost_per_channel[c] += current_tx_duration;
+		if (SimTime() > (node_params.simulation_time_komondor - node_stats.last_measurements_window)) {
+			node_stats.last_total_time_transmitting_per_channel[c] += current_tx_duration;
+			node_stats.last_total_time_lost_per_channel[c] += current_tx_duration;
 		}
 	}
 
@@ -131,16 +131,16 @@ void Node :: CtsTimeout(trigger_t &){
  */
 void Node :: DataTimeout(trigger_t &){
 
-	HandlePacketLoss(PACKET_TYPE_CTS, total_time_lost_in_num_channels, total_time_lost_per_channel,
-		data_packets_lost, rts_cts_lost, &data_packets_lost_per_sta, &rts_cts_lost_per_sta, current_right_channel,
-		current_left_channel,current_tx_duration, node_id, current_destination_id);
+	HandlePacketLoss(PACKET_TYPE_CTS, node_stats.total_time_lost_in_num_channels, node_stats.total_time_lost_per_channel,
+		node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
+		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
 
-	total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	node_stats.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 
 
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
-		SimTime(), node_id, node_state, LOG_D17, LOG_LVL4);
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
+		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL4);
 
 	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
 
@@ -152,13 +152,13 @@ void Node :: DataTimeout(trigger_t &){
  */
 void Node :: NavTimeout(trigger_t &){
 
-	LOGS(save_node_logs,node_logger.file, "\n **********************************************************************\n");
+	LOGS(node_params.save_node_logs,node_logger.file, "\n **********************************************************************\n");
 
-	LOGS(save_node_logs,node_logger.file,
+	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s NAV TIMEOUT!\n",
-		SimTime(), node_id, node_state, LOG_D17, LOG_LVL1);
+		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL1);
 
-	time_in_nav = time_in_nav + (SimTime() - last_time_not_in_nav);
+	node_stats.time_in_nav = node_stats.time_in_nav + (SimTime() - node_stats.last_time_not_in_nav);
 
 	if(node_is_transmitter){
 
@@ -170,7 +170,7 @@ void Node :: NavTimeout(trigger_t &){
 
 		node_state = STATE_SENSING;
 
-		int resume (HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
+		int resume (HandleBackoff(RESUME_TIMER, &channel_power, node_params.current_primary_channel,
 			current_pd, buffer.QueueSize()));
 
 		// Update BO value according to TO extra time
@@ -180,15 +180,15 @@ void Node :: NavTimeout(trigger_t &){
 
 			trigger_start_backoff.Set(FixTimeOffset(time_to_trigger,13,12));
 
-			LOGS(save_node_logs,node_logger.file,
+			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Starting new DIFS to finsih in %.12f\n",
-				SimTime(), node_id, node_state, LOG_D17, LOG_LVL3,
+				SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL3,
 				trigger_start_backoff.GetTime());
 
 		} else {
-			LOGS(save_node_logs,node_logger.file,
+			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s New DIFS cannot be started\n",
-				SimTime(), node_id, node_state, LOG_D17, LOG_LVL3);
+				SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL3);
 		}
 
 	} else {

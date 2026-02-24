@@ -126,18 +126,18 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
             first_line_skiped_flag = 1;
         } else {
             // Node ID (auto-assigned)
-            node_container[node_ix].node_id = node_ix;
+            node_container[node_ix].node_params.node_id = node_ix;
 
             // Node code
             tmp_nodes = strdup(line_nodes);
             std::string node_code = ToString(GetField(tmp_nodes, IX_NODE_CODE));
-            node_container[node_ix].node_code = node_code;
+            node_container[node_ix].node_params.node_code = node_code;
             free(tmp_nodes);
 
             // Node type
             tmp_nodes = strdup(line_nodes);
             int node_type = atoi(GetField(tmp_nodes, IX_NODE_TYPE));
-            node_container[node_ix].node_type = node_type;
+            node_container[node_ix].node_params.node_type = node_type;
             free(tmp_nodes);
 
             // WLAN code & Linking
@@ -145,18 +145,18 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
             const char *wlan_code_aux = GetField(tmp_nodes, IX_WLAN_CODE);
             std::string wlan_code;
             wlan_code.append(ToString(wlan_code_aux));
-            node_container[node_ix].wlan_code = wlan_code;
+            node_container[node_ix].node_params.wlan_code = wlan_code;
             free(tmp_nodes);
 
             // Link logic
             for(int w = 0; w < total_wlans_number; ++w){
                 if(strcmp(wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0){
-                    if(node_container[node_ix].node_type == NODE_TYPE_AP){
-                        wlan_container[w].ap_id = node_container[node_ix].node_id;
-                    } else if (node_container[node_ix].node_type == NODE_TYPE_STA){
+                    if(node_container[node_ix].node_params.node_type == NODE_TYPE_AP){
+                        wlan_container[w].ap_id = node_container[node_ix].node_params.node_id;
+                    } else if (node_container[node_ix].node_params.node_type == NODE_TYPE_STA){
                         for(int s = 0; s < wlan_container[w].num_stas; ++s){
                             if(wlan_container[w].list_sta_id[s] == NODE_ID_NONE){
-                                wlan_container[w].list_sta_id[s] = node_container[node_ix].node_id;
+                                wlan_container[w].list_sta_id[s] = node_container[node_ix].node_params.node_id;
                                 break;
                             }
                         }
@@ -166,46 +166,46 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
 
             // Position
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].x = atof(GetField(tmp_nodes, IX_POSITION_X));
+            node_container[node_ix].node_params.x = atof(GetField(tmp_nodes, IX_POSITION_X));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].y = atof(GetField(tmp_nodes, IX_POSITION_Y));
+            node_container[node_ix].node_params.y = atof(GetField(tmp_nodes, IX_POSITION_Y));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].z = atof(GetField(tmp_nodes, IX_POSITION_Z));
+            node_container[node_ix].node_params.z = atof(GetField(tmp_nodes, IX_POSITION_Z));
             free(tmp_nodes);
 
             // Frequency
             tmp_nodes = strdup(line_nodes);
             const char* central_frequency_char = GetField(tmp_nodes, IX_CENTRAL_FREQ);
-            node_container[node_ix].central_frequency = atof(central_frequency_char) * pow(10,9);
+            node_container[node_ix].node_params.central_frequency = atof(central_frequency_char) * pow(10,9);
             free(tmp_nodes);
 
             // Channel Bonding Model
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].current_dcb_policy = atoi(GetField(tmp_nodes, IX_CHANNEL_BONDING_MODEL));
+            node_container[node_ix].node_params.current_dcb_policy = atoi(GetField(tmp_nodes, IX_CHANNEL_BONDING_MODEL));
             free(tmp_nodes);
 
             // Channels
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].current_primary_channel = atoi(GetField(tmp_nodes, IX_PRIMARY_CHANNEL));
+            node_container[node_ix].node_params.current_primary_channel = atoi(GetField(tmp_nodes, IX_PRIMARY_CHANNEL));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].min_channel_allowed = atoi(GetField(tmp_nodes, IX_MIN_CH_ALLOWED));
+            node_container[node_ix].node_params.min_channel_allowed = atoi(GetField(tmp_nodes, IX_MIN_CH_ALLOWED));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].max_channel_allowed = atoi(GetField(tmp_nodes, IX_MAX_CH_ALLOWED));
+            node_container[node_ix].node_params.max_channel_allowed = atoi(GetField(tmp_nodes, IX_MAX_CH_ALLOWED));
             free(tmp_nodes);
 
             // Powers
             tmp_nodes = strdup(line_nodes);
             double tx_power_default_dbm = atof(GetField(tmp_nodes, IX_TX_POWER_DEFAULT));
-            node_container[node_ix].tx_power_default = ConvertPower(DBM_TO_PW, tx_power_default_dbm);
+            node_container[node_ix].node_params.tx_power_default = ConvertPower(DBM_TO_PW, tx_power_default_dbm);
             free(tmp_nodes);
             
             tmp_nodes = strdup(line_nodes);
             double sensitivity_default_dbm = atoi(GetField(tmp_nodes, IX_PD_DEFAULT));
-            node_container[node_ix].sensitivity_default = ConvertPower(DBM_TO_PW, sensitivity_default_dbm);
+            node_container[node_ix].node_params.sensitivity_default = ConvertPower(DBM_TO_PW, sensitivity_default_dbm);
             free(tmp_nodes);
 
             // Traffic
@@ -221,90 +221,90 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
 
             // Packet Length
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].frame_length = atoi(GetField(tmp_nodes, IX_PACKET_LENGTH));
+            node_container[node_ix].node_params.frame_length = atoi(GetField(tmp_nodes, IX_PACKET_LENGTH));
             free(tmp_nodes);
 
             // Aggregation
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].max_num_packets_aggregated = atoi(GetField(tmp_nodes, IX_NUM_PACKETS_AGG));
+            node_container[node_ix].node_params.max_num_packets_aggregated = atoi(GetField(tmp_nodes, IX_NUM_PACKETS_AGG));
             free(tmp_nodes);
 
             // Capture Effect
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].capture_effect_model = atoi(GetField(tmp_nodes, IX_CAPTURE_EFFECT_MODEL));
+            node_container[node_ix].node_params.capture_effect_model = atoi(GetField(tmp_nodes, IX_CAPTURE_EFFECT_MODEL));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].capture_effect = ConvertPower(DB_TO_LINEAR, atof(GetField(tmp_nodes, IX_CAPTURE_EFFECT_THR)));
+            node_container[node_ix].node_params.capture_effect = ConvertPower(DB_TO_LINEAR, atof(GetField(tmp_nodes, IX_CAPTURE_EFFECT_THR)));
             free(tmp_nodes);
 
             // PER & PIFS
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].constant_per = atof(GetField(tmp_nodes, IX_CONSTANT_PER));
+            node_container[node_ix].node_params.constant_per = atof(GetField(tmp_nodes, IX_CONSTANT_PER));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].pifs_activated = atoi(GetField(tmp_nodes, IX_PIFS_ACTIVATED));
+            node_container[node_ix].node_params.pifs_activated = atoi(GetField(tmp_nodes, IX_PIFS_ACTIVATED));
             free(tmp_nodes);
 
             // Backoff
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].backoff_type = atoi(GetField(tmp_nodes, IX_BACKOFF_TYPE));
+            node_container[node_ix].node_params.backoff_type = atoi(GetField(tmp_nodes, IX_BACKOFF_TYPE));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].cw_adaptation = atoi(GetField(tmp_nodes, IX_CW_ADAPTATION_FLAG));
+            node_container[node_ix].node_params.cw_adaptation = atoi(GetField(tmp_nodes, IX_CW_ADAPTATION_FLAG));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].cw_min_default = atoi(GetField(tmp_nodes, IX_CW_MIN_DEFAULT));
+            node_container[node_ix].node_params.cw_min_default = atoi(GetField(tmp_nodes, IX_CW_MIN_DEFAULT));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].cw_max_default = atoi(GetField(tmp_nodes, IX_CW_MAX_DEFAULT));
+            node_container[node_ix].node_params.cw_max_default = atoi(GetField(tmp_nodes, IX_CW_MAX_DEFAULT));
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
-            node_container[node_ix].cw_stage_max = atoi(GetField(tmp_nodes, IX_CW_STAGE_MAX));
+            node_container[node_ix].node_params.cw_stage_max = atoi(GetField(tmp_nodes, IX_CW_STAGE_MAX));
             free(tmp_nodes);
 
             // Spatial Reuse
             tmp_nodes = strdup(line_nodes);
             const char* bss_color_char = GetField(tmp_nodes, IX_BSS_COLOR);
             if (bss_color_char != NULL) {
-                node_container[node_ix].bss_color = atoi(bss_color_char);
+                node_container[node_ix].node_params.bss_color = atoi(bss_color_char);
                 free(tmp_nodes);
 
                 tmp_nodes = strdup(line_nodes);
-                node_container[node_ix].srg = atoi(GetField(tmp_nodes, IX_SRG));
+                node_container[node_ix].node_params.srg = atoi(GetField(tmp_nodes, IX_SRG));
                 free(tmp_nodes);
 
                 tmp_nodes = strdup(line_nodes);
-                node_container[node_ix].non_srg_obss_pd = ConvertPower(DBM_TO_PW, atof(GetField(tmp_nodes, IX_NON_SRG_OBSS_PD)));
+                node_container[node_ix].node_params.non_srg_obss_pd = ConvertPower(DBM_TO_PW, atof(GetField(tmp_nodes, IX_NON_SRG_OBSS_PD)));
                 free(tmp_nodes);
 
                 tmp_nodes = strdup(line_nodes);
-                node_container[node_ix].srg_obss_pd = ConvertPower(DBM_TO_PW, atof(GetField(tmp_nodes, IX_SRG_OBSS_PD)));
+                node_container[node_ix].node_params.srg_obss_pd = ConvertPower(DBM_TO_PW, atof(GetField(tmp_nodes, IX_SRG_OBSS_PD)));
                 free(tmp_nodes);
             } else {
-                node_container[node_ix].bss_color = -1;
-                node_container[node_ix].srg = -1;
-                node_container[node_ix].non_srg_obss_pd = -1;
-                node_container[node_ix].srg_obss_pd = -1;
+                node_container[node_ix].node_params.bss_color = -1;
+                node_container[node_ix].node_params.srg = -1;
+                node_container[node_ix].node_params.non_srg_obss_pd = -1;
+                node_container[node_ix].node_params.srg_obss_pd = -1;
                 free(tmp_nodes);
             }
 
             // Global Models
-            node_container[node_ix].simulation_time_komondor = simulation_time_komondor;
-            node_container[node_ix].total_wlans_number = total_wlans_number;
-            node_container[node_ix].total_nodes_number = total_nodes_number;
-            node_container[node_ix].collisions_model = collisions_model;
-            node_container[node_ix].save_node_logs = save_node_logs;
-            node_container[node_ix].print_node_logs = print_node_logs;
-            node_container[node_ix].adjacent_channel_model = adjacent_channel_model;
-            node_container[node_ix].path_loss_model = path_loss_model;
-            node_container[node_ix].pdf_tx_time = pdf_tx_time;
-            node_container[node_ix].simulation_code = simulation_code;
+            node_container[node_ix].node_params.simulation_time_komondor = simulation_time_komondor;
+            node_container[node_ix].node_params.total_wlans_number = total_wlans_number;
+            node_container[node_ix].node_params.total_nodes_number = total_nodes_number;
+            node_container[node_ix].node_params.collisions_model = collisions_model;
+            node_container[node_ix].node_params.save_node_logs = save_node_logs;
+            node_container[node_ix].node_params.print_node_logs = print_node_logs;
+            node_container[node_ix].node_params.adjacent_channel_model = adjacent_channel_model;
+            node_container[node_ix].node_params.path_loss_model = path_loss_model;
+            node_container[node_ix].node_params.pdf_tx_time = pdf_tx_time;
+            node_container[node_ix].node_params.simulation_code = simulation_code;
 
             // Traffic Generator
             traffic_generator_container[node_ix].node_type = node_type;
             traffic_generator_container[node_ix].node_id = node_ix;
             traffic_generator_container[node_ix].traffic_model = traffic_model_val;
-            node_container[node_ix].traffic_model = traffic_model_val;
+            node_container[node_ix].node_params.traffic_model = traffic_model_val;
             traffic_generator_container[node_ix].traffic_load = traffic_load_val;
 
             ++node_ix;
@@ -317,7 +317,7 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
     // ---------------------------------------------------------
     for(int n = 0; n < total_nodes_number; ++n){
         for(int w = 0; w < total_wlans_number; ++w){
-            if (strcmp(node_container[n].wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0) {
+            if (strcmp(node_container[n].node_params.wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0) {
                 node_container[n].wlan = wlan_container[w];
             }
         }
@@ -672,7 +672,7 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 				// If no channel actions are provided, use the primary and range already assigned to the BSS
 				if (agent_container[agent_ix].num_arms_channel == 1) {
 					int wlan_id_aux(agent_container[agent_ix].wlan_id);
-					agent_container[agent_ix].list_of_channels[0] = node_container[wlan_container[wlan_id_aux].ap_id].current_primary_channel;
+					agent_container[agent_ix].list_of_channels[0] = node_container[wlan_container[wlan_id_aux].ap_id].node_params.current_primary_channel;
 				}
 				// sensitivity values
 				tmp_agents = strdup(line_agents);

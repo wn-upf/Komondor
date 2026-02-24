@@ -85,6 +85,10 @@
 #define STATE_WAIT_DATA	11	///> Waiting Data after CTS
 #define STATE_NAV		12	///> Virtual Carrier Sense (process only RTS and CTS)
 #define STATE_SLEEP		13	///> Virtual Carrier Sense (process only RTS and CTS)
+// MAPC coordination states
+#define STATE_TX_ICF	14	///> Transmitting ICF (MAPC Initial Control Frame)
+#define STATE_WAIT_ICR	15	///> Waiting ICR response after ICF
+#define STATE_TX_TF		16	///> Transmitting Trigger Frame (TF)
 
 // Node types
 #define NODE_TYPE_UNKWNOW	-1	///> Unknown (none) node type
@@ -141,6 +145,14 @@
 #define PACKET_TYPE_MCS_RESPONSE 	3 		///> MCS response type
 #define PACKET_TYPE_RTS				4		///> RTS type
 #define PACKET_TYPE_CTS				5		///> CTS type
+
+// TXOP sharing
+#define PACKET_TYPE_MU_RTS_TXS		4		///> MU-RTS TXS type
+
+// MAPC packets
+#define PACKET_TYPE_ICF         6		///> MAPC trigger frame type
+#define PACKET_TYPE_ICR         7		///> MAPC response frame type
+#define PACKET_TYPE_TF          8       ///> MAPC trigger frame type
 
 // Packet detect
 #define PD_NOT_EXCEEDED	0	///> PD is not exceeded (primary channel is free)

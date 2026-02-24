@@ -34,26 +34,26 @@
  */
 void Node :: AbortRtsTransmission(){
 
-	if(backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM){
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s deterministic_bo_active = %d, num_bo_interruptions = %d.\n",
-		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
-		deterministic_bo_active, num_bo_interruptions);
+	if(node_params.backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM){
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s ca_state.deterministic_bo_active = %d, ca_state.num_bo_interruptions = %d.\n",
+		SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL4,
+		ca_state.deterministic_bo_active, ca_state.num_bo_interruptions);
 	}
 
-	num_tx_init_not_possible ++;
+	node_stats.num_tx_init_not_possible ++;
 	// Compute a new backoff and trigger a new DIFS
-	remaining_backoff = ComputeBackoff(current_cw_min, current_cw_max, backoff_type,
-			current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic,
-			previous_backoff);
+	ca_state.remaining_backoff = ComputeBackoff(ca_state.current_cw_min, ca_state.current_cw_max, node_params.backoff_type,
+			current_traffic_type, ca_state.deterministic_bo_active, ca_state.num_bo_interruptions, ca_state.base_backoff_deterministic,
+			ca_state.previous_backoff);
 
-	previous_backoff = remaining_backoff;	// Update the last used backoff
+	ca_state.previous_backoff = ca_state.remaining_backoff;	// Update the last used backoff
 
-	expected_backoff += remaining_backoff;
-	num_new_backoff_computations++;
+	node_stats.expected_backoff += ca_state.remaining_backoff;
+	node_stats.num_new_backoff_computations++;
 	node_state = STATE_SENSING;
 
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
-		SimTime(), node_id, node_state, LOG_F03, LOG_LVL3);
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Transmission is NOT possible\n",
+		SimTime(), node_params.node_id, node_state, LOG_F03, LOG_LVL3);
 
 }
 
@@ -87,44 +87,44 @@ void Node :: UpdateSINRFromNotification(const Notification &notification) {
 void Node :: PauseBackoff(){
 
 	if(trigger_start_backoff.Active()){
-		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Cancelling DIFS. BO still frozen at %.9f (%.2f slots)\n",
-			SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-			remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
+		LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Cancelling DIFS. BO still frozen at %.9f (%.2f slots)\n",
+			SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL3,
+			ca_state.remaining_backoff * pow(10,6), ca_state.remaining_backoff / SLOT_TIME);
 
 		trigger_start_backoff.Cancel();
 	} else {
 
 		if(trigger_end_backoff.Active()){	// If backoff trigger is active, freeze it
 
-			remaining_backoff = ComputeRemainingBackoff(backoff_type, trigger_end_backoff.GetTime() - SimTime());
+			ca_state.remaining_backoff = ComputeRemainingBackoff(node_params.backoff_type, trigger_end_backoff.GetTime() - SimTime());
 
-			++num_bo_interruptions;
+			++ca_state.num_bo_interruptions;
 
-			LOGS(save_node_logs,node_logger.file,
+			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO is active. Freezing it from %.9f (%.2f slots) to %.9f (%.2f slots) -> BO interruptions = %d\n",
-				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+				SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL3,
 				(trigger_end_backoff.GetTime() - SimTime()) * pow(10,6),
 				(trigger_end_backoff.GetTime() - SimTime())/SLOT_TIME,
-				remaining_backoff * pow(10,6), remaining_backoff/SLOT_TIME, num_bo_interruptions);
+				ca_state.remaining_backoff * pow(10,6), ca_state.remaining_backoff/SLOT_TIME, ca_state.num_bo_interruptions);
 
-//			LOGS(save_node_logs,node_logger.file,
+//			LOGS(node_params.save_node_logs,node_logger.file,
 //								"%.15f;N%d;S%d;%s;%s Original remaining BO: %.9f us\n",
-//								SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
+//								SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL3,
 //								(trigger_end_backoff.GetTime() - SimTime())*pow(10,6));
 
-//			LOGS(save_node_logs,node_logger.file,
+//			LOGS(node_params.save_node_logs,node_logger.file,
 //					"%.15f;N%d;S%d;%s;%s Backoff is active --> freeze it at %.9f us (%.2f slots)\n",
-//					SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-//					remaining_backoff * pow(10,6), remaining_backoff/SLOT_TIME);
+//					SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL3,
+//					ca_state.remaining_backoff * pow(10,6), ca_state.remaining_backoff/SLOT_TIME);
 
 			trigger_end_backoff.Cancel();
 
 		} else {	// If backoff trigger is frozen
 
-			LOGS(save_node_logs,node_logger.file,
+			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Backoff is NOT active - it is already frozen at %.9f us (%.2f slots)\n",
-				SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-				remaining_backoff * pow(10,6), remaining_backoff / SLOT_TIME);
+				SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL3,
+				ca_state.remaining_backoff * pow(10,6), ca_state.remaining_backoff / SLOT_TIME);
 
 			trigger_end_backoff.Cancel(); // Redundant (for safety)
 
@@ -138,20 +138,20 @@ void Node :: PauseBackoff(){
  */
 void Node :: ResumeBackoff(trigger_t &){
 
-//	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DIFS finished\n",
-//					SimTime(), node_id, node_state, LOG_F00, LOG_LVL2);
+//	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DIFS finished\n",
+//					SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL2);
 
-	time_to_trigger = SimTime() + remaining_backoff;
+	time_to_trigger = SimTime() + ca_state.remaining_backoff;
 
 	trigger_end_backoff.Set(FixTimeOffset(time_to_trigger,13,12));
 
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Resuming backoff in %.9f us (%.2f slots)\n",
-		SimTime(), node_id, node_state, LOG_F00, LOG_LVL3,
-		(remaining_backoff * pow(10,6)), (remaining_backoff / (double) SLOT_TIME));
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Resuming backoff in %.9f us (%.2f slots)\n",
+		SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL3,
+		(ca_state.remaining_backoff * pow(10,6)), (ca_state.remaining_backoff / (double) SLOT_TIME));
 
-//	LOGS(save_node_logs,node_logger.file,
+//	LOGS(node_params.save_node_logs,node_logger.file,
 //				"%.15f;N%d;S%d;%s;%s DIFS: active = %d, t_DIFS = %f - backoff: active = %d - t_back = %f\n",
-//				SimTime(), node_id, node_state, LOG_D02, LOG_LVL3,
+//				SimTime(), node_params.node_id, node_state, LOG_D02, LOG_LVL3,
 //				trigger_start_backoff.Active(), trigger_start_backoff.GetTime() - SimTime(),
 //				trigger_end_backoff.Active(), trigger_end_backoff.GetTime() - SimTime());
 
@@ -179,24 +179,24 @@ void Node :: CallRestartSta(trigger_t &){
  */
 void Node :: RestartNode(int called_by_time_out){
 
-	LOGS(save_node_logs, node_logger.file, "\n **********************************************************************\n");
-	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Node Restarted (%d)\n",
-		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL1,
+	LOGS(node_params.save_node_logs, node_logger.file, "\n **********************************************************************\n");
+	LOGS(node_params.save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s Node Restarted (%d)\n",
+		SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL1,
 		called_by_time_out);
 
 	// Update TX time statistics
 
 	int ix_num_ch = (int)log2(current_right_channel - current_left_channel + 1);
 
-	total_time_transmitting_in_num_channels[ix_num_ch] += current_tx_duration;
+	node_stats.total_time_transmitting_in_num_channels[ix_num_ch] += current_tx_duration;
 	performance_report.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
-		total_time_transmitting_per_channel[c] += current_tx_duration;
+		node_stats.total_time_transmitting_per_channel[c] += current_tx_duration;
 		performance_report.total_time_transmitting_per_channel[c] += current_tx_duration;
 		// Measurements in the last part of the simulation
-		if (SimTime() > (simulation_time_komondor - last_measurements_window)) {
-			last_total_time_transmitting_per_channel[c] += current_tx_duration;
+		if (SimTime() > (node_params.simulation_time_komondor - node_stats.last_measurements_window)) {
+			node_stats.last_total_time_transmitting_per_channel[c] += current_tx_duration;
 		}
 	}
 
@@ -221,9 +221,9 @@ void Node :: RestartNode(int called_by_time_out){
 	trigger_recover_cts_timeout.Cancel();
 	trigger_start_backoff.Cancel();
 
-	LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s node_is_transmitter = %d "
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s node_is_transmitter = %d "
 			"/ buffer.QueueSize() = %d\n",
-		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
+		SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL3,
 		node_is_transmitter, buffer.QueueSize());
 
 	// Generate new BO in case of being a TX node
@@ -233,63 +233,63 @@ void Node :: RestartNode(int called_by_time_out){
 		++packet_id;
 
 		// In case of being an AP
-		remaining_backoff = ComputeBackoff(current_cw_min, current_cw_max,
-				backoff_type, current_traffic_type, deterministic_bo_active, num_bo_interruptions, base_backoff_deterministic, previous_backoff);
-		previous_backoff = remaining_backoff;
-		expected_backoff = expected_backoff + remaining_backoff;
-		++num_new_backoff_computations;
+		ca_state.remaining_backoff = ComputeBackoff(ca_state.current_cw_min, ca_state.current_cw_max,
+				node_params.backoff_type, current_traffic_type, ca_state.deterministic_bo_active, ca_state.num_bo_interruptions, ca_state.base_backoff_deterministic, ca_state.previous_backoff);
+		ca_state.previous_backoff = ca_state.remaining_backoff;
+		node_stats.expected_backoff = node_stats.expected_backoff + ca_state.remaining_backoff;
+		++node_stats.num_new_backoff_computations;
 
 		// Sergio on June 26 th
 		// - compute average waiting time to access the channel
-		timestamp_new_trial_started = SimTime();
+		node_stats.timestamp_new_trial_started = SimTime();
 
-		if(backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM){
-		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s deterministic_bo_active = %d, num_bo_interruptions = %d.\n",
-			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
-			deterministic_bo_active, num_bo_interruptions);
+		if(node_params.backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM){
+		LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s ca_state.deterministic_bo_active = %d, ca_state.num_bo_interruptions = %d.\n",
+			SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL4,
+			ca_state.deterministic_bo_active, ca_state.num_bo_interruptions);
 		}
 
 		// Restart the counter for the deterministic backoff
-		num_bo_interruptions = 0;
+		ca_state.num_bo_interruptions = 0;
 
-		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f (%.0f slots).\n",
-			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3,
-			remaining_backoff, remaining_backoff/SLOT_TIME);
+		LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s New backoff computed: %f (%.0f slots).\n",
+			SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL3,
+			ca_state.remaining_backoff, ca_state.remaining_backoff/SLOT_TIME);
 
 		// Add extra slot since node has transmitted
-		remaining_backoff = remaining_backoff + SLOT_TIME;
+		ca_state.remaining_backoff = ca_state.remaining_backoff + SLOT_TIME;
 
-		LOGS(save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Extra slot added --> remaining BO %f slots\n",
-			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
-			remaining_backoff / SLOT_TIME);
+		LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Extra slot added --> remaining BO %f slots\n",
+			SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL4,
+			ca_state.remaining_backoff / SLOT_TIME);
 
-		LOGS(save_node_logs,node_logger.file,
+		LOGS(node_params.save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Checking if BO can be resumed. Pow(primary #%d) =  %.2f dBm\n",
-			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL4,
-			current_primary_channel, ConvertPower(PW_TO_DBM, channel_power[current_primary_channel]));
+			SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL4,
+			node_params.current_primary_channel, ConvertPower(PW_TO_DBM, channel_power[node_params.current_primary_channel]));
 
 		// Freeze backoff immediately if primary channel is occupied
 		int resume;
-		if (spatial_reuse_enabled && txop_sr_identified) {
-			resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
-				current_obss_pd_threshold, buffer.QueueSize());
+		if (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified) {
+			resume = HandleBackoff(RESUME_TIMER, &channel_power, node_params.current_primary_channel,
+				sr_state.current_obss_pd_threshold, buffer.QueueSize());
 		} else {
-			resume = HandleBackoff(RESUME_TIMER, &channel_power, current_primary_channel,
+			resume = HandleBackoff(RESUME_TIMER, &channel_power, node_params.current_primary_channel,
 				current_pd, buffer.QueueSize());
 		}
 
 		// Check if node has to freeze the BO (if it is not already frozen)
 		if (resume) {
-			LOGS(save_node_logs,node_logger.file,
+			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO can be resumed! Starting DIFS...\n",
-				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
+				SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL5);
 			// time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
 			time_to_trigger = SimTime() + DIFS; // TODO: EDCA TO BE IMPLEMENTED -> AIFSN[AC] * SLOT_TIME + SIFS
 			trigger_start_backoff.Set(FixTimeOffset(time_to_trigger,13,12));
 		} else {
-			LOGS(save_node_logs,node_logger.file,
+			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO cannot be resumed!\n",
-				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
+				SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL5);
 		}
 	}
 
@@ -308,7 +308,7 @@ void Node :: RestartNode(int called_by_time_out){
  * Start saving logs from a given initial value
  */
 void Node:: StartSavingLogs(trigger_t &){
-	save_node_logs = TRUE;
+	node_params.save_node_logs = TRUE;
 }
 
 /**
@@ -339,8 +339,8 @@ void Node:: HandleSlottedBackoffCollision() {
 void Node:: RecoverFromCtsTimeout(trigger_t &) {
 	// Sergio on 25 Oct 2017
 	// - Just restart the node to start the DIFS
-	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s RecoverFromCtsTimeout\n",
-		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
+	LOGS(node_params.save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s RecoverFromCtsTimeout\n",
+		SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL3);
 	// Cancel trigger for safety
 	trigger_recover_cts_timeout.Cancel();
 	RestartNode(TRUE);
@@ -351,19 +351,19 @@ void Node:: RecoverFromCtsTimeout(trigger_t &) {
  */
 void Node:: CallSensing(trigger_t &){
 
-	LOGS(save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s State changed to sensing due to NAV collision\n",
-		SimTime(), node_id, node_state, LOG_Z00, LOG_LVL3);
+	LOGS(node_params.save_node_logs, node_logger.file, "%.15f;N%d;S%d;%s;%s State changed to sensing due to NAV collision\n",
+		SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL3);
 
 	node_state = STATE_SENSING;
 
 	int resume (HandleBackoff(RESUME_TIMER, &channel_power,
-		current_primary_channel, current_pd, buffer.QueueSize()));
+		node_params.current_primary_channel, current_pd, buffer.QueueSize()));
 
 	// Check if node has to freeze the BO (if it is not already frozen)
 	if (resume) {
-		LOGS(save_node_logs, node_logger.file,
+		LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s BO can be resumed! Starting DIFS...\n",
-			SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
+			SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL5);
 		// time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
 		ScheduleBackoffAfterDIFS();
 	} else {
@@ -372,22 +372,22 @@ void Node:: CallSensing(trigger_t &){
 		 * *****************************************/
 		int loss_reason_sr = 1;	// lost by default
 		// Check if the packet can be decoded with the CST indicated by the SR operation
-		if (loss_reason == PACKET_NOT_LOST && spatial_reuse_enabled) {
+		if (loss_reason == PACKET_NOT_LOST && sr_state.spatial_reuse_enabled) {
 			// TODO: method for checking whether the detected transmission can be decoded or not
-			loss_reason_sr = IsPacketLost(current_primary_channel, nav_notification, nav_notification,
-				current_sinr, capture_effect, potential_obss_pd_threshold, power_rx_interest, constant_per, node_id, capture_effect_model);
+			loss_reason_sr = IsPacketLost(node_params.current_primary_channel, nav_notification, nav_notification,
+				current_sinr, node_params.capture_effect, sr_state.potential_obss_pd_threshold, power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
 			if (loss_reason_sr != PACKET_NOT_LOST && node_is_transmitter) {
-				txop_sr_identified = TRUE;	// TXOP identified!
-				current_obss_pd_threshold = potential_obss_pd_threshold;	// Update the pd
-				if(save_node_logs) fprintf(node_logger.file,
+				sr_state.txop_sr_identified = TRUE;	// TXOP identified!
+				sr_state.current_obss_pd_threshold = sr_state.potential_obss_pd_threshold;	// Update the pd
+				if(node_params.save_node_logs) fprintf(node_logger.file,
 					"%.15f;N%d;S%d;%s;%s TXOP detected for OBSS_PD = %f dBm (in CallSensing())\n",
-					SimTime(), node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, current_obss_pd_threshold));
+					SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, sr_state.current_obss_pd_threshold));
 			}
 		/* **************************************** */
 		} else {
-			LOGS(save_node_logs, node_logger.file,
+			LOGS(node_params.save_node_logs, node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO canot be resumed!\n",
-				SimTime(), node_id, node_state, LOG_Z00, LOG_LVL5);
+				SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL5);
 		}
 	}
 

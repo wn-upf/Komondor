@@ -187,37 +187,3 @@ void UpdateTypeOngoingTransmissions(int *type_ongoing_transmissions,
 	}
 
 }
-
-/****************************************************************
- * OLD (TO BE REFACTORED/ADAPTED ACCORDING TO NEWER VERSIONS OF THE AMENDMENT)
- ****************************************************************/
-/*
- * CheckOBSSPDConstraints(): checks if the proposed obss_pd_level is valid, according to
- * the constraints indicated in the IEEE 802.11ax amendment
- **/
-int CheckObssPdConstraints(double current_obss_pd, double obss_pd_min, double obss_pd_max,
-		double tx_power_ref, double tx_power) {
-	double obss_pd_ref_dbm = std::max(ConvertPower(PW_TO_DBM, obss_pd_min),
-		std::min(ConvertPower(PW_TO_DBM, obss_pd_max), ConvertPower(PW_TO_DBM, obss_pd_min)
-		+ (ConvertPower(PW_TO_DBM, tx_power_ref) - ConvertPower(PW_TO_DBM,tx_power))));
-	if( ConvertPower(PW_TO_DBM, current_obss_pd) <=  obss_pd_ref_dbm ) {
-		//printf("The OBSS_PD level is appropriate!\n");
-		return 1;
-	} else {
-		//printf("ALERT! The OBSS_PD level is NOT appropriate!\n");
-		return 0;
-	}
-}
-
-/*
- * CheckPowerConstraints():
- **/
-int CheckPowerConstraints(double current_obss_pd, double obss_pd_min, double obss_pd_max) {
-	if (current_obss_pd <= obss_pd_min) {
-		// Unconstrained
-		return 1;
-	} else {
-		// Apply constraint
-		return 0;
-	}
-}

@@ -104,12 +104,12 @@ void PrintAndWriteSimulationStatistics(int print_system_logs, int save_system_lo
 			LOG_LVL2, (stats.total_throughput * pow(10,-6) / total_wlans_number));
 		printf("%s Min. throughput = %.2f Mbps (%.2f pkt/s)\n",
 			LOG_LVL3, stats.min_throughput * pow(10,-6),
-			stats.min_throughput / (configuration_per_node[0].frame_length
-			* configuration_per_node[0].max_num_packets_aggregated));
+			stats.min_throughput / (configuration_per_node[0].capabilities.frame_length
+			* configuration_per_node[0].capabilities.max_num_packets_aggregated));
 		printf("%s Max. throughput = %.2f Mbps (%.2f pkt/s)\n",
 			LOG_LVL3, stats.max_throughput * pow(10,-6),
-			stats.max_throughput / (configuration_per_node[0].frame_length
-			* configuration_per_node[0].max_num_packets_aggregated));
+			stats.max_throughput / (configuration_per_node[0].capabilities.frame_length
+			* configuration_per_node[0].capabilities.max_num_packets_aggregated));
 		printf("%s Total throughput = %.2f Mbps\n", LOG_LVL3, stats.total_throughput * pow(10,-6));
 		printf("%s Total number of packets sent = %d\n", LOG_LVL3, stats.total_data_packets_sent);
 		printf("%s Average number of data packets successfully sent per WLAN = %.2f\n",
@@ -245,10 +245,10 @@ static void WriteOutput_TwoWlanOverlap(Performance *performance_report,
 		"%.4f;%.4f;%.2f;%.2f;%.4f;%.4f;%.4f;%.4f;%.4f;%.4f;%.2f;%.2f\n",
 		performance_report[0].num_packets_generated,
 		performance_report[2].num_packets_generated,
-		performance_report[0].throughput / (configuration_per_node[0].frame_length *
-			configuration_per_node[0].max_num_packets_aggregated),
-		performance_report[2].throughput / (configuration_per_node[2].frame_length *
-			configuration_per_node[2].max_num_packets_aggregated),
+		performance_report[0].throughput / (configuration_per_node[0].capabilities.frame_length *
+			configuration_per_node[0].capabilities.max_num_packets_aggregated),
+		performance_report[2].throughput / (configuration_per_node[2].capabilities.frame_length *
+			configuration_per_node[2].capabilities.max_num_packets_aggregated),
 		performance_report[0].average_rho,
 		performance_report[2].average_rho,
 		performance_report[0].average_delay * pow(10,3),
@@ -270,8 +270,8 @@ static void WriteOutput_CentralWlan_Paper5(Performance *performance_report,
 		Configuration *configuration_per_node, Logger &logger_script, int, int, Wlan *, double,
 		const SimulationStats &) {
 	fprintf(logger_script.file, ";%.0f;%d;%d;%d;%d;%d;%d;%d;%f;%f;%f;%f;%f\n",
-		performance_report[0].throughput / (configuration_per_node[0].frame_length *
-			configuration_per_node[0].max_num_packets_aggregated),
+		performance_report[0].throughput / (configuration_per_node[0].capabilities.frame_length *
+			configuration_per_node[0].capabilities.max_num_packets_aggregated),
 		performance_report[0].rts_cts_sent,
 		performance_report[0].rts_cts_lost,
 		performance_report[0].rts_lost_slotted_bo,
@@ -293,8 +293,8 @@ static void WriteOutput_CentralWlan_Paper5_Single(Performance *performance_repor
 	fprintf(logger_script.file, ";%d;%.0f;%.2f;"
 		"%.4f;%.2f;%.4f;%.4f;%.4f;%.4f\n",
 		performance_report[0].num_packets_generated,
-		performance_report[0].throughput / (configuration_per_node[0].frame_length *
-			configuration_per_node[0].max_num_packets_aggregated),
+		performance_report[0].throughput / (configuration_per_node[0].capabilities.frame_length *
+			configuration_per_node[0].capabilities.max_num_packets_aggregated),
 		performance_report[0].average_rho,
 		performance_report[0].average_delay * pow(10,3),
 		performance_report[0].average_utilization,
@@ -309,11 +309,11 @@ static void WriteOutput_SixWlanRandom(Performance *performance_report,
 		Configuration *configuration_per_node, Logger &logger_script, int total_wlans_number, int, Wlan *, double,
 		const SimulationStats &stats) {
 	fprintf(logger_script.file, ";%.2f;%.2f;%.2f;%d;%.4f;%.4f;%.4f;%.2f;%.2f;%.2f;%f;%f;%f\n",
-		stats.total_throughput / (configuration_per_node[0].frame_length *
-			configuration_per_node[0].max_num_packets_aggregated * total_wlans_number),
+		stats.total_throughput / (configuration_per_node[0].capabilities.frame_length *
+			configuration_per_node[0].capabilities.max_num_packets_aggregated * total_wlans_number),
 		(stats.total_throughput * pow(10,-6) / total_wlans_number),
-		stats.min_throughput / (configuration_per_node[0].frame_length *
-			configuration_per_node[0].max_num_packets_aggregated),
+		stats.min_throughput / (configuration_per_node[0].capabilities.frame_length *
+			configuration_per_node[0].capabilities.max_num_packets_aggregated),
 		stats.ix_wlan_min_throughput,
 		stats.proportional_fairness,
 		stats.jains_fairness,
@@ -323,8 +323,8 @@ static void WriteOutput_SixWlanRandom(Performance *performance_report,
 		stats.total_bandiwdth_tx / (double) total_wlans_number,
 		stats.av_expected_waiting_time * pow(10,3),
 		stats.min_delay * pow(10,3),
-		stats.max_throughput / (configuration_per_node[0].frame_length *
-			configuration_per_node[0].max_num_packets_aggregated));
+		stats.max_throughput / (configuration_per_node[0].capabilities.frame_length *
+			configuration_per_node[0].capabilities.max_num_packets_aggregated));
 }
 
 // case 10: regression test — throughput per AP + RSSI per STA

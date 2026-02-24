@@ -249,14 +249,14 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 		node_container[i].received_power_array = new double[total_nodes_number];
 		for(int j = 0; j < total_nodes_number; ++j) {
 			// Compute and assign distances for each other node
-			node_container[i].distances_array[j] = ComputeDistance(node_container[i].x,node_container[i].y,
-				node_container[i].z,node_container[j].x,node_container[j].y,node_container[j].z);
+			node_container[i].distances_array[j] = ComputeDistance(node_container[i].node_params.x,node_container[i].node_params.y,
+				node_container[i].node_params.z,node_container[j].node_params.x,node_container[j].node_params.y,node_container[j].node_params.z);
 			// Compute and assign the received power from each other node
 			if(i == j) {
 				node_container[i].received_power_array[j] = 0;
 			} else {
 				node_container[i].received_power_array[j] = ComputePowerReceived(node_container[i].distances_array[j],
-					node_container[j].tx_power_default, node_container[i].central_frequency, path_loss_model);
+					node_container[j].node_params.tx_power_default, node_container[i].node_params.central_frequency, path_loss_model);
 			}
 		}
 	}
@@ -264,10 +264,10 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 	// Compute the maximum power received from each WLAN
 	for(int i = 0; i < total_nodes_number; ++i) {
 		double max_power_received_per_wlan;
-		if (node_container[i].node_type == NODE_TYPE_AP) {
+		if (node_container[i].node_params.node_type == NODE_TYPE_AP) {
 			node_container[i].max_received_power_in_ap_per_wlan = new double[total_wlans_number];
 			for(int j = 0; j < total_wlans_number; ++j) {
-				if (strcmp(node_container[i].wlan_code.c_str(),wlan_container[j].wlan_code.c_str()) == 0) {
+				if (strcmp(node_container[i].node_params.wlan_code.c_str(),wlan_container[j].wlan_code.c_str()) == 0) {
 					// Same WLAN
 					node_container[i].max_received_power_in_ap_per_wlan[j] = 0;
 				} else {
@@ -275,7 +275,7 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 					max_power_received_per_wlan = -1000;
 					for (int k = 0; k < total_nodes_number; ++k) {
 						// Check only nodes in WLAN "j"
-						if(strcmp(node_container[k].wlan_code.c_str(),wlan_container[j].wlan_code.c_str()) == 0) {
+						if(strcmp(node_container[k].node_params.wlan_code.c_str(),wlan_container[j].wlan_code.c_str()) == 0) {
 							if (node_container[i].received_power_array[k] > max_power_received_per_wlan) {
 								max_power_received_per_wlan = node_container[i].received_power_array[k];
 							}
@@ -289,7 +289,7 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 
 	// Initialize arrays for the token-based channel access
 	for (int i = 0; i < total_nodes_number; ++i) {
-		if (node_container[i].backoff_type == BACKOFF_TOKENIZED){
+		if (node_container[i].node_params.backoff_type == BACKOFF_TOKENIZED){
 			node_container[i].token_order_list = new int[total_nodes_number];
 			node_container[i].num_missed_tokens_list = new int[total_nodes_number];
 			for(int j = 0; j < total_nodes_number; ++j) {
@@ -336,14 +336,14 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 			connect node_container[n].outportSendLogicalNack,node_container[m].InportNackReceived;
 
 			// Nodes belonging to the same WLAN
-			if(strcmp(node_container[n].wlan_code.c_str(),node_container[m].wlan_code.c_str()) == 0 && n!=m) {
+			if(strcmp(node_container[n].node_params.wlan_code.c_str(),node_container[m].node_params.wlan_code.c_str()) == 0 && n!=m) {
 				// Connections regarding MCS
 				connect node_container[n].outportAskForTxModulation,node_container[m].InportMCSRequestReceived;
 				connect node_container[n].outportAnswerTxModulation,node_container[m].InportMCSResponseReceived;
 				// Connections regarding changes in the WLAN
 				connect node_container[n].outportSetNewWlanConfiguration,node_container[m].InportNewWlanConfigurationReceived;
 				// Connections Spatial Reuse
-				if(node_container[n].node_type == NODE_TYPE_AP && node_container[m].node_type == NODE_TYPE_STA) {
+				if(node_container[n].node_params.node_type == NODE_TYPE_AP && node_container[m].node_params.node_type == NODE_TYPE_STA) {
 					connect node_container[m].outportRequestSpatialReuseConfiguration,node_container[n].InportRequestSpatialReuseConfiguration;
 					connect node_container[n].outportNewSpatialReuseConfiguration,node_container[m].InportNewSpatialReuseConfiguration;
 				}
@@ -352,10 +352,10 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 
 		if (agents_enabled) {
 			// Set connections among APs and Agents
-			if ( node_container[n].node_type == NODE_TYPE_AP ) {
+			if ( node_container[n].node_params.node_type == NODE_TYPE_AP ) {
 				for(int w = 0; w < total_agents_number; ++w){
 					// Connect the agent to the corresponding AP, according to "wlan_code"
-					if (strcmp(node_container[n].wlan_code.c_str(), agent_container[w].wlan_code.c_str()) == 0) {
+					if (strcmp(node_container[n].node_params.wlan_code.c_str(), agent_container[w].wlan_code.c_str()) == 0) {
 						connect agent_container[w].outportRequestInformationToAp,node_container[n].InportReceivingRequestFromAgent;
 						connect node_container[n].outportAnswerToAgent,agent_container[w].InportReceivingInformationFromAp;
 						connect agent_container[w].outportSendConfigurationToAp,node_container[n].InportReceiveConfigurationFromAgent;
@@ -415,9 +415,9 @@ void Komondor :: Stop(){
 /* Include methods */
 /*******************/
 #include "../methods/utils/output_generation_methods.h"
-#include "../methods/input_methods/input_validator.h"
-#include "../methods/input_methods/print_and_write_methods.h"
-#include "../methods/input_methods/input_loader.h"
+#include "../methods/utils/print_and_write_methods.h"
+#include "../methods/utils/input_methods/input_validator.h"
+#include "../methods/utils/input_methods/input_loader.h"
 
 /**********/
 /* main() */
@@ -548,10 +548,6 @@ int main(int argc, char *argv[]){
 
     Komondor komondor_simulation;
     
-    // If you implemented the struct from the previous step, fill it here:
-    // komondor_simulation.config.simulation_time = sim_time;
-    // komondor_simulation.config.seed = seed;
-
 	komondor_simulation.StopTime(sim_time);
 	
     komondor_simulation.Setup(
