@@ -513,10 +513,21 @@ int main(int argc, char *argv[]){
             default:
                 printf("Usage: ./Komondor --nodes <file> [OPTIONS]\n");
                 printf("  --nodes <file>   : Input nodes file (Required)\n");
-                printf("  --agents <file>  : Input agents file (Enables Agents)\n");
-                printf("  --mapc <file>    : Input MAPC file (Enables MAPC)\n");
+                printf("  --out <file>     : Output file (Default: ../output/default_output.txt)\n");
                 printf("  --time <sec>     : Sim time (Default: 10.0)\n");
-                printf("  --seed <int>     : Random seed (Default: 1)\n");
+                printf("  --code <str>     : Simulation code (Default: SIM_001)\n");
+                printf("  --seed <int>	   : Random seed (Default: 1)\n");
+
+				printf("Flags:\n");
+				printf("  --logs-sys <int>      : Print system logs (Default: 0)\n");
+				printf("  --logs-node <int>     : Print node logs (Default: 0)\n");
+				printf("  --save-node <int>     : Save node logs (Default: 0)\n");
+				
+				printf("Optional arguments:\n");
+				printf("  --agents <file>  : Input agents file (Enables Agents)\n");
+				printf("  --save-agent <int>     : Random seed (Default: 0)\n");
+                printf("  --mapc <file>    : Input MAPC file (Enables MAPC)\n");
+				printf("\n");
                 exit(0);
         }
     }
@@ -575,7 +586,5 @@ int main(int argc, char *argv[]){
     komondor_simulation.Run();
 
     return 0;
-
-
 
 };

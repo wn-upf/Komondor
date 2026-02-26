@@ -33,7 +33,11 @@
  * Pre-occupancy calls this (triggered-based operation)
  */
 void Node :: StartTransmission(trigger_t &){
-	if (exchange_sequence.frame_types[0] == PACKET_TYPE_RTS) {
+	// Check STATE_TX_TF first: TF is sent mid-sequence (exchange_sequence[0] is still ICF)
+	if (node_state == STATE_TX_TF) {
+		tf_notification.timestamp = SimTime();
+		outportSelfStartTX(tf_notification);
+	} else if (exchange_sequence.frame_types[0] == PACKET_TYPE_RTS) {
 		rts_notification.timestamp = SimTime();
 		outportSelfStartTX(rts_notification);
 	} else if (exchange_sequence.frame_types[0] == PACKET_TYPE_ICF) {
@@ -188,12 +192,22 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 			break;
 		}
 
+		case PACKET_TYPE_MU_RTS_TXS:{
+			// MAPC MU-RTS/TXS — grants coordinated AP TX slot; similar size to RTS
+			notification.frame_length = IEEE_AX_RTS_LENGTH;
+			notification.tx_info.nav_time = current_nav_time;
+			break;
+		}
+
 		default:{
 			printf("ERROR: Packet type unknown\n");
 			exit(EXIT_FAILURE);
 			break;
 		}
 	}
+
+	// Propagate MAPC group ID (0 for standard non-MAPC frames)
+	notification.mapc_group_id = wlan.mapc_group_id;
 
 	return notification;
 
@@ -271,6 +285,28 @@ void Node :: SendResponsePacket(trigger_t &){
 				trigger_toFinishTX.GetTime());
 			break;
 		}
+
+		case STATE_TX_ICR:{
+			LOGS(node_params.save_node_logs, node_logger.file,
+				"%.15f;N%d;S%d;%s;%s SIFS (+stagger) completed after receiving ICF, sending ICR...\n",
+				SimTime(), node_params.node_id, node_state, LOG_I00, LOG_LVL3);
+			outportSelfStartTX(icr_notification);
+			time_to_trigger = SimTime() + current_tx_duration;
+			trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger, 13, 12));
+			break;
+		}
+
+		case STATE_TX_RTS:{
+			// MAPC Co-TDMA: sending MU-RTS/TXS after coordinator's own DATA/ACK
+			LOGS(node_params.save_node_logs, node_logger.file,
+				"%.15f;N%d;S%d;%s;%s Sending MU-RTS/TXS to N%d after SIFS\n",
+				SimTime(), node_params.node_id, node_state, LOG_I00, LOG_LVL3,
+				current_destination_id);
+			outportSelfStartTX(mu_rts_notification);
+			time_to_trigger = SimTime() + current_tx_duration;
+			trigger_toFinishTX.Set(FixTimeOffset(time_to_trigger, 13, 12));
+			break;
+		}
 	}
 }
 
@@ -330,10 +366,18 @@ void Node :: ScheduleTransmission(int first_packet_type){
 		LOGS(node_params.save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission of TF #%d started\n",
 			SimTime(), node_params.node_id, node_state, LOG_F04, LOG_LVL3, tf_notification.packet_id);
+	} else if (first_packet_type == PACKET_TYPE_MU_RTS_TXS) {
+		LOGS(node_params.save_node_logs,node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Transmission of MU-RTS/TXS #%d started\n",
+			SimTime(), node_params.node_id, node_state, LOG_F04, LOG_LVL3, mu_rts_notification.packet_id);
 	} else {
 		LOGS(node_params.save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission of DATA #%d started\n",
 			SimTime(), node_params.node_id, node_state, LOG_F04, LOG_LVL3, data_notification.packet_id);
+		// 2-way path (no RTS/CTS): count DATA TX here since SendResponsePacket is never called
+		++node_stats.data_packets_sent;
+		++node_stats.data_packets_sent_per_sta[current_destination_id - node_params.node_id - 1];
+		++performance_report.data_packets_sent;
 	}
 
 	// ------------------------------------------------------------------------
@@ -352,6 +396,8 @@ void Node :: ScheduleTransmission(int first_packet_type){
 		icf_notification.tx_info.preoccupancy_duration = time_rand_value;
 	} else if (first_packet_type == PACKET_TYPE_TF) {
 		tf_notification.tx_info.preoccupancy_duration = time_rand_value;
+	} else if (first_packet_type == PACKET_TYPE_MU_RTS_TXS) {
+		mu_rts_notification.tx_info.preoccupancy_duration = time_rand_value;
 	} else {
 		data_notification.tx_info.preoccupancy_duration = time_rand_value;
 	}
@@ -517,6 +563,10 @@ void Node :: PrepareNewTransmission(){
 			first_packet_buffer_icf.packet_id, limited_num_packets_aggregated,
 			first_packet_buffer_icf.timestamp_generated, current_tx_duration);
 
+		// Broadcast ICF to the entire MAPC group
+		icf_notification.destination_id = NODE_ID_MAPC_BROADCAST;
+		icf_notification.mapc_group_id  = wlan.mapc_group_id;
+
 		// Reset the flag that indicates whether the tx power changed or not
 		sr_state.flag_change_in_tx_power = FALSE;
 
@@ -561,32 +611,24 @@ void Node :: EndBackoff(trigger_t &){
 	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s EndBackoff()\n",
 			SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL1);
 
-	/* ****************************************
-	/* SPATIAL REUSE OPERATION
-	 *
-	 *  Determine the parameters to be used according
-	 *  to the SR operation (in case of having detected a TXOP).
-	 *
-	 * *****************************************/
-	if (sr_state.spatial_reuse_enabled) {
-		LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s sr_state.txop_sr_identified = %d\n",
-			SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL1, sr_state.txop_sr_identified);
-		sr_state.flag_change_in_tx_power = TRUE;
-		if(sr_state.txop_sr_identified) {
-		// Apply the transmission power limitation
-		sr_state.current_tx_power_sr = sr_state.next_tx_power_limit;
-		// In order to request a new MCS (the tx power may have changed)
-		for(int n = 0; n < wlan.num_stas; n++) {
-			change_modulation_flag[n] = TRUE;
+	// Spatial Reuse: apply SR TX power/PD parameters if TXOP was identified
+	ApplySRParametersAtBackoffEnd();
+
+	// Select MAPC or standard frame exchange sequence
+	if (wlan.mapc_enabled) {
+		if (wlan.mapc_method_id == CO_TDMA) {
+			exchange_sequence = IEEE_802_11_COTDMA;
+		} else {
+			exchange_sequence = IEEE_802_11_COBF_COSR;
 		}
+		num_coordinated_aps = wlan.num_mapc_peers;
+		for (int i = 0; i < num_coordinated_aps; ++i)
+			coordinated_ap_ids[i] = wlan.mapc_peer_ap_ids[i];
 	} else {
-		// Use default values
+		exchange_sequence = node_params.rts_cts_enabled ? IEEE_802_11_RTS_CTS : IEEE_802_11_NO_RTS_CTS;
 	}
-	if(node_params.save_node_logs) fprintf(node_logger.file, "%.15f;N%d;S%d;%s;%s Intended values for the next TX: "
-		"pd = %f dBm, Tx Power = %f dBm\n", SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL3,
-		ConvertPower(PW_TO_DBM, sr_state.current_obss_pd_threshold), ConvertPower(PW_TO_DBM, sr_state.current_tx_power_sr));
-	}
-	/* **************************************** */
+	mapc_seq_pos = 0;
+	mapc_icr_received_count = 0;
 
 	// Sergio on 26th June 2018:
 	// - Compute average BO waiting time
@@ -690,28 +732,38 @@ void Node :: MyTxFinished(trigger_t &){
 
 	switch(node_state){
 
-		case STATE_TX_RTS:{		// Wait for CTS
+		case STATE_TX_RTS:{
 
-			// Set CTS timeout and change state to STATE_WAIT_CTS
-			Notification notification = GenerateNotification(PACKET_TYPE_RTS, current_destination_id,
-				rts_notification.packet_id, limited_num_packets_aggregated,
-				rts_notification.timestamp_generated, TX_DURATION_NONE);
+			if (wlan.mapc_enabled && wlan.mapc_method_id == CO_TDMA) {
+				// MAPC Co-TDMA: MU-RTS/TXS finished — restart coordinator
+				Notification notification = GenerateNotification(PACKET_TYPE_MU_RTS_TXS, current_destination_id,
+					mu_rts_notification.packet_id, mu_rts_notification.tx_info.num_packets_aggregated,
+					mu_rts_notification.timestamp_generated, TX_DURATION_NONE);
+				outportSelfFinishTX(notification);
+				LOGS(node_params.save_node_logs, node_logger.file,
+					"%.15f;N%d;S%d;%s;%s MU-RTS/TXS #%d tx finished. Restarting coordinator.\n",
+					SimTime(), node_params.node_id, node_state, LOG_G00, LOG_LVL2,
+					notification.packet_id);
+				RestartNode(FALSE);
+			} else {
+				// Normal RTS: wait for CTS
+				// Set CTS timeout and change state to STATE_WAIT_CTS
+				Notification notification = GenerateNotification(PACKET_TYPE_RTS, current_destination_id,
+					rts_notification.packet_id, limited_num_packets_aggregated,
+					rts_notification.timestamp_generated, TX_DURATION_NONE);
 
-			outportSelfFinishTX(notification);
+				outportSelfFinishTX(notification);
 
-			// Sergio on 2018/06/22
-			// - Time out should be equal to the collision time, i,e., T_c = T_RTS + SIFS + T_CTS minus T_RTS (already txed)
+				// Time out = T_c = T_RTS + SIFS + T_CTS minus T_RTS (already txed)
+				time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration;
+				trigger_CTS_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
+				node_state = STATE_WAIT_CTS;
 
-			// time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration + DIFS;
-			time_to_trigger = SimTime() + SIFS + notification.tx_info.cts_duration;
-
-			trigger_CTS_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
-
-			node_state = STATE_WAIT_CTS;
-
-			LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s RTS #%d tx finished. Waiting for CTS until %.12f\n",
-				SimTime(), node_params.node_id, node_state, LOG_G00, LOG_LVL2,
-				notification.packet_id, trigger_CTS_timeout.GetTime());
+				LOGS(node_params.save_node_logs,node_logger.file,
+					"%.15f;N%d;S%d;%s;%s RTS #%d tx finished. Waiting for CTS until %.12f\n",
+					SimTime(), node_params.node_id, node_state, LOG_G00, LOG_LVL2,
+					notification.packet_id, trigger_CTS_timeout.GetTime());
+			}
 
 			break;
 		}
@@ -772,9 +824,11 @@ void Node :: MyTxFinished(trigger_t &){
 
 		case STATE_TX_ICF:{		// Wait for ICR (MAPC response to ICF, analogous to CTS after RTS)
 
-			Notification notification = GenerateNotification(PACKET_TYPE_ICF, current_destination_id,
+			// Use NODE_ID_MAPC_BROADCAST so HandleFinishTX_StateRxIcf guard passes at coordinated APs
+			Notification notification = GenerateNotification(PACKET_TYPE_ICF, NODE_ID_MAPC_BROADCAST,
 				icf_notification.packet_id, limited_num_packets_aggregated,
 				icf_notification.timestamp_generated, TX_DURATION_NONE);
+			notification.mapc_group_id = wlan.mapc_group_id;
 
 			outportSelfFinishTX(notification);
 
@@ -791,21 +845,45 @@ void Node :: MyTxFinished(trigger_t &){
 			break;
 		}
 
-		case STATE_TX_TF:{		// TF sent — wait for DATA from triggered node
+		case STATE_TX_ICR:{		// ICR sent — wait for next MAPC frame (MU-RTS/TXS or TF)
+			outportSelfFinishTX(icr_notification);
+			if (wlan.mapc_method_id == CO_TDMA) {
+				// Co-TDMA: wait for MU-RTS/TXS after coordinator's DATA/ACK exchange
+				node_state = STATE_WAIT_MU_RTS;
+				time_to_trigger = SimTime() + SIFS + data_duration + SIFS + ack_duration
+								+ SIFS + TIME_OUT_EXTRA_TIME;
+				trigger_NAV_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
+			} else {
+				// Co-BF / Co-SR: wait for TF
+				node_state = STATE_WAIT_TF;
+				time_to_trigger = SimTime() + SIFS + TIME_OUT_EXTRA_TIME;
+				trigger_DATA_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
+			}
+			LOGS(node_params.save_node_logs, node_logger.file,
+				"%.15f;N%d;S%d;%s;%s ICR tx finished; waiting for %s\n",
+				SimTime(), node_params.node_id, node_state, LOG_G00, LOG_LVL2,
+				(wlan.mapc_method_id == CO_TDMA) ? "MU-RTS/TXS" : "TF");
+			break;
+		}
 
-			Notification notification = GenerateNotification(PACKET_TYPE_TF, current_destination_id,
+		case STATE_TX_TF:{		// TF sent — coordinator starts DATA simultaneously (Co-BF/Co-SR)
+
+			// Use NODE_ID_MAPC_BROADCAST to match the TF start notification (broadcast frame)
+			Notification notification = GenerateNotification(PACKET_TYPE_TF, NODE_ID_MAPC_BROADCAST,
 				tf_notification.packet_id, tf_notification.tx_info.num_packets_aggregated,
 				tf_notification.timestamp_generated, TX_DURATION_NONE);
+			notification.mapc_group_id = wlan.mapc_group_id;
 
 			outportSelfFinishTX(notification);
 
-			// After TF, the triggered node is expected to transmit DATA
-			time_to_trigger = SimTime() + SIFS + TIME_OUT_EXTRA_TIME;
-			trigger_DATA_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
-			node_state = STATE_WAIT_DATA;
-
-			LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s TF #%d tx finished. Waiting for DATA...\n",
+			LOGS(node_params.save_node_logs,node_logger.file,
+				"%.15f;N%d;S%d;%s;%s TF #%d tx finished. Coordinator starts DATA simultaneously.\n",
 				SimTime(), node_params.node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
+
+			// Coordinator also transmits DATA immediately after SIFS (simultaneous with coordinated AP)
+			exchange_sequence = IEEE_802_11_NO_RTS_CTS;
+			SelectDestination();
+			PrepareNewTransmission();
 
 			break;
 		}
@@ -819,5 +897,145 @@ void Node :: MyTxFinished(trigger_t &){
 
 	// LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s  MyTxFinished()\n", SimTime(), node_params.node_id, node_state, LOG_G01, LOG_LVL1);
 };
+
+/**
+ * HandleFinishTX_StateRxIcf: coordinated AP responds with ICR after receiving ICF
+ */
+void Node :: HandleFinishTX_StateRxIcf(const Notification &notification) {
+	if (notification.packet_type != PACKET_TYPE_ICF
+			|| notification.destination_id != NODE_ID_MAPC_BROADCAST
+			|| notification.mapc_group_id != wlan.mapc_group_id) return;
+
+	// CCA check: same pattern as RTS -> CTS
+	GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
+		channels_free, current_left_channel, current_right_channel,
+		&channel_power, current_pd, timestampt_channel_becomes_free, SimTime(), PIFS);
+
+	GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
+		current_left_channel, current_right_channel, node_params.current_primary_channel,
+		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+
+	if (channels_for_tx[0] == TX_NOT_POSSIBLE) {
+		RestartNode(TRUE);
+		return;
+	}
+
+	current_left_channel  = GetFirstOrLastTrueElemOfArray(FIRST_TRUE_IN_ARRAY,
+		channels_for_tx, NUM_CHANNELS_KOMONDOR);
+	current_right_channel = GetFirstOrLastTrueElemOfArray(LAST_TRUE_IN_ARRAY,
+		channels_for_tx, NUM_CHANNELS_KOMONDOR);
+
+	current_destination_id = coordinator_ap_id;
+	node_state             = STATE_TX_ICR;
+	current_tx_duration    = cts_duration;
+
+	icr_notification = GenerateNotification(PACKET_TYPE_ICR, coordinator_ap_id,
+		notification.packet_id, notification.tx_info.num_packets_aggregated,
+		notification.timestamp_generated, current_tx_duration);
+	icr_notification.mapc_group_id = wlan.mapc_group_id;
+	icr_notification.tx_duration = current_tx_duration;
+
+	sr_state.flag_change_in_tx_power = FALSE;
+
+	// Stagger: position 0 → SIFS; position k → SIFS + k*(cts_duration + SIFS)
+	double sifs_delay = SIFS + mapc_peer_position * (cts_duration + SIFS);
+	time_to_trigger = SimTime() + sifs_delay;
+	trigger_SIFS.Set(FixTimeOffset(time_to_trigger, 13, 12));
+
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s ICF done, sending ICR after %.9f s (stagger pos %d)\n",
+		SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3,
+		sifs_delay, mapc_peer_position);
+}
+
+/**
+ * HandleFinishTX_StateRxIcr: coordinator collects ICRs and proceeds when all received
+ */
+void Node :: HandleFinishTX_StateRxIcr(const Notification &notification) {
+	if (notification.packet_type != PACKET_TYPE_ICR
+			|| notification.destination_id != node_params.node_id) return;
+
+	++mapc_icr_received_count;
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s ICR received from N%d (%d/%d)\n",
+		SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3,
+		notification.source_id, mapc_icr_received_count, num_coordinated_aps);
+
+	if (mapc_icr_received_count < num_coordinated_aps) {
+		// Wait for next ICR
+		node_state = STATE_WAIT_ICR;
+		time_to_trigger = SimTime() + SIFS + cts_duration + SIFS + TIME_OUT_EXTRA_TIME;
+		trigger_CTS_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
+	} else {
+		// All ICRs received
+		trigger_CTS_timeout.Cancel();
+		mapc_icr_received_count = 0;
+		ProceedAfterIcr();
+	}
+}
+
+/**
+ * ProceedAfterIcr: coordinator decides next action after all ICRs collected
+ */
+void Node :: ProceedAfterIcr() {
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s All ICRs collected. Proceeding with %s\n",
+		SimTime(), node_params.node_id, node_state, LOG_F04, LOG_LVL2,
+		(wlan.mapc_method_id == CO_TDMA) ? "Co-TDMA DATA" : "Co-BF/SR TF");
+
+	if (wlan.mapc_method_id == CO_TDMA) {
+		// Coordinator sends its own DATA first (2-way: DATA/ACK)
+		exchange_sequence = IEEE_802_11_NO_RTS_CTS;
+		SelectDestination();
+		PrepareNewTransmission();
+	} else {
+		// Co-BF / Co-SR: send TF to trigger simultaneous DATA
+		node_state = STATE_TX_TF;
+		current_tx_duration = rts_duration;
+
+		Notification fpb = buffer.GetFirstPacket();
+		tf_notification = GenerateNotification(PACKET_TYPE_TF, NODE_ID_MAPC_BROADCAST,
+			fpb.packet_id, limited_num_packets_aggregated,
+			fpb.timestamp_generated, current_tx_duration);
+		tf_notification.mapc_group_id = wlan.mapc_group_id;
+
+		sr_state.flag_change_in_tx_power = FALSE;
+		ScheduleTransmission(PACKET_TYPE_TF);
+	}
+}
+
+/**
+ * HandleFinishTX_StateRxMuRts: coordinated AP (Co-TDMA) received MU-RTS/TXS, starts DATA
+ */
+void Node :: HandleFinishTX_StateRxMuRts(const Notification &notification) {
+	if (notification.packet_type != PACKET_TYPE_MU_RTS_TXS
+			|| notification.destination_id != node_params.node_id) return;
+
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s MU-RTS/TXS done, starting DATA exchange\n",
+		SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3);
+
+	// Coordinated AP uses 2-way DATA/ACK for its TDMA slot
+	exchange_sequence = IEEE_802_11_NO_RTS_CTS;
+	SelectDestination();
+	PrepareNewTransmission();
+}
+
+/**
+ * HandleFinishTX_StateRxTf: coordinated AP (Co-BF/Co-SR) received TF, starts simultaneous DATA
+ */
+void Node :: HandleFinishTX_StateRxTf(const Notification &notification) {
+	if (notification.packet_type != PACKET_TYPE_TF
+			|| notification.mapc_group_id != wlan.mapc_group_id) return;
+
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s TF done, starting simultaneous DATA transmission\n",
+		SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3);
+
+	// Coordinated AP transmits DATA simultaneously with coordinator
+	exchange_sequence = IEEE_802_11_NO_RTS_CTS;
+	SelectDestination();
+	PrepareNewTransmission();
+}
 
 #endif /* NODE_PACKET_METHODS_H */

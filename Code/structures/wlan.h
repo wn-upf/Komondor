@@ -72,6 +72,8 @@ struct Wlan
 	int mapc_enabled;
 	int mapc_group_id; 			///> MAPC group ID
 	int mapc_method_id;			///> MAPC scheme in place
+	int num_mapc_peers;			///> Number of peer APs in the same MAPC group
+	int *mapc_peer_ap_ids;		///> node_ids of peer APs (allocated by input_loader)
 
 	/**
 	 * Set the size of the array list_sta_id

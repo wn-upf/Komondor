@@ -11,7 +11,7 @@
  * Set it during initialization or before a transmission to switch modes.
  *
  * Predefined constants:
- *   IEEE_802_11: DATA -> ACK (no RTS/CTS)
+ *   IEEE_802_11_NO_RTS_CTS: DATA -> ACK (no RTS/CTS)
  *   IEEE_802_11_RTS_CTS: RTS -> CTS -> DATA -> ACK
  *   IEEE_802_11_COTDMA: 
  *   IEEE_802_11_COBF_COSR: 
@@ -23,7 +23,7 @@ struct PacketExchangeSequence {
 };
 
 /* IEEE 802.11 2-way exchange: DATA -> ACK (RTS/CTS disabled) */
-static const PacketExchangeSequence IEEE_802_11 = {
+static const PacketExchangeSequence IEEE_802_11_NO_RTS_CTS = {
 	2,
 	{PACKET_TYPE_DATA, PACKET_TYPE_ACK, -1, -1, -1, -1, -1, -1},
 	"IEEE 802.11 (RTS/CTS disabled)"

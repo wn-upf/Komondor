@@ -574,10 +574,11 @@
 #define IX_CW_MIN_DEFAULT			24
 #define IX_CW_MAX_DEFAULT			25
 #define IX_CW_STAGE_MAX				26
-#define IX_BSS_COLOR				27
-#define IX_SRG						28
-#define IX_NON_SRG_OBSS_PD			29
-#define IX_SRG_OBSS_PD				30
+#define IX_RTS_CTS_ENABLED			27	///> 1 = 4-way RTS/CTS/DATA/ACK, 0 = 2-way DATA/ACK only
+#define IX_BSS_COLOR				28
+#define IX_SRG						29
+#define IX_NON_SRG_OBSS_PD			30
+#define IX_SRG_OBSS_PD				31
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1

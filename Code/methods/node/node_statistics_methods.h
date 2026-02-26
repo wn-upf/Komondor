@@ -124,6 +124,7 @@ void Node :: PrintNodeInfo(int info_detail_level){
 	printf("%s node_params.current_dcb_policy = %d\n", LOG_LVL4, node_params.current_dcb_policy);
 	printf("%s node_params.tx_power_default = %f pW (%f dBm)\n", LOG_LVL4, node_params.tx_power_default, ConvertPower(PW_TO_DBM, node_params.tx_power_default));
 	printf("%s node_params.sensitivity_default = %f pW (%f dBm)\n", LOG_LVL4, node_params.sensitivity_default, ConvertPower(PW_TO_DBM, node_params.sensitivity_default));
+	printf("%s node_params.rts_cts_enabled = %d\n", LOG_LVL4, node_params.rts_cts_enabled);
 	printf("%s spatial_reuse_enabled = %d\n", LOG_LVL4, (node_params.bss_color>=0));
 	if(node_params.bss_color>=0) {
 		printf("%s node_params.bss_color = %d\n", LOG_LVL5, node_params.bss_color);
@@ -166,6 +167,7 @@ void Node :: WriteNodeInfo(Logger node_logger, int info_detail_level, std::strin
 	fprintf(node_logger.file, "%s - node_params.min_channel_allowed = %d\n", header_str.c_str(), node_params.min_channel_allowed);
 	fprintf(node_logger.file, "%s - node_params.max_channel_allowed = %d\n", header_str.c_str(), node_params.max_channel_allowed);
 	fprintf(node_logger.file, "%s - node_params.current_dcb_policy = %d\n", header_str.c_str(), node_params.current_dcb_policy);
+	fprintf(node_logger.file, "%s - node_params.rts_cts_enabled = %d\n", header_str.c_str(), node_params.rts_cts_enabled);
 	fprintf(node_logger.file, "%s - spatial_reuse_enabled = %d\n", header_str.c_str(), (node_params.bss_color>=0));
 	if(node_params.bss_color>=0) {
 		fprintf(node_logger.file, "%s node_params.bss_color = %d\n", header_str.c_str(), node_params.bss_color);

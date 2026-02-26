@@ -91,6 +91,8 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                 
                 wlan_container[wlan_ix].wlan_code = wlan_code_aux;
                 wlan_container[wlan_ix].mapc_enabled = 0;
+                wlan_container[wlan_ix].num_mapc_peers = 0;
+                wlan_container[wlan_ix].mapc_peer_ap_ids = NULL;
                 ++wlan_ix;
             }
             free(tmp_nodes);
@@ -260,6 +262,12 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
             free(tmp_nodes);
             tmp_nodes = strdup(line_nodes);
             node_container[node_ix].node_params.cw_stage_max = atoi(GetField(tmp_nodes, IX_CW_STAGE_MAX));
+            free(tmp_nodes);
+
+			// RTS/CTS mode
+            tmp_nodes = strdup(line_nodes);
+            const char* rts_cts_char = GetField(tmp_nodes, IX_RTS_CTS_ENABLED);
+            node_container[node_ix].node_params.rts_cts_enabled = (rts_cts_char != NULL) ? atoi(rts_cts_char) : TRUE;
             free(tmp_nodes);
 
             // Spatial Reuse
@@ -508,6 +516,24 @@ void Komondor::GenerateMapcConfiByReadingInputFile(const char *mapc_filename) {
 			}
 		}
 		fclose(stream);
+		// Build peer AP ID lists for each MAPC-enabled WLAN
+		int *tmp_peers = new int[total_wlans_number];
+		for (int w = 0; w < total_wlans_number; ++w) {
+			if (!wlan_container[w].mapc_enabled) continue;
+			int count = 0;
+			for (int w2 = 0; w2 < total_wlans_number; ++w2) {
+				if (w2 == w) continue;
+				if (wlan_container[w2].mapc_enabled
+						&& wlan_container[w2].mapc_group_id == wlan_container[w].mapc_group_id) {
+					tmp_peers[count++] = wlan_container[w2].ap_id;
+				}
+			}
+			wlan_container[w].num_mapc_peers = count;
+			wlan_container[w].mapc_peer_ap_ids = new int[count];
+			for (int i = 0; i < count; ++i)
+				wlan_container[w].mapc_peer_ap_ids[i] = tmp_peers[i];
+		}
+		delete[] tmp_peers;
 		if (print_system_logs) printf("%s MAPC Groups configured!\n", LOG_LVL2);
 	}
 }

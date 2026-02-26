@@ -146,6 +146,7 @@ struct Notification
 	int modulation_id;			///> Modulation being used during the transmission
 	double timestamp;			///> Timestamp when notification is sent
 	double timestamp_generated;	///> Timestamp when notification was generated
+	int mapc_group_id;			///> MAPC group ID (0 = standard frame; >0 = group-addressed MAPC)
 	TxInfo tx_info; 			///> Specific transmission info (may not be checked by the others nodes)
 
 	/**

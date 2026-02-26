@@ -65,6 +65,9 @@ struct NodeParameters {
 	int         bss_color;					///> BSS color
 	int         srg;						///> Spatial Reuse Group (SRG)
 
+	// --- MAC frame exchange ---
+	int         rts_cts_enabled;			///> 1 = 4-way (RTS/CTS/DATA/ACK), 0 = 2-way (DATA/ACK only)
+
 	// --- Current / mutable configuration ---
 	// Initialized from input; may be updated during simulation (e.g., by ApplyNewConfiguration).
 	int         current_primary_channel;	///> Currently active primary channel
@@ -86,6 +89,7 @@ struct NodeParameters {
 		printf("%s current_max_bandwidth = %d\n", LOG_LVL4, current_max_bandwidth);
 		printf("%s tx_power_default = %f pW (%f dBm)\n", LOG_LVL4, tx_power_default, ConvertPower(PW_TO_DBM, tx_power_default));
 		printf("%s sensitivity_default = %f pW (%f dBm)\n", LOG_LVL4, sensitivity_default, ConvertPower(PW_TO_DBM, sensitivity_default));
+		printf("%s rts_cts_enabled = %d\n", LOG_LVL4, rts_cts_enabled);
 		printf("\n");
 	}
 
@@ -112,6 +116,8 @@ struct NodeParameters {
 			sim_time, node_id, LOG_F00, LOG_LVL4, tx_power_default, ConvertPower(PW_TO_DBM, tx_power_default));
 		fprintf(logger.file, "%.15f;N%d;%s;%s sensitivity_default = %f pW (%f dBm)\n",
 			sim_time, node_id, LOG_F00, LOG_LVL4, sensitivity_default, ConvertPower(PW_TO_DBM, sensitivity_default));
+		fprintf(logger.file, "%.15f;N%d;%s;%s rts_cts_enabled = %d\n",
+			sim_time, node_id, LOG_F00, LOG_LVL4, rts_cts_enabled);
 	}
 };
 

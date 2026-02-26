@@ -367,30 +367,60 @@ void Node:: CallSensing(trigger_t &){
 		// time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
 		ScheduleBackoffAfterDIFS();
 	} else {
-		/* ****************************************
-		/* SPATIAL REUSE OPERATION
-		 * *****************************************/
-		int loss_reason_sr = 1;	// lost by default
-		// Check if the packet can be decoded with the CST indicated by the SR operation
-		if (loss_reason == PACKET_NOT_LOST && sr_state.spatial_reuse_enabled) {
-			// TODO: method for checking whether the detected transmission can be decoded or not
-			loss_reason_sr = IsPacketLost(node_params.current_primary_channel, nav_notification, nav_notification,
-				current_sinr, node_params.capture_effect, sr_state.potential_obss_pd_threshold, power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
-			if (loss_reason_sr != PACKET_NOT_LOST && node_is_transmitter) {
-				sr_state.txop_sr_identified = TRUE;	// TXOP identified!
-				sr_state.current_obss_pd_threshold = sr_state.potential_obss_pd_threshold;	// Update the pd
-				if(node_params.save_node_logs) fprintf(node_logger.file,
-					"%.15f;N%d;S%d;%s;%s TXOP detected for OBSS_PD = %f dBm (in CallSensing())\n",
-					SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, sr_state.current_obss_pd_threshold));
-			}
-		/* **************************************** */
-		} else {
-			LOGS(node_params.save_node_logs, node_logger.file,
-				"%.15f;N%d;S%d;%s;%s BO canot be resumed!\n",
-				SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL5);
-		}
+		// Spatial Reuse: check for SR TXOP when BO cannot be resumed
+		CheckSRTXOPAtCallSensing();
 	}
 
+}
+
+/**
+ * Handle InportSomeNodeStartTX for STATE_WAIT_ICR (coordinator waiting for ICR)
+ */
+void Node :: HandleStartTX_StateWaitIcr(const Notification &notification) {
+	if (notification.packet_type == PACKET_TYPE_ICR
+			&& notification.destination_id == node_params.node_id
+			&& notification.mapc_group_id == wlan.mapc_group_id) {
+		trigger_CTS_timeout.Cancel();
+		incoming_notification = notification;
+		node_state = STATE_RX_ICR;
+		LOGS(node_params.save_node_logs, node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Received ICR from N%d -> STATE_RX_ICR\n",
+			SimTime(), node_params.node_id, STATE_RX_ICR, LOG_D07, LOG_LVL2,
+			notification.source_id);
+	}
+}
+
+/**
+ * Handle InportSomeNodeStartTX for STATE_WAIT_MU_RTS (coordinated AP waiting for MU-RTS/TXS)
+ */
+void Node :: HandleStartTX_StateWaitMuRts(const Notification &notification) {
+	if (notification.packet_type == PACKET_TYPE_MU_RTS_TXS
+			&& notification.destination_id == node_params.node_id) {
+		trigger_NAV_timeout.Cancel();
+		incoming_notification = notification;
+		node_state = STATE_RX_MU_RTS;
+		LOGS(node_params.save_node_logs, node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Received MU-RTS/TXS from N%d -> STATE_RX_MU_RTS\n",
+			SimTime(), node_params.node_id, STATE_RX_MU_RTS, LOG_D07, LOG_LVL2,
+			notification.source_id);
+	}
+}
+
+/**
+ * Handle InportSomeNodeStartTX for STATE_WAIT_TF (coordinated AP waiting for TF)
+ */
+void Node :: HandleStartTX_StateWaitTf(const Notification &notification) {
+	if (notification.packet_type == PACKET_TYPE_TF
+			&& notification.destination_id == NODE_ID_MAPC_BROADCAST
+			&& notification.mapc_group_id == wlan.mapc_group_id) {
+		trigger_DATA_timeout.Cancel();
+		incoming_notification = notification;
+		node_state = STATE_RX_TF;
+		LOGS(node_params.save_node_logs, node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Received TF from N%d -> STATE_RX_TF\n",
+			SimTime(), node_params.node_id, STATE_RX_TF, LOG_D07, LOG_LVL2,
+			notification.source_id);
+	}
 }
 
 #endif /* NODE_BACKOFF_METHODS_H */
