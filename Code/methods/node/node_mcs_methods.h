@@ -39,9 +39,9 @@ void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
 
 	// RSSI thresholds (dBm, baseline for 20 MHz / ch_num_ix=0).
 	// For wider bandwidths add ch_num_ix*3 dB to each threshold.
-	static const int N_THRESHOLDS = 11;
+	static const int N_THRESHOLDS = 13;
 	static const double MCS_THRESHOLDS[N_THRESHOLDS] = {
-		-79, -77, -74, -70, -66, -65, -64, -59, -57, -54, -52
+		-79, -77, -74, -70, -66, -65, -64, -59, -57, -54, -52, -48, -46
 	};
 	static const int MCS_VALUES[N_THRESHOLDS + 1] = {
 		MODULATION_BPSK_1_2,    // <  -79
@@ -55,7 +55,9 @@ void SelectMCSResponse(int *mcs_response, double power_rx_interest) {
 		MODULATION_256QAM_3_4,  // >= -59, < -57
 		MODULATION_256QAM_5_6,  // >= -57, < -54
 		MODULATION_1024QAM_3_4, // >= -54, < -52
-		MODULATION_1024QAM_5_6  // >= -52
+		MODULATION_1024QAM_5_6, // >= -52, < -48
+		MODULATION_4096QAM_3_4, // >= -48, < -46
+		MODULATION_4096QAM_5_6  // >= -46
 	};
 
 	double pw_rx_dbm = ConvertPower(PW_TO_DBM, power_rx_interest);

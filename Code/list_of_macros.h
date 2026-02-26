@@ -86,9 +86,16 @@
 #define STATE_NAV		12	///> Virtual Carrier Sense (process only RTS and CTS)
 #define STATE_SLEEP		13	///> Virtual Carrier Sense (process only RTS and CTS)
 // MAPC coordination states
-#define STATE_TX_ICF	14	///> Transmitting ICF (MAPC Initial Control Frame)
-#define STATE_WAIT_ICR	15	///> Waiting ICR response after ICF
-#define STATE_TX_TF		16	///> Transmitting Trigger Frame (TF)
+#define STATE_TX_ICF		14	///> Transmitting ICF (MAPC Initial Control Frame)
+#define STATE_WAIT_ICR		15	///> Waiting ICR response after ICF
+#define STATE_TX_TF			16	///> Transmitting Trigger Frame (TF)
+#define STATE_RX_ICF		17	///> Receiving ICF (coordinated AP)
+#define STATE_RX_ICR		18	///> Receiving ICR (coordinator AP)
+#define STATE_TX_ICR		19	///> Transmitting ICR (coordinated AP)
+#define STATE_WAIT_MU_RTS	20	///> Waiting MU-RTS/TXS from coordinator (Co-TDMA)
+#define STATE_RX_MU_RTS		21	///> Receiving MU-RTS/TXS
+#define STATE_WAIT_TF		22	///> Waiting TF from coordinator (Co-BF/Co-SR)
+#define STATE_RX_TF			23	///> Receiving TF
 
 // Node types
 #define NODE_TYPE_UNKWNOW	-1	///> Unknown (none) node type
@@ -133,8 +140,9 @@
 #define NUM_PACKET_LOST_REASONS			12	///> Number of reasons whereby a packet can be lost
 
 // Destination and source node IDs
-#define NODE_ID_NONE	-1
-#define WLAN_ID_NONE	-1
+#define NODE_ID_NONE			-1
+#define NODE_ID_MAPC_BROADCAST	-2	///> Group-addressed MAPC frames (ICF, TF, MU-RTS/TXS)
+#define WLAN_ID_NONE			-1
 
 // Packets
 #define NO_PACKET_ID				-1		///> Packet without ID
@@ -147,7 +155,7 @@
 #define PACKET_TYPE_CTS				5		///> CTS type
 
 // TXOP sharing
-#define PACKET_TYPE_MU_RTS_TXS		4		///> MU-RTS TXS type
+#define PACKET_TYPE_MU_RTS_TXS		9		///> MU-RTS TXS type (grants coordinated AP TX slot)
 
 // MAPC packets
 #define PACKET_TYPE_ICF         6		///> MAPC trigger frame type
@@ -328,6 +336,8 @@
 #define MODULATION_256QAM_5_6	10
 #define MODULATION_1024QAM_3_4	11
 #define MODULATION_1024QAM_5_6	12
+#define MODULATION_4096QAM_3_4	13
+#define MODULATION_4096QAM_5_6	14
 
 // Application parameters
 #define PACKET_BUFFER_SIZE		100		///> Size of the packets buffer
@@ -368,6 +378,9 @@
 #define IEEE_AX_BACK_LENGTH				432					///> Block-ACK length [bits]
 #define IEEE_AX_SU_SPATIAL_STREAMS		1					///> Number of spatial streams
 #define IEEE_AX_MAX_PPDU_DURATION		(5484 * MICRO_VALUE)///> Maximum PPDU duration (limits the A-MPDU operation)
+
+// TO BE DONE
+#define IEEE_BE_MAX_SU_SPATIAL_STREAMS		16					///> Number of spatial streams 802.11be
 
 #define MAC_HEADER						320 				///> Size of the MAC header (for data packets)
 

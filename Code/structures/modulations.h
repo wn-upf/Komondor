@@ -51,28 +51,30 @@
 #define _MCS_CONFIGURATION_
 
 struct Mcs_array {
-   static const int modulation_bits[12];
-   static const double coding_rates[12];
+   static const int modulation_bits[14];
+   static const double coding_rates[14];
 };
 
 // Sergio on 5 Oct 2017
 // - Include MCS indeces corresponding to IEEE 802.11ax
-const int Mcs_array::modulation_bits[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
-	1,	// MCS 0
-	2,	// MCS 1
-	2,	// MCS 2
-	4,	// MCS 3
-	4,	// MCS 4
-	6,	// MCS 5
-	6,	// MCS 6
-	6,	// MCS 7
-	8,	// MCS 8
-	8,	// MCS 9
-	10,	// MCS 10
-	10	// MCS 11
+const int Mcs_array::modulation_bits[14] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
+	1,	// MCS 0: BPSK
+	2,	// MCS 1: QPSK
+	2,	// MCS 2: QPSK
+	4,	// MCS 3: 16-QAM
+	4,	// MCS 4: 16-QAM
+	6,	// MCS 5: 64-QAM
+	6,	// MCS 6: 64-QAM
+	6,	// MCS 7: 64-QAM
+	8,	// MCS 8: 256-QAM
+	8,	// MCS 9: 256-QAM
+	10,	// MCS 10: 1024-QAM
+	10,	// MCS 11: 1024-QAM
+	12, // MCS 12: 4096-QAM (11be)
+    12  // MCS 13: 4096-QAM (11be)
 };
 
-const double Mcs_array::coding_rates[12] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
+const double Mcs_array::coding_rates[14] = {	// row: MCS index, column 1: bits of modulation & column 2: coding rate
 	1/double(2),	// MCS 0
 	1/double(2),	// MCS 1
 	3/double(4),	// MCS 2
@@ -84,7 +86,9 @@ const double Mcs_array::coding_rates[12] = {	// row: MCS index, column 1: bits o
 	3/double(4),	// MCS 8
 	5/double(6),	// MCS 9
 	3/double(4),	// MCS 10
-	5/double(6)		// MCS 11
+	5/double(6),	// MCS 11
+	3/double(4),	// MCS 12
+	5/double(6)		// MCS 13
 };
 
 /**
