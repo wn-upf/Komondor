@@ -1,5 +1,5 @@
 <p align="center"> 
-<img src="https://github.com/wn-upf/Komondor/blob/master/Documentation/Other/Images and resources/komondor_logo.png">
+<img src="https://github.com/wn-upf/Komondor/blob/dev/Documentation/Other/Images%20and%20resources/kom8ndor_logo.png">
 </p>
 
 # Komondor: An IEEE 802.11ax Simulator
