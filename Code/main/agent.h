@@ -65,7 +65,7 @@
 #include "../methods/agent/agent_methods.h"
 
 #include "../learning_modules/pre_processor.h"
-#include "../learning_modules/ml_model.h"
+#include "../learning_modules/learning_algorithm.h"
 
 // Agent component: "TypeII" represents components that are aware of the existence of the simulated time.
 component Agent : public TypeII{
@@ -154,7 +154,7 @@ component Agent : public TypeII{
 
         // File for writing node logs
         FILE *output_log_file;				///> File for logs in which the agent is involved
-        char own_file_path[32];				///> Name of the file for agent logs
+        char own_file_path[256];			///> Name of the file for agent logs
         Logger agent_logger;				///> struct containing the attributes needed for writing logs in a file
         char *header_string;				///> Header string for the logger
 
@@ -164,11 +164,11 @@ component Agent : public TypeII{
         Configuration configuration;					///> Configuration object
         Configuration new_configuration;				///> Object containing the new configuration to be set
         Configuration configuration_from_controller;	///> Configuration object obtained from the CC
-        int ml_output;	                            ///> Output of the ML model (previous step to the new configuration)
+        double ml_output;	                        ///> Output of the learning algorithm (double: arm index for bandits, pW for RTOT)
 
         // ML-based architecture (see https://arxiv.org/abs/1910.03510)
         PreProcessor pre_processor;             ///> Pre-processor object
-        MlModel ml_model;                       ///> ML model object
+        LearningAlgorithm learning_algorithm;   ///> Learning algorithm object
         int learning_allowed;                   ///> Flag to indicate whether learning is allowed or not
         int flag_compute_new_configuration; 	///> Flag to be activated in case of needing to compute a new configuration
 
@@ -221,14 +221,20 @@ void Agent :: Setup(){
 void Agent :: Start(){
 
 	// Create agent logs file if required
+	agent_logger.file = NULL;
 	if(save_agent_logs) {
 		// Name agent log file accordingly to the agent_id
-		sprintf(own_file_path,"%s_%s_A%d_%s.txt","../output/logs_output", simulation_code.c_str(), agent_id, wlan_code.c_str());
+		snprintf(own_file_path, sizeof(own_file_path), "%s_%s_A%d_%s.txt","../output/logs_output", simulation_code.c_str(), agent_id, wlan_code.c_str());
 		remove(own_file_path);
 		output_log_file = fopen(own_file_path, "at");
-		agent_logger.save_logs = save_agent_logs;
-		agent_logger.file = output_log_file;
-		agent_logger.SetVoidHeadString();
+		if(output_log_file == NULL) {
+			printf("WARNING: Cannot open agent log file %s - disabling agent logs\n", own_file_path);
+			save_agent_logs = 0;
+		} else {
+			agent_logger.save_logs = save_agent_logs;
+			agent_logger.file = output_log_file;
+			agent_logger.SetVoidHeadString();
+		}
 	}
 	LOGS(save_agent_logs, agent_logger.file, "%.18f;A%d;%s;%s Start()\n", SimTime(), agent_id, LOG_B00, LOG_LVL1);
 
@@ -292,9 +298,14 @@ void Agent :: InportReceivingInformationFromAp(Configuration &received_configura
 
 	// Process the information received from the AP
 	// 1 - Find the index of the current action
-	processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration, TRUE);
+	processed_configuration = pre_processor.EncodeConfiguration(configuration, TRUE);
+	// Clamp to valid range: floating-point equality in Encode can return -1 for each
+	// unmatched parameter, producing a negative composite index.
+	if (processed_configuration < 0 || processed_configuration >= num_arms) {
+		processed_configuration = 0;
+	}
 	// 2 - Compute the reward based on the observed performance
-	processed_reward = pre_processor.ProcessWlanPerformance(performance, type_of_reward);
+	processed_reward = pre_processor.ComputeReward(performance, type_of_reward);
 	//// 3 - Process the performance to obtain the corresponding reward according to the central controller
 	//if(controller_on) processed_reward_cc = pre_processor.ProcessWlanPerformance(performance, type_of_reward_cc);
 
@@ -345,7 +356,7 @@ void Agent :: SendNewConfigurationToAp(Configuration &configuration_to_send){
 	// Print the configuration (action) to be sent
     char device_code[10];
     sprintf(device_code, "A%d", agent_id);
-    processed_configuration = pre_processor.ProcessWlanConfiguration(MULTI_ARMED_BANDITS, configuration_to_send, FALSE);
+    processed_configuration = pre_processor.EncodeConfiguration(configuration_to_send, FALSE);
 	if(save_agent_logs) actions[processed_configuration].WriteAction(agent_logger, save_agent_logs, SimTime(), device_code);
 
 	// TODO (LOW PRIORITY): generate a trigger to simulate delays in the agent-node communication
@@ -557,34 +568,12 @@ void Agent :: ComputeNewConfiguration(){
 		// Compute a new configuration if information is up to date. Otherwise, request it to the AP and use it.
 		if ( CheckValidityOfData(configuration, performance, SimTime(), MAX_TIME_INFORMATION_VALID)
 				&& flag_information_available) {
-			// Process the obtained information before sending it to the controller
-			// Update the configuration according to the selected learning method
-			switch(learning_mechanism) {
-				/* Multi-Armed Bandits */
-				case MULTI_ARMED_BANDITS:{
-					// Update the configuration according to the MABs operation
-					ml_output = ml_model.ComputeIndividualConfiguration
-						(processed_configuration, processed_reward, agent_logger,
-						SimTime(), list_of_available_actions);
-					//PrintOrWriteAgentStatistics();
-					break;
-				}
-				case RTOT_ALGORITHM:{
-                    ml_output = ml_model.ComputeIndividualConfiguration
-						(processed_configuration, processed_reward, agent_logger,
-						SimTime(), list_of_available_actions);
-					break;
-				}
-				default:{
-					printf("[AGENT] ERROR: %d is not a correct learning mechanism\n", learning_mechanism);
-					ml_model.PrintAvailableLearningMechanisms();
-					exit(EXIT_FAILURE);
-					break;
-				}
-			}
-			// Process the configuration from the output of the ML method
-			new_configuration = pre_processor.ProcessMLOutput(learning_mechanism, configuration, ml_output);
-			// Send the configuration to the AP
+			// Run the learning algorithm: observe last reward, select next action
+			ml_output = learning_algorithm.Update(processed_configuration, processed_reward,
+			                                      list_of_available_actions);
+			// Decode the algorithm output into a Configuration and send it to the AP
+			new_configuration = configuration;
+			pre_processor.DecodeAction(ml_output, &new_configuration);
 			SendNewConfigurationToAp(new_configuration);
 
 		} else {
@@ -670,10 +659,11 @@ void Agent :: InitializeMlPipeline() {
  */
 void Agent :: InitializePreProcessor() {
 
-	pre_processor.num_arms = num_arms;
-	pre_processor.num_arms_channel = num_arms_channel;
-	pre_processor.num_arms_sensitivity = num_arms_sensitivity;
-	pre_processor.num_arms_tx_power = num_arms_tx_power;
+	pre_processor.learning_mechanism     = learning_mechanism;
+	pre_processor.num_arms               = num_arms;
+	pre_processor.num_arms_channel       = num_arms_channel;
+	pre_processor.num_arms_sensitivity   = num_arms_sensitivity;
+	pre_processor.num_arms_tx_power      = num_arms_tx_power;
 	pre_processor.num_arms_max_bandwidth = num_arms_max_bandwidth;
 
 	pre_processor.InitializeVariables();
@@ -689,26 +679,20 @@ void Agent :: InitializePreProcessor() {
 }
 
 /**
- * Initialize the ML Model
+ * Initialize the learning algorithm
  */
 void Agent :: InitializeMlModel() {
-	// Agent information
-	ml_model.agent_id = agent_id;
-	ml_model.num_stas = num_stas;
-	// ML model information
-	ml_model.learning_mechanism = learning_mechanism;
-	ml_model.action_selection_strategy = action_selection_strategy;
-	// MABs information
-	ml_model.num_channels = num_arms_channel;
-	ml_model.num_arms = num_arms;
-	// Logs
-	ml_model.save_logs = save_agent_logs;
-	ml_model.print_logs = print_agent_logs;
+	learning_algorithm.agent_id                = agent_id;
+	learning_algorithm.num_stas                = num_stas;
+	learning_algorithm.learning_mechanism      = learning_mechanism;
+	learning_algorithm.action_selection_strategy = action_selection_strategy;
+	learning_algorithm.num_arms                = num_arms;
+	learning_algorithm.save_logs               = save_agent_logs;
+	learning_algorithm.print_logs              = print_agent_logs;
 	if (learning_mechanism == RTOT_ALGORITHM) {
-		ml_model.margin_rtot = margin_rtot;
+		learning_algorithm.margin_rtot = margin_rtot;
 	}
-	// Initialize variables
-	ml_model.InitializeVariables();
+	learning_algorithm.InitializeVariables();
 }
 
 /******************************/
@@ -799,7 +783,7 @@ void Agent :: WriteAgentInfo(Logger logger, std::string header_str){
  */
 void Agent :: PrintOrWriteAgentStatistics() {
 	if (print_agent_logs) printf("\n------- Agent A%d ------\n", agent_id);
-	ml_model.PrintOrWriteStatistics(PRINT_LOG, agent_logger, SimTime());
+	learning_algorithm.PrintOrWriteStatistics(PRINT_LOG, agent_logger, SimTime());
 //	ml_model.PrintOrWriteStatistics(WRITE_LOG, agent_logger, SimTime());
 }
 

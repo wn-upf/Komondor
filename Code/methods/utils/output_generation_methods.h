@@ -550,11 +550,11 @@ static void WriteOutput_RtotAlgorithm(Performance *performance_report,
 			tpt_stream << std::fixed << std::setprecision(2)
 			           << (performance_report[i].throughput * pow(10,-6)) << ";";
 			airtime_stream << std::fixed << std::setprecision(2)
-			               << ((performance_report[i].total_time_transmitting_in_num_channels[0]
-			                    - performance_report[i].total_time_lost_in_num_channels[i])
+			               << (performance_report[i].total_time_transmitting_in_num_channels[0]
 			                   * 100 / simulation_time_komondor) << ";";
 			sairtime_stream << std::fixed << std::setprecision(2)
-			                << (performance_report[i].total_time_transmitting_in_num_channels[0]
+			                << ((performance_report[i].total_time_transmitting_in_num_channels[0]
+			                     - performance_report[i].total_time_lost_in_num_channels[0])
 			                    * 100 / simulation_time_komondor) << ";";
 
 			power_stream << "{";
@@ -595,11 +595,18 @@ static void WriteOutput_MABDrivenSR(Performance *performance_report,
 		if (configuration_per_node[i].capabilities.node_type != NODE_TYPE_AP) continue;
 
 		AppendMetricValue(tpt,    performance_report[i].throughput * pow(10,-6), w_count, total_wlans_number);
-		AppendMetricValue(airtime, ((performance_report[i].total_time_transmitting_in_num_channels[0]
-		                  - performance_report[i].total_time_lost_in_num_channels[i])
-		                 * 100 / simulation_time_komondor), w_count, total_wlans_number);
-		AppendMetricValue(sairtime, performance_report[i].total_time_transmitting_in_num_channels[0]
-		                 * 100 / simulation_time_komondor, w_count, total_wlans_number);
+		// Sum over all channel-width buckets so bonded TXOPs are not double-counted
+		{
+			double at_total = 0, at_succ = 0;
+			for (int n = 0; n < NUM_CHANNELS_KOMONDOR; ++n) {
+				at_total += performance_report[i].total_time_transmitting_in_num_channels[n];
+				at_succ  += performance_report[i].total_time_transmitting_in_num_channels[n]
+				          - performance_report[i].total_time_lost_in_num_channels[n];
+				if ((int)pow(2, n) == NUM_CHANNELS_KOMONDOR) break;
+			}
+			AppendMetricValue(airtime,  at_total * 100 / simulation_time_komondor, w_count, total_wlans_number);
+			AppendMetricValue(sairtime, at_succ  * 100 / simulation_time_komondor, w_count, total_wlans_number);
+		}
 		AppendMetricValue(data_loss, (double) 100*performance_report[i].data_packets_lost
 		                  / performance_report[i].data_packets_sent, w_count, total_wlans_number);
 		AppendMetricValue(rtscts_loss, (double) 100*performance_report[i].rts_cts_lost
@@ -609,11 +616,14 @@ static void WriteOutput_MABDrivenSR(Performance *performance_report,
 		AppendMetricValue(last_tpt,   performance_report[i].last_throughput * pow(10,-6), w_count, total_wlans_number);
 		AppendMetricValue(last_delay, performance_report[i].last_average_delay * pow(10,3), w_count, total_wlans_number);
 
+		// NOTE: last_total_time_transmitting_per_channel is per-channel (double-counts bonded TX);
+		// there is no last_total_time_transmitting_in_num_channels in Performance, so use per-channel
+		// but fix the indexing bug (was always reading element 0 via ->).
 		double total_airtime_val = 0, successful_airtime_val = 0;
 		for (int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c) {
-			total_airtime_val      += performance_report->last_total_time_transmitting_per_channel[c];
-			successful_airtime_val += performance_report->last_total_time_transmitting_per_channel[c]
-			                       - performance_report->last_total_time_lost_per_channel[c];
+			total_airtime_val      += performance_report[i].last_total_time_transmitting_per_channel[c];
+			successful_airtime_val += performance_report[i].last_total_time_transmitting_per_channel[c]
+			                       - performance_report[i].last_total_time_lost_per_channel[c];
 		}
 		AppendMetricValue(last_sairtime, successful_airtime_val * 100 / performance_report->last_measurements_window, w_count, total_wlans_number);
 		AppendMetricValue(last_airtime,  total_airtime_val      * 100 / performance_report->last_measurements_window, w_count, total_wlans_number);

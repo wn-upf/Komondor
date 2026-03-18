@@ -68,6 +68,12 @@ struct NodeParameters {
 	// --- MAC frame exchange ---
 	int         rts_cts_enabled;			///> 1 = 4-way (RTS/CTS/DATA/ACK), 0 = 2-way (DATA/ACK only)
 
+	// --- Beamforming ---
+	int    beamforming_enabled;	///> 0 = omnidirectional, 1 = ULA beamforming active
+	int    beam_N_elements;		///> Number of ULA antenna elements
+	double beam_d_spacing;		///> Element spacing [wavelengths]
+	double beam_az_main_deg;	///> Main beam azimuth [deg]; overridden per-TXOP when beamforming_enabled
+
 	// --- Current / mutable configuration ---
 	// Initialized from input; may be updated during simulation (e.g., by ApplyNewConfiguration).
 	int         current_primary_channel;	///> Currently active primary channel

@@ -13,7 +13,7 @@
  *   after the Node class definition, not included directly.
  *
  * Functions defined here:
- *   - Node::AbortRtsTransmission
+ *   - Node::AbortInitialTransmission
  *   - Node::ScheduleBackoffAfterDIFS
  *   - Node::UpdateSINRFromNotification
  *   - Node::PauseBackoff
@@ -32,7 +32,7 @@
 /**
  * Used when a node ends its backoff but cannot transmit
  */
-void Node :: AbortRtsTransmission(){
+void Node :: AbortInitialTransmission(){
 
 	if(node_params.backoff_type == BACKOFF_DETERMINISTIC_QUALCOMM){
 	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s ca_state.deterministic_bo_active = %d, ca_state.num_bo_interruptions = %d.\n",
@@ -215,6 +215,7 @@ void Node :: RestartNode(int called_by_time_out){
 
 	receiving_from_node_id = NODE_ID_NONE;
 	receiving_packet_id = NO_PACKET_ID;
+	sr_state.mapc_cosr_active = 0;
 
 	// Cancel triggers for safety
 	trigger_end_backoff.Cancel();
@@ -379,9 +380,12 @@ void Node:: CallSensing(trigger_t &){
 void Node :: HandleStartTX_StateWaitIcr(const Notification &notification) {
 	if (notification.packet_type == PACKET_TYPE_ICR
 			&& notification.destination_id == node_params.node_id
-			&& notification.mapc_group_id == wlan.mapc_group_id) {
+			&& notification.mapc_group_id == wlan.mapc_group_ids[mapc_active_group_idx]) {
 		trigger_CTS_timeout.Cancel();
 		incoming_notification = notification;
+		// Initialize power_rx_interest so that SINR is correct if an interferer
+		// arrives during ICR reception (HandleStartTX_StateRxData uses it).
+		UpdateSINRFromNotification(notification);
 		node_state = STATE_RX_ICR;
 		LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Received ICR from N%d -> STATE_RX_ICR\n",
@@ -398,6 +402,9 @@ void Node :: HandleStartTX_StateWaitMuRts(const Notification &notification) {
 			&& notification.destination_id == node_params.node_id) {
 		trigger_NAV_timeout.Cancel();
 		incoming_notification = notification;
+		// Initialize power_rx_interest so that SINR is correct if an interferer
+		// arrives during MU-RTS reception (HandleStartTX_StateRxData uses it).
+		UpdateSINRFromNotification(notification);
 		node_state = STATE_RX_MU_RTS;
 		LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Received MU-RTS/TXS from N%d -> STATE_RX_MU_RTS\n",
@@ -412,9 +419,12 @@ void Node :: HandleStartTX_StateWaitMuRts(const Notification &notification) {
 void Node :: HandleStartTX_StateWaitTf(const Notification &notification) {
 	if (notification.packet_type == PACKET_TYPE_TF
 			&& notification.destination_id == NODE_ID_MAPC_BROADCAST
-			&& notification.mapc_group_id == wlan.mapc_group_id) {
+			&& notification.mapc_group_id == wlan.mapc_group_ids[mapc_active_group_idx]) {
 		trigger_DATA_timeout.Cancel();
 		incoming_notification = notification;
+		// Initialize power_rx_interest so that SINR is correct if an interferer
+		// arrives during TF reception (HandleStartTX_StateRxData uses it).
+		UpdateSINRFromNotification(notification);
 		node_state = STATE_RX_TF;
 		LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Received TF from N%d -> STATE_RX_TF\n",

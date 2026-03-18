@@ -287,6 +287,18 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 		}
 	}
 
+	// Populate per-node position lookup arrays (used for per-TXOP beamforming)
+	for (int i = 0; i < total_nodes_number; ++i) {
+		node_container[i].all_node_x = new double[total_nodes_number];
+		node_container[i].all_node_y = new double[total_nodes_number];
+		node_container[i].all_node_z = new double[total_nodes_number];
+		for (int j = 0; j < total_nodes_number; ++j) {
+			node_container[i].all_node_x[j] = node_container[j].node_params.x;
+			node_container[i].all_node_y[j] = node_container[j].node_params.y;
+			node_container[i].all_node_z[j] = node_container[j].node_params.z;
+		}
+	}
+
 	// Initialize arrays for the token-based channel access
 	for (int i = 0; i < total_nodes_number; ++i) {
 		if (node_container[i].node_params.backoff_type == BACKOFF_TOKENIZED){
@@ -302,6 +314,15 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 	// Generate MAPC groups
 	GenerateMapcConfiByReadingInputFile(mapc_input_filename);
 
+	// Re-link nodes with updated WLAN info (MAPC fields populated after GenerateNodesByReadingInputFile)
+	for (int n = 0; n < total_nodes_number; ++n) {
+		for (int w = 0; w < total_wlans_number; ++w) {
+			if (strcmp(node_container[n].node_params.wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0) {
+				node_container[n].wlan = wlan_container[w];
+			}
+		}
+	}
+
 	// Generate agents (if enabled)
 	central_controller_flag = 0;
 	if (agents_enabled) { GenerateAgents(agents_input_filename, simulation_code_console); }
@@ -310,7 +331,7 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 
 	// Print detected configuration (system, nodes and agents)
 	if (print_system_logs) {
-		printf("%s System configuration: \n", LOG_LVL2);
+		printf("\n%s System configuration: \n", LOG_LVL2);
 		PrintSystemInfo();
 		printf("%s Wlans generated!\n", LOG_LVL2);
 		PrintAllWlansInfo();
@@ -486,7 +507,7 @@ int main(int argc, char *argv[]){
     int opt;
     int option_index = 0;
 
-    while ((opt = getopt_long(argc, argv, "n:t:s:c:o:a:m:L:l:S:h", long_options, &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "n:t:s:c:o:a:m:L:l:S:A:h", long_options, &option_index)) != -1) {
         switch (opt) {
             case 'n': nodes_input_filename = optarg; break;
             case 't': sim_time = atof(optarg); break;
@@ -508,6 +529,7 @@ int main(int argc, char *argv[]){
             case 'L': print_system_logs = atoi(optarg); break;
             case 'l': print_node_logs = atoi(optarg); break;
             case 'S': save_node_logs = atoi(optarg); break;
+			case 'A': save_agent_logs = atoi(optarg); break;
 
             case 'h':
             default:
@@ -580,8 +602,8 @@ int main(int argc, char *argv[]){
 
     printf("------------------------------------------\n");
     printf("%s SIMULATION '%s' STARTED\n", LOG_LVL1, simulation_code.c_str());
-    if(agents_enabled) printf("%s Agents: ENABLED\n", LOG_LVL1);
-    if(mapc_enabled)   printf("%s MAPC:   ENABLED\n", LOG_LVL1);
+    // if(agents_enabled) printf("%s Agents: ENABLED\n", LOG_LVL1);
+    // if(mapc_enabled)   printf("%s MAPC:   ENABLED\n", LOG_LVL1);
 
     komondor_simulation.Run();
 

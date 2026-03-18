@@ -32,6 +32,7 @@ struct SpatialReuseState
     double current_obss_pd_threshold;      ///> Active OBSS/PD threshold currently in use
     double next_tx_power_limit;            ///> TX power cap [pW] to apply at the next transmission
     double current_tx_power_sr;            ///> TX power [pW] used within the current SR TXOP
+    int    mapc_cosr_active;               ///> TRUE during Co-SR simultaneous DATA phase (bypasses spatial_reuse_enabled)
 };
 
 #endif /* _AUX_SPATIAL_REUSE_STATE_ */

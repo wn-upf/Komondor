@@ -303,15 +303,23 @@ void Node :: InportNewPacketGenerated(){
 				// Attempt to restart BO only if node didn't have any packet before a new packet was generated
 				if(node_state == STATE_SENSING && buffer.QueueSize() == 1) {
 
-					if(trigger_end_backoff.Active()) ca_state.remaining_backoff =
+					if(trigger_end_backoff.Active()) {
+						// Backoff already counting down: just refresh the cached remaining value.
+						// Do NOT call ScheduleBackoffAfterDIFS() -- that would arm trigger_start_backoff
+						// while trigger_end_backoff is still live. When PauseBackoff() later cancels
+						// only trigger_start_backoff, trigger_end_backoff would fire in a non-SENSING
+						// state, causing a simultaneous-transmission deadlock.
+						ca_state.remaining_backoff =
 							ComputeRemainingBackoff(node_params.backoff_type, trigger_end_backoff.GetTime() - SimTime());
-
-					int resume (HandleBackoff(RESUME_TIMER, &channel_power, node_params.current_primary_channel, current_pd,
-							buffer.QueueSize()));
-
-					if (resume) {
-						ScheduleBackoffAfterDIFS();
+					} else if (!trigger_start_backoff.Active()) {
+						// No countdown in progress: start one now.
+						int resume (HandleBackoff(RESUME_TIMER, &channel_power,
+							node_params.current_primary_channel, current_pd, buffer.QueueSize()));
+						if (resume) {
+							ScheduleBackoffAfterDIFS();
+						}
 					}
+					// else: DIFS already running; trigger_end_backoff will follow automatically.
 
 				}
 

@@ -27,9 +27,8 @@
 
 ### Contribute with new modules
 
-If you want to contribute with new modules, please contact to sergio.barrachina@upf.edu and/or francisco.wilhelmi@upf.edu
-
+If you want to contribute with new modules, please contact francisco.wilhelmi@upf.edu
 
 Thanks for your contribution! :raised_hands:
 
-Komondor Team
+*Kom8ndor Team*

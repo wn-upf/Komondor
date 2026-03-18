@@ -91,8 +91,15 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                 
                 wlan_container[wlan_ix].wlan_code = wlan_code_aux;
                 wlan_container[wlan_ix].mapc_enabled = 0;
-                wlan_container[wlan_ix].num_mapc_peers = 0;
-                wlan_container[wlan_ix].mapc_peer_ap_ids = NULL;
+                wlan_container[wlan_ix].num_mapc_groups = 0;
+                for (int mapc_g = 0; mapc_g < MAX_MAPC_GROUPS_PER_WLAN; ++mapc_g) {
+                    wlan_container[wlan_ix].mapc_group_ids[mapc_g] = 0;
+                    wlan_container[wlan_ix].mapc_method_ids[mapc_g] = 0;
+                    wlan_container[wlan_ix].mapc_num_peers[mapc_g] = 0;
+                    wlan_container[wlan_ix].mapc_peer_ap_ids[mapc_g] = NULL;
+                    wlan_container[wlan_ix].mapc_txop_splits[mapc_g] = TXOP_SPLIT_EQUAL;
+                    wlan_container[wlan_ix].mapc_sr_tx_power_dbm[mapc_g] = DEFAULT_COSR_TX_POWER_DBM;
+                }
                 ++wlan_ix;
             }
             free(tmp_nodes);
@@ -296,6 +303,32 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                 free(tmp_nodes);
             }
 
+            // Beamforming (optional columns; defaults to disabled if absent)
+            tmp_nodes = strdup(line_nodes);
+            const char* bf_enabled_char = GetField(tmp_nodes, IX_BF_ENABLED);
+            if (bf_enabled_char != NULL) {
+                node_container[node_ix].node_params.beamforming_enabled = atoi(bf_enabled_char);
+                free(tmp_nodes);
+
+                tmp_nodes = strdup(line_nodes);
+                node_container[node_ix].node_params.beam_N_elements = atoi(GetField(tmp_nodes, IX_BF_N_ELEMENTS));
+                free(tmp_nodes);
+
+                tmp_nodes = strdup(line_nodes);
+                node_container[node_ix].node_params.beam_d_spacing = atof(GetField(tmp_nodes, IX_BF_D_SPACING));
+                free(tmp_nodes);
+
+                tmp_nodes = strdup(line_nodes);
+                node_container[node_ix].node_params.beam_az_main_deg = atof(GetField(tmp_nodes, IX_BF_AZ_MAIN_DEG));
+                free(tmp_nodes);
+            } else {
+                node_container[node_ix].node_params.beamforming_enabled = BEAMFORMING_DISABLED;
+                node_container[node_ix].node_params.beam_N_elements     = DEFAULT_BEAM_N_ELEMENTS;
+                node_container[node_ix].node_params.beam_d_spacing      = DEFAULT_BEAM_D_SPACING;
+                node_container[node_ix].node_params.beam_az_main_deg    = 0.0;
+                free(tmp_nodes);
+            }
+
             // Global Models
             node_container[node_ix].node_params.simulation_time_komondor = simulation_time_komondor;
             node_container[node_ix].node_params.total_wlans_number = total_wlans_number;
@@ -441,10 +474,9 @@ int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::st
 */
 void Komondor::GenerateMapcConfiByReadingInputFile(const char *mapc_filename) {
 
-
     FILE* stream = fopen(mapc_filename, "r");
     if (!stream) {
-        //printf("MAPC file %s not found!\n", mapc_filename);
+        printf("MAPC file %s not found!\n", mapc_filename);
         //exit(-1);
     } else {
 		if (print_system_logs) printf("\n%s Reading MAPC configuration file '%s'...\n", LOG_LVL1, mapc_filename);
@@ -470,39 +502,52 @@ void Komondor::GenerateMapcConfiByReadingInputFile(const char *mapc_filename) {
 			} else if (method_str == "CO_RTWT") {
 				method_id = CO_RTWT;
 			}
-			// 3. Parse Shared APs (Slaves) - Handle comma-separated list
+			// 3. Parse coordinated APs (handle comma-separated list)
 			tmp_line = strdup(line);
 			std::string coordinated_ids_str = ToString(GetField(tmp_line, IX_MAPC_AP_IDS));
-			std::vector<int> coordinated_ap_list;
+			// Use string comparison so wlan_codes like "A","B" match correctly.
+			// atoi("A") = atoi("B") = 0 would cause false matches for all WLANs.
+			std::vector<std::string> coordinated_ap_list;
 			char* token = strtok((char*)coordinated_ids_str.c_str(), ",");
 			while (token != NULL) {
-				coordinated_ap_list.push_back(atoi(token));
+				coordinated_ap_list.push_back(std::string(token));
 				token = strtok(NULL, ",");
 			}
 			// Update MAPC information of involved WLANs
 			for (size_t c = 0; c < coordinated_ap_list.size(); ++c) {
 				for (int w = 0; w < total_wlans_number; ++w) {
-					int current_wlan_id = atoi(wlan_container[w].wlan_code.c_str());
-					if (current_wlan_id == coordinated_ap_list[c]) {
-						wlan_container[w].mapc_enabled = 1;
-						wlan_container[w].mapc_group_id = group_id;
-						wlan_container[w].mapc_method_id = method_id;
+					if (wlan_container[w].wlan_code == coordinated_ap_list[c]) {
+						if (wlan_container[w].num_mapc_groups < MAX_MAPC_GROUPS_PER_WLAN) {
+							int mapc_gidx = wlan_container[w].num_mapc_groups++;
+							wlan_container[w].mapc_enabled = 1;
+							wlan_container[w].mapc_group_ids[mapc_gidx] = group_id;
+							wlan_container[w].mapc_method_ids[mapc_gidx] = method_id;
+							wlan_container[w].mapc_txop_splits[mapc_gidx] = TXOP_SPLIT_EQUAL;
+						}
 					}
 				}
 			}
 			
-			// 4. Parse Parameters (Key-Value pairs for extensibility)
+			// 4. Parse per-scheme parameters (key-value pairs for extensibility)
 			tmp_line = strdup(line);
 			std::string params = ToString(GetField(tmp_line, IX_MAPC_EXTRA_PARAM));
 			free(tmp_line);
 
 			// --- APPLY LOGIC BASED ON METHOD ---
 			if (method_str == "CO_SR") {
-				// Configure nodes for Co-SR
-				// To do
-
-				// Parse specific Co-SR params (e.g., OBSS_PD_MIN=-82)
-				// To do
+				// Option A: read TX power limit from ExtraParams [dBm]; fall back to default if absent
+				double sr_pwr = DEFAULT_COSR_TX_POWER_DBM;
+				if (!params.empty()) sr_pwr = atof(params.c_str());
+				// Apply to every WLAN registered in this group
+				for (size_t c = 0; c < coordinated_ap_list.size(); ++c) {
+					for (int w = 0; w < total_wlans_number; ++w) {
+						if (wlan_container[w].wlan_code == coordinated_ap_list[c]) {
+							int g_idx = wlan_container[w].FindMapcGroupIdx(group_id);
+							if (g_idx >= 0)
+								wlan_container[w].mapc_sr_tx_power_dbm[g_idx] = sr_pwr;
+						}
+					}
+				}
 
 			} else if (method_str == "CO_TDMA") {
 				// Configure nodes for Co-TDMA
@@ -516,22 +561,23 @@ void Komondor::GenerateMapcConfiByReadingInputFile(const char *mapc_filename) {
 			}
 		}
 		fclose(stream);
-		// Build peer AP ID lists for each MAPC-enabled WLAN
+		// Build peer AP ID lists for each MAPC-enabled WLAN, per group
 		int *tmp_peers = new int[total_wlans_number];
 		for (int w = 0; w < total_wlans_number; ++w) {
 			if (!wlan_container[w].mapc_enabled) continue;
-			int count = 0;
-			for (int w2 = 0; w2 < total_wlans_number; ++w2) {
-				if (w2 == w) continue;
-				if (wlan_container[w2].mapc_enabled
-						&& wlan_container[w2].mapc_group_id == wlan_container[w].mapc_group_id) {
-					tmp_peers[count++] = wlan_container[w2].ap_id;
+			for (int g = 0; g < wlan_container[w].num_mapc_groups; ++g) {
+				int count = 0;
+				for (int w2 = 0; w2 < total_wlans_number; ++w2) {
+					if (w2 == w) continue;
+					if (wlan_container[w2].FindMapcGroupIdx(wlan_container[w].mapc_group_ids[g]) >= 0) {
+						tmp_peers[count++] = wlan_container[w2].ap_id;
+					}
 				}
+				wlan_container[w].mapc_num_peers[g] = count;
+				wlan_container[w].mapc_peer_ap_ids[g] = new int[count];
+				for (int i = 0; i < count; ++i)
+					wlan_container[w].mapc_peer_ap_ids[g][i] = tmp_peers[i];
 			}
-			wlan_container[w].num_mapc_peers = count;
-			wlan_container[w].mapc_peer_ap_ids = new int[count];
-			for (int i = 0; i < count; ++i)
-				wlan_container[w].mapc_peer_ap_ids[i] = tmp_peers[i];
 		}
 		delete[] tmp_peers;
 		if (print_system_logs) printf("%s MAPC Groups configured!\n", LOG_LVL2);
@@ -662,11 +708,20 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 				// Agent ID
 				agent_container[agent_ix].agent_id = agent_ix;
 				agent_container[agent_ix].wlan_code = wlan_code.c_str();
-				// WLAN Id
+				// WLAN Id — skip agent if no matching WLAN exists (prevents null outport crash)
+				int wlan_found_flag(0);
 				for(int w=0; w < total_wlans_number; ++w){
 					if(strcmp(wlan_container[w].wlan_code.c_str(), agent_container[agent_ix].wlan_code.c_str()) == 0) {
 						agent_container[agent_ix].wlan_id = w;
+						wlan_found_flag = 1;
 					}
+				}
+				if (!wlan_found_flag) {
+					if (print_system_logs) printf("%s Agent for WLAN '%s' skipped (no matching WLAN)\n",
+						LOG_LVL3, wlan_code.c_str());
+					--total_agents_number;
+					free(tmp_agents);
+					continue;
 				}
 				// Initialize actions and arrays in agents
 				agent_container[agent_ix].InitializeAgent();

@@ -68,12 +68,26 @@ struct Wlan
 
 	int spatial_reuse_enabled;	///> Indicates whether the SR operation is enabled or not
 
-	// MAPC information
+	// MAPC information - multi-group support
 	int mapc_enabled;
-	int mapc_group_id; 			///> MAPC group ID
-	int mapc_method_id;			///> MAPC scheme in place
-	int num_mapc_peers;			///> Number of peer APs in the same MAPC group
-	int *mapc_peer_ap_ids;		///> node_ids of peer APs (allocated by input_loader)
+	int num_mapc_groups;							///> Number of MAPC groups this WLAN belongs to
+	int mapc_group_ids[MAX_MAPC_GROUPS_PER_WLAN];	///> MAPC group IDs
+	int mapc_method_ids[MAX_MAPC_GROUPS_PER_WLAN];	///> MAPC scheme per group
+	int mapc_num_peers[MAX_MAPC_GROUPS_PER_WLAN];	///> Peer count per group
+	int *mapc_peer_ap_ids[MAX_MAPC_GROUPS_PER_WLAN];	///> Peer node_ids per group
+	int mapc_txop_splits[MAX_MAPC_GROUPS_PER_WLAN];	///> TXOP split method per group
+	double mapc_sr_tx_power_dbm[MAX_MAPC_GROUPS_PER_WLAN];	///> Co-SR TX power limit per group [dBm]
+
+	/**
+	 * Find index of a given group_id in this WLAN's group list.
+	 * Returns index in [0, num_mapc_groups) or -1 if not found.
+	 */
+	int FindMapcGroupIdx(int group_id) {
+		for (int g = 0; g < num_mapc_groups; ++g) {
+			if (mapc_group_ids[g] == group_id) return g;
+		}
+		return -1;
+	}
 
 	/**
 	 * Set the size of the array list_sta_id
@@ -132,8 +146,15 @@ struct Wlan
 		PrintStaIds();
 		if (mapc_enabled) {
 			printf("%s MAPC Information:\n", LOG_LVL4);
-			printf("%s mapc_group_id: %d\n", LOG_LVL5, mapc_group_id);
-			printf("%s mapc_method_id: %d\n", LOG_LVL5, mapc_method_id);
+			printf("%s num_mapc_groups: %d\n", LOG_LVL5, num_mapc_groups);
+			for (int g = 0; g < num_mapc_groups; ++g) {
+				printf("%s Group %d: id=%d method=%d peers=%d\n",
+					LOG_LVL5, g, mapc_group_ids[g], mapc_method_ids[g], mapc_num_peers[g]);
+				printf("%s Peers IDs: ", LOG_LVL5);
+				for (int i = 0; i < mapc_num_peers[g]; ++i)
+					printf("%d ", mapc_peer_ap_ids[g][i]);
+				printf("\n");
+			}
 		}
 	}
 
@@ -153,8 +174,11 @@ struct Wlan
 			fprintf(logger.file, "\n");
 			if (mapc_enabled) {
 				fprintf(logger.file, "%s - MAPC Information:\n", header_str.c_str());
-				fprintf(logger.file, "%s  * mapc_group_id: %d\n", header_str.c_str(), mapc_group_id);
-				fprintf(logger.file, "%s  * mapc_method_id: %d\n", header_str.c_str(), mapc_method_id);
+				fprintf(logger.file, "%s  * num_mapc_groups: %d\n", header_str.c_str(), num_mapc_groups);
+				for (int g = 0; g < num_mapc_groups; ++g) {
+					fprintf(logger.file, "%s  * Group %d: id=%d method=%d peers=%d\n",
+						header_str.c_str(), g, mapc_group_ids[g], mapc_method_ids[g], mapc_num_peers[g]);
+				}
 			}
 		}
 	}

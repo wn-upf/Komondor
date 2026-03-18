@@ -40,13 +40,10 @@ void Node :: AckTimeout(trigger_t &){
 		node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
 
-	// Sergio on 16 July 2018: [AGENTS] add data packet lost for partial node_stats.throughput computations
-	// Update performance measurements
-	node_stats.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	// Update performance_report measurements (performance_report is not passed to HandlePacketLoss)
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
-		node_stats.total_time_lost_per_channel[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
-		performance_report.total_time_lost_per_channel[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+		performance_report.total_time_lost_per_channel[c] += current_tx_duration;
 	}
 	performance_report.data_packets_lost++;
 
@@ -79,9 +76,23 @@ void Node :: AckTimeout(trigger_t &){
  */
 void Node :: CtsTimeout(trigger_t &){
 
+	// MAPC Co-TDMA: ICR timeout — coordinated AP did not reply to ICF.
+	// The TXOP was grabbed fairly; continue with solo DATA instead of wasting it.
+	if (node_state == STATE_WAIT_ICR
+			&& wlan.mapc_enabled
+			&& wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA) {
+		LOGS(node_params.save_node_logs, node_logger.file,
+			"%.15f;N%d;S%d;%s;%s ICR timeout (N%d did not reply to ICF). Continuing TXOP solo.\n",
+			SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL2, mapc_selected_peer_id);
+		mapc_peer_has_data = FALSE;
+		ProceedAfterIcr();
+		return;
+	}
+
 	HandlePacketLoss(PACKET_TYPE_CTS, node_stats.total_time_lost_in_num_channels, node_stats.total_time_lost_per_channel,
 		node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
+	performance_report.rts_cts_lost++;
 
 	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
 		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL1);
@@ -105,20 +116,15 @@ void Node :: CtsTimeout(trigger_t &){
 		SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL5,
 		ca_state.current_cw_min, ca_state.current_cw_max, ca_state.cw_stage_current, node_params.cw_stage_max);
 
-	// Update TX time statistics
-	node_stats.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
-	performance_report.total_time_transmitting_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
+	// Update TX time statistics (loss only; transmitting counters are handled by RestartNode)
 	node_stats.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
-		node_stats.total_time_transmitting_per_channel[c] += current_tx_duration;
-		performance_report.total_time_transmitting_per_channel[c] += current_tx_duration;
 		node_stats.total_time_lost_per_channel[c] += current_tx_duration;
 		performance_report.total_time_lost_per_channel[c] += current_tx_duration;
 		// Measurements in the last part of the simulation
 		if (SimTime() > (node_params.simulation_time_komondor - node_stats.last_measurements_window)) {
-			node_stats.last_total_time_transmitting_per_channel[c] += current_tx_duration;
 			node_stats.last_total_time_lost_per_channel[c] += current_tx_duration;
 		}
 	}
@@ -131,16 +137,20 @@ void Node :: CtsTimeout(trigger_t &){
  */
 void Node :: DataTimeout(trigger_t &){
 
-	HandlePacketLoss(PACKET_TYPE_CTS, node_stats.total_time_lost_in_num_channels, node_stats.total_time_lost_per_channel,
-		node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
-		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
+	// In MAPC STATE_WAIT_TF the timeout means the TF frame from the coordinator did not arrive;
+	// this is not a DATA/RTS-CTS loss for this node, so skip packet-loss accounting.
+	if (node_state != STATE_WAIT_TF && node_state != STATE_WAIT_ACK_TF) {
+		HandlePacketLoss(PACKET_TYPE_CTS, node_stats.total_time_lost_in_num_channels, node_stats.total_time_lost_per_channel,
+			node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
+			current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
+	}
 
 	node_stats.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 
 
-	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! RTS-CTS packet lost\n",
-		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL4);
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s DATA TIMEOUT! (state=%d)\n",
+		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL4, node_state);
 
 	// Sergio on 20/09/2017. CW only must be changed when ACK received or loss detected.
 

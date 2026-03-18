@@ -76,6 +76,17 @@ struct TxInfo
 	double y;						///> Y position of source node
 	double z;						///> Z position of source node
 	double nav_time;				///> RTS/CTS NAV time
+	double mapc_allocated_data_duration;	///> MAPC TXOP split: per-AP data duration allocated by coordinator
+	double mapc_sr_peer_tx_power;		///> Co-SR: TX power limit for peer AP [pW] (carried in TF)
+	double mapc_sr_measured_rssi;		///> Co-SR Option B placeholder: RSSI from peer's STA [pW]; 0 = unused
+
+	// Beamforming parameters (set per-TXOP by transmitter; receiver uses these to compute its own gain)
+	int    beamforming_active;			///> 0 = omni, 1 = ULA beam pattern applies
+	int    beam_N_elements;				///> Number of ULA elements
+	double beam_d_spacing;				///> Element spacing [wavelengths]
+	double beam_az_main_rad;			///> Main beam azimuth [rad] for this TX
+	int    beam_num_nulls;				///> Number of steered nulls
+	double beam_null_az_rad[MAX_BEAM_NULLS];	///> Null azimuth directions [rad]
 
 	bool flag_change_in_tx_power;	///> Flag to indicate whether the transmission power was changed (in order to recompute arrays)
 
@@ -147,6 +158,8 @@ struct Notification
 	double timestamp;			///> Timestamp when notification is sent
 	double timestamp_generated;	///> Timestamp when notification was generated
 	int mapc_group_id;			///> MAPC group ID (0 = standard frame; >0 = group-addressed MAPC)
+	int mapc_target_ap_id;		///> For ICF: node_id of the ONE coordinated AP that should respond with ICR (-1 = all)
+	int mapc_has_data;			///> ICR: TRUE if coordinated AP has data to send in this TXOP
 	TxInfo tx_info; 			///> Specific transmission info (may not be checked by the others nodes)
 
 	/**

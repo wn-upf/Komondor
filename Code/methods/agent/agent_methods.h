@@ -75,6 +75,8 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 	current_performance->min_waiting_time = 10000;
 	current_performance->data_packets_sent = 0;
 	current_performance->data_packets_lost = 0;
+	current_performance->data_packets_acked = 0;
+	current_performance->data_frames_acked = 0;
 	current_performance->rts_cts_sent = 0;
 	current_performance->rts_cts_lost = 0;
 	current_performance->num_packets_generated = 0;
@@ -83,6 +85,8 @@ void RestartPerformanceMetrics(Performance *current_performance, double sim_time
 	for(int n = 0; n < num_channels_allowed; ++n){
 		current_performance->total_time_transmitting_in_num_channels[n] = 0;
 		current_performance->total_time_lost_in_num_channels[n] = 0;
+		current_performance->total_time_transmitting_per_channel[n] = 0;
+		current_performance->total_time_lost_per_channel[n] = 0;
 	}
 
 }

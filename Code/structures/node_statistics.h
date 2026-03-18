@@ -48,6 +48,19 @@ struct NodeStatistics {
 	double time_in_nav;						///> Total time spent in NAV state
 	int    times_went_to_nav;				///> Number of times the node entered NAV state
 
+	// --- MAPC / TXOP-sharing statistics ---
+	int    num_icf_tx;                         ///> ICF frames sent (MAPC coordinator — one per TXOP initiated)
+	int    num_icr_rx;                         ///> ICR frames received (MAPC coordinator)
+	int    num_tf_tx;                          ///> TF frames sent (coordinator, Co-BF/Co-SR)
+	int    num_mu_rts_tx;                      ///> MU-RTS frames sent (coordinator, Co-TDMA)
+	int    num_icf_rx;                         ///> ICF frames received and accepted (coordinated AP)
+	int    num_icr_tx;                         ///> ICR frames sent (coordinated AP)
+	int    num_tf_rx;                          ///> TF frames received (coordinated AP, Co-BF/Co-SR)
+	int    num_mu_rts_rx;                      ///> MU-RTS frames received (coordinated AP, Co-TDMA)
+	double total_mapc_data_duration_own;       ///> Own DATA duration accumulated in MAPC TXOPs [s]
+	double total_mapc_data_duration_shared;    ///> DATA duration allocated to peer APs by coordinator [s]
+	double total_mapc_data_duration_allocated; ///> DATA duration allocated to this AP by coordinator [s]
+
 	// --- Rolling-window (last-period) stats ---
 	double last_measurements_window;
 	double last_throughput;

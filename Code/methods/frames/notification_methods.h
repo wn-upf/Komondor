@@ -91,6 +91,17 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	tx_info.z = z;
 	tx_info.nav_time = 0;
     tx_info.flag_change_in_tx_power = flag_change_in_tx_power;
+	tx_info.mapc_sr_peer_tx_power = 0.0;
+	tx_info.mapc_sr_measured_rssi = 0.0;
+
+	// Beamforming fields — overwritten by GenerateNotification() when beamforming_enabled
+	tx_info.beamforming_active = BEAMFORMING_DISABLED;
+	tx_info.beam_N_elements    = DEFAULT_BEAM_N_ELEMENTS;
+	tx_info.beam_d_spacing     = DEFAULT_BEAM_D_SPACING;
+	tx_info.beam_az_main_rad   = 0.0;
+	tx_info.beam_num_nulls     = 0;
+	for (int _bk = 0; _bk < MAX_BEAM_NULLS; ++_bk)
+		tx_info.beam_null_az_rad[_bk] = 0.0;
 
 	return tx_info;
 

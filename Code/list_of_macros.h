@@ -96,6 +96,8 @@
 #define STATE_RX_MU_RTS		21	///> Receiving MU-RTS/TXS
 #define STATE_WAIT_TF		22	///> Waiting TF from coordinator (Co-BF/Co-SR)
 #define STATE_RX_TF			23	///> Receiving TF
+#define STATE_TX_ACK_TF		24	///> Transmitting ACK TF (coordinator, Co-BF/Co-SR)
+#define STATE_WAIT_ACK_TF	25	///> Waiting for ACK TF (coordinated AP and STAs, Co-BF/Co-SR)
 
 // Node types
 #define NODE_TYPE_UNKWNOW	-1	///> Unknown (none) node type
@@ -153,14 +155,13 @@
 #define PACKET_TYPE_MCS_RESPONSE 	3 		///> MCS response type
 #define PACKET_TYPE_RTS				4		///> RTS type
 #define PACKET_TYPE_CTS				5		///> CTS type
-
+// MAPC packets
+#define PACKET_TYPE_ICF             6		///> MAPC trigger frame type
+#define PACKET_TYPE_ICR             7		///> MAPC response frame type
+#define PACKET_TYPE_TF              8       ///> MAPC trigger frame type
 // TXOP sharing
 #define PACKET_TYPE_MU_RTS_TXS		9		///> MU-RTS TXS type (grants coordinated AP TX slot)
-
-// MAPC packets
-#define PACKET_TYPE_ICF         6		///> MAPC trigger frame type
-#define PACKET_TYPE_ICR         7		///> MAPC response frame type
-#define PACKET_TYPE_TF          8       ///> MAPC trigger frame type
+#define PACKET_TYPE_ACK_TF			10		///> MAPC ACK Trigger Frame (coordinator triggers simultaneous ACKs, Co-BF/Co-SR)
 
 // Packet detect
 #define PD_NOT_EXCEEDED	0	///> PD is not exceeded (primary channel is free)
@@ -308,6 +309,12 @@
 #define DEVICE_INACTIVE_FOR_TOKEN		0
 #define DEVICE_ACTIVE_FOR_TOKEN			1
 
+// Transmission mode
+#define TRANSMISSION_MODE_NO_RTS_CTS    0
+#define TRANSMISSION_MODE_RTS_CTS       1
+#define TRANSMISSION_MODE_COTDMA        2
+#define TRANSMISSION_MODE_COBF_COSR     3
+
 /* *********************
  * * System parameters *
  * *********************
@@ -406,6 +413,11 @@
 #define OBSS_PD_MAX			-62 	///> Maximum OBSS_PD (dBm)
 #define MAX_TX_PWR_SR		20		///> Maximum transmit power to be used during the SR operation (dBm)
 #define TX_PWR_REF			21		///> TX PWR REF (dBm)
+#define DEFAULT_COSR_TX_POWER_DBM	20.0	///> Default Co-SR TX power limit [dBm] (Option A)
+/* Co-SR power limit scope:
+ *   0 = limit applied to both coordinating and coordinated APs (symmetric)
+ *   1 = limit applied to coordinated AP only; coordinating AP uses default TX power */
+#define COSR_POWER_LIMIT_PEER_ONLY	1
 
 /* *****************************************
  * * MULTI-ACCESS POINT COORDINATION       *
@@ -415,6 +427,21 @@
 #define CO_BF       2
 #define CO_TDMA     3
 #define CO_RTWT     4
+
+/* MAPC TXOP split methods */
+#define TXOP_SPLIT_EQUAL    0   ///> Equal-time split of TXOP among active APs
+
+/* MAPC multi-group limits */
+#define MAX_MAPC_GROUPS_PER_WLAN  8   ///> Max MAPC groups a single WLAN may belong to
+
+/* *****************************************
+ * * BEAMFORMING                           *
+ * ***************************************** */
+#define BEAMFORMING_DISABLED        0   ///> Omnidirectional operation (no beamforming)
+#define BEAMFORMING_ENABLED         1   ///> ULA beamforming active
+#define MAX_BEAM_NULLS              4   ///> Maximum simultaneous null directions per TX
+#define DEFAULT_BEAM_N_ELEMENTS     1   ///> Default number of ULA elements (1 = omni fallback)
+#define DEFAULT_BEAM_D_SPACING      0.5 ///> Default element spacing [wavelengths]
 
 /* *****************************************
  * * AGENTS OPERATION AND MACHINE LERANING *
@@ -579,6 +606,10 @@
 #define IX_SRG						29
 #define IX_NON_SRG_OBSS_PD			30
 #define IX_SRG_OBSS_PD				31
+#define IX_BF_ENABLED				32	///> Beamforming enabled flag (0=omni, 1=active)
+#define IX_BF_N_ELEMENTS			33	///> Number of ULA antenna elements
+#define IX_BF_D_SPACING				34	///> Element spacing [wavelengths]
+#define IX_BF_AZ_MAIN_DEG			35	///> Main beam azimuth [deg] (initial/static value)
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1

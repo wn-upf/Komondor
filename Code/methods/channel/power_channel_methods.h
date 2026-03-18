@@ -29,6 +29,7 @@
 #include "../../list_of_macros.h"
 #include "../../structures/modulations.h"
 #include "../utils/auxiliary_methods.h"
+#include "beamforming_methods.h"
 
 #ifndef _POWER_METHODS_
 #define _POWER_METHODS_
@@ -121,7 +122,7 @@ static double PathLoss_Indoor(double tx_power, double distance) {
 	double obstacles_at_wlan  = (((double) rand())/RAND_MAX) * obstacles;
 	double path_loss = path_loss_factor + 10*alpha*log10(distance)
 	                 + shadowing_at_wlan + (distance/walls_frequency)*obstacles_at_wlan;
-	return ConvertPower(DBM_TO_PW, tx_power_dbm + ANTENNA_TX_GAIN_DB - path_loss);
+	return ConvertPower(DBM_TO_PW, tx_power_dbm + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - path_loss);
 }
 
 static double PathLoss_Indoor2(double tx_power, double distance) {
@@ -131,7 +132,7 @@ static double PathLoss_Indoor2(double tx_power, double distance) {
 	double obstacles_at_wlan  = 1.0/2 * obstacles;
 	double path_loss = path_loss_factor + 10*alpha*log10(distance)
 	                 + shadowing_at_wlan + (distance/walls_frequency)*obstacles_at_wlan;
-	return ConvertPower(DBM_TO_PW, tx_power_dbm + ANTENNA_TX_GAIN_DB - path_loss);
+	return ConvertPower(DBM_TO_PW, tx_power_dbm + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - path_loss);
 }
 
 // Residential — TGax scenario #1
@@ -153,8 +154,8 @@ static double PathLoss_TGax_Scenario1(double tx_power, double distance, double c
 // Enterprise — TGax scenario #2
 static double PathLoss_TGax_Scenario2(double tx_power, double distance, double central_frequency) {
 	double tx_power_dbm = ConvertPower(PW_TO_DBM, tx_power);
-	int f_walls = 12/20;
-	double min_d = (distance > 10) ? 1.0 : distance;
+	double f_walls = 12.0/20;
+	double min_d = (distance > 10) ? 10.0 : distance;
 	double cf_ghz = central_frequency / pow(10, 9);
 	double shadowing (5);
 	double shadowing_at_wlan = (((double) rand())/RAND_MAX) * shadowing;
@@ -166,9 +167,9 @@ static double PathLoss_TGax_Scenario2(double tx_power, double distance, double c
 }
 
 // Indoor small BSSs — TGax scenario #3
-static double PathLoss_TGax_Scenario3(double tx_power, double distance) {
+static double PathLoss_TGax_Scenario3(double tx_power, double distance, double central_frequency) {
 	double tx_power_dbm = ConvertPower(PW_TO_DBM, tx_power);
-	double LFS = 32.4 + 20*log10(2.4*pow(10,3)) + 20*log10(distance/1000);
+	double LFS = 32.4 + 20*log10(central_frequency/1e6) + 20*log10(distance/1000);
 	int d_BP (10);
 	double loss = (distance >= d_BP) ? LFS + 35*log10(distance/double(d_BP)) : LFS;
 	return ConvertPower(DBM_TO_PW, tx_power_dbm + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - loss);
@@ -185,7 +186,7 @@ static double PathLoss_TGax_Scenario4(double tx_power, double distance, double c
 	else if (distance >= d_BP && distance < 5000)
 		loss = 40*log10(distance) + 7.8 - 18*log10(h_AP-1) - 18*log10(h_STA-1)
 		     + 20*log10(central_frequency * pow(10,-9));
-	return ConvertPower(DBM_TO_PW, tx_power_dbm + ANTENNA_TX_GAIN_DB - loss);
+	return ConvertPower(DBM_TO_PW, tx_power_dbm + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - loss);
 }
 
 // Outdoor large BSS + Residential — TGax scenario #4a
@@ -194,17 +195,17 @@ static double PathLoss_TGax_Scenario4a(double tx_power, double distance, double 
 	double loss (0);
 	if (distance < 2000 && distance >= 10)
 		loss = 36.7*log10(distance) + 22.7 + 26*log10(central_frequency * pow(10,-9));
-	// Outdoor-to-indoor building penetration loss
-	// TODO: specify d_outdoor and d_indoor properly
-	double d_outdoor (0), d_indoor (0);
-	loss = loss * (d_outdoor + d_indoor) + 20 + 0.5 * d_indoor;
-	return ConvertPower(DBM_TO_PW, tx_power_dbm + ANTENNA_TX_GAIN_DB - loss);
+	// Outdoor-to-indoor building penetration loss (additive, d_indoor=0 until geometry is known)
+	// TODO: derive d_outdoor and d_indoor from node positions
+	double d_indoor (0);
+	loss += 20 + 0.5 * d_indoor;
+	return ConvertPower(DBM_TO_PW, tx_power_dbm + ANTENNA_TX_GAIN_DB + ANTENNA_RX_GAIN_DB - loss);
 }
 
 // 5 GHz office building (Medbo & Berg, VTC 2000)
 static double PathLoss_5GHz_Office(double tx_power, double distance, double central_frequency) {
 	double alpha (0.44);
-	double pl_free_space_db = 20*log10(distance) + 20*log10(central_frequency)
+	double pl_free_space_db = 20*log10(distance) + 20*log10(central_frequency/1e9)
 	                        + 20*log10((4*M_PI)/((double) SPEED_LIGHT))
 	                        - ANTENNA_RX_GAIN_DB - ANTENNA_TX_GAIN_DB;
 	double pl_overall_db = pl_free_space_db + alpha * distance;
@@ -260,7 +261,7 @@ double ComputePowerReceived(double distance, double tx_power, double central_fre
 		case PATH_LOSS_SCENARIO_2_TGax:
 			return PathLoss_TGax_Scenario2(tx_power, distance, central_frequency);
 		case PATH_LOSS_SCENARIO_3_TGax:
-			return PathLoss_TGax_Scenario3(tx_power, distance);
+			return PathLoss_TGax_Scenario3(tx_power, distance, central_frequency);
 		case PATH_LOSS_SCENARIO_4_TGax:
 			return PathLoss_TGax_Scenario4(tx_power, distance, central_frequency);
 		case PATH_LOSS_SCENARIO_4a_TGax:
@@ -348,12 +349,20 @@ void GetChannelOccupancyByCCA(int primary_channel, int pifs_activated, int *chan
 */
 void UpdatePowerSensedPerNode(int primary_channel, std::map<int,double> &power_received_per_node,
 	Notification notification, double central_frequency, int path_loss_model,
-	double pw_received, int start_or_finish) {
+	double pw_received, int start_or_finish,
+	double rx_x, double rx_y, double rx_z) {
 
 	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
 		switch(start_or_finish){
 			case TX_INITIATED:{
-				power_received_per_node[notification.source_id] = pw_received;
+				double effective_power = pw_received;
+				if (notification.tx_info.beamforming_active
+						&& notification.tx_info.beam_N_elements > 1
+						&& notification.packet_type == PACKET_TYPE_DATA) {
+					effective_power *= ComputeRxBeamGain(notification.tx_info,
+						rx_x, rx_y, rx_z);
+				}
+				power_received_per_node[notification.source_id] = effective_power;
 				break;
 			}
 			case TX_FINISHED:{

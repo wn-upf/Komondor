@@ -138,7 +138,7 @@ void Node :: PrintNodeInfo(int info_detail_level){
 		printf("%s wlan id = %d\n", LOG_LVL5, wlan.wlan_id);
 		printf("%s wlan AP id = %d\n", LOG_LVL5, wlan.ap_id);
 		printf("%s Identifiers of STAs in WLAN (total number of STAs = %d): ", LOG_LVL5, wlan.num_stas);
-		wlan.PrintStaIds();
+		printf("\n%s MAPC enabled = %d\n", LOG_LVL5, wlan.mapc_enabled);
 	}
 	if(info_detail_level > INFO_DETAIL_LEVEL_1){
 		printf("%s node_params.backoff_type = %d\n", LOG_LVL4, node_params.backoff_type);
@@ -257,7 +257,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 	if (node_stats.num_delay_measurements > 0) node_stats.average_delay = node_stats.sum_delays / (double) node_stats.num_delay_measurements;
 	if (node_stats.flag_measure_rho && node_stats.num_measures_rho > 0) node_stats.average_rho = (double) node_stats.num_measures_rho_accomplished/(double) node_stats.num_measures_rho;
 	if (node_stats.num_measures_utilization > 0) node_stats.average_utilization = (double) node_stats.num_measures_buffer_with_packets / (double) node_stats.num_measures_utilization;
-	tx_init_failure_percentage = double(node_stats.num_tx_init_not_possible * 100)/double(node_stats.num_tx_init_tried);
+	if (node_stats.num_tx_init_tried > 0) tx_init_failure_percentage = double(node_stats.num_tx_init_not_possible * 100)/double(node_stats.num_tx_init_tried);
 	if (node_stats.data_packets_sent > 0) data_packets_lost_percentage = double(node_stats.data_packets_lost * 100)/double(node_stats.data_packets_sent);
 	if (node_stats.rts_cts_sent > 0){
 		rts_cts_lost_percentage = double(node_stats.rts_cts_lost * 100)/double(node_stats.rts_cts_sent);
@@ -286,7 +286,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Throughput
 				printf("%s Throughput = %f Mbps (%.2f pkt/s)\n", LOG_LVL2,
 					node_stats.throughput * pow(10,-6),
-					node_stats.throughput / (node_params.frame_length * limited_num_packets_aggregated));
+					(double)node_stats.data_packets_acked / SimTime());
 				// Delay
 				printf("%s Average delay from %d measurements = %f s (%.2f ms)\n", LOG_LVL2,
 					node_stats.num_delay_measurements, node_stats.average_delay, node_stats.average_delay * 1000);
@@ -301,16 +301,22 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				printf("%s %d/%d\n", LOG_LVL3,
 					node_stats.num_measures_buffer_with_packets, node_stats.num_measures_utilization);
 				// RTS/CTS sent and lost
-				printf("%s RTS/CTS sent/lost = %d/%d  (%.2f %% lost)\n",
-					LOG_LVL2, node_stats.rts_cts_sent, node_stats.rts_cts_lost, rts_cts_lost_percentage);
+				if (node_stats.rts_cts_sent == 0 && node_stats.rts_cts_lost > 0) {
+					printf("%s RTS/CTS sent/lost = %d/%d  (N/A %% lost)\n",
+						LOG_LVL2, node_stats.rts_cts_sent, node_stats.rts_cts_lost);
+				} else {
+					printf("%s RTS/CTS sent/lost = %d/%d  (%.2f %% lost)\n",
+						LOG_LVL2, node_stats.rts_cts_sent, node_stats.rts_cts_lost, rts_cts_lost_percentage);
+				}
 				// RTS/CTS sent and lost
 				printf("%s RTS lost due to slotted BO = %d (%f %%)\n",
 					LOG_LVL3, node_stats.rts_lost_slotted_bo, rts_lost_bo_percentage);
 				// Data packets sent and lost
 				printf("%s Data packets sent = %d - ACKed = %d -  Lost = %d  (%f %% lost)\n",
 					LOG_LVL2, node_stats.data_packets_sent, node_stats.data_packets_acked, node_stats.data_packets_lost, data_packets_lost_percentage);
-				printf("%s Frames ACKed = %d, Av. frames sent per packet = %.2f\n",
-					LOG_LVL2, node_stats.data_frames_acked, (double) node_stats.data_frames_acked/node_stats.data_packets_acked);
+				printf("%s Frames ACKed = %d, Av. frames ACKed per packet = %.2f\n",
+					LOG_LVL2, node_stats.data_frames_acked,
+					node_stats.data_packets_acked > 0 ? (double)node_stats.data_frames_acked/node_stats.data_packets_acked : 0.0);
 				// Data packets sent and lost
 				printf("%s Buffer: packets generated = %.0f (%.2f pkt/s) - Packets dropped = %.0f  (%f %% drop ratio)\n",
 					LOG_LVL2, node_stats.num_packets_generated, node_stats.num_packets_generated / SimTime(), node_stats.num_packets_dropped, node_stats.generation_drop_ratio);
@@ -322,17 +328,25 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Number of trials to transmit
 				printf("%s node_stats.num_tx_init_tried = %d - node_stats.num_tx_init_not_possible = %d (%f %% failed)\n",
 					LOG_LVL2, node_stats.num_tx_init_tried, node_stats.num_tx_init_not_possible, tx_init_failure_percentage);
-				// Total airtime vs successful airtime
-				double total_airtime(0);
-				double successful_airtime(0);
-				for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
-					total_airtime += node_stats.total_time_transmitting_per_channel[c];
-					successful_airtime += node_stats.total_time_transmitting_per_channel[c] - node_stats.total_time_lost_per_channel[c];
+				// Airtime metrics:
+				//   total_airtime     = all self-transmitted frames (ScheduleTransmission)
+				//   successful_airtime= total minus loss
+				//   effective_airtime = DATA-exchange phase only (RestartNode), excludes ICF/TF/RTS/CTS
+				int primary_ch = node_params.current_primary_channel;
+				double total_airtime = node_stats.total_time_channel_busy_per_channel[primary_ch];
+				double successful_airtime = total_airtime - node_stats.total_time_lost_per_channel[primary_ch];
+				double effective_airtime = 0;
+				for(int n = 0; n < node_params.num_channels_allowed; ++n){
+					effective_airtime += node_stats.total_time_transmitting_in_num_channels[n]
+					                   - node_stats.total_time_lost_in_num_channels[n];
+					if((int)pow(2,n) == NUM_CHANNELS_KOMONDOR) break;
 				}
-				printf("%s Airtime = %.2f s (%.2f %%) - Successful airtime = %.2f s (%.2f %%)\n",
-					LOG_LVL2, total_airtime, (total_airtime * 100 /SimTime()), successful_airtime, (successful_airtime * 100 /SimTime()));
+				printf("%s Airtime = %.2f s (%.2f %%) - Successful airtime = %.2f s (%.2f %%) - Effective (DATA) airtime = %.2f s (%.2f %%)\n",
+					LOG_LVL2, total_airtime, (total_airtime * 100 /SimTime()),
+					successful_airtime, (successful_airtime * 100 /SimTime()),
+					effective_airtime, (effective_airtime * 100 /SimTime()));
 				// Time EFFECTIVELY transmitting in a given number of channels (no losses)
-				printf("%s Successful airtime in channels of width N:", LOG_LVL3);
+				printf("%s DATA-phase airtime by channel width (excludes MAPC control frames):", LOG_LVL3);
 				for(int n = 0; n < node_params.num_channels_allowed; ++n){
 					printf("\n%s - %d: %f s (%.2f %%)",
 							LOG_LVL3, (int) pow(2,n),
@@ -346,7 +360,8 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				printf("%s Total Airtime / Successful airtime per channel:", LOG_LVL3);
 				double time_effectively_txing;
 				for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
-					time_effectively_txing = node_stats.total_time_transmitting_per_channel[c] -
+					// Successful airtime = all self-transmitted frames minus losses (consistent with Airtime headline)
+					time_effectively_txing = node_stats.total_time_channel_busy_per_channel[c] -
 						node_stats.total_time_lost_per_channel[c];
 					printf("\n%s - %d: %.2f s (%.2f %%) / %.2f s (%.2f %%)",
 						LOG_LVL3, c, node_stats.total_time_channel_busy_per_channel[c],
@@ -364,13 +379,11 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					printf("\n%s - %d: %d (%.2f %%)",
 						LOG_LVL3, (int) pow(2,n),
 						node_stats.num_trials_tx_per_num_channels[n],
-						(((double) node_stats.num_trials_tx_per_num_channels[n] * 100) / (double) (node_stats.rts_cts_sent)));
+						node_stats.num_tx_init_tried > 0 ? (((double) node_stats.num_trials_tx_per_num_channels[n] * 100) / (double)(node_stats.num_tx_init_tried)) : 0.0);
 
 					if((int) pow(2,n) == NUM_CHANNELS_KOMONDOR) break;
 				}
 				printf("\n");
-				// Number of TX initiations that have been not possible due to channel state and DCB model
-				printf("%s node_stats.num_tx_init_not_possible = %d\n", LOG_LVL2, node_stats.num_tx_init_not_possible);
 //				// Hidden nodes
 //				printf("%s Total number of hidden nodes: %d\n", LOG_LVL2, hidden_nodes_number);
 //				printf("%s Hidden nodes list: ", LOG_LVL2);
@@ -405,7 +418,7 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				printf("}\n%s RTS/CTS sent/lost: {", LOG_LVL3);
 				for(int n = 0; n < wlan.num_stas; ++n){
 					printf("%d/%d (%.2f %%)", node_stats.rts_cts_sent_per_sta[n], node_stats.rts_cts_lost_per_sta[n],
-						double(node_stats.rts_cts_lost_per_sta[n] * 100)/double(node_stats.rts_cts_sent_per_sta[n]));
+						node_stats.rts_cts_sent_per_sta[n] > 0 ? double(node_stats.rts_cts_lost_per_sta[n] * 100)/double(node_stats.rts_cts_sent_per_sta[n]) : 0.0);
 					if(n<wlan.num_stas-1) printf(", ");
 				}
 				printf("}\n%s Data packets sent/lost: {", LOG_LVL3);
@@ -416,6 +429,54 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				}
 				printf("}");
 				printf("\n\n");
+
+				// ----- MAPC / TXOP-Sharing Statistics -----
+				if (wlan.mapc_enabled) {
+					printf("%s ----- MAPC Statistics -----\n", LOG_LVL2);
+					if (node_stats.num_icf_tx > 0) {
+						// --- Coordinator role ---
+						printf("%s Role: MAPC Coordinator (%d group(s))\n", LOG_LVL3, wlan.num_mapc_groups);
+						for (int g = 0; g < wlan.num_mapc_groups; ++g) {
+							const char *mstr = "?";
+							switch(wlan.mapc_method_ids[g]) {
+								case CO_TDMA: mstr = "Co-TDMA"; break;
+								case CO_BF:   mstr = "Co-BF";   break;
+								case CO_SR:   mstr = "Co-SR";   break;
+								case CO_RTWT: mstr = "Co-RTWT"; break;
+							}
+							printf("%s  Group %d: %s, %d peer AP(s)\n", LOG_LVL3,
+								wlan.mapc_group_ids[g], mstr, wlan.mapc_num_peers[g]);
+						}
+						printf("%s  TXOPs initiated (ICF sent): %d\n", LOG_LVL3, node_stats.num_icf_tx);
+						printf("%s  ICR received: %d\n", LOG_LVL3, node_stats.num_icr_rx);
+						if (node_stats.num_tf_tx > 0)
+							printf("%s  TF sent (Co-BF/SR): %d\n", LOG_LVL3, node_stats.num_tf_tx);
+						if (node_stats.num_mu_rts_tx > 0)
+							printf("%s  MU-RTS sent (Co-TDMA): %d\n", LOG_LVL3, node_stats.num_mu_rts_tx);
+						printf("%s  Data duration / TXOP:  own = %.3f ms", LOG_LVL3,
+							node_stats.total_mapc_data_duration_own * 1000.0 / node_stats.num_icf_tx);
+						if (node_stats.total_mapc_data_duration_shared > 0.0)
+							printf(",  shared = %.3f ms",
+								node_stats.total_mapc_data_duration_shared * 1000.0 / node_stats.num_icf_tx);
+						printf("\n");
+					} 
+					if (node_stats.num_icf_rx > 0) {
+						// --- Coordinated AP role ---
+						printf("%s Role: MAPC Coordinated AP\n", LOG_LVL3);
+						printf("%s  ICF received: %d,  ICR sent: %d\n", LOG_LVL3,
+							node_stats.num_icf_rx, node_stats.num_icr_tx);
+						if (node_stats.num_tf_rx > 0)
+							printf("%s  TF received (Co-BF/SR): %d\n", LOG_LVL3, node_stats.num_tf_rx);
+						if (node_stats.num_mu_rts_rx > 0)
+							printf("%s  MU-RTS received (Co-TDMA): %d\n", LOG_LVL3, node_stats.num_mu_rts_rx);
+						int txops_participated = node_stats.num_tf_rx + node_stats.num_mu_rts_rx;
+						if (txops_participated == 0) txops_participated = node_stats.num_icf_rx;
+						if (txops_participated > 0 && node_stats.total_mapc_data_duration_allocated > 0.0)
+							printf("%s  Avg allocated data duration / TXOP: %.3f ms\n", LOG_LVL3,
+								node_stats.total_mapc_data_duration_allocated * 1000.0 / txops_participated);
+							printf("\n");
+					}
+				}
 
 			}
 			break;
