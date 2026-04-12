@@ -1,6 +1,6 @@
-/* Komondor IEEE 802.11ax Simulator
+/* Kom8ndor IEEE 802.11bn Simulator
  *
- * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * Copyright (c) 2026, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
  */
@@ -615,21 +615,27 @@ void Node :: PrepareNewTransmission() {
 		current_beam_num_nulls = 0;
 
 		if (wlan.mapc_enabled && coordinator_ap_id == NODE_ID_NONE) {
-			// MAPC coordinator: null toward each peer AP in the active group
+			// MAPC coordinator: null toward each peer AP's associated STA
+			// (the receiver that would experience our interference)
 			int _g = mapc_active_group_idx;
 			for (int _p = 0; _p < wlan.mapc_num_peers[_g]
 					&& current_beam_num_nulls < MAX_BEAM_NULLS; ++_p) {
-				int _peer = wlan.mapc_peer_ap_ids[_g][_p];
-				_bf_dx = all_node_x[_peer] - node_params.x;
-				_bf_dy = all_node_y[_peer] - node_params.y;
+				int _peer_sta = all_node_first_sta_id[wlan.mapc_peer_ap_ids[_g][_p]];
+				if (_peer_sta == NODE_ID_NONE) continue;
+				_bf_dx = all_node_x[_peer_sta] - node_params.x;
+				_bf_dy = all_node_y[_peer_sta] - node_params.y;
 				current_beam_null_az_rad[current_beam_num_nulls++] = atan2(_bf_dy, _bf_dx);
 			}
 		} else if (wlan.mapc_enabled && coordinator_ap_id != NODE_ID_NONE) {
-			// MAPC coordinated AP: single null toward coordinator
-			_bf_dx = all_node_x[coordinator_ap_id] - node_params.x;
-			_bf_dy = all_node_y[coordinator_ap_id] - node_params.y;
-			current_beam_null_az_rad[0] = atan2(_bf_dy, _bf_dx);
-			current_beam_num_nulls = 1;
+			// MAPC coordinated AP: null toward coordinator's associated STA
+			// (the receiver that would experience our interference)
+			int _coord_sta = all_node_first_sta_id[coordinator_ap_id];
+			if (_coord_sta != NODE_ID_NONE) {
+				_bf_dx = all_node_x[_coord_sta] - node_params.x;
+				_bf_dy = all_node_y[_coord_sta] - node_params.y;
+				current_beam_null_az_rad[0] = atan2(_bf_dy, _bf_dx);
+				current_beam_num_nulls = 1;
+			}
 		}
 	}
 
@@ -832,13 +838,16 @@ void Node :: EndBackoff(trigger_t &){
 	// Identify free channels
 	++node_stats.num_tx_init_tried;
 
-	if (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified) {
-		GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated, channels_free, node_params.min_channel_allowed,
-			node_params.max_channel_allowed, &channel_power, sr_state.current_obss_pd_threshold, timestamp_channel_becomes_free, SimTime(), PIFS);
-	} else {
-		GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated, channels_free, node_params.min_channel_allowed,
-			node_params.max_channel_allowed, &channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
-	}
+	// CCA + channel selection via pluggable channel access policy (default: CSMA/CA).
+	// SR uses a relaxed PD threshold when an OBSS TXOP opportunity was identified.
+	double effective_pd = (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified)
+		? sr_state.current_obss_pd_threshold : current_pd;
+	channel_access_policy.checkAndSelectChannels(
+		node_params.current_primary_channel, node_params.pifs_activated,
+		channels_free, node_params.min_channel_allowed, node_params.max_channel_allowed,
+		&channel_power, effective_pd, timestamp_channel_becomes_free, SimTime(), PIFS,
+		node_params.current_dcb_policy, NUM_CHANNELS_KOMONDOR, channel_aggregation_cca_model,
+		channels_for_tx);
 
 	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
@@ -852,10 +861,6 @@ void Node :: EndBackoff(trigger_t &){
 
 	PrintOrWriteChannelsFree(WRITE_LOG, node_params.save_node_logs, node_params.print_node_logs, node_logger,
 		channels_free);
-
-	GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
-			node_params.min_channel_allowed, node_params.max_channel_allowed, node_params.current_primary_channel,
-			NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
 
 	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting: ",
 		SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL2);
@@ -1374,10 +1379,17 @@ void Node :: HandleFinishTX_StateRxMuRts(const Notification &notification) {
 	// Coordinated AP uses 2-way DATA/ACK for its TDMA slot
 	exchange_sequence = IEEE_802_11_NO_RTS_CTS;
 	SelectDestination();
-	// AP_B never wins backoff independently, so EndBackoff's MCS-request loop
-	// and GetTxChannels call are never executed for it.  Initialise both here.
-	for (int ch = 0; ch < NUM_CHANNELS_KOMONDOR; ++ch)
-		channels_for_tx[ch] = (ch == node_params.current_primary_channel) ? TRUE : FALSE;
+	// Use DCB to determine the channel range, mirroring the coordinator's EndBackoff path.
+	GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
+		channels_free, node_params.min_channel_allowed, node_params.max_channel_allowed,
+		&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
+	GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
+		node_params.min_channel_allowed, node_params.max_channel_allowed, node_params.current_primary_channel,
+		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+	if (channels_for_tx[0] == TX_NOT_POSSIBLE) {
+		RestartNode(TRUE);
+		return;
+	}
 	{
 		int ix_dest (current_destination_id - wlan.list_sta_id[0]);
 		if (change_modulation_flag[ix_dest]) {
@@ -1411,9 +1423,17 @@ void Node :: HandleFinishTX_StateRxTf(const Notification &notification) {
 	// Coordinated AP transmits DATA simultaneously with coordinator
 	exchange_sequence = IEEE_802_11_NO_RTS_CTS;
 	SelectDestination();
-	// Same issue as Co-TDMA: coordinated AP never wins backoff independently.
-	for (int ch = 0; ch < NUM_CHANNELS_KOMONDOR; ++ch)
-		channels_for_tx[ch] = (ch == node_params.current_primary_channel) ? TRUE : FALSE;
+	// Use DCB to determine the channel range, mirroring the coordinator's EndBackoff path.
+	GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
+		channels_free, node_params.min_channel_allowed, node_params.max_channel_allowed,
+		&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
+	GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
+		node_params.min_channel_allowed, node_params.max_channel_allowed, node_params.current_primary_channel,
+		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+	if (channels_for_tx[0] == TX_NOT_POSSIBLE) {
+		RestartNode(TRUE);
+		return;
+	}
 	// Co-SR: apply the TX power limit assigned by the coordinator in the TF
 	limited_num_packets_aggregated = 0;   // prevent stale-packet flush on first call
 	if (wlan.mapc_method_ids[mapc_active_group_idx] == CO_SR) {

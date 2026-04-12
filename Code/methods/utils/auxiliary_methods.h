@@ -1,6 +1,6 @@
-/* Komondor IEEE 802.11ax Simulator
+/* Kom8ndor IEEE 802.11bn Simulator
  *
- * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * Copyright (c) 2026, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
 
@@ -56,6 +56,7 @@
 #include <sstream>
 
 #include "../../list_of_macros.h"
+#include "logging_methods.h"
 
 #ifndef _AUX_METHODS_
 #define _AUX_METHODS_
@@ -105,73 +106,6 @@ int PickElementFromArrayRR(int *array, int array_size){
 		printf("The list does not contain elements!\n");
 	}
 	return element;
-}
-
-/**
-* Print per console or write to a given file the elements of an array of integers
-* @param "list" [type int*]: array of integers to be printed or written
-* @param "list_size" [type int]: size of the introduced array
-* @param "write_or_print" [type int]: variable indicating whether to print or write
-* @param "save_node_logs" [type int]: boolean indicating whether to save node logs in a file or not
-* @param "print_node_logs" [type int]: boolean indicating whether to print node logs to console or not
-* @param "node_logger" [type Logger]: logger objects used for writing logs into a file
-*/
-void PrintOrWriteArrayInt(int *list, int list_size, int write_or_print, int save_node_logs,
-	int print_node_logs, Logger node_logger) {
-
-	switch(write_or_print){
-
-		case PRINT_LOG:{
-			if(print_node_logs){
-				for(int c = 0; c < list_size; ++c){
-					printf("%d  ", list[c]);
-				}
-				printf("\n");
-			}
-			break;
-		}
-		case WRITE_LOG:{
-			for(int c = 0; c < list_size; ++c){
-				 if(save_node_logs)  fprintf(node_logger.file, "%d  ", list[c]);
-			}
-			if(save_node_logs)  fprintf(node_logger.file, "\n");
-			break;
-		}
-	}
-}
-
-/**
-* Print per console or write to a given file the elements of an "double" array
-* @param "list" [type double*]: array of doubles to be printed or written
-* @param "list_size" [type int]: size of the introduced array
-* @param "write_or_print" [type int]: variable indicating whether to print or write
-* @param "save_node_logs" [type int]: boolean indicating whether to save node logs in a file or not
-* @param "print_node_logs" [type int]: boolean indicating whether to print node logs to console or not
-* @param "node_logger" [type Logger]: logger objects used for writing logs into a file
-*/
-void PrintOrWriteArrayDouble(double *list, int list_size, int write_or_print, int save_node_logs,
-	int print_node_logs, Logger node_logger) {
-
-	switch(write_or_print){
-
-		case PRINT_LOG:{
-			if(print_node_logs){
-				for(int c = 0; c < list_size; ++c){
-					printf("%.2f  ", list[c]);
-				}
-				printf("\n");
-			}
-			break;
-		}
-		case WRITE_LOG:{
-			for(int c = 0; c < list_size; ++c){
-				 if(save_node_logs)  fprintf(node_logger.file, "%f  ", list[c]);
-			}
-			if(save_node_logs)  fprintf(node_logger.file, "\n");
-			break;
-		}
-	}
-
 }
 
 /**

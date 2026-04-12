@@ -1,6 +1,6 @@
-/* Komondor IEEE 802.11ax Simulator
+/* Kom8ndor IEEE 802.11bn Simulator
  *
- * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * Copyright (c) 2026, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
  *
@@ -58,7 +58,7 @@ double ConvertPower(int conversion_type, double power_magnitude_in){
       break;
     }
     case MW_TO_DBM:{
-      converted_power = 10 * log10(power_magnitude_in * pow(10,-6));
+      converted_power = 10 * log10(power_magnitude_in);
       break;
     }
     case DBM_TO_MW:
@@ -486,7 +486,7 @@ double UpdateSINR(double pw_received_interest, double max_pw_interference){
 /**
 * Find the maximum interference power across the channels of interest
 */
-void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intereference,
+void ComputeMaxInterference(double *max_pw_interference, int *channel_max_interference,
 	Notification notification_interest, int node_state,
 	std::map<int,double> &power_received_per_node, double **channel_power) {
 
@@ -500,7 +500,7 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_intere
 			                    - power_received_per_node[notification_interest.source_id];
 			if(*max_pw_interference < interference){
 				*max_pw_interference    = interference;
-				*channel_max_intereference = c;
+				*channel_max_interference = c;
 			}
 		}
 	}

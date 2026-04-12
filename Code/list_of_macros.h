@@ -1,6 +1,6 @@
-/* Komondor IEEE 802.11ax Simulator
+/* Kom8ndor IEEE 802.11bn Simulator
  *
- * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * Copyright (c) 2026, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
 
@@ -427,6 +427,7 @@
 #define CO_BF       2
 #define CO_TDMA     3
 #define CO_RTWT     4
+#define CO_CONPA    5
 
 /* MAPC TXOP split methods */
 #define TXOP_SPLIT_EQUAL    0   ///> Equal-time split of TXOP among active APs

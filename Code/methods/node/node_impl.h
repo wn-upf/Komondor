@@ -1,6 +1,6 @@
-/* Komondor IEEE 802.11ax Simulator
+/* Kom8ndor IEEE 802.11bn Simulator
  *
- * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * Copyright (c) 2026, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
  */
@@ -34,6 +34,7 @@
 #include "node_mcs_methods.h"
 #include "node_timeout_methods.h"
 #include "node_backoff_methods.h"
+#include "node_fsm_methods.h"
 #include "node_packet_methods.h"
 
 #endif /* NODE_IMPL_H */

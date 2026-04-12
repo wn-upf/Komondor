@@ -303,21 +303,18 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                 free(tmp_nodes);
             }
 
-            // Beamforming (optional columns; defaults to disabled if absent)
+            // Beamforming (optional columns)
             tmp_nodes = strdup(line_nodes);
             const char* bf_enabled_char = GetField(tmp_nodes, IX_BF_ENABLED);
             if (bf_enabled_char != NULL) {
                 node_container[node_ix].node_params.beamforming_enabled = atoi(bf_enabled_char);
                 free(tmp_nodes);
-
                 tmp_nodes = strdup(line_nodes);
                 node_container[node_ix].node_params.beam_N_elements = atoi(GetField(tmp_nodes, IX_BF_N_ELEMENTS));
                 free(tmp_nodes);
-
                 tmp_nodes = strdup(line_nodes);
                 node_container[node_ix].node_params.beam_d_spacing = atof(GetField(tmp_nodes, IX_BF_D_SPACING));
                 free(tmp_nodes);
-
                 tmp_nodes = strdup(line_nodes);
                 node_container[node_ix].node_params.beam_az_main_deg = atof(GetField(tmp_nodes, IX_BF_AZ_MAIN_DEG));
                 free(tmp_nodes);

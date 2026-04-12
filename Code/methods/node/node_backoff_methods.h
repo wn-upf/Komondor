@@ -1,6 +1,6 @@
-/* Komondor IEEE 802.11ax Simulator
+/* Kom8ndor IEEE 802.11bn Simulator
  *
- * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * Copyright (c) 2026, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
  */
@@ -76,7 +76,7 @@ void Node :: ScheduleBackoffAfterDIFS() {
  */
 void Node :: UpdateSINRFromNotification(const Notification &notification) {
 	power_rx_interest = power_received_per_node[notification.source_id];
-	ComputeMaxInterference(&max_pw_interference, &channel_max_intereference,
+	ComputeMaxInterference(&max_pw_interference, &channel_max_interference,
 		notification, node_state, power_received_per_node, &channel_power);
 	current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
 }

@@ -1,6 +1,6 @@
-/* Komondor IEEE 802.11ax Simulator
+/* Kom8ndor IEEE 802.11bn Simulator
  *
- * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * Copyright (c) 2026, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
  */
@@ -178,8 +178,8 @@ void Node :: InportMCSRequestReceived(Notification &notification){
 		LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s mcs_response for 1, 2, 4 and 8 channels: ",
 			SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL3);
 
-		PrintOrWriteArrayInt(mcs_response, 4, WRITE_LOG, node_params.save_node_logs,
-			node_params.print_node_logs, node_logger);
+		PrintOrWriteArrayInt(WRITE_LOG, node_params.save_node_logs,
+			node_params.print_node_logs, node_logger, mcs_response, 4);
 
 		// Fill and send MCS response
 		Notification response_mcs  = GenerateNotification(PACKET_TYPE_MCS_RESPONSE, notification.source_id,

@@ -1,6 +1,6 @@
-/* Komondor IEEE 802.11ax Simulator
+/* Kom8ndor IEEE 802.11bn Simulator
  *
- * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * Copyright (c) 2026, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
 
@@ -292,10 +292,16 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 		node_container[i].all_node_x = new double[total_nodes_number];
 		node_container[i].all_node_y = new double[total_nodes_number];
 		node_container[i].all_node_z = new double[total_nodes_number];
+		node_container[i].all_node_first_sta_id = new int[total_nodes_number];
 		for (int j = 0; j < total_nodes_number; ++j) {
 			node_container[i].all_node_x[j] = node_container[j].node_params.x;
 			node_container[i].all_node_y[j] = node_container[j].node_params.y;
 			node_container[i].all_node_z[j] = node_container[j].node_params.z;
+			// For AP nodes: store first associated STA id; NODE_ID_NONE for STAs
+			if (node_container[j].wlan.ap_id == j && node_container[j].wlan.num_stas > 0)
+				node_container[i].all_node_first_sta_id[j] = node_container[j].wlan.list_sta_id[0];
+			else
+				node_container[i].all_node_first_sta_id[j] = NODE_ID_NONE;
 		}
 	}
 

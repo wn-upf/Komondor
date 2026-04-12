@@ -1,6 +1,6 @@
-/* Komondor IEEE 802.11ax Simulator
+/* Kom8ndor IEEE 802.11bn Simulator
  *
- * Copyright (c) 2017, Universitat Pompeu Fabra.
+ * Copyright (c) 2026, Universitat Pompeu Fabra.
  * GNU GENERAL PUBLIC LICENSE
  * Version 3, 29 June 2007
 
@@ -146,37 +146,6 @@ void UpdateTokenStatus(int node_id, int take_or_release, int *token_status, int 
 	}
 	//printf("distance_to_token = %d\n", *distance_to_token);
 
-}
-
-/**
-* [ONLY FOR BACKOFF_TOKENIZED] Print or write the token list for the token-based channel access
-* @param "write_or_print" [type int]: indicates whether to print or write
-* @param "save_node_logs" [type int]: flag indicating whether to save node logs or not
-* @param "node_logger" [type Logger]: logger object to print logs into a file
-* @param "token_order_list" [type int*]: contains an ordered list of identifiers of sensed neighboring devices
-* @param "length_order_list" [type int]: length of the token list
-*/
-void PrintOrWriteTokenList(int write_or_print, int save_node_logs, Logger node_logger,
-	int print_node_logs, int *token_order_list, int length_order_list){
-
-	switch(write_or_print){
-		case PRINT_LOG:{
-			if(print_node_logs){
-				for(int i = 0; i < length_order_list; ++i){
-					printf("%d  ", token_order_list[i]);
-				}
-				printf("\n");
-			}
-			break;
-		}
-		case WRITE_LOG:{
-			for(int i = 0; i < length_order_list; ++i){
-				if(save_node_logs) fprintf(node_logger.file, "%d  ", token_order_list[i]);
-			}
-			if(save_node_logs)  fprintf(node_logger.file, "\n");
-			break;
-		}
-	}
 }
 
  /**
