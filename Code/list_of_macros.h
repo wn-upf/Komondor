@@ -226,6 +226,9 @@
 #define CB_ALWAYS_MAX				3	///> Always-max (DCB): TX in all the free channels contiguous to the primary channel
 #define CB_ALWAYS_MAX_LOG2			4	///> Log2 Always-max (DCB): TX in the larger channel range allowed by the log2 mapping
 #define CB_PROB_UNIFORM_LOG2		5	///> Log2 probabilistic uniform: pick with same probabilty any available channel range
+#define CB_PP_MAX_LOG2				6	///> Preamble Puncturing (802.11ax): log2 always-max with busy secondary channels punctured
+
+#define PP_MAX_PUNCTURED			2	///> Maximum number of secondary 20-MHz sub-channels that may be punctured in a PP PPDU
 
 #define CHANNEL_AGGREGATION_CCA_SAME 0	///> Same CCA (e.g., -82 dBm) is applied to every 20-MHz channel
 #define CHANNEL_AGGREGATION_CCA_11AX 1	///> Different CCA (i.e., -82, 79, -72...) is applied depending on primary and secondary

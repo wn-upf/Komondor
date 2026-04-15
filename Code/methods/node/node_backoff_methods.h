@@ -216,6 +216,7 @@ void Node :: RestartNode(int called_by_time_out){
 	receiving_from_node_id = NODE_ID_NONE;
 	receiving_packet_id = NO_PACKET_ID;
 	sr_state.mapc_cosr_active = 0;
+	pp_punctured_bitmap = 0;
 
 	// Cancel triggers for safety
 	trigger_end_backoff.Cancel();

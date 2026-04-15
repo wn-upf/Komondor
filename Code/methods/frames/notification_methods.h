@@ -93,6 +93,7 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
     tx_info.flag_change_in_tx_power = flag_change_in_tx_power;
 	tx_info.mapc_sr_peer_tx_power = 0.0;
 	tx_info.mapc_sr_measured_rssi = 0.0;
+	tx_info.pp_punctured_bitmap   = 0;
 
 	// Beamforming fields — overwritten by GenerateNotification() when beamforming_enabled
 	tx_info.beamforming_active = BEAMFORMING_DISABLED;

@@ -365,6 +365,9 @@ component Node : public TypeII{
 		// Spatial Reuse operational state
 		SpatialReuseState sr_state;		///> 11ax SR / OBSS-PD operational state
 
+		// Preamble puncturing (802.11ax)
+		int pp_punctured_bitmap;		///> Bitmask of punctured channels for the current TXOP (set by EndBackoff, used in GenerateNotification)
+
 	// Connections and timers
 	public:
 
@@ -782,8 +785,13 @@ void Node :: InitializeVariables() {
 	current_modulation = 1;
 	packet_id = 0;
 
-	// Channel access policy: default to CSMA/CA
+	// Preamble puncturing (802.11ax)
+	pp_punctured_bitmap = 0;
+
+	// Channel access policy: default to CSMA/CA; switch to preamble-puncturing if CB_PP_MAX_LOG2
 	channel_access_policy.checkAndSelectChannels = CSMA_CA_CheckAndSelectChannels;
+	if (node_params.current_dcb_policy == CB_PP_MAX_LOG2)
+		channel_access_policy.checkAndSelectChannels = PP_CheckAndSelectChannels;
 
 	//CHANNEL ACCESSs
 	ca_state.current_cw_min = node_params.cw_min_default; // Initialize the CW min

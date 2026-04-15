@@ -80,6 +80,9 @@ struct TxInfo
 	double mapc_sr_peer_tx_power;		///> Co-SR: TX power limit for peer AP [pW] (carried in TF)
 	double mapc_sr_measured_rssi;		///> Co-SR Option B placeholder: RSSI from peer's STA [pW]; 0 = unused
 
+	// Preamble puncturing (802.11ax)
+	int pp_punctured_bitmap;		///> Bitmask of punctured 20-MHz sub-channels (bit i=1 means channel i carries no power); 0 = no puncturing
+
 	// Beamforming parameters (set per-TXOP by transmitter; receiver uses these to compute its own gain)
 	int    beamforming_active;			///> 0 = omni, 1 = ULA beam pattern applies
 	int    beam_N_elements;				///> Number of ULA elements

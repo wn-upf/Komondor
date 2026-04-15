@@ -352,7 +352,13 @@ void UpdatePowerSensedPerNode(int primary_channel, std::map<int,double> &power_r
 	double pw_received, int start_or_finish,
 	double rx_x, double rx_y, double rx_z) {
 
-	if(primary_channel >= notification.left_channel && primary_channel <= notification.right_channel){
+	// Preamble puncturing: if the receiver's primary channel is punctured in this PPDU,
+	// the sender contributes zero power there — treat as if out of channel range.
+	int primary_in_range = (primary_channel >= notification.left_channel
+	                        && primary_channel <= notification.right_channel);
+	int primary_punctured = (notification.tx_info.pp_punctured_bitmap & (1 << primary_channel)) != 0;
+
+	if(primary_in_range && !primary_punctured){
 		switch(start_or_finish){
 			case TX_INITIATED:{
 				double effective_power = pw_received;
@@ -400,9 +406,12 @@ void UpdateRssiPerSta(Wlan wlan, double *rssi_per_sta,
 void ApplyAdjacentChannelInterferenceModel(int adjacent_channel_model, double total_power[],
 	Notification notification, double central_frequency, double pw_received, int path_loss_model){
 
-	// Direct power on the TX channels
-	for(int i = notification.left_channel; i <= notification.right_channel; ++i)
+	// Direct power on the TX channels.
+	// Preamble puncturing: punctured sub-channels carry no power (bit i=1 → silent).
+	for(int i = notification.left_channel; i <= notification.right_channel; ++i){
+		if(notification.tx_info.pp_punctured_bitmap & (1 << i)) continue;
 		total_power[i] = pw_received;
+	}
 
 	double pw_loss_db, total_power_dbm;
 
@@ -426,6 +435,8 @@ void ApplyAdjacentChannelInterferenceModel(int adjacent_channel_model, double to
 		case ADJACENT_CHANNEL_EXTREME:{
 			for(int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c){
 				for(int j = notification.left_channel; j <= notification.right_channel; ++j){
+					// Preamble puncturing: no leakage from punctured source sub-channels.
+					if(notification.tx_info.pp_punctured_bitmap & (1 << j)) continue;
 					if(c != j){
 						pw_loss_db      = 20 * abs(c - j);
 						total_power_dbm = ConvertPower(PW_TO_DBM, pw_received) - pw_loss_db;

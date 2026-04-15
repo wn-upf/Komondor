@@ -511,6 +511,83 @@ void GetTxChannelsByChannelBondingCCASame(int *channels_for_tx, int channel_bond
 }
 
 /**
+ * Preamble puncturing channel selection (802.11ax).
+ *
+ * Finds the widest log2-aligned block containing primary_channel. The primary
+ * channel must be idle (below CCA_PRIMARY_20MHZ); if busy, TX is not possible.
+ * Secondary sub-channels that are busy (above CCA_SECONDARY_20MHZ) are
+ * punctured rather than causing a bandwidth reduction, up to PP_MAX_PUNCTURED.
+ * If more than PP_MAX_PUNCTURED secondaries are busy, the block is halved and
+ * the check is repeated, down to the primary channel alone (no puncturing).
+ *
+ * @param "channels_for_tx"      [type int*]:    TX channel boolean array (updated in place;
+ *                                               TRUE = active, FALSE = silent/punctured)
+ * @param "punctured_bitmap_out" [type int*]:    bitmask where bit i=1 means channel i is punctured
+ * @param "min_channel_allowed"  [type int]:     leftmost allowed channel
+ * @param "max_channel_allowed"  [type int]:     rightmost allowed channel
+ * @param "primary_channel"      [type int]:     primary channel index
+ * @param "channel_power"        [type double**]: power sensed per channel [pW]
+ */
+static void GetTxChannelsByPP(int *channels_for_tx, int *punctured_bitmap_out,
+		int min_channel_allowed, int max_channel_allowed, int primary_channel,
+		double **channel_power) {
+
+	int c;
+	for (c = 0; c < NUM_CHANNELS_KOMONDOR; ++c) channels_for_tx[c] = FALSE;
+	*punctured_bitmap_out = 0;
+
+	// Primary channel must be idle; if busy, TX is not possible.
+	if ((*channel_power)[primary_channel] >= ConvertPower(DBM_TO_PW, CCA_PRIMARY_20MHZ)) {
+		channels_for_tx[0] = TX_NOT_POSSIBLE;
+		return;
+	}
+
+	// Find widest log2-aligned block size that fits within the allowed range.
+	int num_channels_allowed = max_channel_allowed - min_channel_allowed + 1;
+	int block_size = 1;
+	while (block_size * 2 <= num_channels_allowed) block_size *= 2;
+
+	// Try decreasing block sizes until puncture count is acceptable.
+	while (block_size > 1) {
+		// Compute the aligned base for this block size containing primary_channel.
+		int base = (primary_channel / block_size) * block_size;
+
+		// Ensure block fits within allowed range; if not, shrink and retry.
+		if (base < min_channel_allowed || base + block_size - 1 > max_channel_allowed) {
+			block_size /= 2;
+			continue;
+		}
+
+		// Count busy secondary channels and build candidate puncture bitmap.
+		int num_punctured = 0;
+		int candidate_punctured = 0;
+		for (c = base; c < base + block_size; ++c) {
+			if (c == primary_channel) continue;
+			if ((*channel_power)[c] >= ConvertPower(DBM_TO_PW, CCA_SECONDARY_20MHZ)) {
+				++num_punctured;
+				candidate_punctured |= (1 << c);
+			}
+		}
+
+		if (num_punctured <= PP_MAX_PUNCTURED) {
+			// Accept this block with puncturing.
+			for (c = base; c < base + block_size; ++c) {
+				channels_for_tx[c] = (candidate_punctured & (1 << c)) ? FALSE : TRUE;
+			}
+			*punctured_bitmap_out = candidate_punctured;
+			return;
+		}
+
+		// Too many busy secondaries: try a smaller block.
+		block_size /= 2;
+	}
+
+	// block_size == 1: use primary channel alone (no puncturing needed).
+	channels_for_tx[primary_channel] = TRUE;
+	*punctured_bitmap_out = 0;
+}
+
+/**
  * Dispatcher: selects the correct CCA model and calls the corresponding channel bonding function.
  * @param "channels_for_tx"              [type int*]:    TX channel boolean array (updated in place)
  * @param "channel_bonding_model"        [type int]:     channel bonding model
@@ -521,10 +598,23 @@ void GetTxChannelsByChannelBondingCCASame(int *channels_for_tx, int channel_bond
  * @param "num_channels_komondor"        [type int]:     number of channels in the system
  * @param "channel_power"                [type double**]: power sensed per channel
  * @param "channel_aggregation_cca_model"[type int]:     CCA model (SAME or 11AX)
+ * @param "punctured_bitmap_out"         [type int*]:    output puncture bitmap; NULL for non-PP callers
  */
 void GetTxChannels(int *channels_for_tx, int channel_bonding_model, int *channels_free,
 		int min_channel_allowed, int max_channel_allowed, int primary_channel,
-		int num_channels_komondor, double **channel_power, int channel_aggregation_cca_model) {
+		int num_channels_komondor, double **channel_power, int channel_aggregation_cca_model,
+		int *punctured_bitmap_out) {
+
+	if (punctured_bitmap_out) *punctured_bitmap_out = 0;
+
+	// Preamble puncturing (CB_PP_MAX_LOG2) has its own selection logic; bypass the CCA-model dispatch.
+	if (channel_bonding_model == CB_PP_MAX_LOG2) {
+		int _dummy = 0;
+		int *_bmp = punctured_bitmap_out ? punctured_bitmap_out : &_dummy;
+		GetTxChannelsByPP(channels_for_tx, _bmp,
+				min_channel_allowed, max_channel_allowed, primary_channel, channel_power);
+		return;
+	}
 
 	switch (channel_aggregation_cca_model) {
 		case CHANNEL_AGGREGATION_CCA_SAME: {

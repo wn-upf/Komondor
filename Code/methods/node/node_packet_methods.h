@@ -150,6 +150,9 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 		case PACKET_TYPE_DATA:{
 			notification.frame_length = node_params.frame_length;
 			notification.tx_info.nav_time = current_nav_time;
+			// Preamble puncturing: embed bitmap so receivers can zero out silent sub-channels.
+			// Control frames (RTS/CTS/ACK/ICF/...) are never punctured — bitmap stays 0.
+			notification.tx_info.pp_punctured_bitmap = pp_punctured_bitmap;
 			break;
 		}
 
@@ -466,6 +469,16 @@ void Node :: PrepareNewTransmission() {
 	++node_stats.num_trials_tx_per_num_channels[(int)log2(num_channels_tx)];
 	int ix_num_channels_used (log2(num_channels_tx));
 
+	// Preamble puncturing: count active (non-punctured) channels for throughput scaling.
+	// For non-PP scenarios channels_for_tx[] has no gaps, so the count equals num_channels_tx.
+	int num_active_channels_tx = 0;
+	{
+		int _c;
+		for (_c = 0; _c < NUM_CHANNELS_KOMONDOR; ++_c)
+			if (channels_for_tx[_c] == TRUE) ++num_active_channels_tx;
+		if (num_active_channels_tx == 0) num_active_channels_tx = num_channels_tx;
+	}
+
 	if(previous_num_channels != num_channels_tx) sr_state.flag_change_in_tx_power = TRUE;
 
 	// Get the current modulation according to the channels selected for transmission
@@ -514,10 +527,13 @@ void Node :: PrepareNewTransmission() {
 	}
 
 	// data rate depending on CB and streams: Nsc * ym * yc * SUSS
+	// Preamble puncturing: GetNumberSubcarriers uses the full range (for correct MCS bandwidth class),
+	// then scaled down by the active-to-range ratio to reflect punctured sub-channels.
 	bits_ofdm_sym =  GetNumberSubcarriers(num_channels_tx) *
 		Mcs_array::modulation_bits[current_modulation-1] *
 		Mcs_array::coding_rates[current_modulation-1] *
-		IEEE_AX_SU_SPATIAL_STREAMS;
+		IEEE_AX_SU_SPATIAL_STREAMS *
+		((double)num_active_channels_tx / (double)num_channels_tx);
 
 	// Update the number of packets to aggregate (just in case that the max PPDU is exceeded with the current MCS)
 	limited_num_packets_aggregated = FindMaximumPacketsAggregated
@@ -842,12 +858,13 @@ void Node :: EndBackoff(trigger_t &){
 	// SR uses a relaxed PD threshold when an OBSS TXOP opportunity was identified.
 	double effective_pd = (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified)
 		? sr_state.current_obss_pd_threshold : current_pd;
+	pp_punctured_bitmap = 0;	// Reset; PP_CheckAndSelectChannels will set if puncturing occurs
 	channel_access_policy.checkAndSelectChannels(
 		node_params.current_primary_channel, node_params.pifs_activated,
 		channels_free, node_params.min_channel_allowed, node_params.max_channel_allowed,
 		&channel_power, effective_pd, timestamp_channel_becomes_free, SimTime(), PIFS,
 		node_params.current_dcb_policy, NUM_CHANNELS_KOMONDOR, channel_aggregation_cca_model,
-		channels_for_tx);
+		channels_for_tx, &pp_punctured_bitmap);
 
 	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
@@ -1159,7 +1176,7 @@ void Node :: HandleFinishTX_StateRxIcf(const Notification &notification) {
 
 	GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
 		current_left_channel, current_right_channel, node_params.current_primary_channel,
-		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
 
 	if (channels_for_tx[0] == TX_NOT_POSSIBLE) {
 		RestartNode(TRUE);
@@ -1385,7 +1402,7 @@ void Node :: HandleFinishTX_StateRxMuRts(const Notification &notification) {
 		&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
 	GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
 		node_params.min_channel_allowed, node_params.max_channel_allowed, node_params.current_primary_channel,
-		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
 	if (channels_for_tx[0] == TX_NOT_POSSIBLE) {
 		RestartNode(TRUE);
 		return;
@@ -1429,7 +1446,7 @@ void Node :: HandleFinishTX_StateRxTf(const Notification &notification) {
 		&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
 	GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
 		node_params.min_channel_allowed, node_params.max_channel_allowed, node_params.current_primary_channel,
-		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
 	if (channels_for_tx[0] == TX_NOT_POSSIBLE) {
 		RestartNode(TRUE);
 		return;

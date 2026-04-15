@@ -1998,7 +1998,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
 								current_left_channel, current_right_channel, node_params.current_primary_channel,
-								NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model);
+								NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
 						
 						LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting after RTS: ",
 								SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL2);
