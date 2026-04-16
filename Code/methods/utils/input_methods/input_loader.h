@@ -157,6 +157,19 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
             node_container[node_ix].node_params.wlan_code = wlan_code;
             free(tmp_nodes);
 
+            // Read channel bounds early so they are available for the WLAN-STA link logic below.
+            // (node_params.min/max_channel_allowed are populated later in this loop, so we must
+            //  read directly from the CSV here to avoid storing stale zeros.)
+            int early_min_ch, early_max_ch;
+            {
+                char *tmp_ch = strdup(line_nodes);
+                early_min_ch = atoi(GetField(tmp_ch, IX_MIN_CH_ALLOWED));
+                free(tmp_ch);
+                tmp_ch = strdup(line_nodes);
+                early_max_ch = atoi(GetField(tmp_ch, IX_MAX_CH_ALLOWED));
+                free(tmp_ch);
+            }
+
             // Link logic
             for(int w = 0; w < total_wlans_number; ++w){
                 if(strcmp(wlan_code.c_str(), wlan_container[w].wlan_code.c_str()) == 0){
@@ -165,7 +178,9 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                     } else if (node_container[node_ix].node_params.node_type == NODE_TYPE_STA){
                         for(int s = 0; s < wlan_container[w].num_stas; ++s){
                             if(wlan_container[w].list_sta_id[s] == NODE_ID_NONE){
-                                wlan_container[w].list_sta_id[s] = node_container[node_ix].node_params.node_id;
+                                wlan_container[w].list_sta_id[s]     = node_container[node_ix].node_params.node_id;
+                                wlan_container[w].sta_min_channel[s] = early_min_ch;
+                                wlan_container[w].sta_max_channel[s] = early_max_ch;
                                 break;
                             }
                         }

@@ -854,6 +854,28 @@ void Node :: EndBackoff(trigger_t &){
 	// Identify free channels
 	++node_stats.num_tx_init_tried;
 
+	// Compute effective TX channel range: cap AP's range to the destination STA's declared bandwidth.
+	// Exceptions that always use the full AP range:
+	//   (a) Broadcast frames (destination_id < 0).
+	//   (b) MAPC coordinator: the first frame after EndBackoff is an ICF, which is a broadcast
+	//       control frame sent at full BSS bandwidth. The coordinator's own DATA-phase channel
+	//       selection is re-done in ProceedAfterIcr / MyTxFinished with the STA cap applied there.
+	int eff_min_channel = node_params.min_channel_allowed;
+	int eff_max_channel = node_params.max_channel_allowed;
+	{
+		int is_mapc_coordinator = (wlan.mapc_enabled && coordinator_ap_id == NODE_ID_NONE);
+		if (!is_mapc_coordinator && current_destination_id >= 0) {
+			int sta_min_ch, sta_max_ch;
+			wlan.GetStaChannelBounds(current_destination_id, &sta_min_ch, &sta_max_ch);
+			if (sta_min_ch >= 0 && sta_min_ch > eff_min_channel) eff_min_channel = sta_min_ch;
+			if (sta_max_ch >= 0 && sta_max_ch < eff_max_channel) eff_max_channel = sta_max_ch;
+		}
+	}
+	LOGS(node_params.save_node_logs,node_logger.file,
+		"%.15f;N%d;S%d;%s;%s Effective TX range for N%d: [%d, %d]\n",
+		SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL3,
+		current_destination_id, eff_min_channel, eff_max_channel);
+
 	// CCA + channel selection via pluggable channel access policy (default: CSMA/CA).
 	// SR uses a relaxed PD threshold when an OBSS TXOP opportunity was identified.
 	double effective_pd = (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified)
@@ -861,7 +883,7 @@ void Node :: EndBackoff(trigger_t &){
 	pp_punctured_bitmap = 0;	// Reset; PP_CheckAndSelectChannels will set if puncturing occurs
 	channel_access_policy.checkAndSelectChannels(
 		node_params.current_primary_channel, node_params.pifs_activated,
-		channels_free, node_params.min_channel_allowed, node_params.max_channel_allowed,
+		channels_free, eff_min_channel, eff_max_channel,
 		&channel_power, effective_pd, timestamp_channel_becomes_free, SimTime(), PIFS,
 		node_params.current_dcb_policy, NUM_CHANNELS_KOMONDOR, channel_aggregation_cca_model,
 		channels_for_tx, &pp_punctured_bitmap);
@@ -1140,6 +1162,23 @@ void Node :: MyTxFinished(trigger_t &){
 			// Coordinator also transmits DATA immediately after SIFS (simultaneous with coordinated AP)
 			exchange_sequence = IEEE_802_11_NO_RTS_CTS;
 			SelectDestination();
+			// Apply STA BW cap for the coordinator's DATA phase (ICF used full BW; DATA is unicast).
+			{
+				int eff_min = node_params.min_channel_allowed;
+				int eff_max = node_params.max_channel_allowed;
+				if (current_destination_id >= 0) {
+					int sta_min_ch, sta_max_ch;
+					wlan.GetStaChannelBounds(current_destination_id, &sta_min_ch, &sta_max_ch);
+					if (sta_min_ch >= 0 && sta_min_ch > eff_min) eff_min = sta_min_ch;
+					if (sta_max_ch >= 0 && sta_max_ch < eff_max) eff_max = sta_max_ch;
+				}
+				GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
+					channels_free, eff_min, eff_max,
+					&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
+				GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
+					eff_min, eff_max, node_params.current_primary_channel,
+					NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
+			}
 			// No packets were ACKed during the ICF/ICR/TF exchange; reset so
 			// PrepareNewTransmission does not attempt to delete from the empty buffer
 			limited_num_packets_aggregated = 0;
@@ -1297,6 +1336,23 @@ void Node :: ProceedAfterIcr() {
 		// Coordinator sends its own DATA first (2-way: DATA/ACK)
 		exchange_sequence = IEEE_802_11_NO_RTS_CTS;
 		SelectDestination();
+		// Apply STA BW cap for coordinator DATA (ICF used full BSS BW; DATA is unicast).
+		{
+			int eff_min = node_params.min_channel_allowed;
+			int eff_max = node_params.max_channel_allowed;
+			if (current_destination_id >= 0) {
+				int sta_min_ch, sta_max_ch;
+				wlan.GetStaChannelBounds(current_destination_id, &sta_min_ch, &sta_max_ch);
+				if (sta_min_ch >= 0 && sta_min_ch > eff_min) eff_min = sta_min_ch;
+				if (sta_max_ch >= 0 && sta_max_ch < eff_max) eff_max = sta_max_ch;
+			}
+			GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
+				channels_free, eff_min, eff_max,
+				&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
+			GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
+				eff_min, eff_max, node_params.current_primary_channel,
+				NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
+		}
 		// No packets were ACKed during the ICF/ICR exchange; reset so
 		// PrepareNewTransmission does not attempt to delete from the empty buffer
 		limited_num_packets_aggregated = 0;
@@ -1336,6 +1392,23 @@ void Node :: ProceedAfterIcr() {
 				mapc_selected_peer_id);
 			exchange_sequence = IEEE_802_11_NO_RTS_CTS;
 			SelectDestination();
+			// Apply STA BW cap for coordinator solo DATA (ICF used full BSS BW; DATA is unicast).
+			{
+				int eff_min = node_params.min_channel_allowed;
+				int eff_max = node_params.max_channel_allowed;
+				if (current_destination_id >= 0) {
+					int sta_min_ch, sta_max_ch;
+					wlan.GetStaChannelBounds(current_destination_id, &sta_min_ch, &sta_max_ch);
+					if (sta_min_ch >= 0 && sta_min_ch > eff_min) eff_min = sta_min_ch;
+					if (sta_max_ch >= 0 && sta_max_ch < eff_max) eff_max = sta_max_ch;
+				}
+				GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
+					channels_free, eff_min, eff_max,
+					&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
+				GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
+					eff_min, eff_max, node_params.current_primary_channel,
+					NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
+			}
 			limited_num_packets_aggregated = 0;
 			mapc_txop_per_ap_data_duration = 0.0;
 			node_stats.total_mapc_data_duration_own += data_duration;
@@ -1396,13 +1469,24 @@ void Node :: HandleFinishTX_StateRxMuRts(const Notification &notification) {
 	// Coordinated AP uses 2-way DATA/ACK for its TDMA slot
 	exchange_sequence = IEEE_802_11_NO_RTS_CTS;
 	SelectDestination();
-	// Use DCB to determine the channel range, mirroring the coordinator's EndBackoff path.
-	GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
-		channels_free, node_params.min_channel_allowed, node_params.max_channel_allowed,
-		&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
-	GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
-		node_params.min_channel_allowed, node_params.max_channel_allowed, node_params.current_primary_channel,
-		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
+	// Cap channel range to the destination STA's declared bandwidth.
+	{
+		int eff_min = node_params.min_channel_allowed;
+		int eff_max = node_params.max_channel_allowed;
+		if (current_destination_id >= 0) {
+			int sta_min_ch, sta_max_ch;
+			wlan.GetStaChannelBounds(current_destination_id, &sta_min_ch, &sta_max_ch);
+			if (sta_min_ch >= 0 && sta_min_ch > eff_min) eff_min = sta_min_ch;
+			if (sta_max_ch >= 0 && sta_max_ch < eff_max) eff_max = sta_max_ch;
+		}
+		// Use DCB to determine the channel range, mirroring the coordinator's EndBackoff path.
+		GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
+			channels_free, eff_min, eff_max,
+			&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
+		GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
+			eff_min, eff_max, node_params.current_primary_channel,
+			NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
+	}
 	if (channels_for_tx[0] == TX_NOT_POSSIBLE) {
 		RestartNode(TRUE);
 		return;
@@ -1440,13 +1524,24 @@ void Node :: HandleFinishTX_StateRxTf(const Notification &notification) {
 	// Coordinated AP transmits DATA simultaneously with coordinator
 	exchange_sequence = IEEE_802_11_NO_RTS_CTS;
 	SelectDestination();
-	// Use DCB to determine the channel range, mirroring the coordinator's EndBackoff path.
-	GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
-		channels_free, node_params.min_channel_allowed, node_params.max_channel_allowed,
-		&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
-	GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
-		node_params.min_channel_allowed, node_params.max_channel_allowed, node_params.current_primary_channel,
-		NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
+	// Cap channel range to the destination STA's declared bandwidth.
+	{
+		int eff_min = node_params.min_channel_allowed;
+		int eff_max = node_params.max_channel_allowed;
+		if (current_destination_id >= 0) {
+			int sta_min_ch, sta_max_ch;
+			wlan.GetStaChannelBounds(current_destination_id, &sta_min_ch, &sta_max_ch);
+			if (sta_min_ch >= 0 && sta_min_ch > eff_min) eff_min = sta_min_ch;
+			if (sta_max_ch >= 0 && sta_max_ch < eff_max) eff_max = sta_max_ch;
+		}
+		// Use DCB to determine the channel range, mirroring the coordinator's EndBackoff path.
+		GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
+			channels_free, eff_min, eff_max,
+			&channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
+		GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
+			eff_min, eff_max, node_params.current_primary_channel,
+			NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
+	}
 	if (channels_for_tx[0] == TX_NOT_POSSIBLE) {
 		RestartNode(TRUE);
 		return;

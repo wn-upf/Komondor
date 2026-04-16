@@ -65,6 +65,8 @@ struct Wlan
 	int num_stas;			///> Number of STAs in the WLAN (AP not included)
 	int ap_id;				///> Id of the Access Point
 	int *list_sta_id;		///> List of STAs IDs belonging to the WLAN
+	int *sta_min_channel;	///> Per-STA min channel (indexed same as list_sta_id)
+	int *sta_max_channel;	///> Per-STA max channel (indexed same as list_sta_id)
 
 	int spatial_reuse_enabled;	///> Indicates whether the SR operation is enabled or not
 
@@ -94,10 +96,30 @@ struct Wlan
 	 * @param "num_stas" [type int]: total number of STAs
 	 */
 	void SetSizeOfSTAsArray(int num_stas){
-		list_sta_id = new int[num_stas];
+		list_sta_id    = new int[num_stas];
+		sta_min_channel = new int[num_stas];
+		sta_max_channel = new int[num_stas];
 		for(int s = 0; s < num_stas; ++s){
-			list_sta_id[s] = NODE_ID_NONE;
+			list_sta_id[s]     = NODE_ID_NONE;
+			sta_min_channel[s] = -1;
+			sta_max_channel[s] = -1;
 		}
+	}
+
+	/**
+	 * Return the channel bounds declared by a specific STA.
+	 * Falls back to [0, NUM_CHANNELS_KOMONDOR-1] if the STA is not found.
+	 */
+	void GetStaChannelBounds(int sta_id, int *min_ch, int *max_ch) {
+		for (int s = 0; s < num_stas; ++s) {
+			if (list_sta_id[s] == sta_id) {
+				*min_ch = sta_min_channel[s];
+				*max_ch = sta_max_channel[s];
+				return;
+			}
+		}
+		*min_ch = 0;
+		*max_ch = NUM_CHANNELS_KOMONDOR - 1;
 	}
 
 	/**
