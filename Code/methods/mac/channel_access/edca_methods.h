@@ -52,37 +52,104 @@
 #include <stddef.h>
 
 /**
-* Compute a new backoff value
-* @param "traffic_type" [type int]: type of traffic for the upcoming channel access
-*/
-double ComputeBackoffEDCA(int traffic_type) {
-
-    int current_cw_min, current_cw_max;
-
-    // Get standard parameters regarding CW parameters
-    switch(traffic_type){
-        case AC_VO:{
-            current_cw_min = CW_MIN_AC_VO;
-            current_cw_max = CW_MAX_AC_VO;
-            break;
-        }
-        case AC_VI:{
-            current_cw_min = CW_MIN_AC_VI;
-            current_cw_max = CW_MAX_AC_VI;
-            break;
-        }
-        case AC_BE:{
-            current_cw_min = CW_MIN_AC_BE;
-            current_cw_max = CW_MAX_AC_BE;
-            break;
-        }
-        case AC_BK: default:{
-            current_cw_min = CW_MIN_AC_BK;
-            current_cw_max = CW_MAX_AC_BK;
-            break;
-        }
+ * Return AIFS duration [s] for a given EDCA access category.
+ * AIFS[AC] = SIFS + AIFSN[AC] * SLOT_TIME
+ * @param "traffic_type" [type int]: AC_VO, AC_VI, AC_BE, or AC_BK
+ */
+double ComputeAIFS(int traffic_type) {
+    int aifsn;
+    switch (traffic_type) {
+        case AC_VO: aifsn = AIFSN_VO; break;
+        case AC_VI: aifsn = AIFSN_VI; break;
+        case AC_BE: aifsn = AIFSN_BE; break;
+        case AC_BK: default: aifsn = AIFSN_BK; break;
     }
-    int num_slots (current_cw_min + (std::rand() % ( current_cw_max - current_cw_min + 1 )));
-    return num_slots * SLOT_TIME;
+    return SIFS + aifsn * SLOT_TIME;
+}
 
+/**
+ * Return the EDCA TXOP_Limit [s] for a given access category.
+ * A return value of 0.0 means "single PPDU per channel access" (IEEE 802.11-2020
+ * §10.22.2.2) — NOT unlimited.  In Komondor's single-PPDU model this is already
+ * the default; the A-MPDU size is bounded by IEEE_AX_MAX_PPDU_DURATION.
+ * A positive return value additionally caps the A-MPDU data duration to that limit.
+ * @param "traffic_type" [type int]: AC_VO, AC_VI, AC_BE, or AC_BK
+ */
+double ComputeTxopLimit(int traffic_type) {
+    switch (traffic_type) {
+        case AC_VO: return TXOP_LIMIT_AC_VO;
+        case AC_VI: return TXOP_LIMIT_AC_VI;
+        case AC_BE: return TXOP_LIMIT_AC_BE;
+        case AC_BK: default: return TXOP_LIMIT_AC_BK;
+    }
+}
+
+/**
+ * Return the per-AC standard CW_min [slots].
+ * This is the floor used when resetting after a successful transmission.
+ */
+static int GetAcCwMin(int traffic_type) {
+    switch (traffic_type) {
+        case AC_VO: return CW_MIN_AC_VO;
+        case AC_VI: return CW_MIN_AC_VI;
+        case AC_BE: return CW_MIN_AC_BE;
+        case AC_BK: default: return CW_MIN_AC_BK;
+    }
+}
+
+/**
+ * Return the per-AC standard CW_max [slots].
+ * This is the ceiling for the BEB doubling sequence.
+ */
+static int GetAcCwMax(int traffic_type) {
+    switch (traffic_type) {
+        case AC_VO: return CW_MAX_AC_VO;
+        case AC_VI: return CW_MAX_AC_VI;
+        case AC_BE: return CW_MAX_AC_BE;
+        case AC_BK: default: return CW_MAX_AC_BK;
+    }
+}
+
+/**
+ * EDCA Binary Exponential Backoff (BEB) — IEEE 802.11-2020 §10.22.2.4.
+ * current_cw_max represents the live CW value; current_cw_min is always 0.
+ *
+ * INCREASE_CW (collision):  CW = min((CW+1)*2 - 1, CW_max[AC])
+ * RESET_CW    (success):    CW = CW_min[AC]
+ */
+static void HandleBackoffEDCA(int increase_or_reset, int traffic_type,
+        int *cw_stage_current, int *current_cw_min, int *current_cw_max) {
+    int cw_max_ac = GetAcCwMax(traffic_type);
+    int cw_min_ac = GetAcCwMin(traffic_type);
+    switch (increase_or_reset) {
+        case INCREASE_CW:
+            if (*current_cw_max < cw_max_ac) {
+                *current_cw_max = (*current_cw_max + 1) * 2 - 1;
+                if (*current_cw_max > cw_max_ac) *current_cw_max = cw_max_ac;
+                ++(*cw_stage_current);
+            }
+            break;
+        case RESET_CW:
+            *cw_stage_current = 0;
+            *current_cw_min   = 0;
+            *current_cw_max   = cw_min_ac;
+            break;
+        default:
+            printf("ERROR in HandleBackoffEDCA: Unknown CW operation.\n");
+            break;
+    }
+}
+
+/**
+ * Compute a new backoff value for EDCA using the live CW state.
+ * Draws uniformly from [current_cw_min, current_cw_max] (in slots).
+ * current_cw_min = 0 always for EDCA; current_cw_max doubles on each collision
+ * up to CW_max[AC], and resets to CW_min[AC] after a successful transmission.
+ *
+ * @param "current_cw_min" [type int]: lower bound of the draw range (always 0 for EDCA)
+ * @param "current_cw_max" [type int]: current CW size (== live CW value)
+ */
+double ComputeBackoffEDCA(int current_cw_min, int current_cw_max) {
+    int num_slots = current_cw_min + (std::rand() % (current_cw_max - current_cw_min + 1));
+    return num_slots * SLOT_TIME;
 }

@@ -58,13 +58,15 @@ void Node :: AbortInitialTransmission(){
 }
 
 /**
- * Schedule a new backoff countdown after a DIFS idle period.
- * Replaces the repeated 2-line idiom:
- *   time_to_trigger = SimTime() + DIFS;
- *   trigger_start_backoff.Set(FixTimeOffset(time_to_trigger, 13, 12));
+ * Schedule a new backoff countdown after the appropriate inter-frame space.
+ * - BACKOFF_EDCA: uses AIFS[AC] = SIFS + AIFSN[AC]*SLOT_TIME (per-AC differentiation)
+ * - All other backoff types: uses DIFS = SIFS + 2*SLOT_TIME
  */
 void Node :: ScheduleBackoffAfterDIFS() {
-	double time_to_trigger = SimTime() + DIFS;
+	double ifs = (node_params.backoff_type == BACKOFF_EDCA)
+	             ? ComputeAIFS(current_traffic_type)
+	             : DIFS;
+	double time_to_trigger = SimTime() + ifs;
 	trigger_start_backoff.Set(FixTimeOffset(time_to_trigger, 13, 12));
 }
 
@@ -285,9 +287,8 @@ void Node :: RestartNode(int called_by_time_out){
 			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO can be resumed! Starting DIFS...\n",
 				SimTime(), node_params.node_id, node_state, LOG_Z00, LOG_LVL5);
-			// time_to_trigger = SimTime() + DIFS - TIME_OUT_EXTRA_TIME;
-			time_to_trigger = SimTime() + DIFS; // TODO: EDCA TO BE IMPLEMENTED -> AIFSN[AC] * SLOT_TIME + SIFS
-			trigger_start_backoff.Set(FixTimeOffset(time_to_trigger,13,12));
+			// Use AIFS[AC] for EDCA; DIFS for all other backoff types.
+			ScheduleBackoffAfterDIFS();
 		} else {
 			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s BO cannot be resumed!\n",

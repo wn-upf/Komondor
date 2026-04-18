@@ -341,6 +341,13 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                 free(tmp_nodes);
             }
 
+            // EDCA traffic type / access category (optional column, defaults to AC_BE)
+            tmp_nodes = strdup(line_nodes);
+            const char* traffic_type_char = GetField(tmp_nodes, IX_TRAFFIC_TYPE);
+            node_container[node_ix].node_params.traffic_type =
+                (traffic_type_char != NULL) ? atoi(traffic_type_char) : DEFAULT_TRAFFIC_TYPE;
+            free(tmp_nodes);
+
             // Global Models
             node_container[node_ix].node_params.simulation_time_komondor = simulation_time_komondor;
             node_container[node_ix].node_params.total_wlans_number = total_wlans_number;

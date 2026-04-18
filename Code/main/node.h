@@ -708,7 +708,7 @@ void Node :: InitializeVariables() {
 	node_stats.num_measures_buffer_with_packets = 0;
 	node_stats.generation_drop_ratio = 0;
 
-	current_traffic_type = -1;
+	current_traffic_type = node_params.traffic_type;
 
 	// Output file - logger
 	node_logger.save_logs = node_params.save_node_logs;
@@ -793,9 +793,16 @@ void Node :: InitializeVariables() {
 	if (node_params.current_dcb_policy == CB_PP_MAX_LOG2)
 		channel_access_policy.checkAndSelectChannels = PP_CheckAndSelectChannels;
 
-	//CHANNEL ACCESSs
-	ca_state.current_cw_min = node_params.cw_min_default; // Initialize the CW min
-	ca_state.current_cw_max = node_params.cw_max_default; // Initialize the CW max
+	// CHANNEL ACCESS — CW initialization
+	// For EDCA: CW starts at [0, CW_min[AC]] (IEEE 802.11 BEB from the AC floor).
+	// For all other modes: use the node-level defaults from the input CSV.
+	if (node_params.backoff_type == BACKOFF_EDCA) {
+		ca_state.current_cw_min = 0;
+		ca_state.current_cw_max = GetAcCwMin(current_traffic_type);
+	} else {
+		ca_state.current_cw_min = node_params.cw_min_default;
+		ca_state.current_cw_max = node_params.cw_max_default;
+	}
 	ca_state.cw_stage_current = 0;
 	//- Tokenized backoffF
 	if (node_params.backoff_type == BACKOFF_TOKENIZED){

@@ -1339,7 +1339,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 					// Update the CW parameters
 					HandleContentionWindow(
 						node_params.cw_adaptation, -1, &ca_state.deterministic_bo_active, &ca_state.current_cw_min, &ca_state.current_cw_max, &ca_state.cw_stage_current,
-						node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type);
+						node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type, current_traffic_type);
 					LOGS(node_params.save_node_logs,node_logger.file,
 						"%.15f;N%d;S%d;%s;%s Updated CW parameters (token-based BO) = [%d-%d]\n",
 						SimTime(), node_params.node_id, node_state, LOG_E18, LOG_LVL5, ca_state.current_cw_min, ca_state.current_cw_max);
@@ -1701,7 +1701,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			// Update the CW parameters
 			HandleContentionWindow(
 				node_params.cw_adaptation, -1, &ca_state.deterministic_bo_active, &ca_state.current_cw_min, &ca_state.current_cw_max, &ca_state.cw_stage_current,
-				node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type);
+				node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type, current_traffic_type);
 			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Updated CW parameters (token-based BO) = [%d-%d]\n",
 				SimTime(), node_params.node_id, node_state, LOG_E18, LOG_LVL5, ca_state.current_cw_min, ca_state.current_cw_max);
@@ -1878,7 +1878,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// - Transmission succeeded ---> reset CW if binary exponential backoff is implemented
 						HandleContentionWindow(
 							node_params.cw_adaptation, RESET_CW, &ca_state.deterministic_bo_active, &ca_state.current_cw_min, &ca_state.current_cw_max,
-							&ca_state.cw_stage_current, node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type);
+							&ca_state.cw_stage_current, node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type, current_traffic_type);
 
 						LOGS(node_params.save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",

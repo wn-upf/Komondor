@@ -496,18 +496,24 @@ void Node :: PrepareNewTransmission() {
 	}
 
 	//  - Delete / flush packets from the previous transmission
-	if (wlan.mapc_enabled && coordinator_ap_id == NODE_ID_NONE
-			&& node_params.traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION
-			&& exchange_sequence.frame_types[0] == PACKET_TYPE_ICF) {
-		// MAPC coordinator + full-buffer: flush all stale packets before pre-filling
+	if (node_params.traffic_model == TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION
+			&& !(wlan.mapc_enabled && coordinator_ap_id == NODE_ID_NONE
+				 && exchange_sequence.frame_types[0] != PACKET_TYPE_ICF)) {
+		// Full-buffer: flush ALL stale packets before each new TXOP so that packets
+		// added by the previous InitiateBurstPackets call (which uses the pre-TXOP-cap
+		// lnpa, e.g. ~40) do not accumulate when the TXOP cap allows fewer transmissions
+		// (e.g. 4 for VO). Without this flush, VO/VI build a multi-second backlog because
+		// ~40 packets are added per call but only 4 (VO) or 8 (VI) are deleted.
+		// Exception: MAPC coordinator DATA path — buffer was pre-filled at ICF time;
+		// preserve those packets so the DATA lnpa is computed correctly.
 		while (buffer.QueueSize() > 0) {
 			buffer.DelFirstPacket();
 		}
 	} else if (limited_num_packets_aggregated > 0
 			&& (exchange_sequence.frame_types[0] != PACKET_TYPE_ICF
 				|| (wlan.mapc_enabled && coordinator_ap_id == NODE_ID_NONE))) {
-		// Standard path OR MAPC coordinator at ICF time (non-full-buffer traffic):
-		// delete the ACKed frames from the previous TXOP.
+		// Non-full-buffer path OR MAPC coordinator at ICF time:
+		// delete only the ACKed frames from the previous TXOP.
 		// Note: for the coordinator the deletion happens here (ICF time) because
 		// limited_num_packets_aggregated is reset to 0 before the DATA call.
 		for(int i = 0; i < limited_num_packets_aggregated; ++i){
@@ -599,6 +605,23 @@ void Node :: PrepareNewTransmission() {
 		if (wlan.mapc_method_ids[mapc_active_group_idx] != CO_TDMA
 				&& data_duration < mapc_txop_per_ap_data_duration) {
 			data_duration = mapc_txop_per_ap_data_duration;
+		}
+	}
+
+	// EDCA TXOP limit: reduce aggregation to fit within the per-AC TXOP_Limit.
+	// Only active for BACKOFF_EDCA and ACs with TXOP_Limit > 0 (VO, VI).
+	// ACs with TXOP_Limit = 0 (BE, BK) mean "single PPDU per channel access" per
+	// IEEE 802.11-2020 §10.22.2.2 — their A-MPDU size is already bounded by
+	// IEEE_AX_MAX_PPDU_DURATION (applied above), which is the correct behaviour.
+	if (node_params.backoff_type == BACKOFF_EDCA) {
+		double edca_txop_limit = ComputeTxopLimit(current_traffic_type);
+		if (edca_txop_limit > 0.0) {
+			while (limited_num_packets_aggregated > 1 && data_duration > edca_txop_limit) {
+				--limited_num_packets_aggregated;
+				ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
+					num_channels_tx, current_modulation, limited_num_packets_aggregated,
+					node_params.frame_length, bits_ofdm_sym);
+			}
 		}
 	}
 

@@ -92,9 +92,9 @@ double ComputeBackoff(int current_cw_min, int current_cw_max, int backoff_type,
 			backoff_time = ComputeBackoffDCF(current_cw_min, current_cw_max);
 			break;
 
-		// EDCA for QoS traffic differentiation
+		// EDCA for QoS traffic differentiation (BEB: CW state passed in via current_cw_min/max)
 		case BACKOFF_EDCA:
-			backoff_time = ComputeBackoffEDCA(traffic_type);
+			backoff_time = ComputeBackoffEDCA(current_cw_min, current_cw_max);
 			break;
 
 		// Deterministic backoff (Qualcomm)
@@ -200,18 +200,24 @@ int HandleBackoff(int pause_or_resume, double **channel_power, int primary_chann
 */
 void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int *deterministic_bo_active, int *current_cw_min,
 		int *current_cw_max, int *cw_stage_current, int cw_min_default, int cw_max_default, int cw_stage_max,
-		int distance_to_token, int backoff_type) {
+		int distance_to_token, int backoff_type, int traffic_type) {
 
 	switch (backoff_type) {
 
 		// DCF (DEFAULT): exponential backoff on failure, reset on success
 		case BACKOFF_DCF:
 			HandleBackoffDCF(cw_adaptation, increase_or_reset, cw_stage_current, current_cw_min,
-    			current_cw_max, cw_min_default, cw_max_default, cw_stage_max);			
+    			current_cw_max, cw_min_default, cw_max_default, cw_stage_max);
 			break;
 
-		// EDCA and SYNCHRONIZED: no CW adaptation
+		// EDCA: per-AC BEB — doubles CW on collision, resets to CW_min[AC] on success.
+		// Ignores cw_adaptation: BEB is mandatory per IEEE 802.11-2020 §10.22.2.4.
 		case BACKOFF_EDCA:
+			HandleBackoffEDCA(increase_or_reset, traffic_type,
+				cw_stage_current, current_cw_min, current_cw_max);
+			break;
+
+		// SYNCHRONIZED: no CW adaptation
 		case BACKOFF_SYNCHRONIZED:
 			break;
 

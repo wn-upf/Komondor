@@ -271,10 +271,25 @@
 #define CW_MIN_AC_BK  32		///> Minimum CW for AC = BK (background)
 #define CW_MAX_AC_BK  1024		///> Maximum CW for AC = BK (background)
 
-#define AIFS_VO = 2		///> AIFS for AC = VO (voice)
-#define AIFS_VI = 3		///> AIFS for AC = VI (video)
-#define AIFS_BE = 5		///> AIFS for AC = BE (best-effort)
-#define AIFS_BK = 7		///> AIFS for AC = BK (background)
+// AIFSN[AC]: number of slots added to SIFS to form AIFS[AC] = SIFS + AIFSN[AC]*SLOT_TIME
+#define AIFSN_VO 2		///> AIFSN for AC = VO (voice)
+#define AIFSN_VI 3		///> AIFSN for AC = VI (video)
+#define AIFSN_BE 5		///> AIFSN for AC = BE (best-effort)
+#define AIFSN_BK 7		///> AIFSN for AC = BK (background)
+
+// EDCA TXOP limits per AC (IEEE 802.11-2020 Table 9-155, 5 GHz infrastructure BSS).
+// A value of 0 means the AC is restricted to a SINGLE PPDU (or A-MPDU) per channel
+// access — it does NOT mean unlimited channel time.  A value > 0 allows the station
+// to chain multiple PPDUs within the TXOP window up to the stated duration.
+// In Komondor's current single-PPDU-per-access model, TXOP=0 ACs are bounded only
+// by IEEE_AX_MAX_PPDU_DURATION; TXOP>0 ACs additionally cap the A-MPDU data duration.
+#define TXOP_LIMIT_AC_VO  (1504 * MICRO_VALUE)  ///> TXOP limit for VO: 1.504 ms
+#define TXOP_LIMIT_AC_VI  (3008 * MICRO_VALUE)  ///> TXOP limit for VI: 3.008 ms
+#define TXOP_LIMIT_AC_BE  0                      ///> TXOP limit for BE: single PPDU per access
+#define TXOP_LIMIT_AC_BK  0                      ///> TXOP limit for BK: single PPDU per access
+
+// Default access category when not specified in the input CSV
+#define DEFAULT_TRAFFIC_TYPE  AC_BE
 
 // Protocols
 #define INCREASE_CW 	1		///> Command to increase contention window
@@ -614,6 +629,7 @@
 #define IX_BF_N_ELEMENTS			33	///> Number of ULA antenna elements
 #define IX_BF_D_SPACING				34	///> Element spacing [wavelengths]
 #define IX_BF_AZ_MAIN_DEG			35	///> Main beam azimuth [deg] (initial/static value)
+#define IX_TRAFFIC_TYPE				36	///> EDCA access category (0=VO,1=VI,2=BE,3=BK); optional, defaults to AC_BE
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1

@@ -61,7 +61,7 @@ void Node :: AckTimeout(trigger_t &){
 	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
 		node_params.cw_adaptation, INCREASE_CW, &ca_state.deterministic_bo_active, &ca_state.current_cw_min, &ca_state.current_cw_max, &ca_state.cw_stage_current,
-		node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type);
+		node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type, current_traffic_type);
 
 	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
@@ -109,7 +109,7 @@ void Node :: CtsTimeout(trigger_t &){
 	// The CW only must be changed when ACK received or loss detected.
 	HandleContentionWindow(
 		node_params.cw_adaptation, INCREASE_CW, &ca_state.deterministic_bo_active, &ca_state.current_cw_min, &ca_state.current_cw_max, &ca_state.cw_stage_current,
-		node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type);
+		node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max, distance_to_token, node_params.backoff_type, current_traffic_type);
 
 	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s To CW = [%d-%d], b = %d, m = %d\n",
