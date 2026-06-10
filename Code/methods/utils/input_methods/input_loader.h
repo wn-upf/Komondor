@@ -300,15 +300,18 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                 free(tmp_nodes);
 
                 tmp_nodes = strdup(line_nodes);
-                node_container[node_ix].node_params.srg = atoi(GetField(tmp_nodes, IX_SRG));
+                { const char* srg_char = GetField(tmp_nodes, IX_SRG);
+                  node_container[node_ix].node_params.srg = (srg_char != NULL) ? atoi(srg_char) : -1; }
                 free(tmp_nodes);
 
                 tmp_nodes = strdup(line_nodes);
-                node_container[node_ix].node_params.non_srg_obss_pd = ConvertPower(DBM_TO_PW, atof(GetField(tmp_nodes, IX_NON_SRG_OBSS_PD)));
+                { const char* obss_char = GetField(tmp_nodes, IX_NON_SRG_OBSS_PD);
+                  node_container[node_ix].node_params.non_srg_obss_pd = (obss_char != NULL) ? ConvertPower(DBM_TO_PW, atof(obss_char)) : -1; }
                 free(tmp_nodes);
 
                 tmp_nodes = strdup(line_nodes);
-                node_container[node_ix].node_params.srg_obss_pd = ConvertPower(DBM_TO_PW, atof(GetField(tmp_nodes, IX_SRG_OBSS_PD)));
+                { const char* srg_obss_char = GetField(tmp_nodes, IX_SRG_OBSS_PD);
+                  node_container[node_ix].node_params.srg_obss_pd = (srg_obss_char != NULL) ? ConvertPower(DBM_TO_PW, atof(srg_obss_char)) : -1; }
                 free(tmp_nodes);
             } else {
                 node_container[node_ix].node_params.bss_color = -1;
@@ -325,13 +328,16 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                 node_container[node_ix].node_params.beamforming_enabled = atoi(bf_enabled_char);
                 free(tmp_nodes);
                 tmp_nodes = strdup(line_nodes);
-                node_container[node_ix].node_params.beam_N_elements = atoi(GetField(tmp_nodes, IX_BF_N_ELEMENTS));
+                { const char* _f = GetField(tmp_nodes, IX_BF_N_ELEMENTS);
+                  node_container[node_ix].node_params.beam_N_elements = (_f != NULL) ? atoi(_f) : DEFAULT_BEAM_N_ELEMENTS; }
                 free(tmp_nodes);
                 tmp_nodes = strdup(line_nodes);
-                node_container[node_ix].node_params.beam_d_spacing = atof(GetField(tmp_nodes, IX_BF_D_SPACING));
+                { const char* _f = GetField(tmp_nodes, IX_BF_D_SPACING);
+                  node_container[node_ix].node_params.beam_d_spacing = (_f != NULL) ? atof(_f) : DEFAULT_BEAM_D_SPACING; }
                 free(tmp_nodes);
                 tmp_nodes = strdup(line_nodes);
-                node_container[node_ix].node_params.beam_az_main_deg = atof(GetField(tmp_nodes, IX_BF_AZ_MAIN_DEG));
+                { const char* _f = GetField(tmp_nodes, IX_BF_AZ_MAIN_DEG);
+                  node_container[node_ix].node_params.beam_az_main_deg = (_f != NULL) ? atof(_f) : 0.0; }
                 free(tmp_nodes);
             } else {
                 node_container[node_ix].node_params.beamforming_enabled = BEAMFORMING_DISABLED;
@@ -346,6 +352,50 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
             const char* traffic_type_char = GetField(tmp_nodes, IX_TRAFFIC_TYPE);
             node_container[node_ix].node_params.traffic_type =
                 (traffic_type_char != NULL) ? atoi(traffic_type_char) : DEFAULT_TRAFFIC_TYPE;
+            free(tmp_nodes);
+
+            // DSO: Dynamic Subband Operation enable flag (optional column 37)
+            tmp_nodes = strdup(line_nodes);
+            const char* dso_enabled_char = GetField(tmp_nodes, IX_DSO_ENABLED);
+            node_container[node_ix].node_params.dso_enabled =
+                (dso_enabled_char != NULL) ? atoi(dso_enabled_char) : FALSE;
+            free(tmp_nodes);
+
+            // NPCA: optional columns 38-43
+            tmp_nodes = strdup(line_nodes);
+            const char* npca_en_char = GetField(tmp_nodes, IX_NPCA_ENABLED);
+            node_container[node_ix].node_params.npca_enabled =
+                (npca_en_char != NULL) ? atoi(npca_en_char) : FALSE;
+            free(tmp_nodes);
+
+            tmp_nodes = strdup(line_nodes);
+            const char* npca_pch_char = GetField(tmp_nodes, IX_NPCA_PRIMARY_CH);
+            node_container[node_ix].node_params.npca_primary_channel =
+                (npca_pch_char != NULL) ? atoi(npca_pch_char) : -1;
+            free(tmp_nodes);
+
+            tmp_nodes = strdup(line_nodes);
+            const char* npca_mdt_char = GetField(tmp_nodes, IX_NPCA_MIN_DUR_THRESHOLD);
+            node_container[node_ix].node_params.npca_min_dur_threshold_us =
+                (npca_mdt_char != NULL) ? atoi(npca_mdt_char) : NPCA_MIN_DUR_THRESHOLD_DEFAULT_US;
+            free(tmp_nodes);
+
+            tmp_nodes = strdup(line_nodes);
+            const char* npca_sd_char = GetField(tmp_nodes, IX_NPCA_SWITCHING_DELAY);
+            node_container[node_ix].node_params.npca_switching_delay_us =
+                (npca_sd_char != NULL) ? atoi(npca_sd_char) : NPCA_SWITCHING_DELAY_DEFAULT_US;
+            free(tmp_nodes);
+
+            tmp_nodes = strdup(line_nodes);
+            const char* npca_sbd_char = GetField(tmp_nodes, IX_NPCA_SWITCH_BACK_DELAY);
+            node_container[node_ix].node_params.npca_switch_back_delay_us =
+                (npca_sbd_char != NULL) ? atoi(npca_sbd_char) : NPCA_SWITCH_BACK_DELAY_DEFAULT_US;
+            free(tmp_nodes);
+
+            tmp_nodes = strdup(line_nodes);
+            const char* npca_qsrc_char = GetField(tmp_nodes, IX_NPCA_INIT_QSRC);
+            node_container[node_ix].node_params.npca_init_qsrc =
+                (npca_qsrc_char != NULL) ? atoi(npca_qsrc_char) : NPCA_INIT_QSRC_DEFAULT;
             free(tmp_nodes);
 
             // Global Models
@@ -393,15 +443,20 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
  * @return "field" [type char*]: field corresponding to the introduced index
  */
 const char* GetField(char* line, int num){
-    const char* tok;
-    for (tok = strtok(line, ";");
-            tok && *tok;
-            tok = strtok(NULL, ";\n"))
-    {
-        if (!--num)
-            return tok;
+    /* Walk field-by-field counting semicolons.
+     * strtok skips consecutive delimiters (empty fields), which shifts
+     * optional-column indices when intermediate columns are blank. */
+    char *p = line;
+    for (int i = 1; i < num; ++i) {
+        p = strchr(p, ';');
+        if (!p) return NULL;
+        ++p;
     }
-    return NULL;
+    if (*p == '\0' || *p == '\n' || *p == '\r' || *p == ';') return NULL;
+    char *end = p;
+    while (*end && *end != ';' && *end != '\n' && *end != '\r') ++end;
+    *end = '\0';
+    return p;
 }
 
 /**
@@ -831,6 +886,13 @@ void Komondor :: GenerateAgents(const char *agents_filename, const char *simulat
 				tmp_agents = strdup(line_agents);
 				int action_selection_strategy (atoi(GetField(tmp_agents, IX_AGENT_SELECTED_STRATEGY)));
 				agent_container[agent_ix].action_selection_strategy = action_selection_strategy;
+				// Socket path for external model (optional column 11; backward-compatible)
+				tmp_agents = strdup(line_agents);
+				const char *sock_path_aux = GetField(tmp_agents, IX_AGENT_SOCKET_PATH);
+				if (sock_path_aux != NULL && strlen(sock_path_aux) > 0) {
+					strncpy(agent_container[agent_ix].external_socket_path, sock_path_aux, 255);
+					agent_container[agent_ix].external_socket_path[255] = '\0';
+				}
 				// Other information
 				agent_container[agent_ix].save_agent_logs = save_agent_logs;
 				agent_container[agent_ix].print_agent_logs = print_agent_logs;

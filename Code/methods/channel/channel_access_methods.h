@@ -160,4 +160,47 @@ static void PP_CheckAndSelectChannels(
 	if (punctured_bitmap_out) *punctured_bitmap_out = bitmap;
 }
 
+
+/**
+ * DSO_CheckAndSelectChannels — DSO policy implementation.
+ *
+ * Performs standard primary-channel CCA (same as CSMA/CA) so backoff proceeds
+ * normally.  The actual DSO secondary-subband selection is done by EndBackoff()
+ * after the backoff timer expires (via GetTxChannelsByDSO).  This function
+ * exists to give DSO nodes a distinct check_channel_function pointer and for
+ * CCA logging consistency.
+ */
+static void DSO_CheckAndSelectChannels(
+		int    primary_channel,
+		int    pifs_activated,
+		int   *channels_free,
+		int    min_channel_allowed,
+		int    max_channel_allowed,
+		double **channel_power,
+		double pd,
+		double *timestamp_channel_becomes_free,
+		double sim_time,
+		double pifs,
+		int    dcb_policy,
+		int    num_channels_komondor,
+		int    channel_aggregation_cca_model,
+		int   *channels_for_tx,
+		int   *punctured_bitmap_out)
+{
+	if (punctured_bitmap_out) *punctured_bitmap_out = 0;
+
+	GetChannelOccupancyByCCA(
+		primary_channel, pifs_activated, channels_free,
+		min_channel_allowed, max_channel_allowed,
+		channel_power, pd,
+		timestamp_channel_becomes_free, sim_time, pifs);
+
+	// Use ALWAYS_MAX_LOG2 for primary channel selection; DSO secondary chosen in EndBackoff.
+	GetTxChannels(
+		channels_for_tx, CB_ALWAYS_MAX_LOG2, channels_free,
+		min_channel_allowed, max_channel_allowed, primary_channel,
+		num_channels_komondor, channel_power, channel_aggregation_cca_model,
+		NULL);
+}
+
 #endif /* CHANNEL_ACCESS_METHODS_H */

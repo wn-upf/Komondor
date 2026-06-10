@@ -149,6 +149,9 @@ component Agent : public TypeII{
 		// RTOT
 		double margin_rtot;      ///> Margin for the RTOT mechanism (see https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8319274)
 
+		// External model (LEARNING_MECHANISM_EXTERNAL)
+		char external_socket_path[256];	///> Unix socket path for the external Python ML server
+
 	// Private items (just for internal agent operation)
 	private:
 
@@ -254,6 +257,8 @@ void Agent :: Stop(){
 		"%.15f;A%d;%s;%s Agent Stop()\n", SimTime(), agent_id, LOG_C00, LOG_LVL1);
 	// Print statistics
 	PrintOrWriteAgentStatistics();
+	// Close external ML socket (no-op for built-in algorithms)
+	learning_algorithm.Close();
 	// Close node logs file
 	if(save_agent_logs) fclose(agent_logger.file);
 };
@@ -625,6 +630,7 @@ void Agent :: InitializeAgent() {
 	automatic_forward_enabled = TRUE;
 
 	initial_reward = 0;
+	strncpy(external_socket_path, "/tmp/komondor_ml.sock", 255);
 
 	flag_request_from_controller = false;
 	flag_information_available = false;
@@ -692,6 +698,8 @@ void Agent :: InitializeMlModel() {
 	if (learning_mechanism == RTOT_ALGORITHM) {
 		learning_algorithm.margin_rtot = margin_rtot;
 	}
+	strncpy(learning_algorithm.external_socket_path, external_socket_path, 255);
+	learning_algorithm.external_socket_path[255] = '\0';
 	learning_algorithm.InitializeVariables();
 }
 

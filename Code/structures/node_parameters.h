@@ -69,6 +69,16 @@ struct NodeParameters {
 	// --- MAC frame exchange ---
 	int         rts_cts_enabled;			///> 1 = 4-way (RTS/CTS/DATA/ACK), 0 = 2-way (DATA/ACK only)
 
+	// --- DSO (Dynamic Subband Operation) ---
+	int    dso_enabled;    ///> 1 = DSO post-backoff secondary subband redirect enabled
+	// --- NPCA (Non-Primary Channel Access) ---
+	int    npca_enabled;
+	int    npca_primary_channel;
+	int    npca_min_dur_threshold_us;
+	int    npca_switching_delay_us;
+	int    npca_switch_back_delay_us;
+	int    npca_init_qsrc;
+
 	// --- Beamforming ---
 	int    beamforming_enabled;	///> 0 = omnidirectional, 1 = ULA beamforming active
 	int    beam_N_elements;		///> Number of ULA antenna elements

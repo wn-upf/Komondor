@@ -501,18 +501,29 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_interf
 	Notification notification_interest, int node_state,
 	std::map<int,double> &power_received_per_node, double **channel_power) {
 
-	*max_pw_interference = 0;
+	*max_pw_interference      = 0;
+	*channel_max_interference = notification_interest.left_channel;
 
-	for(int c = notification_interest.left_channel; c <= notification_interest.right_channel; ++c){
-		if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK || node_state == STATE_NAV
-			|| node_state == STATE_RX_RTS || node_state == STATE_RX_CTS || node_state == STATE_SENSING){
+	if(node_state == STATE_RX_DATA || node_state == STATE_RX_ACK || node_state == STATE_NAV
+		|| node_state == STATE_RX_RTS || node_state == STATE_RX_CTS || node_state == STATE_SENSING){
 
-			double interference = (*channel_power)[c]
-			                    - power_received_per_node[notification_interest.source_id];
-			if(*max_pw_interference < interference){
-				*max_pw_interference    = interference;
+		/* Sum beamforming-corrected power from every active transmitter except the
+		 * intended source.  power_received_per_node already stores effective
+		 * (post-beamforming) power for DATA frames and raw power for control frames.
+		 * channel_power is kept raw (omnidirectional) for CCA/NAV so that DCF
+		 * carrier sense works correctly regardless of beam direction. */
+		std::map<int,double>::iterator _it;
+		for (_it = power_received_per_node.begin();
+		     _it != power_received_per_node.end(); ++_it) {
+			if (_it->first != notification_interest.source_id)
+				*max_pw_interference += _it->second;
+		}
+
+		/* Find channel with highest raw power for the log field only. */
+		for (int c = notification_interest.left_channel;
+		     c <= notification_interest.right_channel; ++c) {
+			if ((*channel_power)[c] > (*channel_power)[*channel_max_interference])
 				*channel_max_interference = c;
-			}
 		}
 	}
 }

@@ -253,6 +253,7 @@ component Node : public TypeII{
 		double current_beam_az_main_rad;				///> Main beam azimuth for current TX [rad]
 		double current_beam_null_az_rad[MAX_BEAM_NULLS];///> Null directions for current TX [rad]
 		int    current_beam_num_nulls;					///> Number of active nulls for current TX
+		int    current_beam_use_zf;						///> 0 = projection (standalone BF), 1 = ZF precoding (Co-BF)
 
 	// Statistics (accessible when simulation finished through Komondor simulation class)
 	public:
@@ -368,6 +369,32 @@ component Node : public TypeII{
 		// Preamble puncturing (802.11ax)
 		int pp_punctured_bitmap;		///> Bitmask of punctured channels for the current TXOP (set by EndBackoff, used in GenerateNotification)
 
+		// DSO (Dynamic Subband Operation)
+		int dso_enabled;				///> 1 = DSO post-backoff redirect enabled (mirrors node_params.dso_enabled)
+		int dso_channels_for_tx[NUM_CHANNELS_KOMONDOR]; ///> Secondary subband selected by GetTxChannelsByDSO
+		int dso_tx_flag;				///> 1 = valid DSO subband found
+		int dso_rr_idx;					///> Round-robin index over wlan.list_sta_id[] for DSO STA selection
+
+		// NPCA (Non-Primary Channel Access)
+		int    npca_enabled;
+		int    npca_primary_channel;
+		int    npca_min_dur_threshold_us;
+		int    npca_switching_delay_us;
+		int    npca_switch_back_delay_us;
+		int    npca_init_qsrc;
+		double npca_timer_duration;
+		int    npca_on_npca_channel;
+		int    npca_sta_on_npca_channel;
+		int    npca_stored_backoff_counter;
+		int    npca_stored_cw;
+		int    npca_stored_primary_channel;
+		int    npca_cw;
+		int    npca_channels_for_tx[NUM_CHANNELS_KOMONDOR];
+
+		// Adaptive ACK suppression state (per destination, indexed by node_id)
+		double *ack_success_ewma;		///> Per-destination EWMA of ACK success rate [0.0–1.0]
+		int    *ack_exchange_count;		///> Number of completed ACK exchanges per destination (for min-samples guard)
+
 	// Connections and timers
 	public:
 
@@ -423,6 +450,11 @@ component Node : public TypeII{
 		Timer <trigger_t> trigger_recover_cts_timeout; 	// Trigger for waiting part of EIFS after CTS timeout detected
 		Timer <trigger_t> trigger_rho_measurement; 		// Trigger for periodically measuring the rho metric
 		Timer <trigger_t> txop_sr_end;					// Trigger to determine the duration of an identified SR-based opportunity
+		Timer <trigger_t> trigger_dso_icr_timeout;		// DSO: fires after SIFS+switch_time+ICR; AP switches to secondary subband
+		Timer <trigger_t> trigger_npca_switch;			// NPCA: fires after switching_delay
+		Timer <trigger_t> trigger_npca_timer;			// NPCA: NPCA_TIMER governs switch-back
+		Timer <trigger_t> trigger_npca_icr_timeout;		// NPCA: ICR wait timer
+		Timer <trigger_t> trigger_npca_backoff;			// NPCA: EDCA backoff on NPCA channel
 
 		// Every time the timer expires execute this
 		inport inline void EndBackoff(trigger_t& t1);
@@ -437,10 +469,18 @@ component Node : public TypeII{
 		inport inline void StartTransmission(trigger_t& t1);
 		inport inline void CallRestartSta(trigger_t& t1);
 		inport inline void CallSensing(trigger_t& t1);
+		inport inline void DsoIcrTimeout(trigger_t& t1);		// DSO: ICR received (timer-modelled); switch to secondary subband
+		inport inline void NpcaSwitchComplete(trigger_t& t1);	// NPCA: radio tuned to NPCA channel
+		inport inline void EndNpcaBackoff(trigger_t& t1);		// NPCA: EDCA backoff expired; transmit ICF
+		inport inline void NpcaIcrTimeout(trigger_t& t1);		// NPCA: ICR wait done; switch to DATA
+		inport inline void NpcaSwitchBack(trigger_t& t1);		// NPCA: NPCA_TIMER expired; restore primary
 		inport inline void StartSavingLogs(trigger_t& t1);
 		inport inline void RecoverFromCtsTimeout(trigger_t& t1);
 		inport inline void MeasureRho(trigger_t& t1);
 		inport inline void SpatialReuseOpportunityEnds(trigger_t& t1);
+
+		// NPCA helper
+		void CheckAndArmNpcaSwitch();
 
 		// Connect timers to methods
 		Node () {
@@ -461,6 +501,11 @@ component Node : public TypeII{
 			connect trigger_recover_cts_timeout.to_component,RecoverFromCtsTimeout;
 			connect trigger_rho_measurement.to_component,MeasureRho;
 			connect txop_sr_end.to_component,SpatialReuseOpportunityEnds;
+			connect trigger_dso_icr_timeout.to_component,DsoIcrTimeout;
+			connect trigger_npca_switch.to_component,NpcaSwitchComplete;
+			connect trigger_npca_timer.to_component,NpcaSwitchBack;
+			connect trigger_npca_icr_timeout.to_component,NpcaIcrTimeout;
+			connect trigger_npca_backoff.to_component,EndNpcaBackoff;
 		}
 };
 
@@ -757,6 +802,13 @@ void Node :: InitializeVariables() {
 //		potential_hidden_nodes[n] = 0;
 	}
 
+	ack_success_ewma   = new double[node_params.total_nodes_number];
+	ack_exchange_count = new int[node_params.total_nodes_number];
+	for (int n = 0; n < node_params.total_nodes_number; ++n) {
+		ack_success_ewma[n]   = 0.0;
+		ack_exchange_count[n] = 0;
+	}
+
 	power_received_per_node.clear();
 
 //	potential_hidden_nodes[node_params.node_id] = -1; // To indicate that the node cannot be hidden from itself
@@ -788,10 +840,38 @@ void Node :: InitializeVariables() {
 	// Preamble puncturing (802.11ax)
 	pp_punctured_bitmap = 0;
 
+	// DSO (Dynamic Subband Operation)
+	dso_enabled  = node_params.dso_enabled;
+	dso_tx_flag  = 0;
+	dso_rr_idx   = 0;
+	for (int _c = 0; _c < NUM_CHANNELS_KOMONDOR; ++_c) dso_channels_for_tx[_c] = FALSE;
+
+	// NPCA
+	npca_enabled              = node_params.npca_enabled;
+	npca_primary_channel      = node_params.npca_primary_channel;
+	npca_min_dur_threshold_us = node_params.npca_min_dur_threshold_us;
+	npca_switching_delay_us   = node_params.npca_switching_delay_us;
+	npca_switch_back_delay_us = node_params.npca_switch_back_delay_us;
+	npca_init_qsrc            = node_params.npca_init_qsrc;
+	npca_timer_duration       = (double)NPCA_TIMER_DEFAULT_US * MICRO_VALUE;
+	npca_on_npca_channel      = 0;
+	npca_sta_on_npca_channel  = 0;
+	npca_stored_backoff_counter = 0;
+	npca_stored_cw            = 0;
+	npca_stored_primary_channel = node_params.current_primary_channel;
+	npca_cw                   = 0;
+	for (int _c = 0; _c < NUM_CHANNELS_KOMONDOR; ++_c) npca_channels_for_tx[_c] = FALSE;
+	if (npca_enabled && (node_params.max_channel_allowed - node_params.min_channel_allowed + 1) < 4)
+		npca_enabled = 0;
+	if (npca_enabled && npca_primary_channel < 0)
+		npca_primary_channel = (node_params.min_channel_allowed + node_params.max_channel_allowed + 1) / 2;
+
 	// Channel access policy: default to CSMA/CA; switch to preamble-puncturing if CB_PP_MAX_LOG2
 	channel_access_policy.checkAndSelectChannels = CSMA_CA_CheckAndSelectChannels;
 	if (node_params.current_dcb_policy == CB_PP_MAX_LOG2)
 		channel_access_policy.checkAndSelectChannels = PP_CheckAndSelectChannels;
+	if (node_params.current_dcb_policy == CB_DSO_MAX_LOG2)
+		channel_access_policy.checkAndSelectChannels = DSO_CheckAndSelectChannels;
 
 	// CHANNEL ACCESS — CW initialization
 	// For EDCA: CW starts at [0, CW_min[AC]] (IEEE 802.11 BEB from the AC floor).
@@ -968,6 +1048,7 @@ void Node :: InitializeVariables() {
 	// Initialize beamforming per-TXOP state
 	current_beam_az_main_rad = 0.0;
 	current_beam_num_nulls = 0;
+	current_beam_use_zf = 0;
 	for (int _bk = 0; _bk < MAX_BEAM_NULLS; ++_bk)
 		current_beam_null_az_rad[_bk] = 0.0;
 

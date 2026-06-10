@@ -103,6 +103,10 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	tx_info.beam_num_nulls     = 0;
 	for (int _bk = 0; _bk < MAX_BEAM_NULLS; ++_bk)
 		tx_info.beam_null_az_rad[_bk] = 0.0;
+	// DSO fields
+	tx_info.dso_tx           = 0;
+	tx_info.dso_subband_left  = 0;
+	tx_info.dso_subband_right = 0;
 
 	return tx_info;
 

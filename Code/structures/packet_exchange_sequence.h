@@ -58,4 +58,20 @@ static const PacketExchangeSequence IEEE_802_11_COBF_COSR = {
 	"Co-BF & Co-SR packet exchange sequence"
 };
 
+
+/* DSO exchange: DSO_ICF -> DSO_ICR (timer-modelled) -> DATA -> ACK */
+static const PacketExchangeSequence IEEE_802_11_DSO = {
+	TRANSMISSION_MODE_DSO,
+	4,
+	{PACKET_TYPE_DSO_ICF, PACKET_TYPE_DSO_ICR, PACKET_TYPE_DATA, PACKET_TYPE_ACK, -1, -1, -1, -1},
+	"DSO (Dynamic Subband Operation)"
+};
+
+/* NPCA 4-way exchange: NPCA_ICF -> [ICR timer] -> DATA -> ACK */
+static const PacketExchangeSequence IEEE_802_11_NPCA = {
+	TRANSMISSION_MODE_NPCA,
+	4,
+	{PACKET_TYPE_NPCA_ICF, PACKET_TYPE_NPCA_ICR, PACKET_TYPE_DATA, PACKET_TYPE_ACK, -1, -1, -1, -1},
+	"NPCA (Non-Primary Channel Access)"
+};
 #endif /* PACKET_EXCHANGE_SEQUENCE_H */

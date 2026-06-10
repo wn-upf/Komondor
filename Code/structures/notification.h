@@ -90,6 +90,7 @@ struct TxInfo
 	double beam_az_main_rad;			///> Main beam azimuth [rad] for this TX
 	int    beam_num_nulls;				///> Number of steered nulls
 	double beam_null_az_rad[MAX_BEAM_NULLS];	///> Null azimuth directions [rad]
+	int    beam_use_zf;				///> 0 = projection null-steering (standalone BF), 1 = ZF precoding (Co-BF)
 
 	bool flag_change_in_tx_power;	///> Flag to indicate whether the transmission power was changed (in order to recompute arrays)
 
@@ -97,6 +98,13 @@ struct TxInfo
 	int bss_color;				///> BSS color
 	int srg;					///> Spatial Reuse Group
 	bool txop_sr_identified;	///> Boolean indicating whether an SR-based TXOP has been detected or not
+	// DSO (Dynamic Subband Operation)
+	int dso_tx;            ///> 1 = frame belongs to a DSO TXOP; 0 = normal
+	int dso_subband_left;  ///> Left channel of DSO secondary subband
+	int dso_subband_right; ///> Right channel of DSO secondary subband
+
+	// Adaptive ACK suppression
+	int ack_required;	///> 1 = receiver must send ACK; 0 = ACK suppressed by transmitter
 
 	/**
 	 * Function to print the transmission information

@@ -219,6 +219,16 @@ void Node :: RestartNode(int called_by_time_out){
 	receiving_packet_id = NO_PACKET_ID;
 	sr_state.mapc_cosr_active = 0;
 	pp_punctured_bitmap = 0;
+	dso_tx_flag = 0;
+	trigger_dso_icr_timeout.Cancel();
+	trigger_npca_switch.Cancel();
+	trigger_npca_timer.Cancel();
+	trigger_npca_icr_timeout.Cancel();
+	trigger_npca_backoff.Cancel();
+	if (npca_on_npca_channel || npca_sta_on_npca_channel)
+		node_params.current_primary_channel = npca_stored_primary_channel;
+	npca_on_npca_channel = 0;
+	npca_sta_on_npca_channel = 0;
 
 	// Cancel triggers for safety
 	trigger_end_backoff.Cancel();

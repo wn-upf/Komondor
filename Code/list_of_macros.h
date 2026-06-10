@@ -98,6 +98,17 @@
 #define STATE_RX_TF			23	///> Receiving TF
 #define STATE_TX_ACK_TF		24	///> Transmitting ACK TF (coordinator, Co-BF/Co-SR)
 #define STATE_WAIT_ACK_TF	25	///> Waiting for ACK TF (coordinated AP and STAs, Co-BF/Co-SR)
+// DSO (Dynamic Subband Operation) states
+#define STATE_TX_DSO_ICF	26	///> Transmitting DSO ICF (non-HT dup, full BSS BW)
+#define STATE_RX_DSO_ICR	27	///> Waiting for STA ICR on DSO subband (timer-modelled)
+#define STATE_TX_DATA_DSO	28	///> Transmitting DATA on DSO subband
+#define STATE_WAIT_ACK_DSO	29	///> Waiting ACK after DSO DATA
+
+// NPCA (Non-Primary Channel Access) states -- SS37.18 D1.1
+#define STATE_TX_NPCA_ICF	30	///> Transmitting mandatory ICF at start of NPCA TXOP
+#define STATE_RX_NPCA_ICR	31	///> Waiting ICR response on NPCA primary channel (timer-modelled)
+#define STATE_TX_DATA_NPCA	32	///> Transmitting DATA on NPCA channels
+#define STATE_WAIT_ACK_NPCA	33	///> Waiting ACK after NPCA DATA
 
 // Node types
 #define NODE_TYPE_UNKWNOW	-1	///> Unknown (none) node type
@@ -162,6 +173,19 @@
 // TXOP sharing
 #define PACKET_TYPE_MU_RTS_TXS		9		///> MU-RTS TXS type (grants coordinated AP TX slot)
 #define PACKET_TYPE_ACK_TF			10		///> MAPC ACK Trigger Frame (coordinator triggers simultaneous ACKs, Co-BF/Co-SR)
+// DSO packet types (distinct from MAPC ICF/ICR)
+#define PACKET_TYPE_DSO_ICF		11		///> DSO Initial Control Frame: non-HT dup, full BSS BW
+#define PACKET_TYPE_DSO_ICR		12		///> DSO Initial Control Response: DSO subband only
+#define PACKET_TYPE_NPCA_ICF	13		///> NPCA Initial Control Frame (non-HT/non-HT dup, 6/12/24 Mb/s)
+#define PACKET_TYPE_NPCA_ICR	14		///> NPCA Initial Control Response
+#define TRANSMISSION_MODE_NPCA	5		///> PacketExchangeSequence mode discriminator for NPCA
+#define TRANSMISSION_MODE_DSO		4		///> PacketExchangeSequence mode discriminator for DSO
+
+// Adaptive ACK suppression (prediction-based)
+#define ACK_SUPPRESS_ENABLED		0		///> 1 = adaptive ACK suppression active; 0 = standard (always ACK)
+#define ACK_SUPPRESS_THRESHOLD		0.95	///> EWMA success rate above which ACK is suppressed
+#define ACK_SUPPRESS_EWMA_ALPHA		0.1		///> EWMA forgetting factor for new observations (weight of newest sample)
+#define ACK_SUPPRESS_MIN_SAMPLES	5		///> Minimum ACK exchanges before suppression may activate
 
 // Packet detect
 #define PD_NOT_EXCEEDED	0	///> PD is not exceeded (primary channel is free)
@@ -227,6 +251,7 @@
 #define CB_ALWAYS_MAX_LOG2			4	///> Log2 Always-max (DCB): TX in the larger channel range allowed by the log2 mapping
 #define CB_PROB_UNIFORM_LOG2		5	///> Log2 probabilistic uniform: pick with same probabilty any available channel range
 #define CB_PP_MAX_LOG2				6	///> Preamble Puncturing (802.11ax): log2 always-max with busy secondary channels punctured
+#define CB_DSO_MAX_LOG2				7	///> DSO: post-backoff secondary subband scheduling
 
 #define PP_MAX_PUNCTURED			2	///> Maximum number of secondary 20-MHz sub-channels that may be punctured in a PP PPDU
 
@@ -402,6 +427,33 @@
 //#define IEEE_AX_APP_DATA_LENGTH			11728				///> DATA length [bits]
 #define IEEE_AX_BACK_LENGTH				432					///> Block-ACK length [bits]
 #define IEEE_AX_SU_SPATIAL_STREAMS		1					///> Number of spatial streams
+// DSO overhead constants (spec �37.26, non-HT dup PPDU at 6 Mb/s)
+#define DSO_ICF_DURATION_US		52		///> ICF PPDU duration (non-HT dup, 6 Mb/s, short preamble)
+#define DSO_SWITCH_TIME_US		 8		///> STA subband re-tune latency (D1.1 minimum, ~1 OFDM symbol)
+#define DSO_ICR_DURATION_US		28		///> ICR response duration (UL MU CS)
+// Total DSO overhead before DATA: ICF+SIFS+SWITCH+ICR+SIFS = 52+16+8+28+16 = 120 us (+ SIFS = 136 us)
+
+// NPCA overhead constants (SS37.18.4 rule 6; same format as DSO ICF)
+#define NPCA_ICF_DURATION_US		52		///> NPCA ICF PPDU duration (non-HT dup, 6 Mb/s)
+#define NPCA_ICR_DURATION_US		28		///> NPCA ICR response duration
+#define NPCA_SWITCH_TIME_US		 8		///> NPCA radio re-tune time (us)
+// NPCA parameter defaults
+#define NPCA_INIT_QSRC_DEFAULT			0	///> Init_QSRC_NPCA: CW seeded at CWmin
+#define NPCA_MIN_DUR_THRESHOLD_DEFAULT_US	100	///> NPCA Minimum Duration Threshold (us)
+#define NPCA_SWITCHING_DELAY_DEFAULT_US		16	///> NPCA switching delay (us)
+#define NPCA_SWITCH_BACK_DELAY_DEFAULT_US	16	///> NPCA switch back delay (us)
+#define NPCA_TIMER_DEFAULT_US			5000	///> NPCA_TIMER: max stay on NPCA channel (us)
+
+// CSV column index for dso_enabled (IX_TRAFFIC_TYPE=36 is already taken)
+#define IX_DSO_ENABLED			37		///> Optional node CSV column: dso_enabled (0/1)
+// NPCA CSV column indices (38-43)
+#define IX_NPCA_ENABLED			38		///> Optional node CSV column: npca_enabled (0/1)
+#define IX_NPCA_PRIMARY_CH		39		///> Optional: npca_primary_channel (-1 = auto)
+#define IX_NPCA_MIN_DUR_THRESHOLD	40		///> Optional: npca_min_dur_threshold_us
+#define IX_NPCA_SWITCHING_DELAY		41		///> Optional: npca_switching_delay_us
+#define IX_NPCA_SWITCH_BACK_DELAY	42		///> Optional: npca_switch_back_delay_us
+#define IX_NPCA_INIT_QSRC		43		///> Optional: npca_init_qsrc
+
 #define IEEE_AX_MAX_PPDU_DURATION		(5484 * MICRO_VALUE)///> Maximum PPDU duration (limits the A-MPDU operation)
 
 // TO BE DONE
@@ -494,6 +546,7 @@
 #define ACTION_BANNING					3
 #define RTOT_ALGORITHM					4
 #define CENTRALIZED_ACTION_BANNING		5
+#define LEARNING_MECHANISM_EXTERNAL		7	///> Delegate to external Python ML server via Unix socket
 
 // Type of reward computation method used
 #define AVERAGE_REWARD 					0
@@ -642,6 +695,7 @@
 #define IX_AGENT_TYPE_OF_REWARD			8
 #define IX_AGENT_LEARNING_MECHANISM		9
 #define IX_AGENT_SELECTED_STRATEGY 		10
+#define IX_AGENT_SOCKET_PATH			11	///> Unix socket path for LEARNING_MECHANISM_EXTERNAL (optional; default /tmp/komondor_ml.sock)
 
 /* *********************
  * * LOG TYPE ENCODING *

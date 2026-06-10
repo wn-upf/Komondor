@@ -168,6 +168,195 @@ static double EvaluateBeamGain(const double *w_real, const double *w_imag,
 }
 
 /* ---------------------------------------------------------------
+ * Maximum number of ZF constraints (desired + nulls).
+ * Must be > MAX_BEAM_NULLS + 1 so the Gram matrix can always hold
+ * all constraints; set to MAX_BEAM_NULLS + 1 = 5.
+ * --------------------------------------------------------------- */
+#define MAX_ZF_CONSTRAINTS  5   /* K_nulls_max + 1 desired */
+
+/* ---------------------------------------------------------------
+ * SolveComplexLinearSystem
+ *   Solves A·x = b for x using Gaussian elimination with partial
+ *   pivoting on an M×M complex system.  All matrices stored as
+ *   flat row-major arrays of length M*M (real and imag separately).
+ *   b_real/b_imag are length-M vectors; overwritten with solution.
+ *   Returns 1 on success, 0 if the matrix is singular.
+ * --------------------------------------------------------------- */
+static int SolveComplexLinearSystem(double *A_real, double *A_imag,
+		double *b_real, double *b_imag, int M) {
+	int i, j, k, ok;
+	int piv[MAX_ZF_CONSTRAINTS];
+	double x_real[MAX_ZF_CONSTRAINTS], x_imag[MAX_ZF_CONSTRAINTS];
+	for (i = 0; i < M; ++i) { piv[i] = i; x_real[i] = 0.0; x_imag[i] = 0.0; }
+	ok = 1;
+
+#define AR(r,c) A_real[(r)*M+(c)]
+#define AI(r,c) A_imag[(r)*M+(c)]
+
+	/* Forward elimination with partial pivoting */
+	for (k = 0; k < M && ok; ++k) {
+		int best = k;
+		double best_mag = AR(piv[k],k)*AR(piv[k],k) + AI(piv[k],k)*AI(piv[k],k);
+		for (i = k+1; i < M; ++i) {
+			double mag = AR(piv[i],k)*AR(piv[i],k) + AI(piv[i],k)*AI(piv[i],k);
+			if (mag > best_mag) { best_mag = mag; best = i; }
+		}
+		if (best != k) { int tmp = piv[k]; piv[k] = piv[best]; piv[best] = tmp; }
+
+		{
+			double pr  = AR(piv[k],k);
+			double piv_i = AI(piv[k],k);
+			double pm2 = pr*pr + piv_i*piv_i;
+			if (pm2 < 1e-30) { ok = 0; }
+			else {
+				for (i = k+1; i < M; ++i) {
+					double fr = (AR(piv[i],k)*pr  + AI(piv[i],k)*piv_i) / pm2;
+					double fi = (AI(piv[i],k)*pr  - AR(piv[i],k)*piv_i) / pm2;
+					AR(piv[i],k) = 0.0; AI(piv[i],k) = 0.0;
+					for (j = k+1; j < M; ++j) {
+						double akr = AR(piv[k],j), aki = AI(piv[k],j);
+						AR(piv[i],j) -= fr*akr - fi*aki;
+						AI(piv[i],j) -= fr*aki + fi*akr;
+					}
+					{
+						double bkr = b_real[piv[k]], bki = b_imag[piv[k]];
+						b_real[piv[i]] -= fr*bkr - fi*bki;
+						b_imag[piv[i]] -= fr*bki + fi*bkr;
+					}
+				}
+			}
+		}
+	}
+
+	/* Back-substitution */
+	for (i = M-1; i >= 0 && ok; --i) {
+		double sr = b_real[piv[i]], si = b_imag[piv[i]];
+		for (j = i+1; j < M; ++j) {
+			sr -= AR(piv[i],j)*x_real[j] - AI(piv[i],j)*x_imag[j];
+			si -= AR(piv[i],j)*x_imag[j] + AI(piv[i],j)*x_real[j];
+		}
+		{
+			double pr    = AR(piv[i],i);
+			double piv_i = AI(piv[i],i);
+			double pm2   = pr*pr + piv_i*piv_i;
+			if (pm2 < 1e-30) { ok = 0; }
+			else {
+				x_real[i] = (sr*pr + si*piv_i) / pm2;
+				x_imag[i] = (si*pr - sr*piv_i) / pm2;
+			}
+		}
+	}
+
+	if (ok) {
+		for (i = 0; i < M; ++i) { b_real[i] = x_real[i]; b_imag[i] = x_imag[i]; }
+	}
+
+#undef AR
+#undef AI
+	return ok;
+}
+
+/* ---------------------------------------------------------------
+ * ComputeZFBeamWeights
+ *   Computes the Zero-Forcing precoding vector w[] for a ULA that:
+ *     - achieves unity gain toward az_main_rad (desired direction)
+ *     - places exact nulls at null_az_rad[0..num_nulls-1]
+ *
+ *   Algorithm:
+ *     Form constraint matrix H = [a_des, a_1, ..., a_K]  (N x M, M=K+1)
+ *     ZF precoder:  w = H (H^H H)^{-1} e_1
+ *     where G = H^H H is the (M x M) Gram matrix.
+ *     Solving G·c = e_1 then computing w = H·c gives:
+ *       a_des^H · w = 1  (unity gain, automatic)
+ *       a_k^H   · w = 0  for k=1..K (exact nulls, simultaneous)
+ *
+ *   Requires N >= M (more antennas than constraints).  Falls back to
+ *   projection-based ComputeBeamWeights() if N < M or M > MAX_ZF_CONSTRAINTS.
+ *   Outputs w_real[N] and w_imag[N].
+ * --------------------------------------------------------------- */
+static void ComputeZFBeamWeights(double az_main_rad,
+		const double *null_az_rad, int num_nulls,
+		int N, double d,
+		double *w_real, double *w_imag) {
+	int M = num_nulls + 1;  /* total constraints: 1 desired + K nulls */
+	int n, i, j, zf_ok;
+
+	/* Fallback: too few antennas or too many constraints (no macros needed) */
+	if (N <= 1 || M > MAX_ZF_CONSTRAINTS || N < M) {
+		ComputeBeamWeights(az_main_rad, null_az_rad, num_nulls, N, d, w_real, w_imag);
+		return;
+	}
+
+	{
+		double H_real[BF_MAX_N_ELEMENTS * MAX_ZF_CONSTRAINTS];
+		double H_imag[BF_MAX_N_ELEMENTS * MAX_ZF_CONSTRAINTS];
+		double G_real[MAX_ZF_CONSTRAINTS * MAX_ZF_CONSTRAINTS];
+		double G_imag[MAX_ZF_CONSTRAINTS * MAX_ZF_CONSTRAINTS];
+		double c_real[MAX_ZF_CONSTRAINTS], c_imag[MAX_ZF_CONSTRAINTS];
+		double tmp_r[BF_MAX_N_ELEMENTS], tmp_i[BF_MAX_N_ELEMENTS];
+
+#define HR(r,c) H_real[(r)*MAX_ZF_CONSTRAINTS+(c)]
+#define HI(r,c) H_imag[(r)*MAX_ZF_CONSTRAINTS+(c)]
+#define GR(r,c) G_real[(r)*MAX_ZF_CONSTRAINTS+(c)]
+#define GI(r,c) G_imag[(r)*MAX_ZF_CONSTRAINTS+(c)]
+
+		/* Column 0: desired direction */
+		ComputeULASteeringVector(az_main_rad, N, d, tmp_r, tmp_i);
+		for (n = 0; n < N; ++n) { HR(n,0) = tmp_r[n]; HI(n,0) = tmp_i[n]; }
+
+		/* Columns 1..K: null directions */
+		for (j = 0; j < num_nulls; ++j) {
+			ComputeULASteeringVector(null_az_rad[j], N, d, tmp_r, tmp_i);
+			for (n = 0; n < N; ++n) { HR(n,j+1) = tmp_r[n]; HI(n,j+1) = tmp_i[n]; }
+		}
+
+		/* Build Gram matrix G = H^H H  (M x M complex Hermitian) */
+		for (i = 0; i < M; ++i) {
+			for (j = 0; j < M; ++j) {
+				double gr = 0.0, gi = 0.0;
+				for (n = 0; n < N; ++n) {
+					double hir = HR(n,i), hii = HI(n,i);
+					double hjr = HR(n,j), hji = HI(n,j);
+					gr += hir*hjr + hii*hji;
+					gi += hir*hji - hii*hjr;
+				}
+				GR(i,j) = gr; GI(i,j) = gi;
+			}
+		}
+
+		/* Right-hand side: e_1 = [1, 0, ..., 0]^T */
+		c_real[0] = 1.0; c_imag[0] = 0.0;
+		for (i = 1; i < M; ++i) { c_real[i] = 0.0; c_imag[i] = 0.0; }
+
+		/* Solve G·c = e_1 */
+		zf_ok = SolveComplexLinearSystem(G_real, G_imag, c_real, c_imag, M);
+
+		/* Compute w = H·c (only when solve succeeded) */
+		if (zf_ok) {
+			for (n = 0; n < N; ++n) {
+				double wr = 0.0, wi = 0.0;
+				for (j = 0; j < M; ++j) {
+					wr += HR(n,j)*c_real[j] - HI(n,j)*c_imag[j];
+					wi += HR(n,j)*c_imag[j] + HI(n,j)*c_real[j];
+				}
+				w_real[n] = wr;
+				w_imag[n] = wi;
+			}
+		}
+
+#undef HR
+#undef HI
+#undef GR
+#undef GI
+	}
+
+	/* Fallback on singular/degenerate geometry */
+	if (!zf_ok) {
+		ComputeBeamWeights(az_main_rad, null_az_rad, num_nulls, N, d, w_real, w_imag);
+	}
+}
+
+/* ---------------------------------------------------------------
  * ComputeRxBeamGain
  *   Top-level function called by UpdatePowerSensedPerNode().
  *
@@ -177,6 +366,8 @@ static double EvaluateBeamGain(const double *w_real, const double *w_imag,
  *   received power.
  *
  *   Returns 1.0 if beamforming is disabled or N_elements <= 1.
+ *   Uses ZF precoding (beam_use_zf=1) for Co-BF and projection
+ *   null-steering (beam_use_zf=0) for standalone beamforming.
  * --------------------------------------------------------------- */
 static double ComputeRxBeamGain(const TxInfo &tx_info,
 		double rx_x, double rx_y, double rx_z) {
@@ -196,10 +387,18 @@ static double ComputeRxBeamGain(const TxInfo &tx_info,
 	if (N > BF_MAX_N_ELEMENTS) N = BF_MAX_N_ELEMENTS;
 
 	double w_real[BF_MAX_N_ELEMENTS], w_imag[BF_MAX_N_ELEMENTS];
-	ComputeBeamWeights(tx_info.beam_az_main_rad,
-		tx_info.beam_null_az_rad, tx_info.beam_num_nulls,
-		N, tx_info.beam_d_spacing,
-		w_real, w_imag);
+
+	if (tx_info.beam_use_zf) {
+		ComputeZFBeamWeights(tx_info.beam_az_main_rad,
+			tx_info.beam_null_az_rad, tx_info.beam_num_nulls,
+			N, tx_info.beam_d_spacing,
+			w_real, w_imag);
+	} else {
+		ComputeBeamWeights(tx_info.beam_az_main_rad,
+			tx_info.beam_null_az_rad, tx_info.beam_num_nulls,
+			N, tx_info.beam_d_spacing,
+			w_real, w_imag);
+	}
 
 	return EvaluateBeamGain(w_real, w_imag, az_rx, N, tx_info.beam_d_spacing);
 }

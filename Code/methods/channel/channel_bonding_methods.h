@@ -600,6 +600,95 @@ static void GetTxChannelsByPP(int *channels_for_tx, int *punctured_bitmap_out,
  * @param "channel_aggregation_cca_model"[type int]:     CCA model (SAME or 11AX)
  * @param "punctured_bitmap_out"         [type int*]:    output puncture bitmap; NULL for non-PP callers
  */
+
+/**
+ * GetTxChannelsNPCA: select TX channel set anchored to npca_primary_ch.
+ * Returns 1 on success (out_left/out_right set), 0 if NPCA primary busy or no block.
+ */
+int GetTxChannelsNPCA(int *out_left, int *out_right,
+		int npca_primary_ch, int bss_primary_ch,
+		int min_ch_allowed, int max_ch_allowed,
+		double **channel_power, double pd_threshold) {
+	*out_left  = TX_NOT_POSSIBLE;
+	*out_right = TX_NOT_POSSIBLE;
+	if (npca_primary_ch == bss_primary_ch) return 0;
+	if ((*channel_power)[npca_primary_ch] > pd_threshold) return 0;
+	int total_range = max_ch_allowed - min_ch_allowed + 1;
+	for (int s = total_range; s >= 1; s /= 2) {
+		for (int left = min_ch_allowed; left + s - 1 <= max_ch_allowed; left += s) {
+			int right = left + s - 1;
+			if (npca_primary_ch < left || npca_primary_ch > right) continue;
+			if (left <= bss_primary_ch && bss_primary_ch <= right) continue;
+			int idle = 1;
+			for (int cc = left; cc <= right; ++cc)
+				if ((*channel_power)[cc] > pd_threshold) { idle = 0; break; }
+			if (!idle) continue;
+			*out_left  = left;
+			*out_right = right;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/**
+ * GetTxChannelsByDSO � DSO secondary subband selection (widest-first halving).
+ *
+ * Scans aligned idle blocks within the target STA's bandwidth that do NOT
+ * include the primary channel.  Tries the widest block first, then halves
+ * until a valid block is found or none remains.
+ *
+ * @param dso_channels_for_tx  [int*]:     output [left, right]; TX_NOT_POSSIBLE on failure
+ * @param dso_tx_flag          [int*]:     1 on success, 0 on failure
+ * @param ap_min_ch            [int]:      AP's minimum allowed channel
+ * @param ap_max_ch            [int]:      AP's maximum allowed channel
+ * @param primary_ch           [int]:      primary channel (excluded from DSO subband)
+ * @param sta_min_ch           [int]:      STA's minimum channel (bandwidth anchor)
+ * @param sta_max_ch           [int]:      STA's maximum channel (bandwidth anchor)
+ * @param channel_power        [double**]: power sensed per channel pair [pW]
+ * @param pd_threshold         [double]:   CCA-ED threshold [pW]
+ */
+void GetTxChannelsByDSO(int *dso_channels_for_tx, int *dso_tx_flag,
+		int ap_min_ch, int ap_max_ch, int primary_ch,
+		int sta_min_ch, int sta_max_ch,
+		double **channel_power, double pd_threshold) {
+
+	dso_channels_for_tx[0] = TX_NOT_POSSIBLE;
+	dso_channels_for_tx[1] = TX_NOT_POSSIBLE;
+	*dso_tx_flag = 0;
+
+	int sta_bw = sta_max_ch - sta_min_ch + 1;
+
+	for (int s = sta_bw; s >= 1; s /= 2) {
+		/* iterate over all s-wide aligned blocks within [sta_min_ch, sta_max_ch] */
+		for (int left = sta_min_ch; left + s - 1 <= sta_max_ch; left += s) {
+			int right = left + s - 1;
+
+			/* block must not overlap primary channel */
+			if (left <= primary_ch && primary_ch <= right) continue;
+
+			/* block must be within AP's allowed range */
+			if (left < ap_min_ch || right > ap_max_ch) continue;
+
+			/* all channels in block must be idle */
+			int idle = 1;
+			for (int c = left; c <= right; ++c) {
+				if ((*channel_power)[c] > pd_threshold) {
+					idle = 0;
+					break;
+				}
+			}
+			if (!idle) continue;
+
+			/* found a valid block */
+			dso_channels_for_tx[0] = left;
+			dso_channels_for_tx[1] = right;
+			*dso_tx_flag = 1;
+			return;
+		}
+	}
+}
+
 void GetTxChannels(int *channels_for_tx, int channel_bonding_model, int *channels_free,
 		int min_channel_allowed, int max_channel_allowed, int primary_channel,
 		int num_channels_komondor, double **channel_power, int channel_aggregation_cca_model,

@@ -43,6 +43,9 @@ void Node :: StartTransmission(trigger_t &){
 	} else if (exchange_sequence.frame_types[0] == PACKET_TYPE_ICF) {
 		icf_notification.timestamp = SimTime();
 		outportSelfStartTX(icf_notification);
+	} else if (node_state == STATE_TX_DSO_ICF || node_state == STATE_TX_NPCA_ICF) {
+		icf_notification.timestamp = SimTime();
+		outportSelfStartTX(icf_notification);
 	} else {
 		data_notification.timestamp = SimTime();
 		outportSelfStartTX(data_notification);
@@ -75,6 +78,19 @@ void Node :: RequestMCS(){
  */
 void Node :: SelectDestination(){
 	current_destination_id = PickRandomElementFromArray(wlan.list_sta_id, wlan.num_stas);
+}
+
+/**
+ * Returns 0 if ACK can be suppressed for this DATA destination, 1 if ACK is required.
+ * Suppression activates only when the EWMA success rate has converged above the threshold.
+ */
+static int PredictAckNeeded(int dest_id, int mapc_enabled,
+		const double *ewma, const int *count) {
+	if (!ACK_SUPPRESS_ENABLED) return 1;
+	if (dest_id < 0)           return 1;	// broadcast / no destination
+	if (mapc_enabled)          return 1;	// MAPC paths use custom ACK sequences
+	if (count[dest_id] < ACK_SUPPRESS_MIN_SAMPLES) return 1;
+	return (ewma[dest_id] >= ACK_SUPPRESS_THRESHOLD) ? 0 : 1;
 }
 
 /**
@@ -138,8 +154,52 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 		notification.tx_info.beam_d_spacing     = node_params.beam_d_spacing;
 		notification.tx_info.beam_az_main_rad   = current_beam_az_main_rad;
 		notification.tx_info.beam_num_nulls     = current_beam_num_nulls;
+		notification.tx_info.beam_use_zf        = current_beam_use_zf;
 		for (int _bk = 0; _bk < current_beam_num_nulls; ++_bk)
 			notification.tx_info.beam_null_az_rad[_bk] = current_beam_null_az_rad[_bk];
+
+		/* For Co-BF DATA: recompute null direction directly from current MAPC state.
+		 * This guards against any stale current_beam_num_nulls value by recomputing
+		 * the null at the exact point the notification is generated. */
+		if (packet_type == PACKET_TYPE_DATA && wlan.mapc_enabled) {
+			int _nulls = 0;
+			int _zf = 0;
+			double _null_az[MAX_BEAM_NULLS];
+			int _bk;
+			if (coordinator_ap_id == NODE_ID_NONE) {
+				/* Coordinator: null toward each peer AP's associated STA */
+				int _g = mapc_active_group_idx;
+				for (int _p = 0; _p < wlan.mapc_num_peers[_g] && _nulls < MAX_BEAM_NULLS; ++_p) {
+					int _ps = all_node_first_sta_id[wlan.mapc_peer_ap_ids[_g][_p]];
+					if (_ps == NODE_ID_NONE) continue;
+					double _dx = all_node_x[_ps] - node_params.x;
+					double _dy = all_node_y[_ps] - node_params.y;
+					_null_az[_nulls++] = atan2(_dy, _dx);
+				}
+				if (wlan.mapc_method_ids[_g] == CO_BF) _zf = 1;
+			} else {
+				/* Coordinated AP: null toward coordinator's associated STA */
+				int _cs = all_node_first_sta_id[coordinator_ap_id];
+				if (_cs != NODE_ID_NONE) {
+					double _dx = all_node_x[_cs] - node_params.x;
+					double _dy = all_node_y[_cs] - node_params.y;
+					_null_az[0] = atan2(_dy, _dx);
+					_nulls = 1;
+				}
+				if (wlan.mapc_method_ids[mapc_active_group_idx] == CO_BF) _zf = 1;
+			}
+			if (_nulls > 0) {
+				notification.tx_info.beam_num_nulls = _nulls;
+				notification.tx_info.beam_use_zf    = _zf;
+				for (_bk = 0; _bk < _nulls; ++_bk)
+					notification.tx_info.beam_null_az_rad[_bk] = _null_az[_bk];
+				/* Keep current_beam_* in sync so other callers see the same state */
+				current_beam_num_nulls = _nulls;
+				current_beam_use_zf    = _zf;
+				for (_bk = 0; _bk < _nulls; ++_bk)
+					current_beam_null_az_rad[_bk] = _null_az[_bk];
+			}
+		}
 	}
 
 //	// Notify potential changes in the tx power
@@ -153,6 +213,16 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 			// Preamble puncturing: embed bitmap so receivers can zero out silent sub-channels.
 			// Control frames (RTS/CTS/ACK/ICF/...) are never punctured — bitmap stays 0.
 			notification.tx_info.pp_punctured_bitmap = pp_punctured_bitmap;
+			// Adaptive ACK suppression: predict whether receiver needs to ACK this frame.
+			// DSO and NPCA use custom ACK-wait states (STATE_WAIT_ACK_DSO/NPCA) that have
+			// no suppressed path on the transmitter side — always require ACK there.
+			if (node_state == STATE_TX_DATA_DSO || node_state == STATE_TX_DATA_NPCA) {
+				notification.tx_info.ack_required = 1;
+			} else {
+				notification.tx_info.ack_required = PredictAckNeeded(
+					destination_id, wlan.mapc_enabled,
+					ack_success_ewma, ack_exchange_count);
+			}
 			break;
 		}
 
@@ -217,6 +287,32 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 		case PACKET_TYPE_ACK_TF:{
 			// MAPC ACK Trigger Frame — similar size to RTS/CTS; no NAV needed
 			notification.frame_length = IEEE_AX_RTS_LENGTH;
+			notification.tx_info.nav_time = 0;
+			break;
+		}
+
+		case PACKET_TYPE_NPCA_ICF:{
+			notification.frame_length = IEEE_AX_RTS_LENGTH;
+			notification.tx_info.nav_time = current_nav_time;
+			break;
+		}
+
+		case PACKET_TYPE_NPCA_ICR:{
+			notification.frame_length = IEEE_AX_CTS_LENGTH;
+			notification.tx_info.nav_time = 0;
+			break;
+		}
+
+		case PACKET_TYPE_DSO_ICF:{
+			// DSO Initial Control Frame — similar size to RTS
+			notification.frame_length = IEEE_AX_RTS_LENGTH;
+			notification.tx_info.nav_time = current_nav_time;
+			break;
+		}
+
+		case PACKET_TYPE_DSO_ICR:{
+			// DSO Initial Control Response — similar size to CTS; timer-modelled, no real frame
+			notification.frame_length = IEEE_AX_CTS_LENGTH;
 			notification.tx_info.nav_time = 0;
 			break;
 		}
@@ -393,7 +489,8 @@ void Node :: ScheduleTransmission(int first_packet_type){
 		++node_stats.rts_cts_sent;
 		++node_stats.rts_cts_sent_per_sta[current_destination_id-node_params.node_id-1];
 		++performance_report.rts_cts_sent;
-	} else if (first_packet_type == PACKET_TYPE_ICF) {
+	} else if (first_packet_type == PACKET_TYPE_ICF || first_packet_type == PACKET_TYPE_DSO_ICF
+			|| first_packet_type == PACKET_TYPE_NPCA_ICF) {
 		LOGS(node_params.save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Transmission of ICF #%d started\n",
 			SimTime(), node_params.node_id, node_state, LOG_F04, LOG_LVL3, icf_notification.packet_id);
@@ -430,7 +527,8 @@ void Node :: ScheduleTransmission(int first_packet_type){
 	trigger_preoccupancy.Set(FixTimeOffset(time_to_trigger,13,12));
 	if (first_packet_type == PACKET_TYPE_RTS) {
 		rts_notification.tx_info.preoccupancy_duration = time_rand_value;
-	} else if (first_packet_type == PACKET_TYPE_ICF) {
+	} else if (first_packet_type == PACKET_TYPE_ICF || first_packet_type == PACKET_TYPE_DSO_ICF
+			|| first_packet_type == PACKET_TYPE_NPCA_ICF) {
 		icf_notification.tx_info.preoccupancy_duration = time_rand_value;
 	} else if (first_packet_type == PACKET_TYPE_TF) {
 		tf_notification.tx_info.preoccupancy_duration = time_rand_value;
@@ -484,6 +582,8 @@ void Node :: PrepareNewTransmission() {
 	// Get the current modulation according to the channels selected for transmission
 	//int ix_mcs_per_node (current_destination_id - wlan.list_sta_id[0]);
 	current_modulation = mcs_per_node[ix_mcs_per_node][ix_num_channels_used];
+	// Fallback: MCS not yet exchanged (first NPCA/DSO attempt before EndBackoff fires)
+	if (current_modulation <= 0) current_modulation = MODULATION_BPSK_1_2;
 
 	// ********************************************************
 	// Flexible packet aggregation
@@ -652,10 +752,10 @@ void Node :: PrepareNewTransmission() {
 		_bf_dy = all_node_y[current_destination_id] - node_params.y;
 		current_beam_az_main_rad = atan2(_bf_dy, _bf_dx);
 		current_beam_num_nulls = 0;
+		current_beam_use_zf = 0;	/* default: projection (standalone BF) */
 
 		if (wlan.mapc_enabled && coordinator_ap_id == NODE_ID_NONE) {
 			// MAPC coordinator: null toward each peer AP's associated STA
-			// (the receiver that would experience our interference)
 			int _g = mapc_active_group_idx;
 			for (int _p = 0; _p < wlan.mapc_num_peers[_g]
 					&& current_beam_num_nulls < MAX_BEAM_NULLS; ++_p) {
@@ -665,9 +765,11 @@ void Node :: PrepareNewTransmission() {
 				_bf_dy = all_node_y[_peer_sta] - node_params.y;
 				current_beam_null_az_rad[current_beam_num_nulls++] = atan2(_bf_dy, _bf_dx);
 			}
+			// Co-BF: use ZF precoding for simultaneous transmissions
+			if (wlan.mapc_method_ids[_g] == CO_BF)
+				current_beam_use_zf = 1;
 		} else if (wlan.mapc_enabled && coordinator_ap_id != NODE_ID_NONE) {
 			// MAPC coordinated AP: null toward coordinator's associated STA
-			// (the receiver that would experience our interference)
 			int _coord_sta = all_node_first_sta_id[coordinator_ap_id];
 			if (_coord_sta != NODE_ID_NONE) {
 				_bf_dx = all_node_x[_coord_sta] - node_params.x;
@@ -675,10 +777,162 @@ void Node :: PrepareNewTransmission() {
 				current_beam_null_az_rad[0] = atan2(_bf_dy, _bf_dx);
 				current_beam_num_nulls = 1;
 			}
+			// Co-BF: use ZF precoding for simultaneous transmissions
+			if (wlan.mapc_method_ids[mapc_active_group_idx] == CO_BF)
+				current_beam_use_zf = 1;
 		}
 	}
 
-	if (exchange_sequence.frame_types[0] == PACKET_TYPE_RTS) {
+	// B13: DSO prohibited on NPCA channel (SS37.18.4 rule 11)
+	if (npca_on_npca_channel) dso_tx_flag = 0;
+
+	// NPCA DATA phase
+	if (node_state == STATE_TX_DATA_NPCA) {
+		double _npca_pre = (double)(NPCA_ICF_DURATION_US + NPCA_SWITCH_TIME_US
+			+ NPCA_ICR_DURATION_US) * MICRO_VALUE + 2.0 * SIFS;
+		double _npca_cap = IEEE_AX_MAX_PPDU_DURATION - _npca_pre - SIFS - ack_duration;
+		if (_npca_cap < 0.0) _npca_cap = 0.0;
+		while (limited_num_packets_aggregated > 1 && data_duration > _npca_cap) {
+			--limited_num_packets_aggregated;
+			ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
+				num_channels_tx, current_modulation, limited_num_packets_aggregated,
+				node_params.frame_length, bits_ofdm_sym);
+		}
+		current_tx_duration = data_duration;
+		current_nav_time = ComputeNavTime(STATE_TX_DATA, rts_duration, cts_duration,
+			data_duration, ack_duration, SIFS);
+		current_nav_time = FixTimeOffset(current_nav_time, 13, 12);
+		time_rand_value = 0;
+		int _rand_npca (2 + rand() % (MAX_NUM_RAND_TIME-2));
+		time_rand_value = (double)_rand_npca * MAX_DIFFERENCE_SAME_TIME/MAX_NUM_RAND_TIME;
+		time_rand_value = FixTimeOffset(time_rand_value, 13, 12);
+		current_nav_time = current_nav_time - time_rand_value;
+		Notification _fp_npca = buffer.GetFirstPacket();
+		data_notification = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
+			_fp_npca.packet_id, limited_num_packets_aggregated,
+			_fp_npca.timestamp_generated, current_tx_duration);
+		sr_state.flag_change_in_tx_power = FALSE;
+		ScheduleTransmission(PACKET_TYPE_DATA);
+	} else
+
+	// DSO DATA phase: channels_for_tx set to DSO subband by DsoIcrTimeout
+	if (node_state == STATE_TX_DATA_DSO) {
+
+		// Apply DSO data duration cap (ICF + wait overhead already elapsed)
+		double _dso_pre = (double)(DSO_ICF_DURATION_US + DSO_SWITCH_TIME_US
+			+ DSO_ICR_DURATION_US) * MICRO_VALUE + 2.0 * SIFS;
+		double _dso_cap = IEEE_AX_MAX_PPDU_DURATION - _dso_pre - SIFS - ack_duration;
+		if (_dso_cap < 0.0) _dso_cap = 0.0;
+		while (limited_num_packets_aggregated > 1 && data_duration > _dso_cap) {
+			--limited_num_packets_aggregated;
+			ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
+				num_channels_tx, current_modulation, limited_num_packets_aggregated,
+				node_params.frame_length, bits_ofdm_sym);
+		}
+
+		current_tx_duration = data_duration;
+		current_nav_time = ComputeNavTime(STATE_TX_DATA, rts_duration, cts_duration,
+			data_duration, ack_duration, SIFS);
+		current_nav_time = FixTimeOffset(current_nav_time, 13, 12);
+
+		time_rand_value = 0;
+		int _rand_dso (2 + rand() % (MAX_NUM_RAND_TIME-2));
+		time_rand_value = (double)_rand_dso * MAX_DIFFERENCE_SAME_TIME/MAX_NUM_RAND_TIME;
+		time_rand_value = FixTimeOffset(time_rand_value, 13, 12);
+		current_nav_time = current_nav_time - time_rand_value;
+
+		Notification _fp_dso = buffer.GetFirstPacket();
+		data_notification = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
+			_fp_dso.packet_id, limited_num_packets_aggregated,
+			_fp_dso.timestamp_generated, current_tx_duration);
+		data_notification.tx_info.dso_tx = 1;
+		sr_state.flag_change_in_tx_power = FALSE;
+		ScheduleTransmission(PACKET_TYPE_DATA);
+
+	} else if (exchange_sequence.frame_types[0] == PACKET_TYPE_NPCA_ICF) {
+
+		// NPCA ICF phase (SS37.18.4 rule 6): send ICF on NPCA subband
+		node_state = STATE_TX_NPCA_ICF;
+		current_tx_duration = (double)NPCA_ICF_DURATION_US * MICRO_VALUE;
+		// Channel range already set by EndNpcaBackoff
+		{
+			int _nl = current_left_channel, _nr = current_right_channel;
+			int _npca_nch = _nr - _nl + 1;
+			int _npca_mcs = mcs_per_node[ix_mcs_per_node][(int)log2((double)_npca_nch)];
+			if (_npca_mcs <= 0) _npca_mcs = MODULATION_BPSK_1_2;
+			double _npca_bpsy = GetNumberSubcarriers(_npca_nch)
+				* Mcs_array::modulation_bits[_npca_mcs - 1]
+				* Mcs_array::coding_rates[_npca_mcs - 1]
+				* IEEE_AX_SU_SPATIAL_STREAMS;
+			ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
+				_npca_nch, _npca_mcs, limited_num_packets_aggregated,
+				node_params.frame_length, _npca_bpsy);
+		}
+		double _npca_pre2 = (double)(NPCA_SWITCH_TIME_US + NPCA_ICR_DURATION_US) * MICRO_VALUE;
+		current_nav_time = SIFS + _npca_pre2 + SIFS + data_duration + SIFS + ack_duration;
+		current_nav_time = FixTimeOffset(current_nav_time, 13, 12);
+		time_rand_value = 0;
+		int _rand_npca_icf (2 + rand() % (MAX_NUM_RAND_TIME-2));
+		time_rand_value = (double)_rand_npca_icf * MAX_DIFFERENCE_SAME_TIME/MAX_NUM_RAND_TIME;
+		time_rand_value = FixTimeOffset(time_rand_value, 13, 12);
+		current_nav_time = current_nav_time - time_rand_value;
+		// ICF broadcast on full BSS BW so STA detects it on primary channel
+		int _npca_icf_left  = current_left_channel;
+		int _npca_icf_right = current_right_channel;
+		current_left_channel  = node_params.min_channel_allowed;
+		current_right_channel = node_params.max_channel_allowed;
+		icf_notification = GenerateNotification(PACKET_TYPE_NPCA_ICF, current_destination_id,
+			last_packet_generated_id, limited_num_packets_aggregated,
+			SimTime(), current_tx_duration);
+		current_left_channel  = _npca_icf_left;
+		current_right_channel = _npca_icf_right;
+		sr_state.flag_change_in_tx_power = FALSE;
+		ScheduleTransmission(PACKET_TYPE_NPCA_ICF);
+
+	} else if (exchange_sequence.frame_types[0] == PACKET_TYPE_DSO_ICF) {
+
+		// DSO ICF phase: send ICF on full BSS BW, carry DSO subband info
+		node_state = STATE_TX_DSO_ICF;
+		current_tx_duration = (double)DSO_ICF_DURATION_US * MICRO_VALUE;
+
+		// Recompute data/ack durations for the DSO secondary subband width (narrower than AP BW)
+		{
+			int _dso_nch = dso_channels_for_tx[1] - dso_channels_for_tx[0] + 1;
+			int _dso_mcs = mcs_per_node[ix_mcs_per_node][(int)log2((double)_dso_nch)];
+			double _dso_bpsy = GetNumberSubcarriers(_dso_nch)
+				* Mcs_array::modulation_bits[_dso_mcs - 1]
+				* Mcs_array::coding_rates[_dso_mcs - 1]
+				* IEEE_AX_SU_SPATIAL_STREAMS;
+			ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
+				_dso_nch, _dso_mcs, limited_num_packets_aggregated,
+				node_params.frame_length, _dso_bpsy);
+		}
+
+		// NAV: ICR wait + SIFS + data + SIFS + ack (data_duration now reflects DSO subband BW)
+		double _dso_pre2 = (double)(DSO_SWITCH_TIME_US + DSO_ICR_DURATION_US) * MICRO_VALUE;
+		current_nav_time = SIFS + _dso_pre2 + SIFS + data_duration + SIFS + ack_duration;
+		current_nav_time = FixTimeOffset(current_nav_time, 13, 12);
+
+		time_rand_value = 0;
+		int _rand_icf (2 + rand() % (MAX_NUM_RAND_TIME-2));
+		time_rand_value = (double)_rand_icf * MAX_DIFFERENCE_SAME_TIME/MAX_NUM_RAND_TIME;
+		time_rand_value = FixTimeOffset(time_rand_value, 13, 12);
+		current_nav_time = current_nav_time - time_rand_value;
+
+		// ICF covers full BSS BW so other nodes can set NAV
+		current_left_channel  = node_params.min_channel_allowed;
+		current_right_channel = node_params.max_channel_allowed;
+
+		icf_notification = GenerateNotification(PACKET_TYPE_DSO_ICF, current_destination_id,
+			last_packet_generated_id, limited_num_packets_aggregated,
+			SimTime(), current_tx_duration);
+		icf_notification.tx_info.dso_tx           = 1;
+		icf_notification.tx_info.dso_subband_left  = dso_channels_for_tx[0];
+		icf_notification.tx_info.dso_subband_right = dso_channels_for_tx[1];
+		sr_state.flag_change_in_tx_power = FALSE;
+		ScheduleTransmission(PACKET_TYPE_DSO_ICF);
+
+	} else if (exchange_sequence.frame_types[0] == PACKET_TYPE_RTS) {
 
 		// 4-way handshake: start with RTS
 		node_state = STATE_TX_RTS;
@@ -887,7 +1141,10 @@ void Node :: EndBackoff(trigger_t &){
 	int eff_max_channel = node_params.max_channel_allowed;
 	{
 		int is_mapc_coordinator = (wlan.mapc_enabled && coordinator_ap_id == NODE_ID_NONE);
-		if (!is_mapc_coordinator && current_destination_id >= 0) {
+		// DSO: skip STA bandwidth cap — DSO uses the full AP range for CCA + ICF;
+		// the secondary subband is chosen per-STA in the DSO scan block below.
+		int is_dso = (dso_enabled && !wlan.mapc_enabled);
+		if (!is_mapc_coordinator && !is_dso && current_destination_id >= 0) {
 			int sta_min_ch, sta_max_ch;
 			wlan.GetStaChannelBounds(current_destination_id, &sta_min_ch, &sta_max_ch);
 			if (sta_min_ch >= 0 && sta_min_ch > eff_min_channel) eff_min_channel = sta_min_ch;
@@ -929,6 +1186,41 @@ void Node :: EndBackoff(trigger_t &){
 
 	PrintOrWriteChannelForTx(WRITE_LOG, node_params.save_node_logs, node_params.print_node_logs, node_logger,
 		channels_for_tx);
+
+	// DSO: post-backoff secondary subband redirect
+	dso_tx_flag = 0;
+	if (dso_enabled && !wlan.mapc_enabled && channels_for_tx[0] != TX_NOT_POSSIBLE) {
+		int _n_stas = wlan.num_stas;
+		for (int _i = 0; _i < _n_stas; ++_i) {
+			int _idx = (dso_rr_idx + _i) % _n_stas;
+			int _cand = wlan.list_sta_id[_idx];
+			if (node_params.traffic_model != TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION
+					&& buffer.QueueSize() == 0)
+				break;
+			int _s_min, _s_max;
+			wlan.GetStaChannelBounds(_cand, &_s_min, &_s_max);
+			if (_s_min < 0) _s_min = node_params.min_channel_allowed;
+			if (_s_max < 0) _s_max = node_params.max_channel_allowed;
+			// Only attempt DSO if STA bandwidth is strictly smaller than AP bandwidth
+			int _sta_bw = _s_max - _s_min + 1;
+			int _ap_bw  = node_params.max_channel_allowed - node_params.min_channel_allowed + 1;
+			if (_sta_bw >= _ap_bw) continue;
+			GetTxChannelsByDSO(dso_channels_for_tx, &dso_tx_flag,
+					node_params.min_channel_allowed, node_params.max_channel_allowed,
+					node_params.current_primary_channel,
+					_s_min, _s_max, &channel_power, current_pd);
+			if (dso_tx_flag == 1) {
+				current_destination_id = _cand;
+				dso_rr_idx = (_idx + 1) % _n_stas;
+				exchange_sequence = IEEE_802_11_DSO;
+				LOGS(node_params.save_node_logs, node_logger.file,
+					"%.15f;N%d;S%d;%s;%s DSO: selected N%d on secondary [%d,%d]\n",
+					SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL2,
+					_cand, dso_channels_for_tx[0], dso_channels_for_tx[1]);
+				break;
+			}
+		}
+	}
 
 	// Act according to possible (not possible) transmission
 	if(channels_for_tx[0] != TX_NOT_POSSIBLE) {
@@ -1016,6 +1308,10 @@ void Node :: MyTxFinished(trigger_t &){
 				data_notification.packet_id, data_notification.tx_info.num_packets_aggregated,
 				data_notification.timestamp_generated, TX_DURATION_NONE);
 
+			// Carry the ack_required flag from the start notification so the finish
+			// notification seen by HandleFinishTX_StateRxData matches exactly.
+			notification.tx_info.ack_required = data_notification.tx_info.ack_required;
+
 			// Co-BF/Co-SR: tag DATA finish notification with MAPC group so STAs know
 			// to wait for the ACK TF instead of auto-ACKing after SIFS.
 			int cobf_cosr = wlan.mapc_enabled
@@ -1046,6 +1342,40 @@ void Node :: MyTxFinished(trigger_t &){
 				LOGS(node_params.save_node_logs, node_logger.file,
 					"%.15f;N%d;S%d;%s;%s DATA %d tx done (Co-BF/SR coordinated). Waiting for ACK TF.\n",
 					SimTime(), node_params.node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
+			} else if (data_notification.tx_info.ack_required == 0) {
+				// ACK suppressed — assume DATA delivered, return to contention immediately
+				last_transmission_successful = 1;
+				++node_stats.data_packets_acked;
+				++node_stats.data_packets_acked_per_sta[current_destination_id - node_params.node_id - 1];
+				++performance_report.data_packets_acked;
+				for (int _i = 0; _i < limited_num_packets_aggregated; ++_i) {
+					++node_stats.data_frames_acked;
+					++node_stats.data_frames_acked_per_sta[current_destination_id - node_params.node_id - 1];
+					++performance_report.data_frames_acked;
+					++node_stats.num_delay_measurements;
+					double _pkt_ts = buffer.GetPacketAt(_i).timestamp_generated;
+					node_stats.sum_delays = node_stats.sum_delays + (SimTime() - _pkt_ts);
+					if (_pkt_ts > (node_params.simulation_time_komondor - node_stats.last_measurements_window)) {
+						++node_stats.last_data_frames_acked;
+						++node_stats.last_num_delay_measurements;
+						node_stats.last_sum_delays = node_stats.last_sum_delays + (SimTime() - _pkt_ts);
+					}
+					performance_report.sum_delays = performance_report.sum_delays + (SimTime() - _pkt_ts);
+					++performance_report.num_delay_measurements;
+					if ((SimTime() - _pkt_ts) > performance_report.max_delay)
+						performance_report.max_delay = SimTime() - _pkt_ts;
+					if ((SimTime() - _pkt_ts) < performance_report.min_delay)
+						performance_report.min_delay = SimTime() - _pkt_ts;
+				}
+				HandleContentionWindow(
+					node_params.cw_adaptation, RESET_CW, &ca_state.deterministic_bo_active,
+					&ca_state.current_cw_min, &ca_state.current_cw_max, &ca_state.cw_stage_current,
+					node_params.cw_min_default, node_params.cw_max_default, node_params.cw_stage_max,
+					distance_to_token, node_params.backoff_type, current_traffic_type);
+				LOGS(node_params.save_node_logs, node_logger.file,
+					"%.15f;N%d;S%d;%s;%s DATA %d tx done. ACK suppressed, assuming delivery success.\n",
+					SimTime(), node_params.node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
+				RestartNode(FALSE);
 			} else {
 				// Normal / Co-TDMA: wait for ACK directly
 				time_to_trigger = SimTime() + SIFS + TIME_OUT_EXTRA_TIME;
@@ -1210,6 +1540,58 @@ void Node :: MyTxFinished(trigger_t &){
 			break;
 		}
 
+		case STATE_TX_NPCA_ICF:{
+			Notification _npca_icf_fin = GenerateNotification(PACKET_TYPE_NPCA_ICF, current_destination_id,
+				icf_notification.packet_id, limited_num_packets_aggregated, SimTime(), TX_DURATION_NONE);
+			outportSelfFinishTX(_npca_icf_fin);
+			time_to_trigger = SimTime() + SIFS
+				+ (double)NPCA_SWITCH_TIME_US * MICRO_VALUE
+				+ (double)NPCA_ICR_DURATION_US * MICRO_VALUE;
+			trigger_npca_icr_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
+			node_state = STATE_RX_NPCA_ICR;
+			break;
+		}
+
+		case STATE_TX_DATA_NPCA:{
+			Notification _npca_data_fin = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
+				data_notification.packet_id, data_notification.tx_info.num_packets_aggregated,
+				data_notification.timestamp_generated, TX_DURATION_NONE);
+			_npca_data_fin.tx_info.ack_required = data_notification.tx_info.ack_required;
+			outportSelfFinishTX(_npca_data_fin);
+			time_to_trigger = SimTime() + SIFS + TIME_OUT_EXTRA_TIME;
+			trigger_ACK_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
+			node_state = STATE_WAIT_ACK_NPCA;
+			break;
+		}
+
+		case STATE_TX_DSO_ICF:{
+			Notification _dso_icf_fin = GenerateNotification(PACKET_TYPE_DSO_ICF, current_destination_id,
+				icf_notification.packet_id, limited_num_packets_aggregated, SimTime(), TX_DURATION_NONE);
+			_dso_icf_fin.tx_info.dso_tx           = 1;
+			_dso_icf_fin.tx_info.dso_subband_left  = dso_channels_for_tx[0];
+			_dso_icf_fin.tx_info.dso_subband_right = dso_channels_for_tx[1];
+			outportSelfFinishTX(_dso_icf_fin);
+			time_to_trigger = SimTime() + SIFS
+				+ (double)DSO_SWITCH_TIME_US * MICRO_VALUE
+				+ (double)DSO_ICR_DURATION_US * MICRO_VALUE;
+			trigger_dso_icr_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
+			node_state = STATE_RX_DSO_ICR;
+			break;
+		}
+
+		case STATE_TX_DATA_DSO:{
+			Notification _dso_data_fin = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
+				data_notification.packet_id, data_notification.tx_info.num_packets_aggregated,
+				data_notification.timestamp_generated, TX_DURATION_NONE);
+			_dso_data_fin.tx_info.dso_tx = 1;
+			_dso_data_fin.tx_info.ack_required = data_notification.tx_info.ack_required;
+			outportSelfFinishTX(_dso_data_fin);
+			time_to_trigger = SimTime() + SIFS + TIME_OUT_EXTRA_TIME;
+			trigger_ACK_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
+			node_state = STATE_WAIT_ACK_DSO;
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -1219,6 +1601,163 @@ void Node :: MyTxFinished(trigger_t &){
 
 	// LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s  MyTxFinished()\n", SimTime(), node_params.node_id, node_state, LOG_G01, LOG_LVL1);
 };
+
+/**
+ * DsoIcrTimeout: fires after DSO ICF + STA switch time + ICR duration.
+ * AP switches channel range to the DSO secondary subband and sends DATA.
+ */
+void Node :: DsoIcrTimeout(trigger_t &){
+
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s DsoIcrTimeout: switching to DSO subband [%d,%d]\n",
+		SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL1,
+		dso_channels_for_tx[0], dso_channels_for_tx[1]);
+
+	// Switch channel range to DSO secondary subband (dso_channels_for_tx[0..1] = {left,right})
+	{
+		int _dl = dso_channels_for_tx[0];
+		int _dr = dso_channels_for_tx[1];
+		for (int _c = 0; _c < NUM_CHANNELS_KOMONDOR; ++_c)
+			channels_for_tx[_c] = (_c >= _dl && _c <= _dr) ? TRUE : FALSE;
+		current_left_channel  = _dl;
+		current_right_channel = _dr;
+	}
+
+	node_state = STATE_TX_DATA_DSO;
+	PrepareNewTransmission();
+}
+
+/**
+ * CheckAndArmNpcaSwitch: freeze primary backoff and arm switch to NPCA channel.
+ */
+void Node :: CheckAndArmNpcaSwitch() {
+	if (trigger_npca_switch.Active()) return;
+	if (trigger_end_backoff.Active())
+		npca_stored_backoff_counter = (int)(ComputeRemainingBackoff(
+			node_params.backoff_type, trigger_end_backoff.GetTime() - SimTime()) / SLOT_TIME + 0.5);
+	else
+		npca_stored_backoff_counter = (ca_state.remaining_backoff > 0)
+			? (int)(ca_state.remaining_backoff / SLOT_TIME + 0.5) : 0;
+	npca_stored_cw = ca_state.current_cw_max;
+	npca_stored_primary_channel = node_params.current_primary_channel;
+	trigger_end_backoff.Cancel();
+	trigger_start_backoff.Cancel();
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s NPCA: arming switch to ch%d (stored BO=%d)\n",
+		SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL1,
+		npca_primary_channel, npca_stored_backoff_counter);
+	time_to_trigger = SimTime() + (double)npca_switching_delay_us * MICRO_VALUE;
+	trigger_npca_switch.Set(FixTimeOffset(time_to_trigger, 13, 12));
+}
+
+/**
+ * NpcaSwitchComplete: radio tuned to NPCA channel. Start NPCA_TIMER and draw backoff.
+ */
+void Node :: NpcaSwitchComplete(trigger_t &) {
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s NPCA: on ch%d; starting NPCA_TIMER\n",
+		SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL1, npca_primary_channel);
+	npca_on_npca_channel = 1;
+	int _nl = -1, _nr = -1;
+	if (!GetTxChannelsNPCA(&_nl, &_nr, npca_primary_channel,
+			node_params.current_primary_channel,
+			node_params.min_channel_allowed, node_params.max_channel_allowed,
+			&channel_power, current_pd)) {
+		npca_on_npca_channel = 0;
+		ca_state.remaining_backoff = (double)npca_stored_backoff_counter * SLOT_TIME;
+		ca_state.current_cw_max    = npca_stored_cw;
+		time_to_trigger = SimTime() + DIFS;
+		trigger_start_backoff.Set(FixTimeOffset(time_to_trigger, 13, 12));
+		return;
+	}
+	for (int _c = 0; _c < NUM_CHANNELS_KOMONDOR; ++_c)
+		npca_channels_for_tx[_c] = (_c >= _nl && _c <= _nr) ? TRUE : FALSE;
+	// Update effective primary channel so IsPacketLost passes for NPCA frames
+	node_params.current_primary_channel = npca_primary_channel;
+	time_to_trigger = SimTime() + npca_timer_duration;
+	trigger_npca_timer.Set(FixTimeOffset(time_to_trigger, 13, 12));
+	{
+		int _cw_base = (1 << npca_init_qsrc) * (GetAcCwMin(current_traffic_type) + 1) - 1;
+		npca_cw = _cw_base;
+		int _bo = (int)(((double)rand() / (double)RAND_MAX) * (double)_cw_base);
+		time_to_trigger = SimTime() + (double)_bo * SLOT_TIME;
+		if (time_to_trigger <= SimTime()) time_to_trigger = SimTime() + SLOT_TIME;
+		trigger_npca_backoff.Set(FixTimeOffset(time_to_trigger, 13, 12));
+	}
+}
+
+/**
+ * EndNpcaBackoff: NPCA EDCA backoff expired. Check channels and start ICF.
+ */
+void Node :: EndNpcaBackoff(trigger_t &) {
+	if (!npca_on_npca_channel) return;
+	if (node_params.node_type != NODE_TYPE_AP) return;
+	int _nl = -1, _nr = -1;
+	if (!GetTxChannelsNPCA(&_nl, &_nr, npca_primary_channel,
+			npca_stored_primary_channel,
+			node_params.min_channel_allowed, node_params.max_channel_allowed,
+			&channel_power, current_pd)) {
+		int _bo = (int)(((double)rand() / (double)RAND_MAX) * (double)npca_cw);
+		if (_bo < 1) _bo = 1;
+		time_to_trigger = SimTime() + (double)_bo * SLOT_TIME;
+		trigger_npca_backoff.Set(FixTimeOffset(time_to_trigger, 13, 12));
+		return;
+	}
+	for (int _c = 0; _c < NUM_CHANNELS_KOMONDOR; ++_c)
+		npca_channels_for_tx[_c] = (_c >= _nl && _c <= _nr) ? TRUE : FALSE;
+	current_left_channel  = _nl;
+	current_right_channel = _nr;
+	for (int _c = 0; _c < NUM_CHANNELS_KOMONDOR; ++_c)
+		channels_for_tx[_c] = npca_channels_for_tx[_c];
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s NPCA: backoff done; ICF on [%d,%d]\n",
+		SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL1, _nl, _nr);
+	node_state = STATE_TX_NPCA_ICF;
+	exchange_sequence = IEEE_802_11_NPCA;
+	if (wlan.num_stas > 0)
+		current_destination_id = wlan.list_sta_id[dso_rr_idx % wlan.num_stas];
+	ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
+		current_right_channel - current_left_channel + 1, current_modulation,
+		limited_num_packets_aggregated, node_params.frame_length, bits_ofdm_sym);
+	PrepareNewTransmission();
+}
+
+/**
+ * NpcaIcrTimeout: ICR wait done. Send DATA on NPCA channels.
+ */
+void Node :: NpcaIcrTimeout(trigger_t &) {
+	if (!npca_on_npca_channel) return;
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s NPCA: ICR timeout; DATA on [%d,%d]\n",
+		SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL1,
+		current_left_channel, current_right_channel);
+	node_state = STATE_TX_DATA_NPCA;
+	PrepareNewTransmission();
+}
+
+/**
+ * NpcaSwitchBack: NPCA_TIMER expired. Restore BSS primary backoff.
+ */
+void Node :: NpcaSwitchBack(trigger_t &) {
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s NPCA: TIMER expired; returning to BSS primary\n",
+		SimTime(), node_params.node_id, node_state, LOG_F00, LOG_LVL1);
+	trigger_npca_switch.Cancel();
+	trigger_npca_icr_timeout.Cancel();
+	trigger_npca_backoff.Cancel();
+	npca_on_npca_channel = 0;
+	node_params.current_primary_channel = npca_stored_primary_channel;
+	current_left_channel  = node_params.min_channel_allowed;
+	current_right_channel = node_params.max_channel_allowed;
+	for (int _c = 0; _c < NUM_CHANNELS_KOMONDOR; ++_c)
+		channels_for_tx[_c] = FALSE;
+	channels_for_tx[node_params.current_primary_channel] = TRUE;
+	ca_state.remaining_backoff = (double)npca_stored_backoff_counter * SLOT_TIME;
+	ca_state.current_cw_max    = npca_stored_cw;
+	node_state = STATE_SENSING;
+	time_to_trigger = SimTime() + (double)npca_switch_back_delay_us * MICRO_VALUE + DIFS;
+	trigger_start_backoff.Set(FixTimeOffset(time_to_trigger, 13, 12));
+}
 
 /**
  * HandleFinishTX_StateRxIcf: coordinated AP responds with ICR after receiving ICF

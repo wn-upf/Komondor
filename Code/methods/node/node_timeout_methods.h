@@ -40,6 +40,15 @@ void Node :: AckTimeout(trigger_t &){
 		node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
 		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
 
+	// Update EWMA: ACK timed out — link quality drop for this destination
+	if (current_destination_id >= 0
+			&& current_destination_id < node_params.total_nodes_number) {
+		ack_success_ewma[current_destination_id] =
+			(1.0 - ACK_SUPPRESS_EWMA_ALPHA) * ack_success_ewma[current_destination_id]
+			+ ACK_SUPPRESS_EWMA_ALPHA * 0.0;
+		++ack_exchange_count[current_destination_id];
+	}
+
 	// Update performance_report measurements (performance_report is not passed to HandlePacketLoss)
 	performance_report.total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 	for(int c = current_left_channel; c <= current_right_channel; ++c){

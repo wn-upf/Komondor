@@ -59,18 +59,12 @@ void Node :: HandleStartTX_StateSensing(const Notification &notification) {
 		// - So, if RTS/CTS: max_pw_interference is now referred just to primary channel interference
 		// - Keep max_pw_interference for all range if DATA or ACK.
 
-		if(notification.packet_type == PACKET_TYPE_RTS) {
-
-			// max_pw_interference is interference in primary
-			max_pw_interference = channel_power[node_params.current_primary_channel]
-				- power_received_per_node[notification.source_id];
-
-		} else {
-
-			// Compute max interference (the highest one perceived in the reception channel range)
-			ComputeMaxInterference(&max_pw_interference, &channel_max_interference,
-				notification, node_state, power_received_per_node, &channel_power);
-		}
+		// Compute interference from all active transmitters except the intended source.
+		// Both RTS and DATA use the same sum-of-power_received_per_node approach so
+		// that beamforming-corrected powers are used consistently for SINR, while
+		// channel_power (raw) is preserved for CCA/NAV.
+		ComputeMaxInterference(&max_pw_interference, &channel_max_interference,
+			notification, node_state, power_received_per_node, &channel_power);
 
 		LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s P[%d] = %f dBm - P_st = %.2f dBm - P_if = %.2f dBm - P_noise = %.2f dBm\n",
@@ -197,6 +191,17 @@ void Node :: HandleStartTX_StateSensing(const Notification &notification) {
 
 			}
 
+		} else if (notification.packet_type == PACKET_TYPE_DSO_ICF) {
+			if (node_is_transmitter) PauseBackoff();
+			// DSO ICF to this STA: DATA will follow on secondary subband. Stay in SENSING.
+		} else if (notification.packet_type == PACKET_TYPE_NPCA_ICF) {
+			if (node_is_transmitter) PauseBackoff();
+			// STA: update primary channel so DATA on NPCA subband can be received
+			if (!node_is_transmitter && npca_enabled && npca_primary_channel >= 0) {
+				npca_stored_primary_channel = node_params.current_primary_channel;
+				node_params.current_primary_channel = npca_primary_channel;
+				npca_sta_on_npca_channel = 1;
+			}
 		} else {	//	Notification does NOT CONTAIN an RTS or DATA
 			LOGS(node_params.save_node_logs,node_logger.file,
 					"%.15f;N%d;S%d;%s;%s Unexpected packet type (%d) received!\n",
@@ -256,7 +261,9 @@ void Node :: HandleStartTX_StateSensing(const Notification &notification) {
 			|| notification.packet_type == PACKET_TYPE_ICF
 			|| notification.packet_type == PACKET_TYPE_ICR
 			|| notification.packet_type == PACKET_TYPE_TF
-			|| notification.packet_type == PACKET_TYPE_MU_RTS_TXS) {
+			|| notification.packet_type == PACKET_TYPE_MU_RTS_TXS
+			|| notification.packet_type == PACKET_TYPE_DSO_ICF
+			|| notification.packet_type == PACKET_TYPE_NPCA_ICF) {
 
 			LOGS(node_params.save_node_logs,node_logger.file,
 				"%.15f;N%d;S%d;%s;%s I am not the TX destination (N%d to N%d). Checking if Frame can be decoded.\n",
@@ -288,6 +295,18 @@ void Node :: HandleStartTX_StateSensing(const Notification &notification) {
 
 				// Save NAV notification for comparing timestamps in case of need
 				nav_notification = notification;
+
+				// NPCA trigger (SS37.18.3 cond 1): inter-BSS PPDU on BSS primary channel
+				if (npca_enabled && !npca_on_npca_channel
+						&& node_params.bss_color >= 0
+						&& notification.tx_info.bss_color >= 0
+						&& notification.tx_info.bss_color != node_params.bss_color
+						&& notification.left_channel <= node_params.current_primary_channel
+						&& notification.right_channel >= node_params.current_primary_channel) {
+					double _rem_us = notification.tx_duration / MICRO_VALUE;
+					if (_rem_us > (double)npca_min_dur_threshold_us)
+						CheckAndArmNpcaSwitch();
+				}
 
 				int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
 					node_params.current_primary_channel, current_pd, buffer.QueueSize()));
@@ -426,11 +445,37 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 		// before coordinator, causing this STA to enter NAV from the peer's frame first).
 		if(notification.packet_type == PACKET_TYPE_DATA) {
 
-			UpdateSINRFromNotification(notification);
+			// Fix 1: BF-aware interference — when the sender has beamforming active,
+			// derive interference from the per-node BF-corrected powers so that
+			// nulled directions do not inflate the interference estimate.
+			// (channel_power uses raw path loss with no BF gain applied.)
+			if (notification.tx_info.beamforming_active) {
+				power_rx_interest = power_received_per_node[notification.source_id];
+				max_pw_interference = 0;
+				for (std::map<int,double>::iterator _it = power_received_per_node.begin();
+						_it != power_received_per_node.end(); ++_it) {
+					if (_it->first != notification.source_id)
+						max_pw_interference += _it->second;
+				}
+				current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
+			} else {
+				UpdateSINRFromNotification(notification);
+			}
 
-			loss_reason = IsPacketLost(node_params.current_primary_channel, notification, notification,
-				current_sinr, node_params.capture_effect, current_pd,
-				power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
+			// Fix 2: for Co-BF, the STA's NAV was set by the coordination handshake
+			// (ICF/TF), not a genuine collision.  Bypass the packet-lost gate and let
+			// the reception complete; HandleFinishTX_StateRxData determines outcome.
+			{
+				int _cobf_g = wlan.mapc_enabled
+					? wlan.FindMapcGroupIdx(notification.mapc_group_id) : -1;
+				if (_cobf_g >= 0 && wlan.mapc_method_ids[_cobf_g] == CO_BF) {
+					loss_reason = PACKET_NOT_LOST;
+				} else {
+					loss_reason = IsPacketLost(node_params.current_primary_channel, notification, notification,
+						current_sinr, node_params.capture_effect, current_pd,
+						power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
+				}
+			}
 
 			if(loss_reason != PACKET_NOT_LOST) {
 
@@ -914,9 +959,21 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 //						"%.15f;N%d;S%d;%s;%s I am NOT the TX destination (N%d)\n",
 //						SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL3, notification.destination_id);
 
-		// Compute max interference (the highest one perceived in the reception channel range)
-		ComputeMaxInterference(&max_pw_interference, &channel_max_interference,
-			incoming_notification, node_state, power_received_per_node, &channel_power);
+		// Fix 1: BF-aware interference — when the arriving notification has beamforming
+		// active, derive interference from per-node BF-corrected powers so that
+		// nulled directions do not inflate the interference estimate.
+		if (notification.tx_info.beamforming_active) {
+			max_pw_interference = 0;
+			for (std::map<int,double>::iterator _it = power_received_per_node.begin();
+					_it != power_received_per_node.end(); ++_it) {
+				if (_it->first != incoming_notification.source_id)
+					max_pw_interference += _it->second;
+			}
+		} else {
+			// Compute max interference (the highest one perceived in the reception channel range)
+			ComputeMaxInterference(&max_pw_interference, &channel_max_interference,
+				incoming_notification, node_state, power_received_per_node, &channel_power);
+		}
 
 		// Check if the ongoing reception is affected
 		current_sinr = UpdateSINR(power_rx_interest, max_pw_interference);
@@ -929,15 +986,26 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 			ConvertPower(PW_TO_DBM, max_pw_interference),
 			ConvertPower(LINEAR_TO_DB, current_sinr));
 
-		// Check if the notification that was already being received is lost due to new notification
-		if (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified) {
-			loss_reason = IsPacketLost(node_params.current_primary_channel, incoming_notification, notification,
-				current_sinr, node_params.capture_effect, sr_state.current_obss_pd_threshold,
-				power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
-		} else {
-			loss_reason = IsPacketLost(node_params.current_primary_channel, incoming_notification, notification,
-				current_sinr, node_params.capture_effect, current_pd,
-				power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
+		// Fix 2: for Co-BF, the peer AP's simultaneous DATA is expected to be nulled
+		// toward this node; bypass the collision check so the reception continues.
+		{
+			int _cobf_g = wlan.mapc_enabled
+				? wlan.FindMapcGroupIdx(notification.mapc_group_id) : -1;
+			int _ongoing_g = wlan.mapc_enabled
+				? wlan.FindMapcGroupIdx(incoming_notification.mapc_group_id) : -1;
+			if (_cobf_g >= 0 && _cobf_g == _ongoing_g
+					&& wlan.mapc_method_ids[_cobf_g] == CO_BF) {
+				loss_reason = PACKET_NOT_LOST;
+			// Check if the notification that was already being received is lost due to new notification
+			} else if (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified) {
+				loss_reason = IsPacketLost(node_params.current_primary_channel, incoming_notification, notification,
+					current_sinr, node_params.capture_effect, sr_state.current_obss_pd_threshold,
+					power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
+			} else {
+				loss_reason = IsPacketLost(node_params.current_primary_channel, incoming_notification, notification,
+					current_sinr, node_params.capture_effect, current_pd,
+					power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
+			}
 		}
 
 		// TODO: method for checking whether the detected transmission can be decoded or not
@@ -1379,7 +1447,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				notification.tx_info.tx_power, node_params.central_frequency, node_params.path_loss_model);
 		}
 
-		// Update the power sensed at each channel
+		// Update the power sensed at each channel (raw path-loss power, used for CCA/NAV).
+		// Beamforming correction is NOT applied here: channel_power must reflect the
+		// omnidirectional energy on the medium so that carrier-sense works correctly.
 		UpdateChannelsPower(&channel_power, notification, TX_INITIATED,
 			node_params.central_frequency, node_params.path_loss_model, node_params.adjacent_channel_model, received_power_array[notification.source_id], node_params.node_id);
 
@@ -1410,7 +1480,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			}
 			/* ---------- */
 			case STATE_TX_DATA:
-			case STATE_TX_ACK:{
+			case STATE_TX_ACK:
+			case STATE_TX_DATA_DSO:
+			case STATE_TX_DATA_NPCA:{
 				HandleStartTX_StateTxData(notification);
 				break;
 			}
@@ -1421,7 +1493,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				break;
 			}
 			/* ---------- */
-			case STATE_WAIT_ACK:{
+			case STATE_WAIT_ACK:
+			case STATE_WAIT_ACK_DSO:
+			case STATE_WAIT_ACK_NPCA:{
 				HandleStartTX_StateWaitAck(notification);
 				break;
 			}
@@ -1462,7 +1536,9 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			case STATE_TX_ICF:
 			case STATE_TX_ICR:
 			case STATE_TX_TF:
-			case STATE_TX_ACK_TF:{
+			case STATE_TX_ACK_TF:
+			case STATE_TX_DSO_ICF:
+			case STATE_TX_NPCA_ICF:{
 				HandleStartTX_StateTxData(notification);
 				break;
 			}
@@ -1470,6 +1546,8 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			/* MAPC reception states: treat as RX interference */
 			case STATE_RX_ICF:
 			case STATE_RX_ICR:
+			case STATE_RX_DSO_ICR:
+			case STATE_RX_NPCA_ICR:
 			case STATE_RX_MU_RTS:
 			case STATE_RX_TF:{
 				HandleStartTX_StateRxData(notification);
@@ -1522,6 +1600,13 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
  */
 void Node :: HandleFinishTX_StateSensing(const Notification &notification){
 
+	// NPCA STA: DATA phase ended while still in SENSING (DATA was lost); restore primary channel
+	if (npca_sta_on_npca_channel && notification.packet_type == PACKET_TYPE_DATA
+			&& notification.source_id == wlan.ap_id) {
+		node_params.current_primary_channel = npca_stored_primary_channel;
+		npca_sta_on_npca_channel = 0;
+	}
+
 	if(node_is_transmitter) {
 		if(!trigger_start_backoff.Active()
 			&& !trigger_end_backoff.Active()){	// BO was paused and DIFS not initiated
@@ -1571,6 +1656,17 @@ void Node :: HandleFinishTX_StateRxData(const Notification &notification){
 				"%.15f;N%d;S%d;%s;%s Packet #%d reception from N%d is finished successfully.\n",
 				SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3, notification.packet_id,
 				notification.source_id);
+
+			// ACK suppression: transmitter flagged ack_required=0 — skip ACK, return to sensing
+			if (notification.tx_info.ack_required == 0) {
+				LOGS(node_params.save_node_logs, node_logger.file,
+					"%.15f;N%d;S%d;%s;%s ACK suppressed by TX for DATA #%d from N%d. Returning to sensing.\n",
+					SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3,
+					notification.packet_id, notification.source_id);
+				current_tx_duration = 0;	// receiver sent nothing; don't charge TX time in RestartNode
+				RestartNode(FALSE);
+				return;
+			}
 
 			// Build ACK notification (sent immediately for normal case, or after ACK TF for Co-BF/Co-SR)
 			// NAV must be computed *before* GenerateNotification so that sensing nodes receiving
@@ -1730,7 +1826,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		PrintOrWriteChannelPower(WRITE_LOG, node_params.save_node_logs, node_params.print_node_logs, node_logger,
 					&channel_power);
 
-		// Update the power sensed at each channel
+		// Update the power sensed at each channel (raw power, matching TX_INITIATED).
 		UpdateChannelsPower(&channel_power, notification, TX_FINISHED,
 			node_params.central_frequency, node_params.path_loss_model, node_params.adjacent_channel_model, received_power_array[notification.source_id], node_params.node_id);
 
@@ -1823,6 +1919,15 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						// Mark the previous transmission as successful
 						last_transmission_successful = 1;
+
+						// Update EWMA: ACK received — reliability is confirmed for this destination
+						if (current_destination_id >= 0
+								&& current_destination_id < node_params.total_nodes_number) {
+							ack_success_ewma[current_destination_id] =
+								(1.0 - ACK_SUPPRESS_EWMA_ALPHA) * ack_success_ewma[current_destination_id]
+								+ ACK_SUPPRESS_EWMA_ALPHA * 1.0;
+							++ack_exchange_count[current_destination_id];
+						}
 
 						// Whole data packet ACKed
 						++node_stats.data_packets_acked;
@@ -1948,6 +2053,10 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			case STATE_TX_DATA:
 			case STATE_TX_ACK:
 			case STATE_WAIT_ACK:
+			case STATE_TX_DATA_DSO:
+			case STATE_WAIT_ACK_DSO:
+			case STATE_TX_DATA_NPCA:
+			case STATE_WAIT_ACK_NPCA:
 			case STATE_TX_RTS:
 			case STATE_TX_CTS:
 			case STATE_WAIT_CTS:
@@ -2206,14 +2315,18 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 				break;
 			}
 
-			/* MAPC TX / wait states: do nothing when another node finishes TX */
+			/* MAPC TX / wait states + DSO TX/wait states: do nothing when another node finishes TX */
 			case STATE_TX_ICF:
 			case STATE_TX_ICR:
 			case STATE_TX_TF:
 			case STATE_TX_ACK_TF:
 			case STATE_WAIT_ICR:
 			case STATE_WAIT_MU_RTS:
-			case STATE_WAIT_TF:{
+			case STATE_WAIT_TF:
+			case STATE_TX_DSO_ICF:
+			case STATE_RX_DSO_ICR:
+			case STATE_TX_NPCA_ICF:
+			case STATE_RX_NPCA_ICR:{
 				HandleFinishTX_StateTxData(notification);
 				break;
 			}
