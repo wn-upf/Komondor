@@ -40,8 +40,8 @@ The project is structured as follows:
 | Multi-AP Coordination (MAPC) | 802.11bn | Co-TDMA, Co-SR (power adaptation), Co-BF (Zero-Forcing beamforming); up to 8 groups per WLAN |
 | Per-TXOP ULA Beamforming | 802.11ax/bn | Uniform Linear Array null-steering; ZF precoding for Co-BF, Gram-Schmidt projection for standalone BF |
 | Full EDCA | 802.11e/ax | Per-AC AIFSN, contention-window bounds, binary exponential backoff, TXOP limits |
-| Dynamic Subband Operation (DSO) | 802.11bn §37.26 | Post-backoff redirect of DATA to a secondary subband via ICF/ICR exchange |
-| Non-Primary Channel Access (NPCA) | 802.11bn §37.18 | Opportunistic secondary-subband access while the primary channel is busy |
+| Dynamic Subband Operation (DSO) | 802.11bn | Post-backoff redirect of DATA to a secondary subband via ICF/ICR exchange |
+| Non-Primary Channel Access (NPCA) | 802.11bn | Opportunistic secondary-subband access while the primary channel is busy |
 | Per-STA Bandwidth Adaptation | 802.11ax | AP caps TX channel range to each STA's declared capabilities |
 | Machine Learning | — | Multi-Armed Bandits, and external Python model via Unix socket |
 
