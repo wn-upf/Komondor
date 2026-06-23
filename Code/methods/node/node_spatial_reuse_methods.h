@@ -196,6 +196,11 @@ void Node :: DetectSRTXOPInNavState(const Notification &notification, int loss_r
 	if (loss_reason_sr != PACKET_NOT_LOST && power_condition_sr) {
 		sr_state.txop_sr_identified = TRUE;	// TXOP identified!
 		sr_state.next_pd_spatial_reuse = sr_state.potential_obss_pd_threshold;	// Update the pd
+		if (sr_state.spatial_reuse_enabled) {
+			sr_state.next_tx_power_limit = ApplyTxPowerRestriction(sr_state.potential_obss_pd_threshold, current_tx_power);
+			time_to_trigger = SimTime() + notification.tx_info.nav_time;
+			txop_sr_end.Set(FixTimeOffset(time_to_trigger,13,12));
+		}
 		LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s TXOP detected while being in NAV state\n",
 			SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL3);
@@ -325,6 +330,7 @@ void Node :: CheckSRTXOPAtCallSensing() {
 		if (loss_reason_sr != PACKET_NOT_LOST && node_is_transmitter) {
 			sr_state.txop_sr_identified = TRUE;	// TXOP identified!
 			sr_state.current_obss_pd_threshold = sr_state.potential_obss_pd_threshold;	// Update the pd
+			sr_state.next_tx_power_limit = ApplyTxPowerRestriction(sr_state.current_obss_pd_threshold, current_tx_power);
 			if(node_params.save_node_logs) fprintf(node_logger.file,
 				"%.15f;N%d;S%d;%s;%s TXOP detected for OBSS_PD = %f dBm (in CallSensing())\n",
 				SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL3, ConvertPower(PW_TO_DBM, sr_state.current_obss_pd_threshold));

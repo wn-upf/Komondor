@@ -80,7 +80,7 @@ void HandlePacketLoss(int type, double *total_time_lost_in_num_channels, double 
 		for(int c = current_left_channel; c <= current_right_channel; c++){
 			total_time_lost_per_channel[c] += current_tx_duration;
 		}
-		total_time_lost_in_num_channels[current_right_channel - current_left_channel] += current_tx_duration;
+		total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
 		++packets_lost;
 		++(*packets_lost_per_sta)[destination_id-node_id-1];
 	} else if(type == PACKET_TYPE_CTS){

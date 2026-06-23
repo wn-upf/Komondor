@@ -374,6 +374,11 @@ component Node : public TypeII{
 		int dso_channels_for_tx[NUM_CHANNELS_KOMONDOR]; ///> Secondary subband selected by GetTxChannelsByDSO
 		int dso_tx_flag;				///> 1 = valid DSO subband found
 		int dso_rr_idx;					///> Round-robin index over wlan.list_sta_id[] for DSO STA selection
+		int    dso_dual_tx;				///> 1 = dual-subband DSO: primary-subband companion STA found
+		int    dso_primary_dest_id;		///> Destination STA for primary-subband DSO DATA
+		Notification dso_prim_data_notif; ///> DATA notification for primary-subband STA
+		int    dso_prim_data_left;		///> Left channel of primary STA's subband
+		int    dso_prim_data_right;		///> Right channel of primary STA's subband
 
 		// NPCA (Non-Primary Channel Access)
 		int    npca_enabled;
@@ -845,6 +850,10 @@ void Node :: InitializeVariables() {
 	dso_tx_flag  = 0;
 	dso_rr_idx   = 0;
 	for (int _c = 0; _c < NUM_CHANNELS_KOMONDOR; ++_c) dso_channels_for_tx[_c] = FALSE;
+	dso_dual_tx = 0;
+	dso_primary_dest_id = NODE_ID_NONE;
+	dso_prim_data_left  = -1;
+	dso_prim_data_right = -1;
 
 	// NPCA
 	npca_enabled              = node_params.npca_enabled;

@@ -181,6 +181,10 @@ void Node :: NavTimeout(trigger_t &){
 
 	if(node_is_transmitter){
 
+		// NPCA TX is self-contained; NAV from concurrent BSS traffic must not interrupt it
+		if (node_state == STATE_TX_DATA_NPCA || node_state == STATE_WAIT_ACK_NPCA
+				|| node_state == STATE_TX_NPCA_ICF || node_state == STATE_RX_NPCA_ICR) return;
+
 		// Apply new configuration (if it is the case)
 		if (flag_apply_new_configuration) {
 			ApplyNewConfiguration(new_configuration);

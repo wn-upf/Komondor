@@ -132,6 +132,11 @@ void Node :: PrintNodeInfo(int info_detail_level){
 		printf("%s node_params.non_srg_obss_pd = %f dBm\n", LOG_LVL5, ConvertPower(PW_TO_DBM,node_params.non_srg_obss_pd));
 		printf("%s node_params.srg_obss_pd = %f dBm\n", LOG_LVL5, ConvertPower(PW_TO_DBM,node_params.srg_obss_pd));
 	}
+	printf("%s dso_enabled = %d\n", LOG_LVL4, node_params.dso_enabled);
+	printf("%s npca_enabled = %d", LOG_LVL4, node_params.npca_enabled);
+	if(node_params.npca_enabled)
+		printf(" (npca_primary_channel = %d)", node_params.npca_primary_channel);
+	printf("\n");
 	if(info_detail_level > INFO_DETAIL_LEVEL_0 && node_params.node_type == NODE_TYPE_AP){
 		printf("%s wlan:\n", LOG_LVL4);
 		printf("%s wlan code = %s\n", LOG_LVL5, wlan.wlan_code.c_str());

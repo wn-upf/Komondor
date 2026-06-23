@@ -793,6 +793,11 @@ void Agent :: PrintOrWriteAgentStatistics() {
 	if (print_agent_logs) printf("\n------- Agent A%d ------\n", agent_id);
 	learning_algorithm.PrintOrWriteStatistics(PRINT_LOG, agent_logger, SimTime());
 //	ml_model.PrintOrWriteStatistics(WRITE_LOG, agent_logger, SimTime());
+	if (learning_mechanism == LEARNING_MECHANISM_EXTERNAL) {
+		printf("%s Cumulative reward per arm: ", LOG_LVL3);
+		for (int i = 0; i < num_arms; ++i) printf("%f  ", actions[i].cumulative_reward);
+		printf("\n%s Times each arm has been selected: ", LOG_LVL3);
+		for (int i = 0; i < num_arms; ++i) printf("%d  ", actions[i].times_played);
+		printf("\n");
+	}
 }
-
-

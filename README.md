@@ -2,13 +2,14 @@
 <img src="https://github.com/wn-upf/Komondor/blob/dev/Documentation/Other/Images%20and%20resources/kom8ndor_logo.png">
 </p>
 
-# Komondor: An IEEE 802.11ax Simulator
+# Komondor: An IEEE 802.11bn-Oriented Simulator
 | Agent-related content available [here](https://github.com/wn-upf/Komondor/blob/master/README_agents.md). |
 | ----- |
 
 ## Table of Contents
 - [Authors](#authors)
 - [Introduction](#introduction)
+- [Features](#features)
 - [Overview](#overview)
 - [Usage](#usage)
 - [Validation](#validation)
@@ -16,14 +17,12 @@
 - [Acknowledgements](#acknowledgements)
 
 ## Authors
-* [Sergio Barrachina-Muñoz](https://github.com/sergiobarra)
 * [Francesc Wilhelmi](https://github.com/fwilhelmi)
-
-Both authors have the same contribution to this project.
+* [Sergio Barrachina-Muñoz](https://github.com/sergiobarra)
 
 ## Introduction
 
-Komondor is a wireless network simulator that includes novel mechanisms for next-generation WLANs, such as dynamic channel bonding or enhanced spatial reuse. One of the main purposes of Komondor is to simulate the behavior of IEEE 802.11ax-2019 networks, an amendment designed to boost spectral efficiency in dense deployments.
+Komondor is an event-driven wireless network simulator for IEEE 802.11bn (Wi-Fi 8) and beyond WLANs. It covers mechanisms ranging from dynamic channel bonding and spatial reuse to Multi-AP coordination (MAPC), and machine learning-driven channel access, making it suitable for both protocol research and AI/ML benchmarking.
 		
 Komondor has been conceived as an open source tool that contributes to the ongoing research in wireless networks, especially regarding the implementation of novel functionalities that are not available in other well-known wireless simulators. In addition, it has been prepared for a simple integration with Machine Learning (ML) modules.
 
@@ -32,7 +31,22 @@ The project is structured as follows:
 * ```Code```: contains the core files to compile and run Komondor, including input and output folders. 
 * ```Documentation```: contains Documentation related to Komondor, such as a Manual, a user's guide, presentations, etc.
 
-Doxygen documentation available [here](http://htmlpreview.github.io/?https://github.com/wn-upf/Komondor/blob/master/Documentation/doxy/html/index.html).
+## Features
+
+| Feature | Standard | Notes |
+|---------|----------|-------|
+| Dynamic Channel Bonding (DCB) | 802.11ac/ax | Log2-aligned aggregation; CB models 0-7 including preamble puncturing (model 6) and DSO (model 7) |
+| Enhanced Spatial Reuse (SR) | 802.11ax | BSS-color-based OBSS/PD threshold adaptation; SRG and non-SRG variants |
+| Multi-AP Coordination (MAPC) | 802.11bn | Co-TDMA, Co-SR (power adaptation), Co-BF (Zero-Forcing beamforming); up to 8 groups per WLAN |
+| Per-TXOP ULA Beamforming | 802.11ax/bn | Uniform Linear Array null-steering; ZF precoding for Co-BF, Gram-Schmidt projection for standalone BF |
+| Full EDCA | 802.11e/ax | Per-AC AIFSN, contention-window bounds, binary exponential backoff, TXOP limits |
+| Dynamic Subband Operation (DSO) | 802.11bn §37.26 | Post-backoff redirect of DATA to a secondary subband via ICF/ICR exchange |
+| Non-Primary Channel Access (NPCA) | 802.11bn §37.18 | Opportunistic secondary-subband access while the primary channel is busy |
+| Per-STA Bandwidth Adaptation | 802.11ax | AP caps TX channel range to each STA's declared capabilities |
+| Machine Learning | — | Multi-Armed Bandits, and external Python model via Unix socket |
+
+For a detailed feature changelog and configuration reference, see [release_notes.md](release_notes.md).
+For ML architecture and external model integration, see [AIML.md](AIML.md).
 
 ## Overview
 
@@ -40,8 +54,8 @@ The code to run simulations is organized as follows:
 
 * ```COST```: constitutes the Komondor's primitive operation. Here we find the CompC++ library that allows generating discrete event simulations. For further information about COST, please refer to its main [website](http://www.ita.cs.rpi.edu/cost.html). 
 * ```main```: contains the core files (komondor.cc, node.h, traffic_generator.h, agent.h, and central_controller.h) that are in charge of orchestrating all the simulation. "komondor.cc" is the main component, which initializes all the other components of "Type II". All these modules are aware of the existence of the simulation time. In addition to the core components, here we find "build_local", a bash script that compiles the libraries for executing the code. Note that the file "compcxx_komondor_main.h" is also required to carry out such a compilation.
-* ```methods```: by following clean architecture guidelines, independent methods used by core files are contained in the methods folder. Several libraries are provided according to the nature of their functions. For instance, "backoff_methods.h" contains methods to handle the backoff operation in the Distributed Coordination Function (DCF).
-* ```structures```: the Komondor simulator considers several header files to carry out its operation. Among them, we find "wlan.h", which defines the main characteristics of a WLAN (WLAN id, list of associated STAs, etc.). In addition, the "notification.h" structure allows us to define the information to be exchanged between devices. 
+* ```methods```: independent method headers organized into subfolders by concern: `agent/`, `channel/` (bonding, power, beamforming), `mac/` (NACK, packet loss, spatial reuse), `mapc/` (MAPC frame exchanges), `node/` (FSM handlers, backoff, packet, statistics), `utils/` (output, logging, input parsing), and `frames/` (duration, aggregation). The entry aggregator is `methods/node/node_impl.h`.
+* ```structures```: data-only headers shared across modules, including `wlan.h` (WLAN identity and MAPC group membership), `notification.h` (inter-node message format), `node_parameters.h`, `node_statistics.h`, `channel_access_state.h`, `spatial_reuse_state.h`, and `packet_exchange_sequence.h`.
 * ```learning_modules```: here we find the implementation of ML methods that receive feedback about the network's performance in simulation time. 
 * ```list_of_macros.h```: all the static parameters (e.g., constants) are contained in this file.
 * ```input```: contains the input files that allow building the simulation environment.
@@ -55,9 +69,7 @@ An overview of the current modules available in Komondor is shown next:
 
 ## Usage
 
-Detailed installation and execution instructions can be found in the [Komondor User's Guide](https://github.com/wn-upf/Komondor/blob/master/Documentation/User%20guide/LaTeX%20files/komondor_user_guide.pdf).
-
-In short, to run Komondor, just build `komondor_main` and then execute it by following the next steps:
+To run Komondor, just build `komondor_main` and then execute it by following the next steps:
 
 ### STEP 0: Go to ./Code/main and set permissions of the folder
 ```
@@ -66,19 +78,20 @@ $ chmod -R 777 <dirname>
 ```
 
 ### STEP 1: Build Komondor
-#### OPTION a: Build Komondor with pre-built CompC++
+
+#### OPTION a: Build Komondor and CompC++ from scratch using make
+Following instructions require [make](https://www.gnu.org/software/make/manual/make.html).
+
+```
+$ make
+```
+
+#### OPTION b: Build Komondor with pre-built CompC++
 WARNING: Following instructions use a pre-built CompC++. The binary
 `Code/COST/cxx` is platform-dependent and might not work on your machine.
 
 ```
 $ ./build_local
-```
-
-#### OPTION b: Build Komondor and CompC++ from scratch using make
-Following instructions require [make](https://www.gnu.org/software/make/manual/make.html).
-
-```
-$ make
 ```
 
 ### STEP 2: Run Komondor
@@ -119,13 +132,12 @@ Input files are located in the `/Komondor/Code/input` folder.
 
 Types of inputs include:
 * Node configuration: define parameters such as the node ID, the node location, etc.
-    * Example of agents input file: [```input_nodes.csv```](https://github.com/wn-upf/Komondor/blob/master/Code/input/input_example/input_nodes.csv)
+    * Example of nodes input file: [```input_nodes.csv```](Code/input/examples/basic_example/input_nodes.csv)
 * Agent configuration: define parameters used by the agents' operation. Refer to [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
-    * Example of agents input file: [```agents.csv```](https://github.com/wn-upf/Komondor/blob/master/Code/input/input_example/agents.csv)
+    * Example of agents input file: [```agents_egreedy.csv```](Code/input/examples/mab_example/agents_egreedy.csv)
 * MAPC configuration: define the parameters used for which Multi-Access Point Coordination (MAPC) is enabled.
-    * Example of MAPC input file: to be done
+    * Example of MAPC input file: [`mapc_cotdma_example.csv`](Code/input/examples/mapc_example/mapc_cotdma_example.csv)
 
-Apart from the input nodes file, different models are loaded through the "config_models" file (located [here](https://github.com/wn-upf/Komondor/blob/master/Code/config_models)).
 
 #### 2.3 Output 
 
@@ -135,15 +147,15 @@ Regarding the output ("output" folder), some logs and statistics are created at 
 
 ##### Basic simulation
 
-Run a basic simulation with Komondor for a given nodes configuration file (a .csv file like [this](https://github.com/wn-upf/Komondor/blob/master/Code/input/input_example/input_nodes.csv) containing all the necessary information about the nodes).
+Run a basic simulation with Komondor for a given nodes configuration file (a .csv file like [this](Code/input/examples/basic_example/input_nodes.csv) containing all the necessary information about the nodes).
 
 From path /Komondor/Code/main, you should run:
 
+```bash
+./komondor_main \
+    --nodes ../input/examples/basic_example/input_nodes.csv \
+    --time 10.0 --seed 1
 ```
-$ ./komondor_main --nodes INPUT_FILE_NODES
-```
-
-Where INPUT_FILE_NODES = '../input/input_example/input_nodes.csv' if you use the example file.
 
 ##### Standard simulation
 
@@ -157,13 +169,24 @@ Run a 30-second simulation with a specific seed and custom output name:
 
 Run a simulation with Agents:
 
-```
-./komondor_main --nodes INPUT_FILE_NODES --agents INPUT_AGENTS_FILE --save-agents 1
+```bash
+./komondor_main \
+    --nodes  ../input/examples/basic_example/input_nodes.csv \
+    --agents ../input/examples/mab_example/agents_egreedy.csv \
+    --save-agent 1 \
+    --time 10.0 --seed 1
 ```
 
-Where INPUT_AGENTS_FILE = '../input/input_example/agents.csv' if you use the example file.
+For ML agent configuration details see [README_agents.md](README_agents.md) and [AIML.md](AIML.md).
 
-The agent's operation has been summarized at [README_agents](https://github.com/wn-upf/Komondor/blob/master/README_agents.md).
+##### MAPC simulation
+
+```bash
+./komondor_main \
+    --nodes ../input/examples/mapc_example/input_nodes_mapc_example.csv \
+    --mapc  ../input/examples/mapc_example/mapc_cotdma_example.csv \
+    --time 10.0 --seed 1
+```
 
 ### Other installations
 
@@ -183,14 +206,14 @@ Komondor v.2.0 has been validated by means of ns-3 and SF-CTMN, and Bianchi anal
 ### Regression test
 An automated regression test is available to ensure that the development of new features does not affect the previous implementation, which was validated in Barrachina-Muñoz, S., Wilhelmi, F., Selinis, I., & Bellalta, B. (2019, April). Komondor: a Wireless Network Simulator for Next-Generation High-Density WLANs. In 2019 Wireless Days (WD) (pp. 1-8). IEEE.
 
-In order to execute the regression test, go to ./Komondor/Code/input and run the script named "script_regression_validation_scenarios.sh". This script will take the inputs from the "validation" folder, execute the corresponding simulations, and compare the output with the expected results (i.e., the results obtained for the aforementioned paper).
+To run the regression test, build the simulator and execute `validate.sh` from the `Code/` directory:
 
-The output of the regression test will be displayed in the console. In case of success, the following output should be observed:
-<p align="center"> 
-<img src="https://github.com/wn-upf/Komondor/blob/master/Documentation/Other/Images and resources/example_execution_regression_test.png">
-</p>
+```bash
+cd Code
+bash validate.sh
+```
 
-Before executing the regression test, it is important to ensure that "simulation_ix_output_script" in config_models is set to 10 and "path_loss_model" to 4.
+The script builds the binary, runs four scenario groups (basic, complex, channel-bonding, and spatial-reuse), and compares throughput and RSSI outputs against known-good baselines. A pass/fail summary is printed at the end. No additional configuration changes are required.
 
 ## Academic/Education projects
 One of the main purposes of Komondor is to serve as an academic/educational tool. In what follows, we list the projects in which Komondor has been used as a simulation tool:
@@ -218,5 +241,6 @@ More details in [CONTRIBUTING.md](https://github.com/wn-upf/Komondor/blob/master
 
 ## Acknowledgements
 
-2025-2027: This work is supported by the CHIST-ERA Wireless AI 2022 call MLDR project (ANR-23-CHR4-0005), partially funded by AEI under project PCI2023-145958-2, by Wi-XR PID2021-123995NB-I00 and TRUE-Wi-Fi PID2024-155470NB-I00 (MCIU/AEI/FEDER,UE), and by MCIN/AEI under the Maria de Maeztu Units of Excellence Programme (CEX2021-001195-M).
-2019-2020: This work has been partially supported by a Gift from the Cisco University Research Program (CG\#890107, Towards Deterministic Channel Access in High-Density WLANs) Fund, a corporate advised fund of Silicon Valley Community Foundation.
+The release of Kom8ndor has been supported by TRUE-Wi-Fi PID2024-155470NB-I00 (MCIU/AEI/FEDER,UE), by the CHIST-ERA Wireless AI 2022 call MLDR project (ANR-23-CHR4-0005), partially funded by AEI under project PCI2023-145958-2, by Wi-XR PID2021-123995NB-I00, and by MCIN/AEI under the Maria de Maeztu Units of Excellence Programme (CEX2021-001195-M).
+
+Komondor v2.0 (2019-2020) was partially supported by a Gift from the Cisco University Research Program (CG\#890107, Towards Deterministic Channel Access in High-Density WLANs) Fund, a corporate advised fund of Silicon Valley Community Foundation.

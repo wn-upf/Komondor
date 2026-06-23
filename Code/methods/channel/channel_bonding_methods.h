@@ -118,6 +118,29 @@ void GetTxChannelsByChannelBondingCCA11ax(int *channels_for_tx, int channel_bond
 			break;
 		}
 
+		case CB_SCB: {
+			// All allowed channels must be free; primary uses -82 dBm CCA, secondaries use -72 dBm.
+			int tx_possible = TRUE;
+			if ((*channel_power)[primary_channel] >= ConvertPower(DBM_TO_PW, CCA_PRIMARY_20MHZ)) {
+				tx_possible = FALSE;
+			} else {
+				for (int c = min_channel_allowed; c <= max_channel_allowed; ++c) {
+					if (c == primary_channel) continue;
+					if ((*channel_power)[c] >= ConvertPower(DBM_TO_PW, CCA_SECONDARY_20MHZ)) {
+						tx_possible = FALSE;
+						break;
+					}
+				}
+			}
+			if (tx_possible) {
+				for (int c = min_channel_allowed; c <= max_channel_allowed; ++c)
+					channels_for_tx[c] = TRUE;
+			} else {
+				channels_for_tx[0] = TX_NOT_POSSIBLE;
+			}
+			break;
+		}
+
 		case CB_ALWAYS_MAX_LOG2: {
 
 			switch (num_channels_allowed) {
@@ -324,6 +347,11 @@ void GetTxChannelsByChannelBondingCCA11ax(int *channels_for_tx, int channel_bond
 					break;
 				}
 			}
+			break;
+		}
+
+		default: {
+			channels_for_tx[0] = TX_NOT_POSSIBLE;
 			break;
 		}
 	}

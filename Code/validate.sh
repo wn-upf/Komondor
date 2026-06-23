@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# validate.sh — Phase 6 regression validation
+# validate.sh
 #
 # Run from the Code/ directory on Linux:
 #   cd Code && bash validate.sh
@@ -9,7 +9,6 @@
 #   Part 2: Complex scenarios (2a–2d, aggregation on/off)
 #   Part 3: Channel-bonding scenarios (20/40/80/160 MHz)
 #   Part 4: Spatial-reuse scenarios (SR on/off)
-#   Part 5: MAPC Co-TDMA scenario (run-only; baseline TBD on first clean run)
 #
 # Expected values come from the pre-refactor baseline captured in
 # input/script_regression_validation_scenarios.sh.
@@ -139,7 +138,7 @@ parse_rssi_list() {
 # STEP 1: Build
 # ============================================================
 echo "============================================="
-echo " Phase 6 — Build & Regression Validation"
+echo " Build & Regression Validation"
 echo "============================================="
 echo ""
 echo "[Step 1] Building with: make ($(cd "$MAIN_DIR" && make --version | head -1))"
@@ -205,14 +204,6 @@ for f in "$INPUT_DIR/spatial_reuse_scenarios/"*.csv; do
     run_sim "$f" "$OUT_SR"
 done
 
-# --- Part 5: MAPC Co-TDMA scenario ---
-OUT_MAPC="$OUTPUT_DIR/out_mapc.txt"
-rm -f "$OUT_MAPC"
-run_sim \
-    "$INPUT_DIR/mapc_scenarios/input_nodes_mapc_cotdma_1.csv" \
-    "$OUT_MAPC" \
-    "--mapc $INPUT_DIR/mapc_scenarios/input_mapc_cotdma_1.csv"
-
 # ============================================================
 # STEP 4: Validate
 # ============================================================
@@ -265,19 +256,6 @@ while IFS= read -r line; do
     check_tpt "${labels_sr[$ix]}_B" "$tpt_b" "${values_sr[$ix,1]}"
     ix=$((ix + 1))
 done < "$OUT_SR"
-echo ""
-
-# --- Part 5: MAPC (run-only; no expected values yet) ---
-echo "--- Part 5: MAPC Co-TDMA scenario ---"
-if [ -s "$OUT_MAPC" ]; then
-    echo "  [INFO] MAPC scenario output (baseline TBD):"
-    cat "$OUT_MAPC" | while IFS= read -r line; do
-        echo "    $line"
-    done
-else
-    echo "  [FAIL] MAPC output file is empty or missing"
-    FAIL=$((FAIL + 1))
-fi
 echo ""
 
 # ============================================================

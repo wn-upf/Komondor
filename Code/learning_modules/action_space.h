@@ -167,12 +167,17 @@ class ActionSpace {
 		 *   RtotAlgorithm::UpdateObssPd(); written directly to non_srg_obss_pd.
 		 *   (Fixes the pre-existing int-cast bug that zeroed this value.)
 		 *
+		 * For LEARNING_MECHANISM_EXTERNAL: ml_output is a discrete arm index
+		 *   returned by the external Python model, decoded identically to
+		 *   MULTI_ARMED_BANDITS.
+		 *
 		 * @param "ml_output" algorithm return value (double throughout the pipeline)
 		 * @param "config"    configuration struct to update in-place
 		 */
 		void Decode(double ml_output, Configuration *config) {
 			switch (learning_mechanism) {
-				case MULTI_ARMED_BANDITS: {
+				case MULTI_ARMED_BANDITS:
+				case LEARNING_MECHANISM_EXTERNAL: {
 					int arm_ix = (int) ml_output;
 					index2values(indexes_selected_arm, arm_ix);
 					config->selected_primary_channel = list_of_channels[indexes_selected_arm[0]];

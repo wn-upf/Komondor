@@ -298,14 +298,24 @@ void Node :: HandleStartTX_StateSensing(const Notification &notification) {
 
 				// NPCA trigger (SS37.18.3 cond 1): inter-BSS PPDU on BSS primary channel
 				if (npca_enabled && !npca_on_npca_channel
-						&& node_params.bss_color >= 0
-						&& notification.tx_info.bss_color >= 0
-						&& notification.tx_info.bss_color != node_params.bss_color
 						&& notification.left_channel <= node_params.current_primary_channel
 						&& notification.right_channel >= node_params.current_primary_channel) {
-					double _rem_us = notification.tx_duration / MICRO_VALUE;
-					if (_rem_us > (double)npca_min_dur_threshold_us)
-						CheckAndArmNpcaSwitch();
+					// Determine inter-BSS: prefer BSS color; fall back to WLAN membership
+					bool _inter_bss;
+					if (node_params.bss_color >= 0 && notification.tx_info.bss_color >= 0) {
+						_inter_bss = (notification.tx_info.bss_color != node_params.bss_color);
+					} else {
+						_inter_bss = (notification.source_id != wlan.ap_id);
+						for (int _si = 0; _si < wlan.num_stas && _inter_bss; ++_si)
+							if (wlan.list_sta_id[_si] == notification.source_id) _inter_bss = false;
+					}
+					if (_inter_bss) {
+						double _nav_us = notification.tx_info.nav_time / MICRO_VALUE;
+						double _rem_us = notification.tx_duration / MICRO_VALUE;
+						if (_nav_us > _rem_us) _rem_us = _nav_us;
+						if (_rem_us > (double)npca_min_dur_threshold_us)
+							CheckAndArmNpcaSwitch();
+					}
 				}
 
 				int pause (HandleBackoff(PAUSE_TIMER, &channel_power,
@@ -524,6 +534,18 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 
 			}
 
+		} else if (notification.packet_type == PACKET_TYPE_NPCA_ICF
+				&& notification.destination_id == node_params.node_id
+				&& npca_enabled && npca_primary_channel >= 0
+				&& node_params.node_type != NODE_TYPE_AP) {
+			// STA: update primary channel so DATA on NPCA subband can be received
+			if (node_params.current_primary_channel != npca_primary_channel) {
+				npca_stored_primary_channel = node_params.current_primary_channel;
+				node_params.current_primary_channel = npca_primary_channel;
+				npca_sta_on_npca_channel = 1;
+			}
+			// ICR will be scheduled when ICF finishes (InportSomeNodeFinishTX)
+
 		} else if(nav_collision || inter_bss_nav_collision) {	// RTS or other during simultaneous collision
 
 			if(notification.packet_type == PACKET_TYPE_RTS) {	// Notification CONTAINS an RTS PACKET
@@ -651,7 +673,9 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 		if(notification.packet_type == PACKET_TYPE_RTS
 			||  notification.packet_type == PACKET_TYPE_CTS
 			|| notification.packet_type == PACKET_TYPE_DATA
-			|| notification.packet_type == PACKET_TYPE_ACK) {	// PACKET TYPE RTS OR CTS
+			|| notification.packet_type == PACKET_TYPE_ACK
+			|| notification.packet_type == PACKET_TYPE_ICF
+			|| notification.packet_type == PACKET_TYPE_MU_RTS_TXS) {	// PACKET TYPE RTS OR CTS
 
 			// TODO: determine if can be decoded!
 
@@ -757,6 +781,39 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 				int power_condition (channel_power[node_params.current_primary_channel] > node_params.sensitivity_default);
 
 				if (loss_reason == PACKET_NOT_LOST && power_condition) {	// Packet IS NOT LOST
+
+					// MAPC: re-arm NAV from frames that reveal the round's true remaining
+					// duration, so that third-party APs (e.g. AP_C) track the real end of
+					// AP_A/AP_B's TXOP instead of the coarse estimate set at ICF time.
+					// MU-RTS/TXS hands AP_B the agreed DATA+ACK allocation for the rest of
+					// the round; a new ICF marks the start of the next round.
+					if (notification.mapc_group_id > 0
+							&& (notification.packet_type == PACKET_TYPE_MU_RTS_TXS
+								|| notification.packet_type == PACKET_TYPE_ICF)) {
+
+						if (notification.packet_type == PACKET_TYPE_MU_RTS_TXS) {
+							// nav_time covers SIFS+DATA+SIFS+ACK *after* the MU-RTS frame itself
+							current_nav_time = notification.tx_duration + notification.tx_info.nav_time;
+						} else {
+							// ICF's nav_time already covers the round from its own start
+							current_nav_time = notification.tx_info.nav_time;
+						}
+						time_to_trigger = SimTime() + current_nav_time - TIME_OUT_EXTRA_TIME;
+
+						if (sr_state.spatial_reuse_enabled && sr_state.type_last_sensed_packet != INTRA_BSS_FRAME) {
+							trigger_inter_bss_NAV_timeout.Cancel();
+							trigger_inter_bss_NAV_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
+						} else {
+							trigger_NAV_timeout.Cancel();
+							trigger_NAV_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
+						}
+
+						LOGS(node_params.save_node_logs, node_logger.file,
+							"%.15f;N%d;S%d;%s;%s MAPC round update from N%d (type %d): re-arming NAV during %.12f, new timeout %.12f\n",
+							SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL3,
+							notification.source_id, notification.packet_type,
+							current_nav_time, time_to_trigger);
+					}
 
 					// Spatial Reuse: detect / cancel SR TXOP while in NAV
 					DetectSRTXOPInNavState(notification, loss_reason);
@@ -1532,13 +1589,18 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				break;
 			}
 			/* ---------- */
-			/* MAPC states: TX states ignore incoming (already transmitting) */
+			/* MAPC states: TX states ignore incoming (already transmitting).
+			 * DSO/NPCA ICR states are timer-modelled (no real frame being received),
+			 * so they must not restart the node on unrelated incoming TX. */
 			case STATE_TX_ICF:
 			case STATE_TX_ICR:
 			case STATE_TX_TF:
 			case STATE_TX_ACK_TF:
 			case STATE_TX_DSO_ICF:
-			case STATE_TX_NPCA_ICF:{
+			case STATE_TX_NPCA_ICF:
+			case STATE_TX_NPCA_ICR:
+			case STATE_RX_DSO_ICR:
+			case STATE_RX_NPCA_ICR:{
 				HandleStartTX_StateTxData(notification);
 				break;
 			}
@@ -1546,8 +1608,6 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			/* MAPC reception states: treat as RX interference */
 			case STATE_RX_ICF:
 			case STATE_RX_ICR:
-			case STATE_RX_DSO_ICR:
-			case STATE_RX_NPCA_ICR:
 			case STATE_RX_MU_RTS:
 			case STATE_RX_TF:{
 				HandleStartTX_StateRxData(notification);
@@ -1605,6 +1665,31 @@ void Node :: HandleFinishTX_StateSensing(const Notification &notification){
 			&& notification.source_id == wlan.ap_id) {
 		node_params.current_primary_channel = npca_stored_primary_channel;
 		npca_sta_on_npca_channel = 0;
+	}
+	// NPCA STA: ICF finished; schedule ICR after SIFS
+	if (notification.packet_type == PACKET_TYPE_NPCA_ICF
+			&& notification.destination_id == node_params.node_id
+			&& npca_enabled && npca_primary_channel >= 0
+			&& node_params.node_type != NODE_TYPE_AP) {
+		current_destination_id = notification.source_id;
+		node_state = STATE_TX_NPCA_ICR;
+		current_tx_duration = (double)NPCA_ICR_DURATION_US * MICRO_VALUE;
+		{
+			int _save_l = current_left_channel, _save_r = current_right_channel;
+			current_left_channel  = notification.left_channel;
+			current_right_channel = notification.right_channel;
+			icr_notification = GenerateNotification(PACKET_TYPE_NPCA_ICR,
+				current_destination_id, notification.packet_id, 0,
+				SimTime(), current_tx_duration);
+			current_left_channel  = _save_l;
+			current_right_channel = _save_r;
+		}
+		LOGS(node_params.save_node_logs, node_logger.file,
+			"%.15f;N%d;S%d;%s;%s NPCA: ICF done; sending ICR to N%d on [%d,%d] after SIFS\n",
+			SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL2,
+			current_destination_id, notification.left_channel, notification.right_channel);
+		time_to_trigger = SimTime() + SIFS;
+		trigger_SIFS.Set(FixTimeOffset(time_to_trigger, 13, 12));
 	}
 
 	if(node_is_transmitter) {
@@ -1932,6 +2017,11 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// Whole data packet ACKed
 						++node_stats.data_packets_acked;
 						++node_stats.data_packets_acked_per_sta[current_destination_id-node_params.node_id-1];
+						if (dso_dual_tx && dso_primary_dest_id >= 0) {
+							++node_stats.data_packets_acked;
+							++node_stats.data_packets_acked_per_sta[dso_primary_dest_id-node_params.node_id-1];
+							++performance_report.data_packets_acked;
+						}
 						++performance_report.data_packets_acked;
 
 						current_tx_duration = current_tx_duration + (notification.tx_duration + SIFS);	// Add ACK time to tx_duration
@@ -1941,6 +2031,11 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 							++node_stats.data_frames_acked;
 							++node_stats.data_frames_acked_per_sta[current_destination_id-node_params.node_id-1];
+							if (dso_dual_tx && dso_primary_dest_id >= 0) {
+								++node_stats.data_frames_acked;
+								++node_stats.data_frames_acked_per_sta[dso_primary_dest_id-node_params.node_id-1];
+								++performance_report.data_frames_acked;
+							}
 							++performance_report.data_frames_acked;
 							++node_stats.num_delay_measurements;
 							// Use GetPacketAt(i) so each aggregated frame gets its own timestamp
@@ -2062,6 +2157,30 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			case STATE_WAIT_CTS:
 			case STATE_WAIT_DATA:
 			case STATE_NAV:{
+				if (notification.packet_type == PACKET_TYPE_NPCA_ICF
+						&& notification.destination_id == node_params.node_id
+						&& npca_enabled && npca_primary_channel >= 0
+						&& node_params.node_type != NODE_TYPE_AP) {
+					current_destination_id = notification.source_id;
+					node_state = STATE_TX_NPCA_ICR;
+					current_tx_duration = (double)NPCA_ICR_DURATION_US * MICRO_VALUE;
+					{
+						int _save_l = current_left_channel, _save_r = current_right_channel;
+						current_left_channel  = notification.left_channel;
+						current_right_channel = notification.right_channel;
+						icr_notification = GenerateNotification(PACKET_TYPE_NPCA_ICR,
+							current_destination_id, notification.packet_id, 0,
+							SimTime(), current_tx_duration);
+						current_left_channel  = _save_l;
+						current_right_channel = _save_r;
+					}
+					LOGS(node_params.save_node_logs, node_logger.file,
+						"%.15f;N%d;S%d;%s;%s NPCA: ICF done; sending ICR to N%d on [%d,%d] after SIFS\n",
+						SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL2,
+						current_destination_id, notification.left_channel, notification.right_channel);
+					time_to_trigger = SimTime() + SIFS;
+					trigger_SIFS.Set(FixTimeOffset(time_to_trigger, 13, 12));
+				}
 				HandleFinishTX_StateTxData(notification);
 				break;
 			}
@@ -2326,8 +2445,26 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			case STATE_TX_DSO_ICF:
 			case STATE_RX_DSO_ICR:
 			case STATE_TX_NPCA_ICF:
-			case STATE_RX_NPCA_ICR:{
+			case STATE_TX_NPCA_ICR:{
 				HandleFinishTX_StateTxData(notification);
+				break;
+			}
+			case STATE_RX_NPCA_ICR:{
+				// AP: ICR from own STA received; cancel safety timeout and start DATA
+				if (notification.packet_type == PACKET_TYPE_NPCA_ICR
+						&& notification.destination_id == node_params.node_id
+						&& npca_on_npca_channel) {
+					LOGS(node_params.save_node_logs, node_logger.file,
+						"%.15f;N%d;S%d;%s;%s NPCA: ICR received from N%d; proceeding to DATA\n",
+						SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL2,
+						notification.source_id);
+					trigger_npca_icr_timeout.Cancel();
+					trigger_npca_timer.Cancel();
+					node_state = STATE_TX_DATA_NPCA;
+					PrepareNewTransmission();
+				} else {
+					HandleFinishTX_StateTxData(notification);
+				}
 				break;
 			}
 

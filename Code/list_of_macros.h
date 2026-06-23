@@ -106,9 +106,10 @@
 
 // NPCA (Non-Primary Channel Access) states -- SS37.18 D1.1
 #define STATE_TX_NPCA_ICF	30	///> Transmitting mandatory ICF at start of NPCA TXOP
-#define STATE_RX_NPCA_ICR	31	///> Waiting ICR response on NPCA primary channel (timer-modelled)
+#define STATE_RX_NPCA_ICR	31	///> AP waiting for ICR response on NPCA secondary channels
 #define STATE_TX_DATA_NPCA	32	///> Transmitting DATA on NPCA channels
 #define STATE_WAIT_ACK_NPCA	33	///> Waiting ACK after NPCA DATA
+#define STATE_TX_NPCA_ICR	34	///> STA transmitting ICR response on NPCA secondary channels
 
 // Node types
 #define NODE_TYPE_UNKWNOW	-1	///> Unknown (none) node type

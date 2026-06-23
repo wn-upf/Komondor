@@ -1,0 +1,5 @@
+node_code;node_type;wlan_code;x(m);y(m);z(m);central_freq(GHz);cb_model;primary_ch;min_ch;max_ch;tx_power;sensitivity;traffic_model;traffic_load;pkt_len;num_pkts_agg;cap_eff_model;cap_eff_thr;const_per;pifs;backoff_type;cw_adapt;cw_min;cw_max;cw_stage;rts_cts;bss_color;srg;obss_pd;srg_obss_pd;bf_en;bf_N;bf_d;bf_az;traffic_type;dso_en;npca_en;npca_pch
+AP_A;0;A;0;0;0;5;0;0;0;3;15;-82;99;1000;12000;64;0;10;0;0;0;0;16;1023;5;0;-1;-1;-82;-82;0;;;;2;1;0;0
+STA_A1;1;A;2;0;0;5;0;2;2;3;15;-82;99;0;12000;64;0;10;0;0;0;0;16;1023;5;0;-1;-1;-82;-82;0;;;;2;0;0;0
+AP_B;0;B;0;3;0;5;0;0;0;1;15;-82;99;500;12000;64;0;10;0;0;0;0;16;1023;5;0;-1;-1;-82;-82;0;;;;2;0;0;0
+STA_B1;1;B;2;3;0;5;0;0;0;1;15;-82;99;0;12000;64;0;10;0;0;0;0;16;1023;5;0;-1;-1;-82;-82;0;;;;2;0;0;0

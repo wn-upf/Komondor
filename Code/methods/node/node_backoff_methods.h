@@ -133,6 +133,12 @@ void Node :: PauseBackoff(){
 		}
 
 	}
+
+	// If EndBackoff already fired and scheduled the preoccupancy trigger before
+	// this pause arrived, cancel it.  Without this, StartTransmission would fire
+	// on a channel that just became busy (same-tick race between EndBackoff and
+	// an incoming TX_START notification).
+	trigger_preoccupancy.Cancel();
 }
 
 /**
@@ -229,6 +235,8 @@ void Node :: RestartNode(int called_by_time_out){
 		node_params.current_primary_channel = npca_stored_primary_channel;
 	npca_on_npca_channel = 0;
 	npca_sta_on_npca_channel = 0;
+	dso_dual_tx = 0;
+	dso_primary_dest_id = NODE_ID_NONE;
 
 	// Cancel triggers for safety
 	trigger_end_backoff.Cancel();
