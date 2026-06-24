@@ -217,6 +217,7 @@ The script builds the binary, runs four scenario groups (basic, complex, channel
 
 ## Academic/Education projects
 One of the main purposes of Komondor is to serve as an academic/educational tool. In what follows, we list the projects in which Komondor has been used as a simulation tool:
+* Wilhelmi, Francesc, et al. "A Tutorial on IEEE 802.11 bn Multi-AP Coordination for Wi-Fi 8: From Standardization to Performance Evaluation." (arXiv preprint arXiv:2606.13759)[https://arxiv.org/pdf/2606.13759] (2026).
 * Wilhelmi, F., Bellalta, B., Casasnovas, M., Kijanka, A., & Calvo-Fullana, M. (2026). Decentralized Spatial Reuse Optimization in Wi-Fi: An Internal Regret Minimization Approach. (arXiv preprint arXiv:2602.08456)[https://arxiv.org/pdf/2602.08456].
 * Wilhelmi, F., Bellalta, B., Szott, S., Kosek-Szott, K., & Barrachina-Muñoz, S. (2025, May). Coordinated Multi-Armed Bandits for Improved Spatial Reuse in Wi-Fi. In 2025 IEEE International Conference on Machine Learning for Communication and Networking (ICMLCN) (pp. 1-6). IEEE. [(Download the paper here)](https://arxiv.org/abs/2412.03076)
 * Wilhelmi, F., Galati-Giordano, L., & F., G. (2025, March). “It's Your Turn”: A Novel Channel Contention Mechanism for Improving Wi-Fi's Reliability. In 2025 IEEE Wireless Communications and Networking Conference (WCNC) (pp. 1-6). IEEE. [(Download the paper here)](https://arxiv.org/abs/2410.07874)
