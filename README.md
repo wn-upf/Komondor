@@ -46,7 +46,6 @@ The project is structured as follows:
 | Machine Learning | — | Multi-Armed Bandits, and external Python model via Unix socket |
 
 For a detailed feature changelog and configuration reference, see [release_notes.md](release_notes.md).
-For ML architecture and external model integration, see [AIML.md](AIML.md).
 
 ## Overview
 
@@ -177,7 +176,7 @@ Run a simulation with Agents:
     --time 10.0 --seed 1
 ```
 
-For ML agent configuration details see [README_agents.md](README_agents.md) and [AIML.md](AIML.md).
+For ML agent configuration details see [README_agents.md](README_agents.md).
 
 ##### MAPC simulation
 
