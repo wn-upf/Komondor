@@ -46,6 +46,25 @@
  * - This file contains all the macros used by the rest of the code
  */
 
+/*
+ * TERMINOLOGY CONVENTION (packet vs frame):
+ *
+ *   "packet" = A-MPDU: the aggregated data unit sent in a single transmission.
+ *              Counted by data_packets_sent, data_packets_acked, data_packets_lost.
+ *
+ *   "frame"  = MPDU: an individual sub-frame within an A-MPDU.
+ *              Counted by data_frames_acked.
+ *              Aggregation level = data_frames_acked / data_packets_acked.
+ *
+ *   PACKET_TYPE_* constants name MAC frame types (DATA, ACK, RTS, CTS, etc.)
+ *              despite the "PACKET_" prefix — this is a legacy naming convention.
+ *
+ *   "frame_length" in NodeParameters is the MPDU payload size in bits.
+ *
+ *   "num_packets_aggregated" in TxInfo counts MPDUs per A-MPDU (not A-MPDUs
+ *              per transmission), i.e. it is really "num_frames_aggregated".
+ */
+
 // C++ macros
 #define MIN_VALUE_C_LANGUAGE		0.000001				///> Minimum float value printable for default by C++ language
 #define MIN_DOUBLE_VALUE_KOMONDOR	0.000000000000001		///> Minimum value accepted by Komondor

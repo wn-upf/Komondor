@@ -65,10 +65,10 @@ struct Performance
 	double last_throughput;
 
 	// Frames statistics
-	int data_packets_acked;			///> Number of data packets acknowledged
-	int data_frames_acked;			///> Number of frames acknowledged
-	int data_packets_sent;			///> Number of data packets sent
-	int data_packets_lost;			///> Number of data packets lost
+	int data_packets_acked;			///> Number of A-MPDUs (data transmissions) acknowledged
+	int data_frames_acked;			///> Number of individual MPDUs acknowledged (frames/packets = avg aggregation)
+	int data_packets_sent;			///> Number of A-MPDUs (data transmissions) sent
+	int data_packets_lost;			///> Number of A-MPDUs lost (collision or decode failure)
 	int rts_cts_sent;				///> Number of RTS/CTS packets sent
 	int rts_cts_lost;				///> Number of RTS/CTS packets lost
 	int rts_lost_slotted_bo;		///> Number of RTS/CTS packets lost by slotted BO
@@ -117,12 +117,12 @@ struct Performance
 	// Per-STA statistics
     int num_stas;                   ///> Number of STAs in the BSS
 	double *throughput_per_sta;			///> Array containing the throughput delivered to each STA
-	int *data_packets_sent_per_sta;		///> Array containing the number of packets sent to each STA
+	int *data_packets_sent_per_sta;		///> A-MPDUs sent to each STA
 	int *rts_cts_sent_per_sta;			///> Array containing the number of RTS/CTS sent to each STA
-	int *data_packets_lost_per_sta;		///> Array containing the number of packets lost when sent to each STA
+	int *data_packets_lost_per_sta;		///> A-MPDUs lost when sent to each STA
 	int *rts_cts_lost_per_sta;			///> Array containing the number of RTS/CTS lost when sent to each STA
-	int *data_packets_acked_per_sta;	///> Array containing the number of acknowledged packets by each STA
-	int *data_frames_acked_per_sta;		///> Array containing the number of acknowledged frames by each STA
+	int *data_packets_acked_per_sta;	///> A-MPDUs acknowledged by each STA
+	int *data_frames_acked_per_sta;		///> Individual MPDUs acknowledged by each STA
     double *rssi_list_per_sta;			///> List of RSSI perceived by each STA in the WLAN
 
 	// Other

@@ -245,16 +245,12 @@ void Node :: DetectSRTXOPWhileTransmitting(const Notification &notification) {
 		double power_interference (power_received_per_node[notification.source_id]);
 		double sinr_interference (UpdateSINR(power_interference, max_pw_interference));
 
-		// Is packet lost with the default pd?
-		// TODO: method for checking whether the detected transmission can be decoded or not
-		int loss_reason_legacy (IsPacketLost(node_params.current_primary_channel, notification, notification,
-			sinr_interference, node_params.capture_effect, node_params.sensitivity_default, power_interference, node_params.constant_per,
-			node_params.node_id, node_params.capture_effect_model));
-		// Is packet lost with the SR pd?
-		// TODO: method for checking whether the detected transmission can be decoded or not
-		int loss_reason_sr (IsPacketLost(node_params.current_primary_channel, notification, notification,
-			sinr_interference, node_params.capture_effect, sr_state.potential_obss_pd_threshold, power_interference, node_params.constant_per,
-			node_params.node_id, node_params.capture_effect_model));
+		int can_decode_legacy = CanDecodePacket(node_params.current_primary_channel, notification,
+			sinr_interference, node_params.capture_effect, node_params.sensitivity_default, power_interference,
+			node_params.capture_effect_model);
+		int can_decode_sr = CanDecodePacket(node_params.current_primary_channel, notification,
+			sinr_interference, node_params.capture_effect, sr_state.potential_obss_pd_threshold, power_interference,
+			node_params.capture_effect_model);
 
 		if(node_params.save_node_logs && node_params.node_id == 0) LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s sinr_interference = %f - node_params.capture_effect = %f - sr_state.pd_spatial_reuse = %f"
@@ -264,12 +260,12 @@ void Node :: DetectSRTXOPWhileTransmitting(const Notification &notification) {
 			ConvertPower(PW_TO_DBM,sr_state.pd_spatial_reuse),ConvertPower(PW_TO_DBM,power_interference));
 
 		if(node_params.save_node_logs && node_params.node_id == 0) fprintf(node_logger.file,
-			"%.15f;N%d;S%d;%s;%s CHECKING TXOP in TX state (pd_sr = %f - lost = %d)\n",
+			"%.15f;N%d;S%d;%s;%s CHECKING TXOP in TX state (pd_sr = %f - can_decode_sr = %d)\n",
 			SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL3,
-			ConvertPower(PW_TO_DBM,sr_state.pd_spatial_reuse), loss_reason_sr);
+			ConvertPower(PW_TO_DBM,sr_state.pd_spatial_reuse), can_decode_sr);
 
 		// If the packet has been ignored due to the OBSS_PD, then detect a TXOP
-		if (loss_reason_legacy == PACKET_NOT_LOST && loss_reason_sr != PACKET_NOT_LOST) {
+		if (can_decode_legacy && !can_decode_sr) {
 			sr_state.txop_sr_identified = TRUE;	// TXOP identified!
 			sr_state.current_obss_pd_threshold = sr_state.potential_obss_pd_threshold;
 			// Define the limited transmission power
@@ -280,7 +276,7 @@ void Node :: DetectSRTXOPWhileTransmitting(const Notification &notification) {
 			LOGS(node_params.save_node_logs, node_logger.file,
 				"%.15f;N%d;S%d;%s;%s TXOP detected while being in TX state\n",
 				SimTime(), node_params.node_id, node_state, LOG_D08, LOG_LVL3);
-		} else if (loss_reason_legacy == PACKET_NOT_LOST && sr_state.txop_sr_identified) {
+		} else if (can_decode_legacy && sr_state.txop_sr_identified) {
 			// Cancel SR TXOP
 			sr_state.txop_sr_identified = FALSE;
 			LOGS(node_params.save_node_logs, node_logger.file,
@@ -324,9 +320,10 @@ void Node :: CheckSRTXOPAtCallSensing() {
 	int loss_reason_sr = 1;	// lost by default
 	// Check if the packet can be decoded with the CST indicated by the SR operation
 	if (loss_reason == PACKET_NOT_LOST && sr_state.spatial_reuse_enabled) {
-		// TODO: method for checking whether the detected transmission can be decoded or not
-		loss_reason_sr = IsPacketLost(node_params.current_primary_channel, nav_notification, nav_notification,
-			current_sinr, node_params.capture_effect, sr_state.potential_obss_pd_threshold, power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
+		int can_decode_sr_val = CanDecodePacket(node_params.current_primary_channel, nav_notification,
+			current_sinr, node_params.capture_effect, sr_state.potential_obss_pd_threshold, power_rx_interest,
+			node_params.capture_effect_model);
+		loss_reason_sr = can_decode_sr_val ? PACKET_NOT_LOST : PACKET_LOST_LOW_SIGNAL;
 		if (loss_reason_sr != PACKET_NOT_LOST && node_is_transmitter) {
 			sr_state.txop_sr_identified = TRUE;	// TXOP identified!
 			sr_state.current_obss_pd_threshold = sr_state.potential_obss_pd_threshold;	// Update the pd

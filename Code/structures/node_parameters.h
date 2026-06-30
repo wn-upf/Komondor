@@ -39,8 +39,8 @@ struct NodeParameters {
 
 	// --- Packet / traffic ---
 	int         pdf_tx_time;				///> TX time distribution (0: exponential, 1: deterministic)
-	int         frame_length;				///> Data frame length [bits]
-	int         max_num_packets_aggregated;	///> Maximum packets per A-MPDU
+	int         frame_length;				///> MPDU payload size [bits]
+	int         max_num_packets_aggregated;	///> Maximum MPDUs per A-MPDU
 	int         traffic_model;				///> Traffic model (0: full buffer, 1: Poisson, 2: deterministic)
 	int         traffic_type;				///> EDCA access category (AC_VO=0, AC_VI=1, AC_BE=2, AC_BK=3)
 

@@ -54,12 +54,12 @@
 struct TxInfo
 {
 
-	int num_packets_aggregated;				///> Number of frames aggregated
-	int *list_id_aggregated;				///> List of frame IDs aggregated
-	double *timestamp_frames_aggregated;	///> List of timestamps of the frames aggregated
+	int num_packets_aggregated;				///> Number of MPDUs aggregated in this A-MPDU
+	int *list_id_aggregated;				///> List of MPDU IDs in this A-MPDU
+	double *timestamp_frames_aggregated;	///> Timestamps of each aggregated MPDU
 
 	// For RTS/CTS management
-	double data_duration;		///> Duration of the data packet
+	double data_duration;		///> Duration of the DATA frame (A-MPDU)
 	double ack_duration;		///> Duration of the ACK packet
 	double rts_duration;		///> Duration of the RTS packet
 	double cts_duration;		///> Duration of the CTS packet
