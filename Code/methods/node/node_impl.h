@@ -17,7 +17,7 @@
  *   - node_statistics_methods.h  : performance metrics, print/write helpers, SaveSimulationPerformance
  *   - node_config_methods.h      : agent configuration inports, ApplyNewConfiguration
  *   - node_spatial_reuse_methods.h : OBSS/PD spatial reuse inports and opportunity handling
- *   - node_mcs_methods.h         : SelectMCSResponse, NACK/MCS negotiation inports, traffic inport
+ *   - node_mcs_methods.h         : NACK/MCS negotiation inports, traffic inport (MCS free functions -> phy/mcs_methods.h)
  *   - node_timeout_methods.h     : ACK / CTS / Data / NAV timeout handlers
  *   - node_backoff_methods.h     : backoff scheduling, pause/resume, node restart, channel sensing
  *   - node_packet_methods.h      : packet generation, MCS request, frame exchange sequence

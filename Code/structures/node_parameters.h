@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdio>
 #include "../list_of_macros.h"
-#include "../methods/channel/power_channel_methods.h"
+#include "../methods/phy/power_channel_methods.h"
 #include "logger.h"
 
 /**
@@ -38,7 +38,6 @@ struct NodeParameters {
 	double      z;							///> Z position [m]
 
 	// --- Packet / traffic ---
-	int         pdf_tx_time;				///> TX time distribution (0: exponential, 1: deterministic)
 	int         frame_length;				///> MPDU payload size [bits]
 	int         max_num_packets_aggregated;	///> Maximum MPDUs per A-MPDU
 	int         traffic_model;				///> Traffic model (0: full buffer, 1: Poisson, 2: deterministic)

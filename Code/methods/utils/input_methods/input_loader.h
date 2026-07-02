@@ -33,9 +33,6 @@ void Komondor::SetupEnvironmentByReadingConfigFile(const char *config_filename) 
 			// Collisions model
 			collisions_model = atoi(ptr);
 		} else if (ix_param == 3) {
-			// PDF tx time model
-			pdf_tx_time = atoi(ptr);
-		} else if (ix_param == 4) {
 			// Simulation index (script's output)
 			simulation_index = atoi(ptr);
 		}
@@ -407,7 +404,6 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
             node_container[node_ix].node_params.print_node_logs = print_node_logs;
             node_container[node_ix].node_params.adjacent_channel_model = adjacent_channel_model;
             node_container[node_ix].node_params.path_loss_model = path_loss_model;
-            node_container[node_ix].node_params.pdf_tx_time = pdf_tx_time;
             node_container[node_ix].node_params.simulation_code = simulation_code;
 
             // Traffic Generator

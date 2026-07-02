@@ -56,8 +56,8 @@
 
 #include "../list_of_macros.h"
 #include "../methods/utils/auxiliary_methods.h"
-#include "../methods/channel/power_channel_methods.h"
-#include "../methods/mac/backoff_methods.h"
+#include "../methods/phy/power_channel_methods.h"
+#include "../methods/mac/channel_access/backoff_methods.h"
 #include "../methods/frames/notification_methods.h"
 #include "../methods/mac/spatial_reuse_methods.h"
 #include "../structures/notification.h"
@@ -72,13 +72,13 @@
 #include "../structures/node_statistics.h"
 #include "../structures/node_parameters.h"
 #include "../structures/packet_exchange_sequence.h"
-#include "../methods/channel/channel_access_methods.h"
+#include "../methods/mac/channel_access/channel_access_methods.h"
 
 #include "../methods/mac/nack_methods.h"
 #include "../methods/mac/packet_loss_methods.h"
 #include "../methods/mac/nav_methods.h"
 
-#include "../methods/frames/frame_duration_methods.h"
+#include "../methods/phy/frame_duration_methods.h"
 #include "../methods/frames/packet_aggregation_methods.h"
 
 #define __SAVELOGS__
