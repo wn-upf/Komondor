@@ -224,6 +224,7 @@ void Node :: RestartNode(int called_by_time_out){
 	receiving_from_node_id = NODE_ID_NONE;
 	receiving_packet_id = NO_PACKET_ID;
 	sr_state.mapc_cosr_active = 0;
+	mapc_pending_ack_valid = 0;	///> Restart MAPC ACK state too, so a stale/late ACK TF for this TXOP is never answered after rejoining SENSING
 	pp_punctured_bitmap = 0;
 	dso_tx_flag = 0;
 	trigger_dso_icr_timeout.Cancel();

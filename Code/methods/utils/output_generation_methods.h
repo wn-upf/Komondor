@@ -32,7 +32,7 @@
 #include "../../structures/performance.h"
 #include "../../structures/node_configuration.h"
 #include "../../structures/wlan.h"
-#include "../channel/power_channel_methods.h"
+#include "../phy/power_channel_methods.h"
 #include "../../structures/simulation_stats.h"
 
 #ifndef _OUT_METHODS_

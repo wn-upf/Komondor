@@ -132,7 +132,6 @@ component Komondor : public CostSimEng {
 		double simulation_time_komondor;	///> Simulation time [s]
 
 		// Parameters regarding system model
-		int pdf_tx_time;				///> Probability distribution type of the transmission time (0: exponential, 1: deterministic)
 		int path_loss_model;			///> Path loss model (0: free-space, 1: Okumura-Hata model - Uban areas)
 		int adjacent_channel_model;		///> Co-channel interference model
 		int collisions_model;			///> Collisions model

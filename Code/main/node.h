@@ -56,8 +56,8 @@
 
 #include "../list_of_macros.h"
 #include "../methods/utils/auxiliary_methods.h"
-#include "../methods/channel/power_channel_methods.h"
-#include "../methods/mac/backoff_methods.h"
+#include "../methods/phy/power_channel_methods.h"
+#include "../methods/mac/channel_access/backoff_methods.h"
 #include "../methods/frames/notification_methods.h"
 #include "../methods/mac/spatial_reuse_methods.h"
 #include "../structures/notification.h"
@@ -72,13 +72,13 @@
 #include "../structures/node_statistics.h"
 #include "../structures/node_parameters.h"
 #include "../structures/packet_exchange_sequence.h"
-#include "../methods/channel/channel_access_methods.h"
+#include "../methods/mac/channel_access/channel_access_methods.h"
 
 #include "../methods/mac/nack_methods.h"
 #include "../methods/mac/packet_loss_methods.h"
 #include "../methods/mac/nav_methods.h"
 
-#include "../methods/frames/frame_duration_methods.h"
+#include "../methods/phy/frame_duration_methods.h"
 #include "../methods/frames/packet_aggregation_methods.h"
 
 #define __SAVELOGS__
@@ -184,7 +184,7 @@ component Node : public TypeII{
 		void HandleFinishTX_StateRxTf(const Notification &notification);
 		void HandleFinishTX_StateWaitAckTf(const Notification &notification);
 		void ProceedAfterIcr();
-		void ComputeCoSRTxPowers(double &coordinator_pW, double &peer_pW);
+		int ComputeCoSRTxPowers(double &coordinator_pW, double &peer_pW);
 
 	// Public items (entered by nodes constructor in komondor_main)
 	public:
@@ -311,6 +311,7 @@ component Node : public TypeII{
 		Notification cts_notification;			///> CTS to be filled before sending it
 		Notification data_notification;			///> DATA notification to be filled before sending it
 		Notification ack_notification;			///> ACK to be filled before sending it
+		int mapc_pending_ack_valid;				///> 1 = ack_notification reflects a genuinely successful DATA reception awaiting our own AP's ACK TF; 0 = no valid pending ACK (e.g. after a mid-reception Co-SR collision restart). Prevents a restarted STA from replying to a stale/late ACK TF for a TXOP it never actually received.
 		// MAPC notifications
 		Notification icf_notification;			///> ICF (MAPC Initial Control Frame) to be filled before sending it
 		Notification incoming_notification; 	///> Notification of interest being received
@@ -1053,6 +1054,7 @@ void Node :: InitializeVariables() {
 		for (int n = 0; n < wlan.num_stas; ++n) change_modulation_flag[n] = TRUE;
 	}
 	sr_state.mapc_cosr_active = 0;
+	mapc_pending_ack_valid = 0;
 
 	// Initialize beamforming per-TXOP state
 	current_beam_az_main_rad = 0.0;

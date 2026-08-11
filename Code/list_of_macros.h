@@ -46,6 +46,25 @@
  * - This file contains all the macros used by the rest of the code
  */
 
+/*
+ * TERMINOLOGY CONVENTION (packet vs frame):
+ *
+ *   "packet" = A-MPDU: the aggregated data unit sent in a single transmission.
+ *              Counted by data_packets_sent, data_packets_acked, data_packets_lost.
+ *
+ *   "frame"  = MPDU: an individual sub-frame within an A-MPDU.
+ *              Counted by data_frames_acked.
+ *              Aggregation level = data_frames_acked / data_packets_acked.
+ *
+ *   PACKET_TYPE_* constants name MAC frame types (DATA, ACK, RTS, CTS, etc.)
+ *              despite the "PACKET_" prefix — this is a legacy naming convention.
+ *
+ *   "frame_length" in NodeParameters is the MPDU payload size in bits.
+ *
+ *   "num_packets_aggregated" in TxInfo counts MPDUs per A-MPDU (not A-MPDUs
+ *              per transmission), i.e. it is really "num_frames_aggregated".
+ */
+
 // C++ macros
 #define MIN_VALUE_C_LANGUAGE		0.000001				///> Minimum float value printable for default by C++ language
 #define MIN_DOUBLE_VALUE_KOMONDOR	0.000000000000001		///> Minimum value accepted by Komondor
@@ -484,11 +503,6 @@
 #define OBSS_PD_MAX			-62 	///> Maximum OBSS_PD (dBm)
 #define MAX_TX_PWR_SR		20		///> Maximum transmit power to be used during the SR operation (dBm)
 #define TX_PWR_REF			21		///> TX PWR REF (dBm)
-#define DEFAULT_COSR_TX_POWER_DBM	20.0	///> Default Co-SR TX power limit [dBm] (Option A)
-/* Co-SR power limit scope:
- *   0 = limit applied to both coordinating and coordinated APs (symmetric)
- *   1 = limit applied to coordinated AP only; coordinating AP uses default TX power */
-#define COSR_POWER_LIMIT_PEER_ONLY	1
 
 /* *****************************************
  * * MULTI-ACCESS POINT COORDINATION       *
@@ -500,11 +514,32 @@
 #define CO_RTWT     4
 #define CO_CONPA    5
 
-/* MAPC TXOP split methods */
-#define TXOP_SPLIT_EQUAL    0   ///> Equal-time split of TXOP among active APs
-
 /* MAPC multi-group limits */
 #define MAX_MAPC_GROUPS_PER_WLAN  8   ///> Max MAPC groups a single WLAN may belong to
+
+/* *****************************************
+ * * COORDINATED SPATIAL REUSE (Co-SR) IEEE 802.11bn *
+ * *****************************************
+ */
+#define DEFAULT_COSR_TX_POWER_DBM	20.0	///> Default Co-SR TX power limit [dBm] (Static policy)
+// Co-SR power limit scope (Static policy only)
+//  * 0 = limit applied to both coordinating and coordinated APs (symmetric)
+//  * 1 = limit applied to coordinated AP only (coordinating AP uses default TX power)
+#define COSR_POWER_LIMIT_PEER_ONLY	1
+// Co-SR power control mechanism, selected PER GROUP at runtime from the "power_mechanism"
+#define COSR_POLICY_STATIC		0 ///> TX power cap read from the MAPC config CSV, no feasibility check (legacy)
+#define COSR_POLICY_SELFISH		1 ///> Coordinator uses Pmax and peer capped by the coordinator based on the max. supported interference
+#define COSR_POLICY_CONTINUOUS	2 ///> Jointly-optimal PF power allocation via ternary search on both APs
+#define COSR_POLICY_DISCRETE	3 ///> Discretized closed form (push the free AP's power to the top of its capture-effect-feasible range)
+
+#define COSR_FEASIBILITY_MARGIN_DB	0.5 ///> Safety margin added to assess SINR feasibility 
+
+/* *****************************************
+ * * COORDINATED TDMA (Co-TDMA) IEEE 802.11bn *
+ * *****************************************
+ */
+/* MAPC TXOP split methods */
+#define TXOP_SPLIT_EQUAL    0   ///> Equal-time split of TXOP among active APs
 
 /* *****************************************
  * * BEAMFORMING                           *
@@ -627,7 +662,7 @@
 #define IX_MAPC_GROUP_ID     1
 #define IX_MAPC_METHOD       2
 #define IX_MAPC_AP_IDS       3
-#define IX_MAPC_EXTRA_PARAM  4
+#define IX_MAPC_EXTRA_PARAM  4	///> Generic "key=value,key2=value2" list, parsed per-scheme (see ParseMapcExtraParams in input_loader.h)
 
 #define DEFAULT_SCRIPT_FILENAME		"./output/script_output.txt"
 #define DEFAULT_SIMULATION_CODE		"DEFAULT_SIM"

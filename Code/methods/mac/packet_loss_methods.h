@@ -125,6 +125,46 @@ int AttemptToDecodePacket(double sinr, double capture_effect, double pd,
 }
 
 /**
+* Check whether a detected transmission can be decoded under the given
+* signal conditions.  Unlike IsPacketLost(), this is a deterministic
+* signal-level check that returns a simple boolean and does not classify the
+* loss reason or roll for PER.
+*
+* @param "primary_channel" [type int]: receiver's primary channel
+* @param "notification" [type Notification]: the transmission to evaluate
+* @param "sinr" [type double]: current SINR in pW (linear)
+* @param "capture_effect" [type double]: capture effect threshold in pW
+* @param "pd" [type double]: packet-detect / CCA threshold in pW
+* @param "power_rx_interest" [type double]: received power of interest in pW
+* @param "capture_effect_model" [type int]: capture effect model selector
+* @return 1 if the transmission can be decoded, 0 otherwise
+*/
+int CanDecodePacket(int primary_channel, Notification notification,
+		double sinr, double capture_effect, double pd, double power_rx_interest,
+		int capture_effect_model){
+
+	switch(capture_effect_model) {
+
+		case CE_DEFAULT: {
+			if(primary_channel < notification.left_channel
+					|| primary_channel > notification.right_channel){
+				return 0;
+			}
+			if(sinr < capture_effect){
+				return 0;
+			}
+			return 1;
+		}
+
+		case CE_IEEE_802_11: {
+			return (power_rx_interest > pd) ? 1 : 0;
+		}
+
+	}
+	return 0;
+}
+
+/**
 * Compute notification loss according to SINR received and other parameters
 * @param "primary_channel" [type int]: primary channel
 * @param "incoming_notification" [type Notification]: notification that was being decoded after detecting the newest one

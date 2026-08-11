@@ -79,6 +79,7 @@ struct Wlan
 	int *mapc_peer_ap_ids[MAX_MAPC_GROUPS_PER_WLAN];	///> Peer node_ids per group
 	int mapc_txop_splits[MAX_MAPC_GROUPS_PER_WLAN];	///> TXOP split method per group
 	double mapc_sr_tx_power_dbm[MAX_MAPC_GROUPS_PER_WLAN];	///> Co-SR TX power limit per group [dBm]
+	int mapc_cosr_policy[MAX_MAPC_GROUPS_PER_WLAN];	///> Co-SR power mechanism per group (COSR_POLICY_*), runtime-selected from the MAPC config CSV
 
 	/**
 	 * Find index of a given group_id in this WLAN's group list.

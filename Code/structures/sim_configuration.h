@@ -23,7 +23,6 @@ struct SimConfig {
 
     // Physical Layer Models
     int pdf_backoff;            // 0: exponential, 1: deterministic
-    int pdf_tx_time;
     int path_loss_model;
     int adjacent_channel_model;
     int collisions_model;

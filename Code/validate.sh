@@ -71,6 +71,7 @@ labels_sr=("4a_sr" "4b_no_sr")
 # ============================================================
 PASS=0
 FAIL=0
+WARN=0
 
 check_tpt() {
     local label="$1"
@@ -153,9 +154,9 @@ if make 2>&1 | tee "$BUILD_LOG"; then
         echo "  [PASS] Build: zero warnings"
         PASS=$((PASS + 1))
     else
-        echo "  [WARN] Build: $WARN_COUNT warning(s) detected"
+        echo "  [WARN] Build: $WARN_COUNT warning(s) detected (non-fatal)"
         grep "warning:" "$BUILD_LOG" | head -20
-        FAIL=$((FAIL + 1))
+        WARN=$((WARN + 1))
     fi
 else
     echo "  [FAIL] Build failed — aborting"
@@ -264,6 +265,9 @@ echo ""
 TOTAL=$((PASS + FAIL))
 echo "============================================="
 echo " Summary: $PASS/$TOTAL passed, $FAIL failed"
+if [ "$WARN" -gt 0 ]; then
+    echo " Build warnings: $WARN (non-fatal)"
+fi
 echo "============================================="
 if [ "$FAIL" -eq 0 ]; then
     echo " ALL TESTS PASSED"

@@ -33,9 +33,6 @@ void Komondor::SetupEnvironmentByReadingConfigFile(const char *config_filename) 
 			// Collisions model
 			collisions_model = atoi(ptr);
 		} else if (ix_param == 3) {
-			// PDF tx time model
-			pdf_tx_time = atoi(ptr);
-		} else if (ix_param == 4) {
 			// Simulation index (script's output)
 			simulation_index = atoi(ptr);
 		}
@@ -99,6 +96,7 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                     wlan_container[wlan_ix].mapc_peer_ap_ids[mapc_g] = NULL;
                     wlan_container[wlan_ix].mapc_txop_splits[mapc_g] = TXOP_SPLIT_EQUAL;
                     wlan_container[wlan_ix].mapc_sr_tx_power_dbm[mapc_g] = DEFAULT_COSR_TX_POWER_DBM;
+                    wlan_container[wlan_ix].mapc_cosr_policy[mapc_g] = COSR_POLICY_STATIC;
                 }
                 ++wlan_ix;
             }
@@ -407,7 +405,6 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
             node_container[node_ix].node_params.print_node_logs = print_node_logs;
             node_container[node_ix].node_params.adjacent_channel_model = adjacent_channel_model;
             node_container[node_ix].node_params.path_loss_model = path_loss_model;
-            node_container[node_ix].node_params.pdf_tx_time = pdf_tx_time;
             node_container[node_ix].node_params.simulation_code = simulation_code;
 
             // Traffic Generator
@@ -543,6 +540,32 @@ int Komondor :: GetNumOfNodes(const char *nodes_filename, int node_type, std::st
 }
 
 /**
+ * Parse the MAPC config CSV's ExtraParams field into a key/value map.
+ * Format: "key1=value1,key2=value2" (comma-separated pairs, '=' splits each pair).
+ * Scheme-agnostic on purpose: every MAPC method reads only the keys it understands
+ * from the returned map, so adding a new scheme-specific knob never requires a new
+ * CSV column -- just a new key inside this same field.
+ * @param "raw" [type std::string]: raw ExtraParams field (e.g. "donor_power=20,power_mechanism=continuous")
+ * @return a map from parameter name to its (still-string) value; empty if "raw" is empty
+ */
+std::map<std::string, std::string> ParseMapcExtraParams(const std::string &raw) {
+	std::map<std::string, std::string> out;
+	if (raw.empty()) return out;
+	char *buffer = strdup(raw.c_str());
+	char *token = strtok(buffer, ",");
+	while (token != NULL) {
+		std::string pair(token);
+		size_t eq_pos = pair.find('=');
+		if (eq_pos != std::string::npos) {
+			out[pair.substr(0, eq_pos)] = pair.substr(eq_pos + 1);
+		}
+		token = strtok(NULL, ",");
+	}
+	free(buffer);
+	return out;
+}
+
+/**
 * Generate the MAPC configuration, according to the MAPC config file
  * @param "mapc_filename" [type char*]: filename of the MAPC input CSV
 */
@@ -602,23 +625,39 @@ void Komondor::GenerateMapcConfiByReadingInputFile(const char *mapc_filename) {
 				}
 			}
 			
-			// 4. Parse per-scheme parameters (key-value pairs for extensibility)
+			// 4. Parse per-scheme parameters: ExtraParams is a generic "key=value,key2=value2"
+			// list (see ParseMapcExtraParams below). Each scheme's branch below pulls out
+			// only the keys it understands, so new schemes/knobs never require a new column.
 			tmp_line = strdup(line);
-			std::string params = ToString(GetField(tmp_line, IX_MAPC_EXTRA_PARAM));
+			std::string extra_params_raw = ToString(GetField(tmp_line, IX_MAPC_EXTRA_PARAM));
 			free(tmp_line);
+			std::map<std::string, std::string> params = ParseMapcExtraParams(extra_params_raw);
 
 			// --- APPLY LOGIC BASED ON METHOD ---
 			if (method_str == "CO_SR") {
-				// Option A: read TX power limit from ExtraParams [dBm]; fall back to default if absent
+				// donor_power: TX power ceiling P_max [dBm]; falls back to default if absent
 				double sr_pwr = DEFAULT_COSR_TX_POWER_DBM;
-				if (!params.empty()) sr_pwr = atof(params.c_str());
+				std::map<std::string, std::string>::iterator it_pwr = params.find("donor_power");
+				if (it_pwr != params.end()) sr_pwr = atof(it_pwr->second.c_str());
+				// power_mechanism: static (default) / selfish / continuous / discrete
+				int cosr_policy = COSR_POLICY_STATIC;
+				std::map<std::string, std::string>::iterator it_mech = params.find("power_mechanism");
+				if (it_mech != params.end()) {
+					std::string mechanism_str = it_mech->second;
+					if (mechanism_str == "selfish") cosr_policy = COSR_POLICY_SELFISH;
+					else if (mechanism_str == "continuous") cosr_policy = COSR_POLICY_CONTINUOUS;
+					else if (mechanism_str == "discrete") cosr_policy = COSR_POLICY_DISCRETE;
+					// else static (also covers an unrecognized value, matching the legacy default)
+				}
 				// Apply to every WLAN registered in this group
 				for (size_t c = 0; c < coordinated_ap_list.size(); ++c) {
 					for (int w = 0; w < total_wlans_number; ++w) {
 						if (wlan_container[w].wlan_code == coordinated_ap_list[c]) {
 							int g_idx = wlan_container[w].FindMapcGroupIdx(group_id);
-							if (g_idx >= 0)
+							if (g_idx >= 0) {
 								wlan_container[w].mapc_sr_tx_power_dbm[g_idx] = sr_pwr;
+								wlan_container[w].mapc_cosr_policy[g_idx] = cosr_policy;
+							}
 						}
 					}
 				}

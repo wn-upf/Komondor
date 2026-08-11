@@ -66,7 +66,7 @@
 #include "../structures/controller_report.h"
 
 #include "../methods/utils/auxiliary_methods.h"
-#include "../methods/agent/agent_methods.h"
+#include "../learning_modules/agent_methods.h"
 
 #include "../learning_modules/pre_processor.h"
 #include "../learning_modules/ml_model.h"
