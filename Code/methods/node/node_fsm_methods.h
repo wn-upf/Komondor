@@ -473,8 +473,18 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 			}
 
 			// Fix 2: for Co-BF, the STA's NAV was set by the coordination handshake
-			// (ICF/TF), not a genuine collision.  Bypass the packet-lost gate and let
-			// the reception complete; HandleFinishTX_StateRxData determines outcome.
+			// (ICF/TF), not a genuine collision -- interference toward this node is
+			// nulled via beamforming, so the generic SINR/collision gate below doesn't
+			// apply here. Bypass it and let the reception complete; HandleFinishTX_StateRxData
+			// determines the real outcome.
+			//
+			// Co-SR does NOT null interference (only power-controls the coordinated AP,
+			// and even then not always to a comfortable margin -- see the STATIC/SELFISH
+			// policies in ComputeCoSRTxPowers). Its SINR check must stay real: the peer
+			// AP's simultaneous DATA is by design, not a random backoff collision, but it
+			// can still genuinely fail to decode depending on distance/power policy. That
+			// case is handled below (loss_reason != PACKET_NOT_LOST), not bypassed here.
+			int _mapc_overlap_g = -1;
 			{
 				int _cobf_g = wlan.mapc_enabled
 					? wlan.FindMapcGroupIdx(notification.mapc_group_id) : -1;
@@ -484,24 +494,52 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 					loss_reason = IsPacketLost(node_params.current_primary_channel, notification, notification,
 						current_sinr, node_params.capture_effect, current_pd,
 						power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
+					if (_cobf_g >= 0 && wlan.mapc_method_ids[_cobf_g] == CO_SR)
+						_mapc_overlap_g = _cobf_g;
 				}
 			}
 
 			if(loss_reason != PACKET_NOT_LOST) {
 
-				loss_reason = PACKET_LOST_BO_COLLISION;
+				if (_mapc_overlap_g >= 0) {
+					// Co-SR: this is a genuine SINR/interference failure on the STA's own
+					// DATA link, not a random slotted-backoff collision (the two APs'
+					// transmissions overlapped by design). Fail gracefully -- keep the
+					// specific loss_reason for stats/NACK, but don't force
+					// PACKET_LOST_BO_COLLISION or RestartNode(): a full restart would also
+					// wipe sr_state.mapc_cosr_active and other in-TXOP state, which could
+					// break later frames in the same coordinated round. Just stay in NAV
+					// (already armed for the round's duration) and let the transmitting
+					// AP's own ACK timeout handle recovery, like any normal failed link.
+					LOGS(node_params.save_node_logs, node_logger.file,
+						"%.15f;N%d;S%d;%s;%s Co-SR DATA from own AP N%d lost (reason %d, SINR = %.2f dB) "
+						"-- real interference/power-policy failure, not a BO collision. Staying in NAV.\n",
+						SimTime(), node_params.node_id, node_state, LOG_D16, LOG_LVL3,
+						notification.source_id, loss_reason, ConvertPower(LINEAR_TO_DB, current_sinr));
 
-				if(!node_is_transmitter) {
-					trigger_NAV_timeout.Cancel();
-					time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
-					trigger_restart_sta.Set(FixTimeOffset(time_to_trigger,13,12));
-				}
+					if(node_params.nack_activated) {
+						logical_nack = GenerateLogicalNack(notification.packet_type,
+							notification.packet_id, node_params.node_id, notification.source_id,
+							NODE_ID_NONE, loss_reason, BER, current_sinr);
+						SendLogicalNack(logical_nack);
+					}
 
-				if(node_params.nack_activated) {
-					logical_nack = GenerateLogicalNack(notification.packet_type,
-						notification.packet_id, node_params.node_id, notification.source_id,
-						NODE_ID_NONE, loss_reason, BER, current_sinr);
-					SendLogicalNack(logical_nack);
+				} else {
+
+					loss_reason = PACKET_LOST_BO_COLLISION;
+
+					if(!node_is_transmitter) {
+						trigger_NAV_timeout.Cancel();
+						time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
+						trigger_restart_sta.Set(FixTimeOffset(time_to_trigger,13,12));
+					}
+
+					if(node_params.nack_activated) {
+						logical_nack = GenerateLogicalNack(notification.packet_type,
+							notification.packet_id, node_params.node_id, notification.source_id,
+							NODE_ID_NONE, loss_reason, BER, current_sinr);
+						SendLogicalNack(logical_nack);
+					}
 				}
 
 			} else {
@@ -1045,13 +1083,17 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 
 		// Fix 2: for Co-BF, the peer AP's simultaneous DATA is expected to be nulled
 		// toward this node; bypass the collision check so the reception continues.
+		// For Co-SR (no nulling, power-controlled instead), the overlap is still by
+		// design, not a random collision, but the SINR check must stay real -- a
+		// genuine loss here is handled gracefully below (loss_reason != PACKET_NOT_LOST),
+		// not bypassed. See the matching comment in HandleStartTX_StateNav above.
+		int _mapc_overlap_g = -1;
 		{
 			int _cobf_g = wlan.mapc_enabled
 				? wlan.FindMapcGroupIdx(notification.mapc_group_id) : -1;
 			int _ongoing_g = wlan.mapc_enabled
 				? wlan.FindMapcGroupIdx(incoming_notification.mapc_group_id) : -1;
-			if (_cobf_g >= 0 && _cobf_g == _ongoing_g
-					&& wlan.mapc_method_ids[_cobf_g] == CO_BF) {
+			if (_cobf_g >= 0 && _cobf_g == _ongoing_g && wlan.mapc_method_ids[_cobf_g] == CO_BF) {
 				loss_reason = PACKET_NOT_LOST;
 			// Check if the notification that was already being received is lost due to new notification
 			} else if (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified) {
@@ -1063,6 +1105,8 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 					current_sinr, node_params.capture_effect, current_pd,
 					power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
 			}
+			if (_cobf_g >= 0 && _cobf_g == _ongoing_g && wlan.mapc_method_ids[_cobf_g] == CO_SR)
+				_mapc_overlap_g = _cobf_g;
 		}
 
 		// TODO: method for checking whether the detected transmission can be decoded or not
@@ -1093,6 +1137,24 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 							incoming_notification.packet_id, node_params.node_id, incoming_notification.source_id,
 							NODE_ID_NONE, loss_reason, BER, current_sinr);
 						SendLogicalNack(logical_nack);
+					}
+					if (_mapc_overlap_g >= 0) {
+						// Co-SR: genuine SINR failure on our own ongoing DATA reception
+						// caused by the peer AP's (by-design, simultaneous) DATA -- real
+						// interference, not a hidden-node collision, but the reception is
+						// still genuinely lost and must not be allowed to later report
+						// "finished successfully". Restart like any other lost reception;
+						// mapc_pending_ack_valid (cleared inside RestartNode) additionally
+						// stops this STA from replying with a stale ACK if its own AP's
+						// ACK TF for this TXOP still arrives afterward. Restarting only
+						// touches this node's own state, so the peer AP/STA's independent,
+						// unaffected exchange still completes normally.
+						LOGS(node_params.save_node_logs, node_logger.file,
+							"%.15f;N%d;S%d;%s;%s Co-SR: ongoing DATA reception from N%d lost to peer AP's "
+							"simultaneous DATA (reason %d, SINR = %.2f dB) -- real interference, not a "
+							"hidden-node collision, but reception failed. Restarting node.\n",
+							SimTime(), node_params.node_id, node_state, LOG_D19, LOG_LVL3,
+							incoming_notification.source_id, loss_reason, ConvertPower(LINEAR_TO_DB, current_sinr));
 					}
 					RestartNode(FALSE);
 					break;
@@ -1666,6 +1728,38 @@ void Node :: HandleFinishTX_StateSensing(const Notification &notification){
 		node_params.current_primary_channel = npca_stored_primary_channel;
 		npca_sta_on_npca_channel = 0;
 	}
+	// Co-BF/Co-SR STA: own AP's ACK TF finished while this node is still in SENSING (a
+	// STA with no own backoff traffic sits here between events, same reason ICF/TF/ICR
+	// need their own SENSING guards elsewhere in this codebase). Must still send our
+	// own ACK -- mirrors HandleFinishTX_StateWaitAckTf's STA branch exactly. Filtered
+	// to our own AP's ACK TF only, so a coordinated-AP's STA doesn't react to the
+	// other WLAN's (earlier) broadcast ACK TF. Without this guard the ACK TF is
+	// silently dropped here and the STA never replies, regardless of interference --
+	// this was the actual cause of the "static should show capture-effect losses but
+	// doesn't" discrepancy, not a power/SINR issue.
+	if (notification.packet_type == PACKET_TYPE_ACK_TF
+			&& wlan.FindMapcGroupIdx(notification.mapc_group_id) >= 0
+			&& notification.source_id == wlan.ap_id
+			&& node_params.node_type != NODE_TYPE_AP) {
+		if (mapc_pending_ack_valid) {
+			node_state = STATE_TX_ACK;
+			time_to_trigger = SimTime() + SIFS;
+			trigger_SIFS.Set(FixTimeOffset(time_to_trigger, 13, 12));
+			LOGS(node_params.save_node_logs, node_logger.file,
+				"%.15f;N%d;S%d;%s;%s [SENSING] ACK TF received from own AP N%d. Sending ACK after SIFS.\n",
+				SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3, notification.source_id);
+		} else {
+			// Our own DATA reception for this TXOP was already lost (Co-SR collision
+			// restarted us back to SENSING before this ACK TF arrived) -- there is
+			// nothing genuine to ACK. Stay in SENSING; do not reply.
+			LOGS(node_params.save_node_logs, node_logger.file,
+				"%.15f;N%d;S%d;%s;%s [SENSING] ACK TF received from own AP N%d but no valid pending "
+				"reception for this TXOP (already lost/restarted). Ignoring.\n",
+				SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3, notification.source_id);
+		}
+		return;
+	}
+
 	// NPCA STA: ICF finished; schedule ICR after SIFS
 	if (notification.packet_type == PACKET_TYPE_NPCA_ICF
 			&& notification.destination_id == node_params.node_id
@@ -1760,29 +1854,23 @@ void Node :: HandleFinishTX_StateRxData(const Notification &notification){
 			current_destination_id = notification.source_id;
 			current_nav_time = ComputeNavTime(STATE_TX_ACK, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
 			current_nav_time = FixTimeOffset(current_nav_time, 13, 12);
-			// Co-BF/Co-SR: check MAPC method before building ACK notification
+			// Co-BF/Co-SR: check MAPC method before building ACK notification.
+			// ACKs are sequential (coordinator's STA, then coordinated AP's STA -- see
+			// STATE_TX_DATA in node_packet_methods.h), not simultaneous, so no
+			// sub-channel separation is needed here: each STA gets the full bonded
+			// range in its own turn.
 			int _cobf_cosr_g = wlan.FindMapcGroupIdx(notification.mapc_group_id);
 			int _cobf_cosr = (_cobf_cosr_g >= 0)
 				&& (wlan.mapc_method_ids[_cobf_cosr_g] == CO_BF
 					|| wlan.mapc_method_ids[_cobf_cosr_g] == CO_SR);
-			if (_cobf_cosr) {
-				// Co-BF/Co-SR: both STAs ACK simultaneously.
-				// Assign each AP a distinct sub-channel within the bonded range (OFDMA-like)
-				// so ACKs don't collide even when both APs share the same primary channel.
-				// Rank = count of peer APs with smaller node_id -> unique offset per AP.
-				int _rank = 0;
-				for (int _p = 0; _p < wlan.mapc_num_peers[_cobf_cosr_g]; ++_p) {
-					if (wlan.mapc_peer_ap_ids[_cobf_cosr_g][_p] < wlan.ap_id)
-						++_rank;
-				}
-				int _num_ch = current_right_channel - current_left_channel + 1;
-				int _ack_ch = current_left_channel + (_rank % _num_ch);
-				current_left_channel  = _ack_ch;
-				current_right_channel = _ack_ch;
-			}
 			ack_notification = GenerateNotification(PACKET_TYPE_ACK, current_destination_id,
 					notification.packet_id, notification.tx_info.num_packets_aggregated,
 					notification.timestamp_generated, current_tx_duration);
+			// Mark this ACK as genuinely earned by a successful reception. Checked before
+			// replying to a (possibly late/stale) MAPC ACK TF in HandleFinishTX_StateSensing
+			// and HandleFinishTX_StateWaitAckTf; cleared by RestartNode() so a mid-reception
+			// Co-SR collision can never be followed by a bogus ACK for the same TXOP.
+			mapc_pending_ack_valid = 1;
 
 						// Reset the flag that indicates whether the tx power changed or not
 						sr_state.flag_change_in_tx_power = FALSE;
@@ -1798,15 +1886,36 @@ void Node :: HandleFinishTX_StateRxData(const Notification &notification){
 			// ------------------------------------------------------------------------
 
 			if (_cobf_cosr) {
-				// Co-BF/Co-SR: coordinator will send ACK TF; hold ACK until then.
-				// Timeout = SIFS + rts_duration (ACK TF size) + extra; use rts_duration,
-				// NOT cts_duration — ACK TF is the same size as RTS, not CTS.
+				// Co-BF/Co-SR: own AP will send an ACK TF; hold ACK until then.
+				// Timing depends on whether our own AP is the MAPC coordinator or the
+				// coordinated AP (see mapc_is_coordinator_tx comment in notification.h
+				// and the STATE_TX_DATA cases in node_packet_methods.h): the coordinated
+				// AP deliberately waits out the coordinator's whole SIFS+ACK-TF+SIFS+ACK
+				// sequence (plus one more SIFS) before sending its own ACK TF, per the
+				// 802.11bn draft's sequential (not simultaneous) Co-SR ACK phase. A STA
+				// on the coordinated AP's side must therefore wait proportionally longer,
+				// or its DATA_timeout fires before its own AP ever transmits.
 				node_state = STATE_WAIT_ACK_TF;
-				time_to_trigger = SimTime() + SIFS + notification.tx_info.rts_duration + TIME_OUT_EXTRA_TIME;
+				if (notification.tx_info.mapc_is_coordinator_tx) {
+					// Fast path: ACK TF sent SIFS after DATA ends.
+					time_to_trigger = SimTime() + SIFS + notification.tx_info.rts_duration
+						+ TIME_OUT_EXTRA_TIME;
+				} else {
+					// Sequential path: mirror the coordinated-AP's own delay formula
+					// (SIFS + rts_duration + SIFS + ack_duration + SIFS before it even
+					// starts sending), plus its ACK TF's own duration (rts_duration) and
+					// the usual margin.
+					time_to_trigger = SimTime() + SIFS + notification.tx_info.rts_duration
+						+ SIFS + notification.tx_info.ack_duration
+						+ SIFS + notification.tx_info.rts_duration + TIME_OUT_EXTRA_TIME;
+				}
 				trigger_DATA_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
 				LOGS(node_params.save_node_logs, node_logger.file,
-					"%.15f;N%d;S%d;%s;%s DATA from N%d done; waiting for ACK TF from coordinator.\n",
-					SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3, notification.source_id);
+					"%.15f;N%d;S%d;%s;%s DATA from N%d done; waiting for ACK TF from own AP N%d "
+					"(coordinator role=%d) until %.12f.\n",
+					SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3, notification.source_id,
+					notification.source_id, notification.tx_info.mapc_is_coordinator_tx,
+					trigger_DATA_timeout.GetTime());
 			} else {
 				// Normal case: send ACK directly after SIFS (nav already computed above)
 				node_state = STATE_TX_ACK;

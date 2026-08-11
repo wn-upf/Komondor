@@ -106,6 +106,11 @@ struct TxInfo
 	// Adaptive ACK suppression
 	int ack_required;	///> 1 = receiver must send ACK; 0 = ACK suppressed by transmitter
 
+	// Co-BF/Co-SR sequential ACK: lets the receiving STA compute the right ACK-TF wait timeout. 
+	//   --> 1 = sender is the MAPC coordinator (send ACK TF after SIFS)
+	//   --> 0 = sender is the coordinated AP (wait SIFS+ACK-TF+SIFS+ACK)
+	int mapc_is_coordinator_tx;
+
 	/**
 	 * Function to print the transmission information
 	 * @param "packet_id" [type int]: identifier of the packet

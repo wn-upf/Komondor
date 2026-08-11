@@ -1317,8 +1317,12 @@ void Node :: MyTxFinished(trigger_t &){
 			int cobf_cosr = wlan.mapc_enabled
 				&& (wlan.mapc_method_ids[mapc_active_group_idx] == CO_BF
 					|| wlan.mapc_method_ids[mapc_active_group_idx] == CO_SR);
-			if (cobf_cosr)
+			if (cobf_cosr) {
 				notification.mapc_group_id = wlan.mapc_group_ids[mapc_active_group_idx];
+				// Tell the receiving STA which ACK-TF timing to expect (see field comment
+				// in notification.h) -- fast coordinator path vs. delayed sequential path.
+				notification.tx_info.mapc_is_coordinator_tx = (coordinator_ap_id == NODE_ID_NONE) ? 1 : 0;
+			}
 
 			outportSelfFinishTX(notification);
 
@@ -1335,15 +1339,19 @@ void Node :: MyTxFinished(trigger_t &){
 					"%.15f;N%d;S%d;%s;%s DATA %d tx done (Co-BF/SR coordinator). Sending ACK TF after SIFS.\n",
 					SimTime(), node_params.node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
 			} else if (cobf_cosr && coordinator_ap_id != NODE_ID_NONE) {
-				// COORDINATED AP: wait for coordinator's ACK TF
-				node_state = STATE_WAIT_ACK_TF;
-				time_to_trigger = SimTime() + SIFS + rts_duration + SIFS + TIME_OUT_EXTRA_TIME;
-				trigger_DATA_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
+				// The ACK phase is SEQUENTIAL, not simultaneous (Coordinating AP first, then Coordinated AP)
+				current_tx_duration = rts_duration;  // ACK TF is a short control frame
+				ack_tf_notification = GenerateNotification(PACKET_TYPE_ACK_TF, NODE_ID_MAPC_BROADCAST,
+					data_notification.packet_id, 0, SimTime(), current_tx_duration);
+				ack_tf_notification.mapc_group_id = wlan.mapc_group_ids[mapc_active_group_idx];
+				node_state = STATE_TX_ACK_TF;
+				time_to_trigger = SimTime() + SIFS + rts_duration + SIFS + ack_duration + SIFS;
+				trigger_SIFS.Set(FixTimeOffset(time_to_trigger, 13, 12));
 				LOGS(node_params.save_node_logs, node_logger.file,
-					"%.15f;N%d;S%d;%s;%s DATA %d tx done (Co-BF/SR coordinated). Waiting for ACK TF.\n",
+					"%.15f;N%d;S%d;%s;%s DATA %d tx done (Co-BF/SR coordinated). Sending own ACK TF after coordinator's ACK sequence.\n",
 					SimTime(), node_params.node_id, node_state, LOG_G00, LOG_LVL2, notification.packet_id);
 			} else if (data_notification.tx_info.ack_required == 0) {
-				// ACK suppressed — assume DATA delivered, return to contention immediately
+				// ACK suppressed (assume DATA delivered, return to contention)
 				last_transmission_successful = 1;
 				++node_stats.data_packets_acked;
 				++node_stats.data_packets_acked_per_sta[current_destination_id - node_params.node_id - 1];
@@ -1389,7 +1397,7 @@ void Node :: MyTxFinished(trigger_t &){
 			break;
 		}
 
-		case STATE_TX_ACK_TF:{		// ACK TF sent � wait for STA's ACK
+		case STATE_TX_ACK_TF:{		// ACK TF sent (wait for STA's ACK)
 
 			Notification notification = GenerateNotification(PACKET_TYPE_ACK_TF, NODE_ID_MAPC_BROADCAST,
 				ack_tf_notification.packet_id, 0,
@@ -1450,7 +1458,7 @@ void Node :: MyTxFinished(trigger_t &){
 			break;
 		}
 
-		case STATE_TX_ICR:{		// ICR sent — wait for next MAPC frame (MU-RTS/TXS or TF)
+		case STATE_TX_ICR:{		// ICR sent (wait for MU-RTS/TXS or TF)
 			outportSelfFinishTX(icr_notification);
 			int icr_rejected = FALSE;
 			if (wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA) {
@@ -1496,7 +1504,7 @@ void Node :: MyTxFinished(trigger_t &){
 			break;
 		}
 
-		case STATE_TX_TF:{		// TF sent — coordinator starts DATA simultaneously (Co-BF/Co-SR)
+		case STATE_TX_TF:{		// TF sent -> coordinator starts DATA simultaneously (Co-BF/Co-SR)
 
 			// Use NODE_ID_MAPC_BROADCAST to match the TF start notification (broadcast frame)
 			Notification notification = GenerateNotification(PACKET_TYPE_TF, NODE_ID_MAPC_BROADCAST,
@@ -1870,31 +1878,228 @@ void Node :: HandleFinishTX_StateRxIcr(const Notification &notification) {
 }
 
 /**
- * ComputeCoSRTxPowers: compute TX power limits for the Co-SR simultaneous DATA phase.
- * Controlled by COSR_POWER_LIMIT_PEER_ONLY (list_of_macros.h):
- *   0 = CSV limit applied symmetrically to both coordinator and coordinated AP
- *   1 = CSV limit applied to coordinated AP (peer) only; coordinator keeps default TX power
- * OPTION B (future): replace body with ICR measurement-based computation using
- *   mapc_icr_rssi_measurements[] populated from ICR.tx_info.mapc_sr_measured_rssi.
+ * CoSRRate: link rate for the two-link Co-SR interference channel, treating interference as noise
  */
-void Node :: ComputeCoSRTxPowers(double &coordinator_pW, double &peer_pW) {
-	double limit_pW = ConvertPower(DBM_TO_PW, wlan.mapc_sr_tx_power_dbm[mapc_active_group_idx]);
-	peer_pW = limit_pW;
+static double CoSRRate(double h_own, double p_own, double h_cross, double p_cross) {
+	double n0_pW = ConvertPower(DBM_TO_PW, NOISE_LEVEL_DBM);
+	double sinr = (h_own * p_own) / (n0_pW + h_cross * p_cross);
+	return log(1.0 + sinr);
+}
+
+/**
+ * CoSRPFObjective: ln(R_A) + ln(R_B)
+ */
+static double CoSRPFObjective(double h_AA, double h_AB, double h_BA, double h_BB,
+		double p_a, double p_b) {
+	double r_a = CoSRRate(h_AA, p_a, h_BA, p_b);
+	double r_b = CoSRRate(h_BB, p_b, h_AB, p_a);
+	if (r_a <= 0.0 || r_b <= 0.0) return -1e18;
+	return log(r_a) + log(r_b);
+}
+
+/**
+ * CoSREdgeFeasibleRange: on the edge where the AP indicated by fixed_is_a is held at
+ * p_max_pW, both APs must still clear the shared capture-effect SINR target gamma (linear) for their own link to be decodable. 
+ * This bounds the free AP's power to [floor, ceil]:
+ *   floor: the free AP's own SINR >= gamma
+ *   ceil : the fixed AP's SINR (which the free AP interferes with) >= gamma
+ * Returns 0 (infeasible, empty interval) or 1 (feasible) and writes [*lo,*hi].
+ */
+static int CoSREdgeFeasibleRange(double h_AA, double h_AB, double h_BA, double h_BB,
+		double p_max_pW, double gamma, int fixed_is_a, double *lo, double *hi) {
+	double n0_pW = ConvertPower(DBM_TO_PW, NOISE_LEVEL_DBM);
+	double gamma_margin = gamma * ConvertPower(DB_TO_LINEAR, COSR_FEASIBILITY_MARGIN_DB);
+	double floor_v, ceil_v;
+	if (fixed_is_a) {
+		/* free = P_B */
+		floor_v = gamma_margin * (n0_pW + h_AB * p_max_pW) / h_BB;
+		ceil_v  = (h_AA * p_max_pW / gamma_margin - n0_pW) / h_BA;
+	} else {
+		/* free = P_A */
+		floor_v = gamma_margin * (n0_pW + h_BA * p_max_pW) / h_AA;
+		ceil_v  = (h_BB * p_max_pW / gamma_margin - n0_pW) / h_AB;
+	}
+	*lo = (floor_v > 1e-9) ? floor_v : 1e-9;
+	*hi = (ceil_v < p_max_pW) ? ceil_v : p_max_pW;
+	return (*hi >= *lo) ? 1 : 0;
+}
+
+/**
+ * CoSRTernarySearch: maximize the PF objective along one edge of the box, with the AP
+ * indicated by fixed_is_a held at p_max_pW and the other varied in [lo,hi] (the
+ * capture-effect-feasible sub-range from CoSREdgeFeasibleRange, a subset of
+ * (0,Pmax]). Each edge is unimodal (one rate strictly decreasing, the other strictly
+ * increasing in the free variable), so ternary search converges to the edge optimum
+ * in a handful of iterations.
+ */
+static double CoSRTernarySearch(double h_AA, double h_AB, double h_BA, double h_BB,
+		double p_max_pW, double lo, double hi, int fixed_is_a, double *out_obj) {
+	for (int it = 0; it < 40; ++it) {
+		double m1 = lo + (hi - lo) / 3.0;
+		double m2 = hi - (hi - lo) / 3.0;
+		double obj1 = fixed_is_a ? CoSRPFObjective(h_AA, h_AB, h_BA, h_BB, p_max_pW, m1)
+		                         : CoSRPFObjective(h_AA, h_AB, h_BA, h_BB, m1, p_max_pW);
+		double obj2 = fixed_is_a ? CoSRPFObjective(h_AA, h_AB, h_BA, h_BB, p_max_pW, m2)
+		                         : CoSRPFObjective(h_AA, h_AB, h_BA, h_BB, m2, p_max_pW);
+		if (obj1 < obj2) lo = m1; else hi = m2;
+	}
+	double x = (lo + hi) / 2.0;
+	*out_obj = fixed_is_a ? CoSRPFObjective(h_AA, h_AB, h_BA, h_BB, p_max_pW, x)
+	                      : CoSRPFObjective(h_AA, h_AB, h_BA, h_BB, x, p_max_pW);
+	return x;
+}
+
+/**
+ * CoSRDiscreteRateProxy: real MCS/rate lookup, mirroring SelectMCSResponse and Mcs_array
+ */
+static double CoSRDiscreteRateProxy(double pw_received_pW, int num_channels_ix) {
+	static const int N_THRESHOLDS = 13;
+	static const double MCS_THRESHOLDS[N_THRESHOLDS] = {
+		-79, -77, -74, -70, -66, -65, -64, -59, -57, -54, -52, -48, -46
+	};
+	static const int MCS_VALUES[N_THRESHOLDS + 1] = {
+		MODULATION_BPSK_1_2, MODULATION_QPSK_1_2, MODULATION_QPSK_3_4,
+		MODULATION_16QAM_1_2, MODULATION_16QAM_3_4, MODULATION_64QAM_2_3,
+		MODULATION_64QAM_3_4, MODULATION_64QAM_5_6, MODULATION_256QAM_3_4,
+		MODULATION_256QAM_5_6, MODULATION_1024QAM_3_4, MODULATION_1024QAM_5_6,
+		MODULATION_4096QAM_3_4, MODULATION_4096QAM_5_6
+	};
+	double pw_rx_dbm = ConvertPower(PW_TO_DBM, pw_received_pW);
+	double offset = num_channels_ix * 3.0;
+	int ix;
+	for (ix = 0; ix < N_THRESHOLDS; ++ix) {
+		if (pw_rx_dbm < MCS_THRESHOLDS[ix] + offset) break;
+	}
+	int mcs = MCS_VALUES[ix];
+	return Mcs_array::modulation_bits[mcs - 1] * Mcs_array::coding_rates[mcs - 1];
+}
+
+/**
+ * ComputeCoSRTxPowers: compute TX power limits for the Co-SR simultaneous DATA phase.
+ *
+ * @return 1 if a feasible simultaneous allocation was found (coordinator_pW, peer_pW
+ *         are valid), 0 if infeasible (caller should fall back to time-sharing).
+ *         COSR_POLICY_STATIC always returns 1 (legacy: no feasibility check, matches
+ *         pre-existing behavior exactly).
+ */
+int Node :: ComputeCoSRTxPowers(double &coordinator_pW, double &peer_pW) {
+	int group_idx = mapc_active_group_idx;
+	int policy = wlan.mapc_cosr_policy[group_idx];
+
+	if (policy == COSR_POLICY_STATIC) {
+		double limit_pW = ConvertPower(DBM_TO_PW, wlan.mapc_sr_tx_power_dbm[group_idx]);
+		peer_pW = limit_pW;
 #if COSR_POWER_LIMIT_PEER_ONLY == 0
-	coordinator_pW = limit_pW;
+		coordinator_pW = limit_pW;
 #endif
+		return 1;
+	}
+
+	/* Selfish/Continuous/Discrete all need the topology-derived channel gains. */
+	double p_max_pW = ConvertPower(DBM_TO_PW, wlan.mapc_sr_tx_power_dbm[group_idx]);
+	double gamma    = node_params.capture_effect;
+
+	int own_sta_id  = wlan.list_sta_id[0];
+	int peer_ap_id  = wlan.mapc_peer_ap_ids[group_idx][0];
+	int peer_sta_id = all_node_first_sta_id[peer_ap_id];
+
+	double d_AA = distances_array[own_sta_id];
+	double d_AB = distances_array[peer_sta_id];
+	double d_BA = ComputeDistance(all_node_x[peer_ap_id], all_node_y[peer_ap_id], all_node_z[peer_ap_id],
+		all_node_x[own_sta_id], all_node_y[own_sta_id], all_node_z[own_sta_id]);
+	double d_BB = ComputeDistance(all_node_x[peer_ap_id], all_node_y[peer_ap_id], all_node_z[peer_ap_id],
+		all_node_x[peer_sta_id], all_node_y[peer_sta_id], all_node_z[peer_sta_id]);
+
+	const double REF_PW = 1.0;	// 1 pW reference tx power to sample the (tx-power-independent) channel gain
+	double h_AA = ComputePowerReceived(d_AA, REF_PW, node_params.central_frequency, node_params.path_loss_model);
+	double h_AB = ComputePowerReceived(d_AB, REF_PW, node_params.central_frequency, node_params.path_loss_model);
+	double h_BA = ComputePowerReceived(d_BA, REF_PW, node_params.central_frequency, node_params.path_loss_model);
+	double h_BB = ComputePowerReceived(d_BB, REF_PW, node_params.central_frequency, node_params.path_loss_model);
+
+	double lo1, hi1;
+	int edge1_feasible = CoSREdgeFeasibleRange(h_AA, h_AB, h_BA, h_BB, p_max_pW, gamma, 1, &lo1, &hi1);
+
+	if (policy == COSR_POLICY_SELFISH) {
+		/* Only the coordinator-fixed edge is ever considered -- no comparison against
+		 * the mirrored (peer-fixed) assignment. See Method 1 / Eq. donor. */
+		if (!edge1_feasible) return 0;
+		coordinator_pW = p_max_pW;
+		peer_pW        = hi1;
+		return 1;
+	}
+
+	double lo2, hi2;
+	int edge2_feasible = CoSREdgeFeasibleRange(h_AA, h_AB, h_BA, h_BB, p_max_pW, gamma, 0, &lo2, &hi2);
+
+	if (!edge1_feasible && !edge2_feasible) return 0;
+
+	double obj_a_fixed = -1e18, obj_b_fixed = -1e18;
+	double p_b_when_a_fixed = 0.0, p_a_when_b_fixed = 0.0;
+	if (policy == COSR_POLICY_DISCRETE) {
+		/* Discrete-rate-aware: within a feasible edge, an AP's achieved MCS/rate depends
+		 * only on its OWN received power (SelectMCSResponse), not on the peer's
+		 * interference -- decodability is already guaranteed by [lo,hi]. So the free
+		 * AP's power should simply be pushed to the top of its feasible range (hi is
+		 * already min(ceiling, p_max_pW) by construction); there is no interior
+		 * trade-off left to search for within an edge, only the edge choice itself. */
+		int channels_ix = (int) log2(node_params.max_channel_allowed - node_params.min_channel_allowed + 1);
+		if (edge1_feasible) {
+			p_b_when_a_fixed = hi1;
+			double rate_a = CoSRDiscreteRateProxy(h_AA * p_max_pW, channels_ix);
+			double rate_b = CoSRDiscreteRateProxy(h_BB * p_b_when_a_fixed, channels_ix);
+			obj_a_fixed = log(rate_a) + log(rate_b);
+		}
+		if (edge2_feasible) {
+			p_a_when_b_fixed = hi2;
+			double rate_a = CoSRDiscreteRateProxy(h_AA * p_a_when_b_fixed, channels_ix);
+			double rate_b = CoSRDiscreteRateProxy(h_BB * p_max_pW, channels_ix);
+			obj_b_fixed = log(rate_a) + log(rate_b);
+		}
+	} else { /* COSR_POLICY_CONTINUOUS */
+		if (edge1_feasible)
+			p_b_when_a_fixed = CoSRTernarySearch(h_AA, h_AB, h_BA, h_BB, p_max_pW, lo1, hi1, 1, &obj_a_fixed);
+		if (edge2_feasible)
+			p_a_when_b_fixed = CoSRTernarySearch(h_AA, h_AB, h_BA, h_BB, p_max_pW, lo2, hi2, 0, &obj_b_fixed);
+	}
+
+	if (obj_a_fixed >= obj_b_fixed) {
+		coordinator_pW = p_max_pW;
+		peer_pW        = p_b_when_a_fixed;
+	} else {
+		coordinator_pW = p_a_when_b_fixed;
+		peer_pW        = p_max_pW;
+	}
+	return 1;
 }
 
 /**
  * ProceedAfterIcr: coordinator decides next action after all ICRs collected
  */
 void Node :: ProceedAfterIcr() {
+	// Co-SR: compute simultaneous-phase powers up front so infeasibility (neither
+	// edge clears the shared capture-effect target within Pmax) can redirect this
+	// TXOP to the time-sharing (Co-TDMA) path below instead of forcing a simultaneous
+	// transmission guaranteed to drop a packet.
+	int mapc_time_sharing_fallback = FALSE;
+	double cosr_coord_pW = current_tx_power;
+	double cosr_peer_pW  = current_tx_power;
+	if (wlan.mapc_method_ids[mapc_active_group_idx] == CO_SR && mapc_peer_has_data) {
+		if (!ComputeCoSRTxPowers(cosr_coord_pW, cosr_peer_pW)) {
+			mapc_time_sharing_fallback = TRUE;
+			LOGS(node_params.save_node_logs, node_logger.file,
+				"%.15f;N%d;S%d;%s;%s Co-SR infeasible (capture-effect targets unreachable "
+				"within Pmax); falling back to time-sharing this TXOP\n",
+				SimTime(), node_params.node_id, node_state, LOG_F04, LOG_LVL2);
+		}
+	}
+
 	LOGS(node_params.save_node_logs, node_logger.file,
 		"%.15f;N%d;S%d;%s;%s All ICRs collected. Proceeding with %s\n",
 		SimTime(), node_params.node_id, node_state, LOG_F04, LOG_LVL2,
-		(wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA) ? "Co-TDMA DATA" : "Co-BF/SR TF");
+		(wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA || mapc_time_sharing_fallback)
+			? "Co-TDMA DATA" : "Co-BF/SR TF");
 
-	if (wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA) {
+	if (wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA || mapc_time_sharing_fallback) {
 		// Coordinator sends its own DATA first (2-way: DATA/ACK)
 		exchange_sequence = IEEE_802_11_NO_RTS_CTS;
 		SelectDestination();
@@ -1978,11 +2183,8 @@ void Node :: ProceedAfterIcr() {
 		} else {
 			// Peer has data: send TF to trigger simultaneous DATA
 
-			// Co-SR only: compute power limits for simultaneous phase
-			double cosr_coord_pW = current_tx_power;  // default: no restriction
-			double cosr_peer_pW  = current_tx_power;
+			// Co-SR only: power limits already computed above (feasibility-gated)
 			if (wlan.mapc_method_ids[mapc_active_group_idx] == CO_SR) {
-				ComputeCoSRTxPowers(cosr_coord_pW, cosr_peer_pW);
 				sr_state.current_tx_power_sr = cosr_coord_pW;
 				sr_state.mapc_cosr_active    = TRUE;
 				for (int n = 0; n < wlan.num_stas; ++n) change_modulation_flag[n] = TRUE;
@@ -2137,33 +2339,41 @@ void Node :: HandleFinishTX_StateRxTf(const Notification &notification) {
 }
 
 /**
- * HandleFinishTX_StateWaitAckTf: handles ACK TF reception for coordinated AP and STAs.
- * Called when AP_A's ACK TF finishes transmitting (all nodes in STATE_WAIT_ACK_TF process this).
- * - Coordinated AP: transitions to STATE_WAIT_ACK to receive its own STA's ACK.
- * - STA: transitions to STATE_TX_ACK and sends ACK to its AP after SIFS.
+ * HandleFinishTX_StateWaitAckTf: handles ACK TF reception for STAs.
  */
 void Node :: HandleFinishTX_StateWaitAckTf(const Notification &notification) {
 	if (notification.packet_type != PACKET_TYPE_ACK_TF
 			|| wlan.FindMapcGroupIdx(notification.mapc_group_id) < 0) return;
+	// Ignore an ACK TF from an AP other than our own (the other WLAN's coordinator or
+	// coordinated AP, sequentially triggering its own STA, not us).
+	if (notification.source_id != wlan.ap_id) return;
 
 	trigger_DATA_timeout.Cancel();
 
 	if (node_params.node_type == NODE_TYPE_AP) {
-		// Coordinated AP: ACK TF received � wait for own STA's ACK
+		// Fallback: an AP should no longer reach STATE_WAIT_ACK_TF under the
+		// sequential ACK flow, but keep prior behavior in case it ever does.
 		time_to_trigger = SimTime() + SIFS + TIME_OUT_EXTRA_TIME;
 		trigger_ACK_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
 		node_state = STATE_WAIT_ACK;
 		LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s ACK TF received. Waiting for ACK from own STA (N%d).\n",
 			SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3, current_destination_id);
-	} else {
-		// STA: ACK TF received � send ACK to own AP after SIFS
+	} else if (mapc_pending_ack_valid) {
+		// STA: own AP's ACK TF received -- send ACK to own AP after SIFS
 		node_state = STATE_TX_ACK;
 		time_to_trigger = SimTime() + SIFS;
 		trigger_SIFS.Set(FixTimeOffset(time_to_trigger, 13, 12));
 		LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s ACK TF received. Sending ACK to N%d after SIFS.\n",
 			SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3, current_destination_id);
+	} else {
+		// Should not normally be reachable, kept as a fallback.
+		LOGS(node_params.save_node_logs, node_logger.file,
+			"%.15f;N%d;S%d;%s;%s ACK TF received but no valid pending reception for this TXOP "
+			"(already lost/restarted). Ignoring and restarting.\n",
+			SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3);
+		RestartNode(FALSE);
 	}
 }
 
