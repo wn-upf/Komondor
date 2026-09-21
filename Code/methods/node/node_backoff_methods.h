@@ -223,6 +223,11 @@ void Node :: RestartNode(int called_by_time_out){
 
 	receiving_from_node_id = NODE_ID_NONE;
 	receiving_packet_id = NO_PACKET_ID;
+	// Co-SR: TX power reverts to this node's default once the TXOP ends
+	if (sr_state.mapc_cosr_active && sr_state.current_tx_power_sr != current_tx_power) {
+		sr_state.flag_change_in_tx_power = TRUE;
+	}
+	sr_state.current_tx_power_sr = current_tx_power;
 	sr_state.mapc_cosr_active = 0;
 	mapc_pending_ack_valid = 0;	///> Restart MAPC ACK state too, so a stale/late ACK TF for this TXOP is never answered after rejoining SENSING
 	pp_punctured_bitmap = 0;
