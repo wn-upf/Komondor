@@ -95,6 +95,7 @@ void Node :: HandleStartTX_StateSensing(const Notification &notification) {
 					if(fabs(outrange_nav_notification.timestamp - notification.timestamp)
 						< MAX_DIFFERENCE_SAME_TIME){
 						loss_reason = PACKET_LOST_BO_COLLISION;
+						++node_stats.num_bo_collisions;
 					}
 				}
 
@@ -527,6 +528,7 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 				} else {
 
 					loss_reason = PACKET_LOST_BO_COLLISION;
+					++node_stats.num_bo_collisions;
 
 					if(!node_is_transmitter) {
 						trigger_NAV_timeout.Cancel();
@@ -611,6 +613,7 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 				if(loss_reason != PACKET_NOT_LOST) {	// If RTS IS LOST, send logical Nack
 
 					loss_reason = PACKET_LOST_BO_COLLISION;
+					++node_stats.num_bo_collisions;
 
 					if(!node_is_transmitter) {
 
@@ -952,6 +955,7 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 						if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
 							// SERGIO HandleSlottedBackoffCollision();
 							loss_reason = PACKET_LOST_BO_COLLISION;
+							++node_stats.num_bo_collisions;
 							if(!node_is_transmitter) {
 								time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
 								trigger_NAV_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
@@ -1019,6 +1023,7 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 						// If two or more packets sent at the same time
 						if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME) {
 							loss_reason = PACKET_LOST_BO_COLLISION;
+							++node_stats.num_bo_collisions;
 							if(!node_is_transmitter) {
 								time_to_trigger = SimTime() + MAX_DIFFERENCE_SAME_TIME;
 								trigger_NAV_timeout.Set(FixTimeOffset(time_to_trigger,13,12));
@@ -1129,6 +1134,7 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 					if(node_state == STATE_RX_RTS && notification.packet_type == PACKET_TYPE_RTS){
 						if(fabs(notification.timestamp - incoming_notification.timestamp) < MAX_DIFFERENCE_SAME_TIME){
 							loss_reason = PACKET_LOST_BO_COLLISION;
+							++node_stats.num_bo_collisions;
 						}
 					}
 					// Send logical NACK to ongoing transmitter
@@ -2113,6 +2119,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						// Mark the previous transmission as successful
 						last_transmission_successful = 1;
+						current_retry_count = 0;	// retransmissions: success clears the retry counter
 
 						// Update EWMA: ACK received — reliability is confirmed for this destination
 						if (current_destination_id >= 0

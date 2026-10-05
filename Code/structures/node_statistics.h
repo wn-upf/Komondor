@@ -15,9 +15,11 @@ struct NodeStatistics {
 	double num_packets_dropped;				///> Number of packets dropped by the AP's buffer
 	int    data_packets_acked;				///> Own A-MPDUs (data transmissions) that have been ACKed
 	int    data_frames_acked;				///> Own individual MPDUs that have been ACKed (frames/packets = avg aggregation)
-	int    data_packets_lost;				///> Own A-MPDUs that have been collided or lost
+	int    data_packets_lost;				///> Own A-MPDUs that have been collided or lost (permanently -- retries exhausted or disabled)
+	int    data_packets_retried;			///> Own A-MPDUs that failed but were kept queued for a retry attempt (node_params.max_retries > 0), not counted in data_packets_lost
 	int    rts_cts_lost;
 	int    rts_lost_slotted_bo;				///> Number of RTS packets lost due to slotted BO
+	int    num_bo_collisions;				///> Receiver-side count: incoming RTS/DATA receptions classified as a simultaneous-backoff collision (loss_reason == PACKET_LOST_BO_COLLISION), i.e. two or more transmitters' backoffs expired at ~the same time
 	int    num_tx_init_tried;				///> Number of TX initiations tried (whenever transmitter tries to access the channel)
 	int    num_tx_init_not_possible;		///> Number of TX initiations not possible due to channel state and DCB model
 	double prob_slotted_bo_collision;		///> Probability of slotted BO collision

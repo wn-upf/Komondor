@@ -211,6 +211,8 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 	mapc_input_filename = mapc_input_filename_console;
 	agents_input_filename = agents_input_filename_console;
 	seed = seed_console;
+	Seed = seed_console;
+	srand(seed_console);
 	agents_enabled = agents_enabled_console;
 	mapc_enabled = mapc_enabled_console;
 	total_wlans_number = 0;
@@ -423,6 +425,28 @@ void Komondor :: Stop(){
 	for (int i = 0; i < total_nodes_number; ++i) {
 		performance_per_node[i] = node_container[i].simulation_performance;
 		configuration_per_node[i] = node_container[i].configuration;
+	}
+
+	// Print summary statistics to stdout
+	{
+		double total_tput = 0;
+		int total_sent = 0;
+		int total_lost = 0;
+		double total_delay = 0;
+		int n_aps = 0;
+		for (int i = 0; i < total_nodes_number; ++i) {
+			if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+				total_tput += performance_per_node[i].throughput;
+				total_sent += performance_per_node[i].data_packets_sent;
+				total_lost += performance_per_node[i].data_packets_lost;
+				total_delay += performance_per_node[i].average_delay;
+				++n_aps;
+			}
+		}
+		double loss_pct = (total_sent > 0) ? (100.0 * total_lost / total_sent) : 0;
+		double avg_delay_ms = (n_aps > 0) ? (total_delay * 1e3 / n_aps) : 0;
+		printf("\n\nSUMMARY: total_throughput_mbps=%.2f packets_sent=%d packets_lost=%d loss_pct=%.2f avg_delay_ms=%.2f num_aps=%d\n",
+			total_tput * 1e-6, total_sent, total_lost, loss_pct, avg_delay_ms, n_aps);
 	}
 
 	// Generate the output for scripts

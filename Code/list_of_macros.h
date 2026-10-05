@@ -297,6 +297,8 @@
 #define TRAFFIC_POISSON							1	///> Traffic is generated randomly according to a Poisson distribution
 #define TRAFFIC_DETERMINISTIC					2	///> Traffic is generated at fixed intervals
 #define TRAFFIC_POISSON_BURST					3	///> Traffic is generated in bursts following a Poisson distribution
+#define TRAFFIC_LLM_TOKENS						4	///> LLM token-generation traffic: inter-arrival bounded-uniform in [LLM_TRAFFIC_IAT_MIN_S, LLM_TRAFFIC_IAT_MAX_S] (see traffic_generator.h); frame size set via the standard packet_length column
+#define TRAFFIC_LLM_TOKENS_BURSTY_REALISTIC	    5	///> LLM token-generation traffic: burst duration kept at its real length (10-60s, NOT divided by N), grounded in real LLM streaming-session figures; only per-token IAT and idle gap divided by N (see traffic_generator.h)
 #define TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION	99	///> Transmitters always have the same packet pending to be transmitted
 
 // Traffic types for QoS
@@ -304,10 +306,12 @@
 #define AC_VI		1		///> Traffic type (Access Category) = Video (VI)
 #define AC_BE		2		///> Traffic type (Access Category) = Best effort (BE)
 #define AC_BK		3		///> Traffic type (Access Category) = Background (BK)
+// New AC_AI added (not an 802.11 standard AC)
+#define AC_AI		4		///> Traffic type (Access Category) = AI/LLM traffic (SIMULATION-ONLY, see above)
 
 // Channel access
 // - https://howiwifi.com/2020/06/30/wireless-contention-mechanisms/
-#define CW_MIN_AC_VO  8		///> Minimum CW for AC = VO (voice)
+#define CW_MIN_AC_VO  4		///> Minimum CW for AC = VO (voice)
 #define CW_MAX_AC_VO  16		///> Maximum CW for AC = VO (voice)
 #define CW_MIN_AC_VI  16		///> Minimum CW for AC = VI (video)
 #define CW_MAX_AC_VI  32		///> Maximum CW for AC = VI (video)
@@ -315,12 +319,15 @@
 #define CW_MAX_AC_BE  1024		///> Maximum CW for AC = BE (best-effort)
 #define CW_MIN_AC_BK  32		///> Minimum CW for AC = BK (background)
 #define CW_MAX_AC_BK  1024		///> Maximum CW for AC = BK (background)
+#define CW_MIN_AC_AI  8		    ///> Minimum CW for AC = AI (LLM traffic)
+#define CW_MAX_AC_AI  64		///> Maximum CW for AC = AI (LLM traffic)
 
 // AIFSN[AC]: number of slots added to SIFS to form AIFS[AC] = SIFS + AIFSN[AC]*SLOT_TIME
 #define AIFSN_VO 2		///> AIFSN for AC = VO (voice)
-#define AIFSN_VI 3		///> AIFSN for AC = VI (video)
+#define AIFSN_VI 2		///> AIFSN for AC = VI (video)
 #define AIFSN_BE 5		///> AIFSN for AC = BE (best-effort)
 #define AIFSN_BK 7		///> AIFSN for AC = BK (background)
+#define AIFSN_AI 4		///> AIFSN for AC = AI (SIMULATION-ONLY; between VI's 3 and BE's 5)
 
 // EDCA TXOP limits per AC (IEEE 802.11-2020 Table 9-155, 5 GHz infrastructure BSS).
 // A value of 0 means the AC is restricted to a SINGLE PPDU (or A-MPDU) per channel
@@ -332,6 +339,7 @@
 #define TXOP_LIMIT_AC_VI  (3008 * MICRO_VALUE)  ///> TXOP limit for VI: 3.008 ms
 #define TXOP_LIMIT_AC_BE  0                      ///> TXOP limit for BE: single PPDU per access
 #define TXOP_LIMIT_AC_BK  0                      ///> TXOP limit for BK: single PPDU per access
+#define TXOP_LIMIT_AC_AI  0                      ///> TXOP limit for AI (SIMULATION-ONLY): single PPDU per access -- AI frames are small and light-load, no need for extended TXOPs
 
 // Default access category when not specified in the input CSV
 #define DEFAULT_TRAFFIC_TYPE  AC_BE
@@ -718,7 +726,7 @@
 #define IX_BF_N_ELEMENTS			33	///> Number of ULA antenna elements
 #define IX_BF_D_SPACING				34	///> Element spacing [wavelengths]
 #define IX_BF_AZ_MAIN_DEG			35	///> Main beam azimuth [deg] (initial/static value)
-#define IX_TRAFFIC_TYPE				36	///> EDCA access category (0=VO,1=VI,2=BE,3=BK); optional, defaults to AC_BE
+#define IX_TRAFFIC_TYPE				36	///> EDCA access category (0=VO,1=VI,2=BE,3=BK,4=AI); optional, defaults to AC_BE
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1

@@ -57,6 +57,32 @@
 #include "../methods/utils/auxiliary_methods.h"
 
 // Agent component: "TypeII" represents components that are aware of the existence of the simulated time.
+// TRAFFIC_LLM_TOKENS: bounded-uniform inter-arrival range, in seconds.
+// Approximates per-token generation gaps of an LLM response stream.
+// Frame size is NOT modeled here -- set the scenario's packet_length CSV
+// column to the desired representative token size (e.g. 100-500 bytes),
+// exactly as done for every other traffic model.
+#define LLM_TRAFFIC_IAT_MIN_S	0.005	///> Minimum inter-arrival time: 5 ms
+#define LLM_TRAFFIC_IAT_MAX_S	0.020	///> Maximum inter-arrival time: 20 ms
+
+// TRAFFIC_LLM_TOKENS_BURSTY_REALISTIC: burst ACCENTUATION fix, grounded in
+// https://spearlab.nl/theses/offered/networking-traffic-usage-of-ai-especially-llms
+// which states real LLM streaming responses last 10-60+ SECONDS (not sub-
+// second) at 30-100 tokens/s. TRAFFIC_LLM_TOKENS_BURSTY/_SCALED_N/_CONC all
+// divided burst DURATION by N along with everything else, compressing a
+// burst to well under 1s -- the opposite of a real session. Here, burst
+// DURATION is kept at its real (un-compressed) length; only the per-token
+// IAT and the idle gap are divided by N (representing N concurrent
+// sessions' aggregate token rate during that real-time window). Token RATE
+// is also recalibrated to the cited 30-100 tok/s (vs the other bursty
+// models' faster 50-200 tok/s).
+#define LLM_REALISTIC_IAT_MIN_S			0.010	///> Minimum intra-burst IAT: 10 ms (100 tok/s)
+#define LLM_REALISTIC_IAT_MAX_S			0.033	///> Maximum intra-burst IAT: 33 ms (~30 tok/s)
+#define LLM_BURST_DURATION_MIN_S			10.0	///> Minimum burst (= one streaming response) duration: 10 s, NOT divided by N
+#define LLM_BURST_DURATION_MAX_S			60.0	///> Maximum burst duration: 60 s, NOT divided by N
+#define LLM_REALISTIC_IDLE_GAP_MIN_S		5.0		///> Minimum between-turn idle gap: 5 s (user reads/types next prompt)
+#define LLM_REALISTIC_IDLE_GAP_MAX_S		30.0	///> Maximum between-turn idle gap: 30 s
+
 component TrafficGenerator : public TypeII{
 
 	// Methods
@@ -80,6 +106,14 @@ component TrafficGenerator : public TypeII{
 		// Burst traffic
 		double burst_rate;		///> Average time between two packet generation bursts [bursts/s]
 		int num_bursts;			///> Total number of bursts occurred in the simulation
+		// TRAFFIC_LLM_TOKENS_BURSTY state: tokens remaining in the current
+		// burst after the packet just generated (0 at init, forcing the
+		// very first packet to start a fresh burst after an idle gap).
+		int llm_burst_tokens_left;
+		// TRAFFIC_LLM_TOKENS_BURSTY_REALISTIC state: absolute sim time when
+		// the current burst ends (0 at init, forcing the first packet to
+		// start a fresh burst after an idle gap).
+		double llm_burst_end_time;
 
 	// Private items (just for node operation)
 	private:
@@ -194,6 +228,41 @@ void TrafficGenerator :: GenerateTraffic() {
 			break;
 		}
 
+		// 4
+		case TRAFFIC_LLM_TOKENS:{
+			// LLM token-generation traffic: each inter-arrival gap is drawn
+			// independently and uniformly at random within a bounded range
+			// -> traffic_load is used to determine the concurrent LLM flows
+			double _n_equivalent_flows = (traffic_load >= 1.0) ? traffic_load : 1.0;
+			time_for_next_packet = (LLM_TRAFFIC_IAT_MIN_S
+				+ Random(LLM_TRAFFIC_IAT_MAX_S - LLM_TRAFFIC_IAT_MIN_S)) / _n_equivalent_flows;
+			time_to_trigger = SimTime() + time_for_next_packet;
+			trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));
+			break;
+		}
+
+		// 5
+		case TRAFFIC_LLM_TOKENS_BURSTY_REALISTIC:{
+			// Realistic LLM traffic where burst DURATION is kept at its real length (10-60s, NOT divided by N) 
+			// -> only the per-token IAT and the idle gap are divided by N. 
+			double _n_equivalent_flows = (traffic_load >= 1.0) ? traffic_load : 1.0;
+			if (SimTime() < llm_burst_end_time) {
+				// Still inside the burst window
+				time_for_next_packet = (LLM_REALISTIC_IAT_MIN_S
+					+ Random(LLM_REALISTIC_IAT_MAX_S - LLM_REALISTIC_IAT_MIN_S)) / _n_equivalent_flows;
+			} else {
+				// Start a new burst: draw a REAL (not N-compressed) duration
+				double _burst_duration = LLM_BURST_DURATION_MIN_S
+					+ Random(LLM_BURST_DURATION_MAX_S - LLM_BURST_DURATION_MIN_S);
+				llm_burst_end_time = SimTime() + _burst_duration;
+				time_for_next_packet = (LLM_REALISTIC_IDLE_GAP_MIN_S
+					+ Random(LLM_REALISTIC_IDLE_GAP_MAX_S - LLM_REALISTIC_IDLE_GAP_MIN_S)) / _n_equivalent_flows;
+			}
+			time_to_trigger = SimTime() + time_for_next_packet;
+			trigger_new_packet_generated.Set(FixTimeOffset(time_to_trigger,13,12));
+			break;
+		}
+
 		default:{
 			printf("Wrong traffic model!\n");
 			exit(EXIT_FAILURE);
@@ -222,5 +291,7 @@ void TrafficGenerator :: InitializeTrafficGenerator() {
 	 */
 	burst_rate = 10;
 	num_bursts = 0;
+	llm_burst_tokens_left = 0;
+	llm_burst_end_time = 0.0;
 	GenerateTraffic();
 }

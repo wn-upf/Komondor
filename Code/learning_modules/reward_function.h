@@ -144,7 +144,7 @@ class RewardFunction {
 					LOGS(TRUE, logger.file,
 					     "%.15f;%s;%s;%s Max delay = %.2f ms\n",
 					     sim_time, device, LOG_C03, LOG_LVL3,
-					     performance.max_delay * 1e-3);
+					     performance.max_delay * 1e3);
 					break;
 				}
 
@@ -152,7 +152,7 @@ class RewardFunction {
 					LOGS(TRUE, logger.file,
 					     "%.15f;%s;%s;%s Min delay = %.2f ms\n",
 					     sim_time, device, LOG_C03, LOG_LVL3,
-					     performance.min_delay * 1e-3);
+					     performance.min_delay * 1e3);
 					break;
 				}
 
@@ -160,7 +160,7 @@ class RewardFunction {
 					LOGS(TRUE, logger.file,
 					     "%.15f;%s;%s;%s Average delay = %.2f ms\n",
 					     sim_time, device, LOG_C03, LOG_LVL3,
-					     performance.average_delay * 1e-3);
+					     performance.average_delay * 1e3);
 					break;
 				}
 

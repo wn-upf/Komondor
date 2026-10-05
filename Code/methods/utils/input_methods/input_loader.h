@@ -573,7 +573,7 @@ void Komondor::GenerateMapcConfiByReadingInputFile(const char *mapc_filename) {
 
     FILE* stream = fopen(mapc_filename, "r");
     if (!stream) {
-        printf("MAPC file %s not found!\n", mapc_filename);
+        printf("\n\%s MAPC file %s not found!\n", LOG_LVL2, mapc_filename);
         //exit(-1);
     } else {
 		if (print_system_logs) printf("\n%s Reading MAPC configuration file '%s'...\n", LOG_LVL1, mapc_filename);

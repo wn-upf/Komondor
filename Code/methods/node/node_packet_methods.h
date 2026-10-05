@@ -609,6 +609,14 @@ void Node :: PrepareNewTransmission() {
 		while (buffer.QueueSize() > 0) {
 			buffer.DelFirstPacket();
 		}
+	} else if (mac_retry_pending) {
+		// Retransmissions (node_params.max_retries): the previous attempt failed but
+		// still has retry budget left (AckTimeout/CtsTimeout set this flag instead of
+		// counting a permanent loss). Keep the same packets queued -- do NOT delete
+		// them -- so the next transmission attempt resends the identical frame(s).
+		// Not supported for TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION: that model has no
+		// notion of "the same packet" to resend (see the unconditional flush above).
+		mac_retry_pending = FALSE;
 	} else if (limited_num_packets_aggregated > 0
 			&& (exchange_sequence.frame_types[0] != PACKET_TYPE_ICF
 				|| (wlan.mapc_enabled && coordinator_ap_id == NODE_ID_NONE))) {
@@ -1353,6 +1361,7 @@ void Node :: MyTxFinished(trigger_t &){
 			} else if (data_notification.tx_info.ack_required == 0) {
 				// ACK suppressed (assume DATA delivered, return to contention)
 				last_transmission_successful = 1;
+				current_retry_count = 0;	// retransmissions: success clears the retry counter
 				++node_stats.data_packets_acked;
 				++node_stats.data_packets_acked_per_sta[current_destination_id - node_params.node_id - 1];
 				++performance_report.data_packets_acked;

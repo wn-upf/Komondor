@@ -42,6 +42,7 @@ struct NodeParameters {
 	int         max_num_packets_aggregated;	///> Maximum MPDUs per A-MPDU
 	int         traffic_model;				///> Traffic model (0: full buffer, 1: Poisson, 2: deterministic)
 	int         traffic_type;				///> EDCA access category (AC_VO=0, AC_VI=1, AC_BE=2, AC_BK=3)
+	int         max_retries;				///> Max retransmission attempts per frame before permanent drop (0 = no retries, current/legacy behavior; optional node CSV column, see IX_MAX_RETRIES)
 
 	// --- PHY / channel ---
 	int         adjacent_channel_model;		///> Co-channel interference model

@@ -36,9 +36,26 @@ void Node :: AckTimeout(trigger_t &){
 		}
 	}
 
+	// Retransmissions (node_params.max_retries, IX_MAX_RETRIES): if this frame still has
+	// retry budget left, don't count it as a final loss yet -- mac_retry_pending tells
+	// PrepareNewTransmission's buffer-deletion step (node_packet_methods.h) to keep the
+	// same packets queued for another attempt instead of dropping them. CW still
+	// escalates and the node still restarts exactly as on a permanent loss (802.11
+	// doesn't reset CW between retries of the same frame either -- only on eventual
+	// success or once the retry limit is exhausted).
+	int _will_retry = (node_params.max_retries > 0 && current_retry_count < node_params.max_retries);
+	if (_will_retry) {
+		++current_retry_count;
+		mac_retry_pending = TRUE;
+		++node_stats.data_packets_retried;
+	} else {
+		current_retry_count = 0;
+		mac_retry_pending = FALSE;
+	}
+
 	HandlePacketLoss(PACKET_TYPE_DATA, node_stats.total_time_lost_in_num_channels, node_stats.total_time_lost_per_channel,
 		node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
-		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
+		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id, !_will_retry);
 
 	// Update EWMA: ACK timed out — link quality drop for this destination
 	if (current_destination_id >= 0
@@ -54,11 +71,12 @@ void Node :: AckTimeout(trigger_t &){
 	for(int c = current_left_channel; c <= current_right_channel; ++c){
 		performance_report.total_time_lost_per_channel[c] += current_tx_duration;
 	}
-	performance_report.data_packets_lost++;
+	if (!_will_retry) performance_report.data_packets_lost++;
 
-	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d lost\n",
+	LOGS(node_params.save_node_logs,node_logger.file,
+		"%.15f;N%d;S%d;%s;%s  ACK TIMEOUT! Data packet %d %s (retry %d/%d)\n",
 		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL4,
-		packet_id);
+		packet_id, _will_retry ? "will be retried" : "lost", current_retry_count, node_params.max_retries);
 
 	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
@@ -98,15 +116,28 @@ void Node :: CtsTimeout(trigger_t &){
 		return;
 	}
 
+	// Retransmissions: see the matching comment in AckTimeout. RTS/CTS failure also
+	// consumes a retry attempt for the frame it was protecting.
+	int _will_retry = (node_params.max_retries > 0 && current_retry_count < node_params.max_retries);
+	if (_will_retry) {
+		++current_retry_count;
+		mac_retry_pending = TRUE;
+		++node_stats.data_packets_retried;
+	} else {
+		current_retry_count = 0;
+		mac_retry_pending = FALSE;
+	}
+
 	HandlePacketLoss(PACKET_TYPE_CTS, node_stats.total_time_lost_in_num_channels, node_stats.total_time_lost_per_channel,
 		node_stats.data_packets_lost, node_stats.rts_cts_lost, &node_stats.data_packets_lost_per_sta, &node_stats.rts_cts_lost_per_sta, current_right_channel,
-		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id);
-	performance_report.rts_cts_lost++;
+		current_left_channel,current_tx_duration, node_params.node_id, current_destination_id, !_will_retry);
+	if (!_will_retry) performance_report.rts_cts_lost++;
 
 	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s ---------------------------------------------\n",
 		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL1);
-	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s CTS TIMEOUT! RTS-CTS packet lost\n",
-		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL2);
+	LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s CTS TIMEOUT! RTS-CTS packet %s (retry %d/%d)\n",
+		SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL2,
+		_will_retry ? "will be retried" : "lost", current_retry_count, node_params.max_retries);
 
 	LOGS(node_params.save_node_logs,node_logger.file,
 		"%.15f;N%d;S%d;%s;%s Handling contention window\n",
@@ -179,11 +210,19 @@ void Node :: NavTimeout(trigger_t &){
 
 	node_stats.time_in_nav = node_stats.time_in_nav + (SimTime() - node_stats.last_time_not_in_nav);
 
-	if(node_is_transmitter){
+	// A node actively transmitting its own frame right now (e.g. an ACK/DATA/RTS/CTS/ICF/...)
+	// already has a reliably-armed trigger_toFinishTX that will correctly advance node_state
+	// once that frame's airtime elapses. A NAV timeout armed BEFORE this transmission began
+	// (from an earlier overheard RTS/CTS/ICF elsewhere in a dense topology) can still be
+	// sitting in the event queue and fire DURING this transmission.
+	if (node_state == STATE_TX_DATA || node_state == STATE_TX_ACK || node_state == STATE_TX_RTS
+			|| node_state == STATE_TX_CTS || node_state == STATE_TX_ICF || node_state == STATE_TX_ICR
+			|| node_state == STATE_TX_TF || node_state == STATE_TX_ACK_TF
+			|| node_state == STATE_TX_DSO_ICF || node_state == STATE_TX_DATA_DSO
+			|| node_state == STATE_TX_NPCA_ICF || node_state == STATE_TX_DATA_NPCA
+			|| node_state == STATE_TX_NPCA_ICR) return;
 
-		// NPCA TX is self-contained; NAV from concurrent BSS traffic must not interrupt it
-		if (node_state == STATE_TX_DATA_NPCA || node_state == STATE_WAIT_ACK_NPCA
-				|| node_state == STATE_TX_NPCA_ICF || node_state == STATE_RX_NPCA_ICR) return;
+	if(node_is_transmitter){
 
 		// Apply new configuration (if it is the case)
 		if (flag_apply_new_configuration) {

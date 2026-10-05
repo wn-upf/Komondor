@@ -71,7 +71,7 @@ struct TxInfo
 	double pd;						///> PD threshold in [pW]
 	double bits_ofdm_sym; 			///> Bits per OFDM symbol
 	double data_rate; 				///> Rate at which data is transmitted
-	int modulation_schemes[4];		///> Modulation scheme used
+	int modulation_schemes[NUM_OPTIONS_CHANNEL_LENGTH];		///> Modulation scheme used (1, 2, 4, 8, 16 channels)
 	double x;						///> X position of source node
 	double y;						///> Y position of source node
 	double z;						///> Z position of source node

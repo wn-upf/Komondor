@@ -358,6 +358,10 @@ component Node : public TypeII{
 		int channel_aggregation_cca_model;			///> Flag to determine the type of CCA per bandwidth applied
 		int last_transmission_successful;			///> Flag to indicate whether the last transmission was successful or not
 
+		// Retransmissions (node_params.max_retries, see IX_MAX_RETRIES)
+		int current_retry_count;		///> Retry attempts already used for the frame currently at the head of the buffer; reset to 0 on success
+		int mac_retry_pending;			///> Set by AckTimeout/CtsTimeout when a failed attempt still has retries left; read (and cleared) by PrepareNewTransmission's buffer-deletion step so the same packets are kept queued for resend instead of being dropped
+
 		// Burst traffic
 		double burst_rate;				///> Average time between two packet generation bursts [bursts/s]
 		int num_bursts;					///> Total number of bursts occurred in the simulation
@@ -835,6 +839,8 @@ void Node :: InitializeVariables() {
 	ca_state.remaining_backoff = 0;
 	node_stats.num_new_backoff_computations = 0;
 	last_transmission_successful = 0;
+	current_retry_count = 0;
+	mac_retry_pending = 0;
 
 	node_stats.data_packets_acked = 0;
 	node_stats.data_frames_acked = 0;
@@ -989,6 +995,8 @@ void Node :: InitializeVariables() {
 	node_stats.throughput = 0;
 	node_stats.throughput_loss = 0;
 	node_stats.data_packets_lost = 0;
+	node_stats.data_packets_retried = 0;
+	node_stats.num_bo_collisions = 0;
 	node_stats.rts_cts_lost = 0;
 	node_stats.num_tx_init_not_possible = 0;
 	node_stats.num_tx_init_tried = 0;

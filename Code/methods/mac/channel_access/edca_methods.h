@@ -62,6 +62,7 @@ double ComputeAIFS(int traffic_type) {
         case AC_VO: aifsn = AIFSN_VO; break;
         case AC_VI: aifsn = AIFSN_VI; break;
         case AC_BE: aifsn = AIFSN_BE; break;
+        case AC_AI: aifsn = AIFSN_AI; break; // SIMULATION-ONLY, see AC_AI in list_of_macros.h
         case AC_BK: default: aifsn = AIFSN_BK; break;
     }
     return SIFS + aifsn * SLOT_TIME;
@@ -80,6 +81,7 @@ double ComputeTxopLimit(int traffic_type) {
         case AC_VO: return TXOP_LIMIT_AC_VO;
         case AC_VI: return TXOP_LIMIT_AC_VI;
         case AC_BE: return TXOP_LIMIT_AC_BE;
+        case AC_AI: return TXOP_LIMIT_AC_AI; // SIMULATION-ONLY, see AC_AI in list_of_macros.h
         case AC_BK: default: return TXOP_LIMIT_AC_BK;
     }
 }
@@ -93,6 +95,7 @@ static int GetAcCwMin(int traffic_type) {
         case AC_VO: return CW_MIN_AC_VO;
         case AC_VI: return CW_MIN_AC_VI;
         case AC_BE: return CW_MIN_AC_BE;
+        case AC_AI: return CW_MIN_AC_AI; // SIMULATION-ONLY, see AC_AI in list_of_macros.h
         case AC_BK: default: return CW_MIN_AC_BK;
     }
 }
@@ -106,7 +109,27 @@ static int GetAcCwMax(int traffic_type) {
         case AC_VO: return CW_MAX_AC_VO;
         case AC_VI: return CW_MAX_AC_VI;
         case AC_BE: return CW_MAX_AC_BE;
+        case AC_AI: return CW_MAX_AC_AI; // SIMULATION-ONLY, see AC_AI in list_of_macros.h
         case AC_BK: default: return CW_MAX_AC_BK;
+    }
+}
+
+/**
+ * Return a relative priority rank for a given AC: lower rank = higher priority.
+ * Unlike the raw traffic_type/AC id (where AC_AI=4 was appended after AC_BK=3
+ * purely to avoid renumbering every existing scenario CSV), this function is
+ * THE authority on AC ordering. Use it for any priority COMPARISON between
+ * ACs (e.g. the Co-TDMA TXOP-sharing guard in node_fsm_methods.h) -- never
+ * compare traffic_type ints directly once AC_AI is in play.
+ * Order: VO > VI > AI > BE > BK (AI SIMULATION-ONLY, see AC_AI above).
+ */
+static int GetAcPriorityRank(int traffic_type) {
+    switch (traffic_type) {
+        case AC_VO: return 0;
+        case AC_VI: return 1;
+        case AC_AI: return 2;
+        case AC_BE: return 3;
+        case AC_BK: default: return 4;
     }
 }
 
