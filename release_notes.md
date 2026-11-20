@@ -8,6 +8,41 @@
 
 ---
 
+## What's New in v4.2
+
+This release fixes several MAPC bugs found while validating the results of the MAPC tutorial paper (arXiv:2606.13759), corrects the RTS/CTS dynamic-bandwidth procedure, and adds an EDCA access category for AI traffic, AC-aware Co-TDMA TXOP sharing, retransmissions, and proper seeding.
+
+> **Note:** several fixes below change simulation outputs (Co-BF, Co-SR, Co-TDMA, and any scenario using RTS/CTS with channel bonding). Results obtained with v4.1 are not directly comparable.
+
+### Bug Fixes
+
+| Area | Bug | Effect | Fix |
+|------|-----|--------|-----|
+| Co-BF (`beamforming_methods.h`) | `SolveComplexLinearSystem` indexed the ZF matrix with stride `M`, while `ComputeZFBeamWeights` filled it with stride `MAX_ZF_CONSTRAINTS` | The solver read uninitialized memory: Co-BF steered the main lobe but placed no nulls | Consistent stride in both functions |
+| Co-BF / Co-SR (sequential ACK phase) | The ACK TF carried no NAV and was not decoded in `STATE_SENSING` | The coordinator ignored the peer's ACK TF and contended in the middle of the BA exchange (~30% ICF collisions) | ACK TF NAV = ACK TF + SIFS + BA; the ACK TF is decoded and deferred to in SENSING, and own-group STAs stay in SENSING on ICF/TF/ACK TF |
+| Co-TDMA (MAPC round NAV) | Third parties re-armed their NAV from the MU-RTS to the end of the peer's *allocated* slot, although the peer's DATA can be shorter | Non-coordinated BSSs restarted contention later than the coordinated APs, which penalized them unfairly | The NAV is truncated to the end of the slot holder's actual DATA (`mapc_nav_slot_holder_id`) |
+| Co-SR (time-sharing fallback) | When the Co-SR power computation was infeasible (selfish/continuous/discrete policies), the coordinator halved its DATA as in Co-TDMA, but never granted the MU-RTS to the peer | The peer never transmitted in fallback rounds | The round becomes a real Co-TDMA round (`mapc_time_sharing_round`, `MapcTimeSharingTxop()`, `TxInfo.mapc_time_sharing`); the peer detects it and waits for the MU-RTS |
+| Co-SR (`node_backoff_methods.h`) | The transmit power was not reset after a Co-SR transmission | Later non-coordinated transmissions used the Co-SR power | Power reset in `RestartNode` |
+| RTS/CTS + channel bonding (#146) | The CTS bandwidth was derived from the CCA state at the *end* of the RTS, which also depended on the order of same-time events | DATA was sometimes sent on fewer channels than available (~13% of DATA airtime at 20 MHz in 2-BSS scenarios) | Dynamic-bandwidth rule: the primary is validated by NAV, and a secondary channel is included only if it was idle for PIFS *before* the RTS started (`SnapshotCcaAtRtsStart`, `timestamp_last_idle_period_start`) |
+| Seeding (`komondor_main.cc`) | `--seed` did not seed `std::rand()`, used by all backoff draws | Runs with different seeds were identical | Both the COST RNG and `std::rand()` are seeded from `--seed` |
+| Agent logs (`reward_function.h`) | `Average delay` logged the end-to-end delay; minimum/maximum delays were scaled by `1e-3` instead of `1e3` | Wrong delay metric and units in agent logs | `Average delay` logs the channel access delay (`sum_waiting_time / num_waiting_time_measurements`); units fixed |
+| Build | `backoff_methods.h` included an unfinished, uncommitted ML channel-access module | Clean checkouts did not compile | References to the unfinished module removed |
+
+### New Features and Improvements
+
+- **EDCA access category for AI traffic (`AC_AI`, simulation-only):** a fifth AC between VI and BE (AIFSN = 4, CW = [8, 64], single PPDU per access). Set `traffic_type = 4` in the node CSV. `GetAcPriorityRank()` defines the AC priority order (VO > VI > AI > BE > BK). The VO CWmin and VI AIFSN were also aligned with the 802.11 defaults (`CW_MIN_AC_VO = 4`, `AIFSN_VI = 2`).
+- **LLM traffic models:** `TRAFFIC_LLM_TOKENS` (4), with uniform inter-arrival times of 5–20 ms per token, and `TRAFFIC_LLM_TOKENS_BURSTY_REALISTIC` (5), with bursts of realistic duration (10–60 s).
+- **AC-aware Co-TDMA TXOP sharing:** new per-group `ExtraParams` keys in the MAPC config CSV:
+  - `txop_split=equal|remainder` (default `equal`): `equal` splits the TXOP 50/50 with a same-or-higher-priority peer and denies lower-priority peers. `remainder` protects the coordinator's own need and offers the rest of the TXOP to eligible peers.
+  - `max_rank_gap=<N>` (default `COTDMA_PROPORTIONAL_MAX_RANK_GAP`): the maximum AC-priority gap for a lower-priority peer to be eligible under `remainder`.
+  - New coordinator counters for denied or granted slots (no data, AC priority, ICR timeout, proportional).
+- **Retransmissions:** optional node CSV column 45, `max_retries`. The default (0) keeps the previous behavior, where a frame is dropped after its first failure.
+- **Default ULA for Co-BF:** an AP in a Co-BF group whose nodes file has no `bf_*` columns gets an 8-element ULA (`DEFAULT_COBF_N_ELEMENTS`). Explicit `bf_*` columns take precedence, and a warning is printed if they disable nulling.
+- **Run summary:** a `SUMMARY:` line with aggregate throughput, losses, and delay is printed at the end of each simulation.
+- **Validation:** NAV early-reset scenarios (`Code/input/validation/nav_reset_scenarios/validate_nav_reset.sh`).
+
+---
+
 ## Table of Contents
 
 1. [Multi-AP Coordination (MAPC): Co-TDMA, Co-SR, Co-BF](#1-multi-ap-coordination-mapc)
