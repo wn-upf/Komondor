@@ -112,6 +112,8 @@ void Node :: CtsTimeout(trigger_t &){
 			"%.15f;N%d;S%d;%s;%s ICR timeout (N%d did not reply to ICF). Continuing TXOP solo.\n",
 			SimTime(), node_params.node_id, node_state, LOG_D17, LOG_LVL2, mapc_selected_peer_id);
 		mapc_peer_has_data = FALSE;
+		mapc_peer_icr_timed_out = TRUE; // lost ICR, not a genuine empty-queue report -- see mapc_peer_icr_timed_out in node.h
+		++node_stats.num_mapc_slots_denied_icr_timeout;
 		ProceedAfterIcr();
 		return;
 	}

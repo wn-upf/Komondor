@@ -95,6 +95,7 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                     wlan_container[wlan_ix].mapc_num_peers[mapc_g] = 0;
                     wlan_container[wlan_ix].mapc_peer_ap_ids[mapc_g] = NULL;
                     wlan_container[wlan_ix].mapc_txop_splits[mapc_g] = TXOP_SPLIT_EQUAL;
+                    wlan_container[wlan_ix].mapc_max_rank_gap[mapc_g] = COTDMA_PROPORTIONAL_MAX_RANK_GAP;
                     wlan_container[wlan_ix].mapc_sr_tx_power_dbm[mapc_g] = DEFAULT_COSR_TX_POWER_DBM;
                     wlan_container[wlan_ix].mapc_cosr_policy[mapc_g] = COSR_POLICY_STATIC;
                 }
@@ -323,6 +324,7 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
             tmp_nodes = strdup(line_nodes);
             const char* bf_enabled_char = GetField(tmp_nodes, IX_BF_ENABLED);
             if (bf_enabled_char != NULL) {
+                node_container[node_ix].node_params.beam_params_from_input = 1;
                 node_container[node_ix].node_params.beamforming_enabled = atoi(bf_enabled_char);
                 free(tmp_nodes);
                 tmp_nodes = strdup(line_nodes);
@@ -338,6 +340,7 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
                   node_container[node_ix].node_params.beam_az_main_deg = (_f != NULL) ? atof(_f) : 0.0; }
                 free(tmp_nodes);
             } else {
+                node_container[node_ix].node_params.beam_params_from_input = 0;
                 node_container[node_ix].node_params.beamforming_enabled = BEAMFORMING_DISABLED;
                 node_container[node_ix].node_params.beam_N_elements     = DEFAULT_BEAM_N_ELEMENTS;
                 node_container[node_ix].node_params.beam_d_spacing      = DEFAULT_BEAM_D_SPACING;
@@ -394,6 +397,14 @@ void Komondor::GenerateNodesByReadingInputFile(const char *nodes_filename) {
             const char* npca_qsrc_char = GetField(tmp_nodes, IX_NPCA_INIT_QSRC);
             node_container[node_ix].node_params.npca_init_qsrc =
                 (npca_qsrc_char != NULL) ? atoi(npca_qsrc_char) : NPCA_INIT_QSRC_DEFAULT;
+            free(tmp_nodes);
+
+            // Retransmissions: optional column (max_retries). 0/absent = a frame is
+            // dropped permanently on its first failure.
+            tmp_nodes = strdup(line_nodes);
+            const char* max_retries_char = GetField(tmp_nodes, IX_MAX_RETRIES);
+            node_container[node_ix].node_params.max_retries =
+                (max_retries_char != NULL) ? atoi(max_retries_char) : DEFAULT_MAX_RETRIES;
             free(tmp_nodes);
 
             // Global Models
@@ -620,6 +631,7 @@ void Komondor::GenerateMapcConfiByReadingInputFile(const char *mapc_filename) {
 							wlan_container[w].mapc_group_ids[mapc_gidx] = group_id;
 							wlan_container[w].mapc_method_ids[mapc_gidx] = method_id;
 							wlan_container[w].mapc_txop_splits[mapc_gidx] = TXOP_SPLIT_EQUAL;
+							wlan_container[w].mapc_max_rank_gap[mapc_gidx] = COTDMA_PROPORTIONAL_MAX_RANK_GAP;
 						}
 					}
 				}
@@ -663,11 +675,40 @@ void Komondor::GenerateMapcConfiByReadingInputFile(const char *mapc_filename) {
 				}
 
 			} else if (method_str == "CO_TDMA") {
-				// Configure nodes for Co-TDMA
-				// To do
-
-				// Parse specific Co-TDMA params (e.g., SLOT_DURATION)
-				// To do
+				// txop_split: equal (default; literal 50/50, same-or-better peers
+				// only) / remainder (rank-gap-gated eligibility, coordinator's own
+				// need protected then peer gets the entire remainder -- see
+				// TXOP_SPLIT_* in list_of_macros.h)
+				int txop_split = TXOP_SPLIT_EQUAL;
+				std::map<std::string, std::string>::iterator it_split = params.find("txop_split");
+				if (it_split != params.end()) {
+					if (it_split->second == "remainder") txop_split = TXOP_SPLIT_REMAINDER;
+					else if (it_split->second == "equal") txop_split = TXOP_SPLIT_EQUAL;
+					// else unrecognized value: keep the default (TXOP_SPLIT_EQUAL)
+				}
+				// max_rank_gap: only meaningful for txop_split=remainder -- how far
+				// below the coordinator's own AC-priority rank (GetAcPriorityRank,
+				// edca_methods.h) a peer may sit and still be offered a share. Falls
+				// back to COTDMA_PROPORTIONAL_MAX_RANK_GAP (list_of_macros.h) when
+				// unspecified. This is a DISTANCE threshold, not an AC-pair rule --
+				// e.g. gap=2 from a VO coordinator opens sharing with both AC_VI
+				// (rank_diff=1) and AC_AI (rank_diff=2); there's no way to name one
+				// specific peer AC here without also opening any AC at an equal or
+				// smaller rank distance.
+				int max_rank_gap = COTDMA_PROPORTIONAL_MAX_RANK_GAP;
+				std::map<std::string, std::string>::iterator it_gap = params.find("max_rank_gap");
+				if (it_gap != params.end()) max_rank_gap = atoi(it_gap->second.c_str());
+				for (size_t c = 0; c < coordinated_ap_list.size(); ++c) {
+					for (int w = 0; w < total_wlans_number; ++w) {
+						if (wlan_container[w].wlan_code == coordinated_ap_list[c]) {
+							int g_idx = wlan_container[w].FindMapcGroupIdx(group_id);
+							if (g_idx >= 0) {
+								wlan_container[w].mapc_txop_splits[g_idx] = txop_split;
+								wlan_container[w].mapc_max_rank_gap[g_idx] = max_rank_gap;
+							}
+						}
+					}
+				}
 
 			} else if (method_str == "CO_BF") {
 				// ...

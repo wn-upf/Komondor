@@ -111,6 +111,10 @@ struct TxInfo
 	//   --> 0 = sender is the coordinated AP (wait SIFS+ACK-TF+SIFS+ACK)
 	int mapc_is_coordinator_tx;
 
+	// Co-SR fallback: 1 if the frame belongs to a Co-SR TXOP that fell back to time
+	// sharing (infeasible simultaneous TX), i.e., it follows the Co-TDMA DATA/ACK rules
+	int mapc_time_sharing;
+
 	/**
 	 * Function to print the transmission information
 	 * @param "packet_id" [type int]: identifier of the packet
@@ -176,6 +180,7 @@ struct Notification
 	int mapc_group_id;			///> MAPC group ID (0 = standard frame; >0 = group-addressed MAPC)
 	int mapc_target_ap_id;		///> For ICF: node_id of the ONE coordinated AP that should respond with ICR (-1 = all)
 	int mapc_has_data;			///> ICR: TRUE if coordinated AP has data to send in this TXOP
+	int mapc_traffic_type;		///> Sender's EDCA AC (AC_VO/VI/BE/BK); ICR: used to gate TXOP sharing against the coordinator's AC
 	TxInfo tx_info; 			///> Specific transmission info (may not be checked by the others nodes)
 
 	/**

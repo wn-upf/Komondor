@@ -59,6 +59,10 @@ struct NodeStatistics {
 	int    num_icr_tx;                         ///> ICR frames sent (coordinated AP)
 	int    num_tf_rx;                          ///> TF frames received (coordinated AP, Co-BF/Co-SR)
 	int    num_mu_rts_rx;                      ///> MU-RTS frames received (coordinated AP, Co-TDMA)
+	int    num_mapc_slots_denied_no_data;      ///> Coordinator: Co-TDMA slot skipped -- peer genuinely reported an empty queue in its ICR
+	int    num_mapc_slots_denied_ac_priority;  ///> Coordinator: Co-TDMA slot denied outright -- peer's AC rank gap exceeds COTDMA_PROPORTIONAL_MAX_RANK_GAP (too mismatched to share, zero overhead paid)
+	int    num_mapc_slots_denied_icr_timeout;  ///> Coordinator: Co-TDMA slot skipped -- peer's ICR was lost to channel contention (not an empty queue or an AC denial)
+	int    num_mapc_slots_granted_proportional; ///> Coordinator: Co-TDMA slot GRANTED but at a reduced proportional share (peer's AC rank is lower but within COTDMA_PROPORTIONAL_MAX_RANK_GAP) -- Phase 2b
 	double total_mapc_data_duration_own;       ///> Own DATA duration accumulated in MAPC TXOPs [s]
 	double total_mapc_data_duration_shared;    ///> DATA duration allocated to peer APs by coordinator [s]
 	double total_mapc_data_duration_allocated; ///> DATA duration allocated to this AP by coordinator [s]

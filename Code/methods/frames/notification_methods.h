@@ -95,6 +95,7 @@ TxInfo GenerateTxInfo(int num_packets_aggregated, double data_duration,	double a
 	tx_info.mapc_sr_measured_rssi = 0.0;
 	tx_info.pp_punctured_bitmap   = 0;
 	tx_info.mapc_is_coordinator_tx = 0;	// default; STATE_TX_DATA sets the real value for Co-BF/Co-SR
+	tx_info.mapc_time_sharing = 0;		// default; GenerateNotification sets it during a Co-SR fallback TXOP
 
 	// Beamforming fields — overwritten by GenerateNotification() when beamforming_enabled
 	tx_info.beamforming_active = BEAMFORMING_DISABLED;

@@ -285,9 +285,12 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 		}
 
 		case PACKET_TYPE_ACK_TF:{
-			// MAPC ACK Trigger Frame — similar size to RTS/CTS; no NAV needed
+			// MAPC ACK Trigger Frame — similar size to RTS/CTS. NAV covers the ACK TF and
+			// the BA it solicits (counted from the frame start, as in ComputeNavTime), so
+			// that third parties (incl. the peer AP, which restarts contention after its
+			// own ACK in the sequential ACK phase) defer until the BA is over.
 			notification.frame_length = IEEE_AX_RTS_LENGTH;
-			notification.tx_info.nav_time = 0;
+			notification.tx_info.nav_time = FixTimeOffset(rts_duration + SIFS + ack_duration, 13, 12);
 			break;
 		}
 
@@ -326,8 +329,10 @@ Notification Node :: GenerateNotification(int packet_type, int destination_id, i
 
 	// Propagate MAPC group ID (0 for standard non-MAPC frames)
 	notification.mapc_group_id = wlan.mapc_group_ids[mapc_active_group_idx];
+	notification.tx_info.mapc_time_sharing = mapc_time_sharing_round;
 	notification.mapc_target_ap_id = NODE_ID_NONE; // default: no specific target
 	notification.mapc_has_data     = TRUE;          // default: assume peer has data
+	notification.mapc_traffic_type = current_traffic_type; // sender's own AC
 
 	return notification;
 
@@ -592,6 +597,7 @@ void Node :: PrepareNewTransmission() {
 	if (wlan.mapc_enabled && coordinator_ap_id == NODE_ID_NONE
 			&& exchange_sequence.frame_types[0] == PACKET_TYPE_ICF) {
 		mapc_txop_per_ap_data_duration = 0.0;
+		mapc_txop_peer_data_duration   = 0.0;
 		mapc_icr_requested_duration    = 0.0;
 	}
 
@@ -698,7 +704,9 @@ void Node :: PrepareNewTransmission() {
 			&& exchange_sequence.frame_types[0] == PACKET_TYPE_ICF) {
 		// Coordinator ICF path: record full data_duration as TXOP budget
 		mapc_txop_data_budget = data_duration;
-	} else if (wlan.mapc_enabled && wlan.mapc_txop_splits[mapc_active_group_idx] == TXOP_SPLIT_EQUAL
+	} else if (wlan.mapc_enabled
+			&& (wlan.mapc_txop_splits[mapc_active_group_idx] == TXOP_SPLIT_EQUAL
+				|| wlan.mapc_txop_splits[mapc_active_group_idx] == TXOP_SPLIT_REMAINDER)
 			&& mapc_txop_per_ap_data_duration > 0.0
 			&& exchange_sequence.frame_types[0] != PACKET_TYPE_ICF) {
 		// DATA path (coordinator or coordinated AP): reduce lnpa to fit within budget
@@ -709,8 +717,9 @@ void Node :: PrepareNewTransmission() {
 		}
 		// Co-BF/Co-SR: if AP has fewer packets than the TXOP slot, pad data_duration
 		// to the allocated value so both APs' DATA frames end at the same time.
-		// Co-TDMA is excluded (sequential slots; each AP uses its natural duration).
-		if (wlan.mapc_method_ids[mapc_active_group_idx] != CO_TDMA
+		// Co-TDMA (and Co-SR time-sharing fallback) is excluded (sequential slots; each
+		// AP uses its natural duration).
+		if (!MapcTimeSharingTxop()
 				&& data_duration < mapc_txop_per_ap_data_duration) {
 			data_duration = mapc_txop_per_ap_data_duration;
 		}
@@ -945,6 +954,9 @@ void Node :: PrepareNewTransmission() {
 		// 4-way handshake: start with RTS
 		node_state = STATE_TX_RTS;
 		current_tx_duration = rts_duration;
+		// The RTS NAV protects a DATA of this duration; the DATA sent after the CTS must
+		// not exceed it (e.g. if the CTS confirms a narrower bandwidth)
+		rts_planned_data_duration = data_duration;
 
 		// Compute the NAV time
 		current_nav_time = ComputeNavTime(node_state, rts_duration, cts_duration, data_duration, ack_duration, SIFS);
@@ -1079,6 +1091,8 @@ void Node :: EndBackoff(trigger_t &){
 			coordinated_ap_ids[i] = wlan.mapc_peer_ap_ids[mapc_active_group_idx][i];
 		// Round-robin: select which coordinated AP to invite this TXOP
 		mapc_selected_peer_id = coordinated_ap_ids[mapc_current_peer_idx % num_coordinated_aps];
+		mapc_peer_icr_timed_out = FALSE; // reset -- set by CtsTimeout() only if THIS peer's ICR is lost
+		mapc_peer_rank_gap_exceeded = FALSE; // reset -- set by ProceedAfterIcr() if applicable
 		LOGS(node_params.save_node_logs, node_logger.file,
 			"%.15f;N%d;S%d;%s;%s MAPC: selected peer N%d (round-robin idx %d)\n",
 			SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL2,
@@ -1252,7 +1266,7 @@ void Node :: MyTxFinished(trigger_t &){
 
 		case STATE_TX_RTS:{
 
-			if (wlan.mapc_enabled && wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA) {
+			if (MapcTimeSharingTxop()) {
 				// MAPC Co-TDMA: MU-RTS/TXS finished — advance round-robin and restart coordinator
 				Notification notification = GenerateNotification(PACKET_TYPE_MU_RTS_TXS, current_destination_id,
 					mu_rts_notification.packet_id, mu_rts_notification.tx_info.num_packets_aggregated,
@@ -1322,7 +1336,8 @@ void Node :: MyTxFinished(trigger_t &){
 
 			// Co-BF/Co-SR: tag DATA finish notification with MAPC group so STAs know
 			// to wait for the ACK TF instead of auto-ACKing after SIFS.
-			int cobf_cosr = wlan.mapc_enabled
+			// (A Co-SR time-sharing fallback TXOP uses the plain Co-TDMA DATA/ACK instead.)
+			int cobf_cosr = wlan.mapc_enabled && !mapc_time_sharing_round
 				&& (wlan.mapc_method_ids[mapc_active_group_idx] == CO_BF
 					|| wlan.mapc_method_ids[mapc_active_group_idx] == CO_SR);
 			if (cobf_cosr) {
@@ -1785,7 +1800,10 @@ void Node :: HandleFinishTX_StateRxIcf(const Notification &notification) {
 			|| notification.mapc_group_id != wlan.mapc_group_ids[mapc_active_group_idx]) return;
 	// Only coordinated APs (not STAs) respond; only the targeted AP responds with ICR
 	if (node_params.node_type != NODE_TYPE_AP) return;
-	if (notification.mapc_target_ap_id != node_params.node_id) return;
+	if (notification.mapc_target_ap_id != node_params.node_id) {
+		RestartNode(FALSE);
+		return;
+	}
 
 	// CCA check: same pattern as RTS -> CTS
 	GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated,
@@ -1851,8 +1869,9 @@ void Node :: HandleFinishTX_StateRxIcf(const Notification &notification) {
 
 	sr_state.flag_change_in_tx_power = FALSE;
 
-	// Stagger: position 0 → SIFS; position k → SIFS + k*(cts_duration + SIFS)
-	double sifs_delay = SIFS + mapc_peer_position * (cts_duration + SIFS);
+	double sifs_delay = (wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA)
+		? SIFS
+		: SIFS + mapc_peer_position * (cts_duration + SIFS);
 	time_to_trigger = SimTime() + sifs_delay;
 	trigger_SIFS.Set(FixTimeOffset(time_to_trigger, 13, 12));
 
@@ -1872,15 +1891,16 @@ void Node :: HandleFinishTX_StateRxIcr(const Notification &notification) {
 	++mapc_icr_received_count;
 	++node_stats.num_icr_rx;
 	LOGS(node_params.save_node_logs, node_logger.file,
-		"%.15f;N%d;S%d;%s;%s ICR received from N%d (%d/%d) has_data=%d\n",
+		"%.15f;N%d;S%d;%s;%s ICR received from N%d (%d/%d) has_data=%d ac=%d\n",
 		SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3,
 		notification.source_id, mapc_icr_received_count, num_coordinated_aps,
-		notification.mapc_has_data);
+		notification.mapc_has_data, notification.mapc_traffic_type);
 
 	// Co-TDMA targets exactly one peer per TXOP — proceed immediately after the first ICR
 	trigger_CTS_timeout.Cancel();
 	mapc_icr_received_count = 0;
 	mapc_peer_has_data = notification.mapc_has_data;
+	mapc_peer_traffic_type = notification.mapc_traffic_type;
 	// Save coordinated AP's requested duration for TXOP negotiation in ProceedAfterIcr
 	mapc_icr_requested_duration = notification.tx_info.mapc_allocated_data_duration;
 	ProceedAfterIcr();
@@ -2082,19 +2102,32 @@ int Node :: ComputeCoSRTxPowers(double &coordinator_pW, double &peer_pW) {
 }
 
 /**
+ * MapcTimeSharingTxop: TRUE if the current MAPC TXOP follows the time-sharing rules
+ * (Co-TDMA DATA/ACK + MU-RTS/TXS slot), i.e., a Co-TDMA group or a Co-SR TXOP that
+ * fell back to time sharing because simultaneous transmission was infeasible.
+ */
+int Node :: MapcTimeSharingTxop() {
+	return wlan.mapc_enabled
+		&& (wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA || mapc_time_sharing_round);
+}
+
+/**
  * ProceedAfterIcr: coordinator decides next action after all ICRs collected
  */
 void Node :: ProceedAfterIcr() {
 	// Co-SR: compute simultaneous-phase powers up front so infeasibility (neither
 	// edge clears the shared capture-effect target within Pmax) can redirect this
 	// TXOP to the time-sharing (Co-TDMA) path below instead of forcing a simultaneous
-	// transmission guaranteed to drop a packet.
+	// transmission guaranteed to drop a packet. The peer detects the fallback when
+	// the coordinator's DATA arrives instead of the TF (HandleStartTX_StateWaitTf),
+	// and waits for its MU-RTS/TXS slot.
 	int mapc_time_sharing_fallback = FALSE;
 	double cosr_coord_pW = current_tx_power;
 	double cosr_peer_pW  = current_tx_power;
 	if (wlan.mapc_method_ids[mapc_active_group_idx] == CO_SR && mapc_peer_has_data) {
 		if (!ComputeCoSRTxPowers(cosr_coord_pW, cosr_peer_pW)) {
 			mapc_time_sharing_fallback = TRUE;
+			mapc_time_sharing_round = TRUE;
 			LOGS(node_params.save_node_logs, node_logger.file,
 				"%.15f;N%d;S%d;%s;%s Co-SR infeasible (capture-effect targets unreachable "
 				"within Pmax); falling back to time-sharing this TXOP\n",
@@ -2132,22 +2165,66 @@ void Node :: ProceedAfterIcr() {
 		// No packets were ACKed during the ICF/ICR exchange; reset so
 		// PrepareNewTransmission does not attempt to delete from the empty buffer
 		limited_num_packets_aggregated = 0;
-		// Compute per-AP data duration based on TXOP split method
+		// Compute per-AP data duration based on TXOP split method (mapc_txop_splits,
+		// set per group from the mapc config CSV's ExtraParams "txop_split" key --
+		// see GenerateMapcConfiByReadingInputFile in input_loader.h; defaults to
+		// TXOP_SPLIT_EQUAL when unspecified).
+		mapc_txop_peer_data_duration = 0.0;
+		mapc_peer_rank_gap_exceeded = FALSE;
 		if (wlan.mapc_txop_splits[mapc_active_group_idx] == TXOP_SPLIT_EQUAL) {
-			int n_active = 1 + (mapc_peer_has_data ? 1 : 0);
-			mapc_txop_per_ap_data_duration = mapc_txop_data_budget / n_active;
-			// Cap to respect total Co-TDMA TXOP <= IEEE_AX_MAX_PPDU_DURATION.
-			// Overhead for n_active>1 (ICF+SIFS+ICR+ACK_A+SIFS+SIFS+MU-RTS+ACK_B+SIFS+SIFS):
-			//   = 2*rts_duration + cts_duration + 2*ack_duration + 4*SIFS
-			// For n_active==1 (no MU-RTS slot): rts + cts + ack + 2*SIFS
-			if (n_active > 1) {
+			int _rank_diff = mapc_peer_has_data
+				? (GetAcPriorityRank(mapc_peer_traffic_type) - GetAcPriorityRank(current_traffic_type))
+				: 1;
+			int _will_share = mapc_peer_has_data && _rank_diff <= 0;
+			if (mapc_peer_has_data && _rank_diff > 0) mapc_peer_rank_gap_exceeded = TRUE;
+			int _n_active = 1 + (_will_share ? 1 : 0);
+			mapc_txop_per_ap_data_duration = mapc_txop_data_budget / _n_active;
+			if (_n_active > 1) {
 				double exchange_overhead = 2.0 * rts_duration + cts_duration
 					+ 2.0 * ack_duration + 4.0 * SIFS;
-				double per_ap_txop_limit =
-					(IEEE_AX_MAX_PPDU_DURATION - exchange_overhead) / (double) n_active;
+				double per_ap_txop_limit = (IEEE_AX_MAX_PPDU_DURATION - exchange_overhead) / (double) _n_active;
 				if (per_ap_txop_limit < 0.0) per_ap_txop_limit = 0.0;
 				if (mapc_txop_per_ap_data_duration > per_ap_txop_limit)
 					mapc_txop_per_ap_data_duration = per_ap_txop_limit;
+				mapc_txop_peer_data_duration = mapc_txop_per_ap_data_duration;
+			}
+			if (mapc_txop_per_ap_data_duration > IEEE_AX_MAX_PPDU_DURATION)
+				mapc_txop_per_ap_data_duration = IEEE_AX_MAX_PPDU_DURATION;
+		} else if (wlan.mapc_txop_splits[mapc_active_group_idx] == TXOP_SPLIT_REMAINDER) {
+			int _will_share = FALSE;
+			if (mapc_peer_has_data) {
+				int _rank_diff = GetAcPriorityRank(mapc_peer_traffic_type)
+					- GetAcPriorityRank(current_traffic_type);
+				if (_rank_diff <= wlan.mapc_max_rank_gap[mapc_active_group_idx]) {
+					_will_share = TRUE;
+				} else {
+					mapc_peer_rank_gap_exceeded = TRUE; // denied outright, no overhead paid
+				}
+			}
+			double _own_txop_limit = ComputeTxopLimit(current_traffic_type);
+			double _ceiling = (_own_txop_limit > 0.0) ? _own_txop_limit : IEEE_AX_MAX_PPDU_DURATION;
+			if (_ceiling > IEEE_AX_MAX_PPDU_DURATION) _ceiling = IEEE_AX_MAX_PPDU_DURATION;
+			// Overhead when sharing (ICF+SIFS+ICR+ACK_A+SIFS+SIFS+MU-RTS+ACK_B+SIFS+SIFS):
+			//   = 2*rts_duration + cts_duration + 2*ack_duration + 4*SIFS
+			// When not sharing (no MU-RTS slot): just the coordinator's own DATA/ACK.
+			if (_will_share) {
+				double exchange_overhead = 2.0 * rts_duration + cts_duration
+					+ 2.0 * ack_duration + 4.0 * SIFS;
+				_ceiling -= exchange_overhead;
+				if (_ceiling < 0.0) _ceiling = 0.0;
+			}
+			// Coordinator's own need is protected first, in full.
+			mapc_txop_per_ap_data_duration = mapc_txop_data_budget;
+			if (mapc_txop_per_ap_data_duration > _ceiling)
+				mapc_txop_per_ap_data_duration = _ceiling;
+			// Peer gets the ENTIRE remainder (not a fraction of it) -- it will
+			// only use as much as it actually has buffered.
+			if (_will_share) {
+				mapc_txop_peer_data_duration = _ceiling - mapc_txop_per_ap_data_duration;
+				if (mapc_txop_peer_data_duration < 0.0) mapc_txop_peer_data_duration = 0.0;
+				double _peer_txop_limit = ComputeTxopLimit(mapc_peer_traffic_type);
+				if (_peer_txop_limit > 0.0 && mapc_txop_peer_data_duration > _peer_txop_limit)
+					mapc_txop_peer_data_duration = _peer_txop_limit;
 			}
 			// Enforce IEEE 802.11ax per-PPDU duration limit
 			if (mapc_txop_per_ap_data_duration > IEEE_AX_MAX_PPDU_DURATION)
@@ -2156,7 +2233,7 @@ void Node :: ProceedAfterIcr() {
 		// Track TXOP sharing durations (Co-TDMA)
 		node_stats.total_mapc_data_duration_own += mapc_txop_per_ap_data_duration;
 		if (mapc_peer_has_data)
-			node_stats.total_mapc_data_duration_shared += mapc_txop_per_ap_data_duration;
+			node_stats.total_mapc_data_duration_shared += mapc_txop_peer_data_duration;
 		PrepareNewTransmission();
 	} else {
 		// Co-BF / Co-SR

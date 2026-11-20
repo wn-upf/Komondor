@@ -510,8 +510,8 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_interf
 		/* Sum beamforming-corrected power from every active transmitter except the
 		 * intended source.  power_received_per_node already stores effective
 		 * (post-beamforming) power for DATA frames and raw power for control frames.
-		 * channel_power is kept raw (omnidirectional) for CCA/NAV so that DCF
-		 * carrier sense works correctly regardless of beam direction. */
+		 * channel_power is aggregated per channel (all sources, including the intended
+		 * one), so it is used here only to pick the log channel below. */
 		std::map<int,double>::iterator _it;
 		for (_it = power_received_per_node.begin();
 		     _it != power_received_per_node.end(); ++_it) {
@@ -532,10 +532,19 @@ void ComputeMaxInterference(double *max_pw_interference, int *channel_max_interf
 // Timestamp management
 // ===========================================================================
 
-void UpdateTimestampChannelFreeAgain(double *timestampt_channel_becomes_free, double **channel_power,
+/**
+* Track when each channel became free. When a channel turns busy, the start of the idle
+* period it just left is kept in timestamp_last_idle_period_start, so that idle-for-PIFS
+* checks can ignore a transmission that started at the same instant (see
+* Node::SnapshotCcaAtRtsStart).
+*/
+void UpdateTimestampChannelFreeAgain(double *timestampt_channel_becomes_free,
+		double *timestamp_last_idle_period_start, double **channel_power,
 		double current_pd, double sim_time) {
 	for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
 		if((*channel_power)[i] > current_pd){
+			if (timestampt_channel_becomes_free[i] != -1)
+				timestamp_last_idle_period_start[i] = timestampt_channel_becomes_free[i];
 			timestampt_channel_becomes_free[i] = -1;
 		} else if(timestampt_channel_becomes_free[i] == -1){
 			timestampt_channel_becomes_free[i] = sim_time;

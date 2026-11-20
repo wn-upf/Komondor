@@ -84,6 +84,8 @@ struct NodeParameters {
 	int    beam_N_elements;		///> Number of ULA antenna elements
 	double beam_d_spacing;		///> Element spacing [wavelengths]
 	double beam_az_main_deg;	///> Main beam azimuth [deg]; overridden per-TXOP when beamforming_enabled
+	int    beam_params_from_input;	///> 1 if the nodes file provided bf_* columns (they override the Co-BF default ULA)
+
 
 	// --- Current / mutable configuration ---
 	// Initialized from input; may be updated during simulation (e.g., by ApplyNewConfiguration).

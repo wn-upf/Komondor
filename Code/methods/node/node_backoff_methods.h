@@ -220,6 +220,7 @@ void Node :: RestartNode(int called_by_time_out){
 	current_tx_duration = 0;
 	power_rx_interest = 0;
 	max_pw_interference = 0;
+	mapc_time_sharing_round = FALSE;	// a Co-SR time-sharing fallback only lasts one TXOP
 
 	receiving_from_node_id = NODE_ID_NONE;
 	receiving_packet_id = NO_PACKET_ID;
@@ -443,6 +444,25 @@ void Node :: HandleStartTX_StateWaitMuRts(const Notification &notification) {
  * Handle InportSomeNodeStartTX for STATE_WAIT_TF (coordinated AP waiting for TF)
  */
 void Node :: HandleStartTX_StateWaitTf(const Notification &notification) {
+	// Co-SR fallback: the coordinator found simultaneous TX infeasible and sends its own
+	// DATA instead of the TF (ProceedAfterIcr). Switch to the time-sharing rules and
+	// wait for the MU-RTS/TXS granting our slot after its DATA/ACK, as in Co-TDMA.
+	if (notification.packet_type == PACKET_TYPE_DATA
+			&& notification.source_id == coordinator_ap_id
+			&& notification.tx_info.mapc_time_sharing
+			&& notification.mapc_group_id == wlan.mapc_group_ids[mapc_active_group_idx]) {
+		trigger_DATA_timeout.Cancel();
+		mapc_time_sharing_round = TRUE;
+		node_state = STATE_WAIT_MU_RTS;
+		time_to_trigger = SimTime() + notification.tx_duration + SIFS + notification.tx_info.ack_duration
+			+ SIFS + TIME_OUT_EXTRA_TIME;
+		trigger_NAV_timeout.Set(FixTimeOffset(time_to_trigger, 13, 12));
+		LOGS(node_params.save_node_logs, node_logger.file,
+			"%.15f;N%d;S%d;%s;%s Co-SR fallback: DATA from coordinator N%d instead of TF -> waiting for MU-RTS/TXS\n",
+			SimTime(), node_params.node_id, STATE_WAIT_MU_RTS, LOG_D07, LOG_LVL2,
+			notification.source_id);
+		return;
+	}
 	if (notification.packet_type == PACKET_TYPE_TF
 			&& notification.destination_id == NODE_ID_MAPC_BROADCAST
 			&& notification.mapc_group_id == wlan.mapc_group_ids[mapc_active_group_idx]) {

@@ -262,6 +262,7 @@ void Node :: HandleStartTX_StateSensing(const Notification &notification) {
 			|| notification.packet_type == PACKET_TYPE_ICF
 			|| notification.packet_type == PACKET_TYPE_ICR
 			|| notification.packet_type == PACKET_TYPE_TF
+			|| notification.packet_type == PACKET_TYPE_ACK_TF
 			|| notification.packet_type == PACKET_TYPE_MU_RTS_TXS
 			|| notification.packet_type == PACKET_TYPE_DSO_ICF
 			|| notification.packet_type == PACKET_TYPE_NPCA_ICF) {
@@ -325,8 +326,11 @@ void Node :: HandleStartTX_StateSensing(const Notification &notification) {
 				// MAPC: if ICF or TF is for our own MAPC group, stay in STATE_SENSING so we
 				// can receive our AP's DATA in the upcoming slot. Covers both STA_A (coord.
 				// AP's STA, source == own AP) and STA_B (coordinated AP's STA, source != own AP).
+				// Same for the ACK TF: a STA must stay in SENSING to answer its own AP's ACK TF
+				// (HandleFinishTX_StateSensing); only APs and other BSSs defer to it via NAV.
 				if ((notification.packet_type == PACKET_TYPE_ICF
-							|| notification.packet_type == PACKET_TYPE_TF)
+							|| notification.packet_type == PACKET_TYPE_TF
+							|| notification.packet_type == PACKET_TYPE_ACK_TF)
 						&& node_params.node_type == NODE_TYPE_STA
 						&& wlan.mapc_enabled
 						&& wlan.FindMapcGroupIdx(notification.mapc_group_id) >= 0) {
@@ -459,7 +463,7 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 			// Fix 1: BF-aware interference — when the sender has beamforming active,
 			// derive interference from the per-node BF-corrected powers so that
 			// nulled directions do not inflate the interference estimate.
-			// (channel_power uses raw path loss with no BF gain applied.)
+			// (channel_power aggregates all sources, including the one of interest.)
 			if (notification.tx_info.beamforming_active) {
 				power_rx_interest = power_received_per_node[notification.source_id];
 				max_pw_interference = 0;
@@ -473,37 +477,31 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 				UpdateSINRFromNotification(notification);
 			}
 
-			// Fix 2: for Co-BF, the STA's NAV was set by the coordination handshake
-			// (ICF/TF), not a genuine collision -- interference toward this node is
-			// nulled via beamforming, so the generic SINR/collision gate below doesn't
-			// apply here. Bypass it and let the reception complete; HandleFinishTX_StateRxData
-			// determines the real outcome.
-			//
-			// Co-SR does NOT null interference (only power-controls the coordinated AP,
-			// and even then not always to a comfortable margin -- see the STATIC/SELFISH
-			// policies in ComputeCoSRTxPowers). Its SINR check must stay real: the peer
-			// AP's simultaneous DATA is by design, not a random backoff collision, but it
-			// can still genuinely fail to decode depending on distance/power policy. That
-			// case is handled below (loss_reason != PACKET_NOT_LOST), not bypassed here.
+			// Co-BF and Co-SR: the peer AP's simultaneous DATA is by design, not a random
+			// backoff collision, but whether this STA can decode must still come from a real
+			// SINR check. For Co-BF, the interference term is already shaped by the peer's
+			// zero-forcing beam (power_received_per_node stores ULA-corrected power for
+			// beamformed DATA), so a well-placed null yields a high SINR here while a poor
+			// one (too few antennas, mirrored/close directions, fallback weights) does not.
+			// For Co-SR, the interference is limited by power control instead. Either way,
+			// a genuine failure is handled gracefully below, not bypassed.
 			int _mapc_overlap_g = -1;
 			{
-				int _cobf_g = wlan.mapc_enabled
+				int _mapc_g = wlan.mapc_enabled
 					? wlan.FindMapcGroupIdx(notification.mapc_group_id) : -1;
-				if (_cobf_g >= 0 && wlan.mapc_method_ids[_cobf_g] == CO_BF) {
-					loss_reason = PACKET_NOT_LOST;
-				} else {
-					loss_reason = IsPacketLost(node_params.current_primary_channel, notification, notification,
-						current_sinr, node_params.capture_effect, current_pd,
-						power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
-					if (_cobf_g >= 0 && wlan.mapc_method_ids[_cobf_g] == CO_SR)
-						_mapc_overlap_g = _cobf_g;
-				}
+				loss_reason = IsPacketLost(node_params.current_primary_channel, notification, notification,
+					current_sinr, node_params.capture_effect, current_pd,
+					power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
+				if (_mapc_g >= 0 && !notification.tx_info.mapc_time_sharing
+						&& (wlan.mapc_method_ids[_mapc_g] == CO_BF
+						|| wlan.mapc_method_ids[_mapc_g] == CO_SR))
+					_mapc_overlap_g = _mapc_g;
 			}
 
 			if(loss_reason != PACKET_NOT_LOST) {
 
 				if (_mapc_overlap_g >= 0) {
-					// Co-SR: this is a genuine SINR/interference failure on the STA's own
+					// Co-BF/Co-SR: this is a genuine SINR/interference failure on the STA's own
 					// DATA link, not a random slotted-backoff collision (the two APs'
 					// transmissions overlapped by design). Fail gracefully -- keep the
 					// specific loss_reason for stats/NACK, but don't force
@@ -513,8 +511,8 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 					// (already armed for the round's duration) and let the transmitting
 					// AP's own ACK timeout handle recovery, like any normal failed link.
 					LOGS(node_params.save_node_logs, node_logger.file,
-						"%.15f;N%d;S%d;%s;%s Co-SR DATA from own AP N%d lost (reason %d, SINR = %.2f dB) "
-						"-- real interference/power-policy failure, not a BO collision. Staying in NAV.\n",
+						"%.15f;N%d;S%d;%s;%s Co-BF/Co-SR DATA from own AP N%d lost (reason %d, SINR = %.2f dB) "
+						"-- real interference failure (residual beam/power-policy), not a BO collision. Staying in NAV.\n",
 						SimTime(), node_params.node_id, node_state, LOG_D16, LOG_LVL3,
 						notification.source_id, loss_reason, ConvertPower(LINEAR_TO_DB, current_sinr));
 
@@ -827,17 +825,31 @@ void Node :: HandleStartTX_StateNav(const Notification &notification) {
 					// duration, so that third-party APs (e.g. AP_C) track the real end of
 					// AP_A/AP_B's TXOP instead of the coarse estimate set at ICF time.
 					// MU-RTS/TXS hands AP_B the agreed DATA+ACK allocation for the rest of
-					// the round; a new ICF marks the start of the next round.
+					// the round; a new ICF marks the start of the next round. AP_B's DATA
+					// then reveals the slot's real end: if AP_B uses less than its allocation
+					// (e.g. A-MPDU size cap), the NAV is truncated to its DATA+ACK. This models
+					// the early release of the unused slot (TXOP Return + truncation); without
+					// it, AP_C would stay in NAV until the end of the allocation while AP_A and
+					// AP_B already contend again after AP_B's ACK.
+					int _slot_holder_data = (notification.packet_type == PACKET_TYPE_DATA
+						&& notification.source_id == mapc_nav_slot_holder_id);
 					if (notification.mapc_group_id > 0
 							&& (notification.packet_type == PACKET_TYPE_MU_RTS_TXS
-								|| notification.packet_type == PACKET_TYPE_ICF)) {
+								|| notification.packet_type == PACKET_TYPE_ICF
+								|| _slot_holder_data)) {
 
 						if (notification.packet_type == PACKET_TYPE_MU_RTS_TXS) {
 							// nav_time covers SIFS+DATA+SIFS+ACK *after* the MU-RTS frame itself
 							current_nav_time = notification.tx_duration + notification.tx_info.nav_time;
+							mapc_nav_slot_holder_id = notification.destination_id;
+						} else if (_slot_holder_data) {
+							// DATA's nav_time already covers DATA+SIFS+ACK from its own start
+							current_nav_time = notification.tx_info.nav_time;
+							mapc_nav_slot_holder_id = NODE_ID_NONE;
 						} else {
 							// ICF's nav_time already covers the round from its own start
 							current_nav_time = notification.tx_info.nav_time;
+							mapc_nav_slot_holder_id = NODE_ID_NONE;
 						}
 						time_to_trigger = SimTime() + current_nav_time - TIME_OUT_EXTRA_TIME;
 
@@ -1086,22 +1098,20 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 			ConvertPower(PW_TO_DBM, max_pw_interference),
 			ConvertPower(LINEAR_TO_DB, current_sinr));
 
-		// Fix 2: for Co-BF, the peer AP's simultaneous DATA is expected to be nulled
-		// toward this node; bypass the collision check so the reception continues.
-		// For Co-SR (no nulling, power-controlled instead), the overlap is still by
-		// design, not a random collision, but the SINR check must stay real -- a
-		// genuine loss here is handled gracefully below (loss_reason != PACKET_NOT_LOST),
-		// not bypassed. See the matching comment in HandleStartTX_StateNav above.
+		// Co-BF/Co-SR: the peer AP's simultaneous DATA overlaps by design, not as a random
+		// collision, but the SINR check stays real. For Co-BF the interference in
+		// current_sinr is already the peer's ZF-beamformed power toward this node, so the
+		// null (or its absence) decides the outcome. A genuine loss is handled gracefully
+		// below (loss_reason != PACKET_NOT_LOST). See the matching comment in
+		// HandleStartTX_StateNav above.
 		int _mapc_overlap_g = -1;
 		{
-			int _cobf_g = wlan.mapc_enabled
+			int _mapc_g = wlan.mapc_enabled
 				? wlan.FindMapcGroupIdx(notification.mapc_group_id) : -1;
 			int _ongoing_g = wlan.mapc_enabled
 				? wlan.FindMapcGroupIdx(incoming_notification.mapc_group_id) : -1;
-			if (_cobf_g >= 0 && _cobf_g == _ongoing_g && wlan.mapc_method_ids[_cobf_g] == CO_BF) {
-				loss_reason = PACKET_NOT_LOST;
 			// Check if the notification that was already being received is lost due to new notification
-			} else if (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified) {
+			if (sr_state.spatial_reuse_enabled && sr_state.txop_sr_identified) {
 				loss_reason = IsPacketLost(node_params.current_primary_channel, incoming_notification, notification,
 					current_sinr, node_params.capture_effect, sr_state.current_obss_pd_threshold,
 					power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
@@ -1110,8 +1120,10 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 					current_sinr, node_params.capture_effect, current_pd,
 					power_rx_interest, node_params.constant_per, node_params.node_id, node_params.capture_effect_model);
 			}
-			if (_cobf_g >= 0 && _cobf_g == _ongoing_g && wlan.mapc_method_ids[_cobf_g] == CO_SR)
-				_mapc_overlap_g = _cobf_g;
+			if (_mapc_g >= 0 && _mapc_g == _ongoing_g && !incoming_notification.tx_info.mapc_time_sharing
+					&& (wlan.mapc_method_ids[_mapc_g] == CO_BF
+					|| wlan.mapc_method_ids[_mapc_g] == CO_SR))
+				_mapc_overlap_g = _mapc_g;
 		}
 
 		// TODO: method for checking whether the detected transmission can be decoded or not
@@ -1145,7 +1157,7 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 						SendLogicalNack(logical_nack);
 					}
 					if (_mapc_overlap_g >= 0) {
-						// Co-SR: genuine SINR failure on our own ongoing DATA reception
+						// Co-BF/Co-SR: genuine SINR failure on our own ongoing DATA reception
 						// caused by the peer AP's (by-design, simultaneous) DATA -- real
 						// interference, not a hidden-node collision, but the reception is
 						// still genuinely lost and must not be allowed to later report
@@ -1156,7 +1168,7 @@ void Node :: HandleStartTX_StateRxData(const Notification &notification) {
 						// touches this node's own state, so the peer AP/STA's independent,
 						// unaffected exchange still completes normally.
 						LOGS(node_params.save_node_logs, node_logger.file,
-							"%.15f;N%d;S%d;%s;%s Co-SR: ongoing DATA reception from N%d lost to peer AP's "
+							"%.15f;N%d;S%d;%s;%s Co-BF/Co-SR: ongoing DATA reception from N%d lost to peer AP's "
 							"simultaneous DATA (reason %d, SINR = %.2f dB) -- real interference, not a "
 							"hidden-node collision, but reception failed. Restarting node.\n",
 							SimTime(), node_params.node_id, node_state, LOG_D19, LOG_LVL3,
@@ -1274,6 +1286,56 @@ void Node :: HandleStartTX_StateWaitAck(const Notification &notification) {
 //
 	}
 
+}
+
+/**
+ * Record, at the start of an RTS addressed to this node, which channels were idle during
+ * the PIFS before the RTS began. Per the 802.11 dynamic-bandwidth RTS/CTS rule, the CTS
+ * may only cover secondary channels that were idle for PIFS before the RTS started; the
+ * primary is validated by NAV, not CCA. Transmissions that started within
+ * MAX_DIFFERENCE_SAME_TIME of the RTS are simultaneous with it and could not have been
+ * sensed, so they are excluded whatever order the simulator processed them in.
+ * Called before the RTS itself is added to channel_power.
+ */
+void Node :: SnapshotCcaAtRtsStart(const Notification &notification) {
+
+	double t0 = SimTime();
+
+	for (int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c) {
+
+		// Channel power without the transmissions that started at the same time
+		double pw_excl = channel_power[c];
+		std::map<int,double>::iterator _it;
+		for (_it = ongoing_tx_start_time.begin(); _it != ongoing_tx_start_time.end(); ++_it) {
+			if (_it->second >= t0 - MAX_DIFFERENCE_SAME_TIME
+					&& ongoing_tx_channel_power.count(_it->first)) {
+				pw_excl -= ongoing_tx_channel_power[_it->first][c];
+			}
+		}
+		if (pw_excl < 0) pw_excl = 0;
+
+		// Start of the current idle period, ignoring same-time transmissions
+		double idle_since;
+		if (pw_excl > current_pd) {
+			idle_since = -1;	// busy because of an earlier transmission
+		} else if (timestamp_channel_becomes_free[c] != -1) {
+			idle_since = timestamp_channel_becomes_free[c];
+		} else {
+			idle_since = timestamp_last_idle_period_start[c];	// busy only due to same-time TXs
+		}
+
+		rts_secondary_idle_pifs[c] = (idle_since >= 0
+			&& t0 - idle_since >= PIFS - MAX_DIFFERENCE_SAME_TIME) ? TRUE : FALSE;
+		rts_snapshot_channel_power[c] = pw_excl;
+	}
+
+	rts_snapshot_source_id = notification.source_id;
+
+	LOGS(node_params.save_node_logs, node_logger.file,
+		"%.15f;N%d;S%d;%s;%s RTS from N%d starts: channels idle for PIFS before it: ",
+		SimTime(), node_params.node_id, node_state, LOG_D02, LOG_LVL3, notification.source_id);
+	PrintOrWriteChannelsFree(WRITE_LOG, node_params.save_node_logs, FALSE, node_logger,
+		rts_secondary_idle_pifs);
 }
 
 /**
@@ -1572,11 +1634,49 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 				notification.tx_info.tx_power, node_params.central_frequency, node_params.path_loss_model);
 		}
 
-		// Update the power sensed at each channel (raw path-loss power, used for CCA/NAV).
-		// Beamforming correction is NOT applied here: channel_power must reflect the
-		// omnidirectional energy on the medium so that carrier-sense works correctly.
+		// 802.11 CTS bandwidth rule: an RTS addressed to this node is answered based on
+		// the channel state during the PIFS before the RTS started, so record it now,
+		// before the RTS itself is added to channel_power.
+		if (notification.packet_type == PACKET_TYPE_RTS
+				&& notification.destination_id == node_params.node_id) {
+			SnapshotCcaAtRtsStart(notification);
+		}
+
+		// Update the power sensed at each channel (used for CCA/NAV), hybrid model for
+		// beamformed DATA: the legacy preamble is not beamformed, so a node that detects
+		// it (omnidirectional power above PD, and not transmitting itself) holds CCA busy
+		// for the whole PPDU, i.e. counts the omnidirectional power. A node that misses
+		// the preamble (it was transmitting) only senses the energy of the beamformed
+		// payload, i.e. the omnidirectional power times the transmitter's ULA gain toward
+		// it. The gain is stored so TX_FINISHED removes exactly the power added here.
+		double cca_beam_gain = 1.0;
+		if (notification.tx_info.beamforming_active
+				&& notification.tx_info.beam_N_elements > 1
+				&& notification.packet_type == PACKET_TYPE_DATA) {
+			int preamble_detected = (received_power_array[notification.source_id] >= current_pd)
+				&& (nodes_transmitting[node_params.node_id] != TRUE);
+			if (!preamble_detected) {
+				cca_beam_gain = ComputeRxBeamGain(notification.tx_info,
+					node_params.x, node_params.y, node_params.z);
+			}
+		}
+		beam_gain_per_node[notification.source_id] = cca_beam_gain;
+		double cca_pw_received = received_power_array[notification.source_id] * cca_beam_gain;
 		UpdateChannelsPower(&channel_power, notification, TX_INITIATED,
-			node_params.central_frequency, node_params.path_loss_model, node_params.adjacent_channel_model, received_power_array[notification.source_id], node_params.node_id);
+			node_params.central_frequency, node_params.path_loss_model, node_params.adjacent_channel_model,
+			cca_pw_received, node_params.node_id);
+
+		// Remember when this TX started and what it adds to each channel, so that
+		// same-time transmissions can be told apart later (SnapshotCcaAtRtsStart).
+		{
+			double _contrib[NUM_CHANNELS_KOMONDOR];
+			memset(_contrib, 0, NUM_CHANNELS_KOMONDOR * sizeof(double));
+			ApplyAdjacentChannelInterferenceModel(node_params.adjacent_channel_model, _contrib,
+				notification, node_params.central_frequency, cca_pw_received, node_params.path_loss_model);
+			ongoing_tx_start_time[notification.source_id] = SimTime();
+			ongoing_tx_channel_power[notification.source_id] =
+				std::vector<double>(_contrib, _contrib + NUM_CHANNELS_KOMONDOR);
+		}
 
 		LOGS(node_params.save_node_logs,node_logger.file,
 			"%.15f;N%d;S%d;%s;%s Power sensed per channel [dBm]: ",
@@ -1590,7 +1690,7 @@ void Node :: InportSomeNodeStartTX(Notification &notification){
 			node_params.central_frequency, node_params.path_loss_model, received_power_array[notification.source_id], TX_INITIATED,
 			node_params.x, node_params.y, node_params.z);
 
-		UpdateTimestampChannelFreeAgain(timestamp_channel_becomes_free, &channel_power,
+		UpdateTimestampChannelFreeAgain(timestamp_channel_becomes_free, timestamp_last_idle_period_start, &channel_power,
 			current_pd, SimTime());
 
 		// Spatial Reuse: identify frame origin and potential OBSS/PD threshold
@@ -1865,8 +1965,9 @@ void Node :: HandleFinishTX_StateRxData(const Notification &notification){
 			// STATE_TX_DATA in node_packet_methods.h), not simultaneous, so no
 			// sub-channel separation is needed here: each STA gets the full bonded
 			// range in its own turn.
+			// A Co-SR time-sharing fallback DATA is acknowledged directly (Co-TDMA rules).
 			int _cobf_cosr_g = wlan.FindMapcGroupIdx(notification.mapc_group_id);
-			int _cobf_cosr = (_cobf_cosr_g >= 0)
+			int _cobf_cosr = (_cobf_cosr_g >= 0) && !notification.tx_info.mapc_time_sharing
 				&& (wlan.mapc_method_ids[_cobf_cosr_g] == CO_BF
 					|| wlan.mapc_method_ids[_cobf_cosr_g] == CO_SR);
 			ack_notification = GenerateNotification(PACKET_TYPE_ACK, current_destination_id,
@@ -2026,9 +2127,20 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 		PrintOrWriteChannelPower(WRITE_LOG, node_params.save_node_logs, node_params.print_node_logs, node_logger,
 					&channel_power);
 
-		// Update the power sensed at each channel (raw power, matching TX_INITIATED).
+		ongoing_tx_start_time.erase(notification.source_id);
+		ongoing_tx_channel_power.erase(notification.source_id);
+
+		// Update the power sensed at each channel, removing the same (hybrid-model) power
+		// that was added at TX_INITIATED.
+		double cca_beam_gain = 1.0;
+		std::map<int,double>::iterator _gain_it = beam_gain_per_node.find(notification.source_id);
+		if (_gain_it != beam_gain_per_node.end()) {
+			cca_beam_gain = _gain_it->second;
+			beam_gain_per_node.erase(_gain_it);
+		}
 		UpdateChannelsPower(&channel_power, notification, TX_FINISHED,
-			node_params.central_frequency, node_params.path_loss_model, node_params.adjacent_channel_model, received_power_array[notification.source_id], node_params.node_id);
+			node_params.central_frequency, node_params.path_loss_model, node_params.adjacent_channel_model,
+			received_power_array[notification.source_id] * cca_beam_gain, node_params.node_id);
 
 		// -------------------------
 		// Safety condtion. Empty the channel when no node is transmitting
@@ -2064,7 +2176,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 			node_params.central_frequency, node_params.path_loss_model, received_power_array[notification.source_id], TX_FINISHED,
 			node_params.x, node_params.y, node_params.z);
 
-		UpdateTimestampChannelFreeAgain(timestamp_channel_becomes_free, &channel_power,
+		UpdateTimestampChannelFreeAgain(timestamp_channel_becomes_free, timestamp_last_idle_period_start, &channel_power,
 			current_pd, SimTime());
 
 
@@ -2204,10 +2316,31 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 						// Only the TXOP coordinator sends MU-RTS after its own DATA/ACK.
 						// coordinator_ap_id == NODE_ID_NONE identifies the coordinator
 						// (reset in EndBackoff; set to peer id when an ICF is received).
-						if (wlan.mapc_enabled && wlan.mapc_method_ids[mapc_active_group_idx] == CO_TDMA
-								&& coordinator_ap_id == NODE_ID_NONE) {
-							if (mapc_peer_has_data) {
-								// Peer has data (reported in ICR): grant its TDMA slot via MU-RTS/TXS
+						// Also applies to a Co-SR TXOP that fell back to time sharing.
+						if (MapcTimeSharingTxop() && coordinator_ap_id == NODE_ID_NONE) {
+							// Per 802.11bn TXOP sharing: ProceedAfterIcr already decided, using
+							// GetAcPriorityRank() (edca_methods.h) and COTDMA_PROPORTIONAL_MAX_RANK_GAP
+							// (list_of_macros.h), whether/how much of this TXOP the peer gets --
+							// full 50/50 (same-or-better AC), a smaller rank-gap-decaying share
+							// (lower AC within the cutoff, Phase 2b), or nothing at all
+							// (mapc_peer_rank_gap_exceeded: too mismatched to be worth the fixed
+							// sharing overhead). Deciding AC eligibility here instead, after the
+							// coordinator's own DATA was already sized in ProceedAfterIcr, would
+							// repeat Phase 0's bug of wasting the airtime already set aside.
+							if (mapc_peer_has_data && !mapc_peer_rank_gap_exceeded) {
+								// Grant its TDMA slot via MU-RTS/TXS.
+								// (Round-robin index is advanced once the MU-RTS/TXS finishes
+								// transmitting -- see MyTxFinished's STATE_TX_RTS/CO_TDMA case in
+								// node_packet_methods.h. Do NOT also advance it here: this decision
+								// point runs once per TXOP win, and node_packet_methods.h:~1271
+								// already advances it exactly once for the grant path -- advancing it
+								// here too double-steps the round-robin only on grants, which was a
+								// real bug this session introduced then caught by re-examining the
+								// selection trace: see input/ai_traffic_study/.)
+								if (GetAcPriorityRank(mapc_peer_traffic_type)
+										> GetAcPriorityRank(current_traffic_type)) {
+									++node_stats.num_mapc_slots_granted_proportional;
+								}
 								node_state = STATE_TX_RTS;
 								current_tx_duration = rts_duration;
 								current_destination_id = mapc_selected_peer_id;
@@ -2216,11 +2349,12 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 									limited_num_packets_aggregated,
 									data_notification.timestamp_generated, current_tx_duration);
 								mu_rts_notification.mapc_group_id = wlan.mapc_group_ids[mapc_active_group_idx];
-								// MU-RTS NAV covers AP_B DATA + ACK slot (uses coordinator's capped data_duration)
-								current_nav_time = SIFS + data_duration + SIFS + ack_duration;
+								// MU-RTS NAV covers AP_B's DATA + ACK slot, sized to its actual
+								// (possibly proportionally-reduced) allocation, not the coordinator's own.
+								current_nav_time = SIFS + mapc_txop_peer_data_duration + SIFS + ack_duration;
 								mu_rts_notification.tx_info.nav_time = current_nav_time;
-								// Pass per-AP duration allocation to coordinated AP
-								mu_rts_notification.tx_info.mapc_allocated_data_duration = mapc_txop_per_ap_data_duration;
+								// Pass the peer's own (possibly asymmetric) duration allocation
+								mu_rts_notification.tx_info.mapc_allocated_data_duration = mapc_txop_peer_data_duration;
 								time_rand_value = 0;
 								time_to_trigger = SimTime() + SIFS;
 								trigger_SIFS.Set(FixTimeOffset(time_to_trigger, 13, 12));
@@ -2228,8 +2362,26 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 									"%.15f;N%d;S%d;%s;%s Sending MU-RTS/TXS to N%d (selected peer) after SIFS\n",
 									SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3,
 									current_destination_id);
+							} else if (mapc_peer_rank_gap_exceeded) {
+								// Peer has data but its AC rank gap is too large to be worth the
+								// fixed sharing overhead (COTDMA_PROPORTIONAL_MAX_RANK_GAP): denied
+								// outright, no MU-RTS sent, coordinator keeps its full natural
+								// allocation (already reflected in mapc_txop_per_ap_data_duration).
+								++node_stats.num_mapc_slots_denied_ac_priority;
+								LOGS(node_params.save_node_logs,node_logger.file,
+									"%.15f;N%d;S%d;%s;%s N%d AC=%d rank gap too large vs own AC=%d; denying TXOP share\n",
+									SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3,
+									mapc_selected_peer_id, mapc_peer_traffic_type, current_traffic_type);
+								++mapc_current_peer_idx;
+								RestartNode(FALSE);
 							} else {
-								// Peer has no data (reported in ICR): skip MU-RTS slot
+								// Peer has no data -- either it genuinely reported an empty queue in
+								// its ICR, or its ICR was lost to channel contention (CtsTimeout()
+								// forces mapc_peer_has_data=FALSE in that case too, and already counted
+								// it as num_mapc_slots_denied_icr_timeout; don't double-count it here).
+								if (!mapc_peer_icr_timed_out) {
+									++node_stats.num_mapc_slots_denied_no_data;
+								}
 								LOGS(node_params.save_node_logs,node_logger.file,
 									"%.15f;N%d;S%d;%s;%s N%d has no data (ICR flag); skipping MU-RTS slot\n",
 									SimTime(), node_params.node_id, node_state, LOG_E14, LOG_LVL3,
@@ -2323,18 +2475,37 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							ConvertPower(PW_TO_DBM, current_pd));
 
 
-						// Issue #146 RTS/CTS BW indication
-						// - If incoming packet is RTS decodable:
-						// 1. Perform CCA assessment in full range
-						// 2. Derive new operation BW (e.g., if original range was 0 to 7 and 5 is busy, report 0 to 3)
-						// 3. Transmit (later) CTS
+						// Issue #146 RTS/CTS BW indication, following the 802.11 dynamic-bandwidth rule:
+						// 1. The primary is validated by NAV (we are receiving the RTS, so NAV is idle),
+						//    not by CCA at the end of the RTS.
+						// 2. A secondary channel can be included only if it was idle for PIFS before
+						//    the RTS started (snapshot taken in SnapshotCcaAtRtsStart). Using the state
+						//    before the RTS, rather than at its end, also makes the decision independent
+						//    of the order in which same-time events (e.g. another RTS ending at the same
+						//    instant) are processed.
+						// 3. Derive the operation BW from those channels (e.g., if the range was 0 to 7
+						//    and 5 is busy, report 0 to 3) and transmit (later) the CTS.
 
 						int CTS_transmission_possible = FALSE;
 
-						GetChannelOccupancyByCCA(node_params.current_primary_channel, node_params.pifs_activated, channels_free, current_left_channel,
-								current_right_channel, &channel_power, current_pd, timestamp_channel_becomes_free, SimTime(), PIFS);
+						double cts_cca_power[NUM_CHANNELS_KOMONDOR];
+						double *cts_cca_power_ptr = cts_cca_power;
+						int snapshot_valid = (rts_snapshot_source_id == notification.source_id);
+						for (int c = 0; c < NUM_CHANNELS_KOMONDOR; ++c) {
+							if (c == node_params.current_primary_channel) {
+								channels_free[c] = CHANNEL_FREE;
+								cts_cca_power[c] = 0;
+							} else if (snapshot_valid && rts_secondary_idle_pifs[c]) {
+								channels_free[c] = CHANNEL_FREE;
+								cts_cca_power[c] = rts_snapshot_channel_power[c];
+							} else {
+								channels_free[c] = CHANNEL_OCCUPIED;
+								cts_cca_power[c] = ConvertPower(DBM_TO_PW, 0);	// treated as busy at any CCA threshold
+							}
+						}
+						rts_snapshot_source_id = NODE_ID_NONE;
 
-						LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels founds free after RTS: ",
+						LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels free for the CTS (PIFS before RTS start): ",
 								SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL3);
 
 						PrintOrWriteChannelsFree(WRITE_LOG, node_params.save_node_logs, node_params.print_node_logs, node_logger,
@@ -2342,7 +2513,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						GetTxChannels(channels_for_tx, node_params.current_dcb_policy, channels_free,
 								current_left_channel, current_right_channel, node_params.current_primary_channel,
-								NUM_CHANNELS_KOMONDOR, &channel_power, channel_aggregation_cca_model, NULL);
+								NUM_CHANNELS_KOMONDOR, &cts_cca_power_ptr, channel_aggregation_cca_model, NULL);
 						
 						LOGS(node_params.save_node_logs,node_logger.file, "%.15f;N%d;S%d;%s;%s Channels for transmitting after RTS: ",
 								SimTime(), node_params.node_id, node_state, LOG_F02, LOG_LVL2);
@@ -2488,6 +2659,22 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 
 						limited_num_packets_aggregated = notification.tx_info.num_packets_aggregated;
 
+						// If the CTS confirmed a narrower bandwidth than the RTS asked for, the same
+						// A-MPDU would last longer than the DATA the RTS/CTS NAV protects (and possibly
+						// than the maximum PPDU). Drop aggregated frames until it fits both.
+						{
+							double _max_data_duration = IEEE_AX_MAX_PPDU_DURATION;
+							if (rts_planned_data_duration > 0 && rts_planned_data_duration < _max_data_duration)
+								_max_data_duration = rts_planned_data_duration;
+							while (limited_num_packets_aggregated > 1
+									&& data_duration > _max_data_duration + MAX_DIFFERENCE_SAME_TIME) {
+								--limited_num_packets_aggregated;
+								ComputeFramesDuration(&rts_duration, &cts_duration, &data_duration, &ack_duration,
+									num_channels_tx, notification.modulation_id, limited_num_packets_aggregated,
+									node_params.frame_length, bits_ofdm_sym);
+							}
+						}
+
 						LOGS(node_params.save_node_logs,node_logger.file,
 							"%.15f;N%d;S%d;%s;%s Transmitting DATA (N_agg = %d) in %d channels using modulation %d (%.0f bits per OFDM symbol ---> %.2f Mbps) \n",
 							SimTime(), node_params.node_id, node_state, LOG_F04, LOG_LVL4, limited_num_packets_aggregated,
@@ -2519,7 +2706,7 @@ void Node :: InportSomeNodeFinishTX(Notification &notification){
 							trigger_SIFS.GetTime());
 
 						data_notification = GenerateNotification(PACKET_TYPE_DATA, current_destination_id,
-								notification.packet_id, notification.tx_info.num_packets_aggregated,
+								notification.packet_id, limited_num_packets_aggregated,
 								notification.timestamp_generated, current_tx_duration);
 
 						// Reset the flag that indicates whether the tx power changed or not

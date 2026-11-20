@@ -120,9 +120,13 @@ class RewardFunction {
 					     "%.15f;%s;%s;%s Average throughput = %.2f Mbps\n",
 					     sim_time, device, LOG_C03, LOG_LVL3,
 					     performance.throughput * 1e-6);
+					// Average/Maximum/Minimum delay are all the channel access delay (contention
+					// time), as in the MAPC tutorial results; performance.average_delay is the
+					// end-to-end delay. Computed from this window's sums (nan if no samples).
 					LOGS(TRUE, logger.file,
 					     "%.15f;%s;%s;%s Average delay = %.4f s\n",
-					     sim_time, device, LOG_C03, LOG_LVL3, performance.average_delay);
+					     sim_time, device, LOG_C03, LOG_LVL3,
+					     performance.sum_waiting_time / (double) performance.num_waiting_time_measurements);
 					LOGS(TRUE, logger.file,
 					     "%.15f;%s;%s;%s Maximum delay = %.4f s\n",
 					     sim_time, device, LOG_C03, LOG_LVL3, performance.max_waiting_time);

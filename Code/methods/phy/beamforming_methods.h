@@ -177,8 +177,8 @@ static double EvaluateBeamGain(const double *w_real, const double *w_imag,
 /* ---------------------------------------------------------------
  * SolveComplexLinearSystem
  *   Solves A·x = b for x using Gaussian elimination with partial
- *   pivoting on an M×M complex system.  All matrices stored as
- *   flat row-major arrays of length M*M (real and imag separately).
+ *   pivoting on an M×M complex system.  A is stored row-major with a
+ *   fixed row stride of MAX_ZF_CONSTRAINTS (real and imag separately).
  *   b_real/b_imag are length-M vectors; overwritten with solution.
  *   Returns 1 on success, 0 if the matrix is singular.
  * --------------------------------------------------------------- */
@@ -190,8 +190,9 @@ static int SolveComplexLinearSystem(double *A_real, double *A_imag,
 	for (i = 0; i < M; ++i) { piv[i] = i; x_real[i] = 0.0; x_imag[i] = 0.0; }
 	ok = 1;
 
-#define AR(r,c) A_real[(r)*M+(c)]
-#define AI(r,c) A_imag[(r)*M+(c)]
+/* Same row stride as the caller's G matrix (ComputeZFBeamWeights), not M */
+#define AR(r,c) A_real[(r)*MAX_ZF_CONSTRAINTS+(c)]
+#define AI(r,c) A_imag[(r)*MAX_ZF_CONSTRAINTS+(c)]
 
 	/* Forward elimination with partial pivoting */
 	for (k = 0; k < M && ok; ++k) {
