@@ -41,11 +41,15 @@ void Node :: UpdatePerformanceMeasurements(){
 		performance_report.data_packets_lost) * node_params.frame_length
 		* limited_num_packets_aggregated)) / (SimTime()-performance_report.timestamp);
 
-	// - Delay
-	//performance_report.average_delay = performance_report.sum_delays / performance_report.num_delay_measurements;
+	// - Delay (end-to-end, packet generation to ACK)
+	if (performance_report.num_delay_measurements > 0) {
+		performance_report.average_delay = performance_report.sum_delays / performance_report.num_delay_measurements;
+	}
 
-	// - Access delay (contention time)
-	performance_report.average_delay = performance_report.sum_waiting_time / (double) performance_report.num_waiting_time_measurements;
+	// - Access delay (contention time) -- belongs in average_waiting_time, not average_delay
+	if (performance_report.num_waiting_time_measurements > 0) {
+		performance_report.average_waiting_time = performance_report.sum_waiting_time / (double) performance_report.num_waiting_time_measurements;
+	}
 
 	// - Max RSSI received per WLAN
 	for (int i = 0 ; i < node_params.total_wlans_number; ++ i) {
@@ -319,6 +323,14 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 				// Data packets sent and lost
 				printf("%s Data packets sent = %d - ACKed = %d -  Lost = %d  (%f %% lost)\n",
 					LOG_LVL2, node_stats.data_packets_sent, node_stats.data_packets_acked, node_stats.data_packets_lost, data_packets_lost_percentage);
+				if (node_params.max_retries > 0) {
+					printf("%s Retransmissions: %d attempt(s) retried (max_retries = %d)\n",
+						LOG_LVL2, node_stats.data_packets_retried, node_params.max_retries);
+				}
+				// Backoff collisions: incoming RTS/DATA this node (as receiver) classified as a
+				// simultaneous-backoff collision (two or more transmitters' backoffs expired at ~the same time)
+				printf("%s Backoff collisions detected (as receiver) = %d\n",
+					LOG_LVL2, node_stats.num_bo_collisions);
 				printf("%s Frames ACKed = %d, Av. frames ACKed per packet = %.2f\n",
 					LOG_LVL2, node_stats.data_frames_acked,
 					node_stats.data_packets_acked > 0 ? (double)node_stats.data_frames_acked/node_stats.data_packets_acked : 0.0);
@@ -458,6 +470,28 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 							printf("%s  TF sent (Co-BF/SR): %d\n", LOG_LVL3, node_stats.num_tf_tx);
 						if (node_stats.num_mu_rts_tx > 0)
 							printf("%s  MU-RTS sent (Co-TDMA): %d\n", LOG_LVL3, node_stats.num_mu_rts_tx);
+						// Phase 2b: a lower-priority peer within COTDMA_PROPORTIONAL_MAX_RANK_GAP
+						// gets a smaller proportional share (counted below as a subset of
+						// "MU-RTS sent", not of "denied"); beyond that gap it's still an
+						// outright denial (num_mapc_slots_denied_ac_priority), same as no-data
+						// or a lost ICR.
+						if (node_stats.num_mapc_slots_denied_no_data > 0
+								|| node_stats.num_mapc_slots_denied_icr_timeout > 0
+								|| node_stats.num_mapc_slots_denied_ac_priority > 0) {
+							int _denied_total = node_stats.num_mapc_slots_denied_no_data
+								+ node_stats.num_mapc_slots_denied_icr_timeout
+								+ node_stats.num_mapc_slots_denied_ac_priority;
+							int _attempted_total = node_stats.num_mu_rts_tx + _denied_total;
+							printf("%s  Co-TDMA slots denied: %d/%d (no data: %d, ICR lost: %d, AC rank gap too large: %d)\n",
+								LOG_LVL3, _denied_total, _attempted_total,
+								node_stats.num_mapc_slots_denied_no_data,
+								node_stats.num_mapc_slots_denied_icr_timeout,
+								node_stats.num_mapc_slots_denied_ac_priority);
+						}
+						if (node_stats.num_mapc_slots_granted_proportional > 0) {
+							printf("%s  Of those granted, %d/%d used a reduced proportional share (lower-priority peer)\n",
+								LOG_LVL3, node_stats.num_mapc_slots_granted_proportional, node_stats.num_mu_rts_tx);
+						}
 						printf("%s  Data duration / TXOP:  own = %.3f ms", LOG_LVL3,
 							node_stats.total_mapc_data_duration_own * 1000.0 / node_stats.num_icf_tx);
 						if (node_stats.total_mapc_data_duration_shared > 0.0)
@@ -483,6 +517,13 @@ void Node :: PrintOrWriteNodeStatistics(int write_or_print){
 					}
 				}
 
+			} else if (!node_is_transmitter && node_params.print_node_logs && node_stats.num_bo_collisions > 0) {
+				// STAs don't get the full per-AP report above, but they're the ones that
+				// actually detect backoff collisions on downlink traffic (they're the
+				// receiver deciding loss_reason == PACKET_LOST_BO_COLLISION).
+				printf("------- %s (N%d) ------\n", node_params.node_code.c_str(), node_params.node_id);
+				printf("%s Backoff collisions detected (as receiver) = %d\n",
+					LOG_LVL2, node_stats.num_bo_collisions);
 			}
 			break;
 		}

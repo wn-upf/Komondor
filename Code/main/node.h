@@ -53,6 +53,8 @@
 #include <stddef.h>
 #include <iostream>
 #include <stdlib.h>
+#include <vector>
+#include <map>
 
 #include "../list_of_macros.h"
 #include "../methods/utils/auxiliary_methods.h"
@@ -143,6 +145,7 @@ component Node : public TypeII{
 
 		// Signal helpers
 		void UpdateSINRFromNotification(const Notification &notification);
+		void SnapshotCcaAtRtsStart(const Notification &notification);
 
 		// Configuration (to be sent to the agent)
 		void GenerateConfiguration();
@@ -184,6 +187,7 @@ component Node : public TypeII{
 		void HandleFinishTX_StateRxTf(const Notification &notification);
 		void HandleFinishTX_StateWaitAckTf(const Notification &notification);
 		void ProceedAfterIcr();
+		int MapcTimeSharingTxop();
 		int ComputeCoSRTxPowers(double &coordinator_pW, double &peer_pW);
 
 	// Public items (entered by nodes constructor in komondor_main)
@@ -207,8 +211,14 @@ component Node : public TypeII{
 		int  mapc_current_peer_idx;				///> Round-robin counter: index into coordinated_ap_ids[]
 		int  mapc_selected_peer_id;				///> node_id of the AP targeted in the current TXOP
 		int  mapc_peer_has_data;				///> TRUE if selected peer reported data in its ICR
+		int  mapc_peer_traffic_type;			///> Selected peer's AC, reported in its ICR (gates TXOP sharing vs. this AP's AC)
+		int  mapc_peer_icr_timed_out;			///> TRUE if the selected peer's ICR was never received (channel loss), forcing mapc_peer_has_data=FALSE in CtsTimeout() -- distinguishes a lost ICR from a genuine empty-queue report so denial stats aren't conflated
+		int  mapc_peer_rank_gap_exceeded;		///> Set by ProceedAfterIcr (Phase 2b): TRUE if the peer's AC rank gap exceeds COTDMA_PROPORTIONAL_MAX_RANK_GAP -- denied outright (zero overhead), read by the MU-RTS grant decision in node_fsm_methods.h
+		int  mapc_nav_slot_holder_id;			///> Third party in NAV: AP granted the Co-TDMA slot by the last MU-RTS/TXS heard (NODE_ID_NONE if none); its DATA truncates the NAV to the slot's real end
+		int  mapc_time_sharing_round;			///> TRUE during a Co-SR TXOP that fell back to time sharing (infeasible simultaneous TX): coordinator and peer follow the Co-TDMA DATA/ACK + MU-RTS/TXS rules. Set by ProceedAfterIcr (coordinator) / HandleStartTX_StateWaitTf (peer), cleared by RestartNode
 		double mapc_txop_data_budget;			///> Total DATA duration available for this TXOP (set at ICF time)
-		double mapc_txop_per_ap_data_duration;	///> Per-AP DATA duration after TXOP split (set after ICR)
+		double mapc_txop_per_ap_data_duration;	///> Coordinator's OWN DATA allocation after TXOP split (set after ICR); may exceed the peer's share under Co-TDMA proportional sharing
+		double mapc_txop_peer_data_duration;	///> Co-TDMA (coordinator only): peer's DATA allocation, sent via MU-RTS -- equals mapc_txop_per_ap_data_duration for a same-or-better-priority peer (50/50), smaller for a lower-priority one (proportional share)
 		double mapc_icr_requested_duration;		///> Co-SR/BF: coordinated AP's desired DATA duration from ICR
 		Notification mu_rts_notification;		///> MU-RTS/TXS frame (coordinator, Co-TDMA)
 		Notification tf_notification;			///> Trigger Frame notification (coordinator, Co-BF/Co-SR)
@@ -347,16 +357,31 @@ component Node : public TypeII{
 		int *nodes_transmitting;					///> IDs of the nodes which are transmitting to any destination
 		std::map<int, double>
 			power_received_per_node;				///> Map containing the power received from each other node
+		std::map<int, double>
+			beam_gain_per_node;						///> Gain applied to each ongoing TX in channel_power (1 if its preamble was detected; ULA gain otherwise); reused at TX finish
+		std::map<int, double>
+			ongoing_tx_start_time;					///> Start time of each ongoing TX (to recognise same-time events)
+		std::map<int, std::vector<double> >
+			ongoing_tx_channel_power;				///> Per-channel power each ongoing TX adds to channel_power [pW]
+		int rts_snapshot_source_id;					///> Source of the RTS whose start was snapshotted (NODE_ID_NONE if none)
+		int *rts_secondary_idle_pifs;				///> Per channel: idle for PIFS before the RTS started (802.11 CTS bandwidth rule)
+		double *rts_snapshot_channel_power;			///> Per channel power just before the RTS started, excluding same-time TXs [pW]
+		double rts_planned_data_duration;			///> DATA duration announced (via NAV) by the last RTS sent
 		double power_rx_interest;					///> Power received from a TX destined to the node [pW]
 		int receiving_from_node_id;					///> ID of the node that is transmitting to the node (-1 if node is not receiving)
 		int receiving_packet_id;					///> ID of the notification that is being transmitted to me
 		double BER;									///> Bit error rate (deprecated)
 		double *timestamp_channel_becomes_free;	///> Timestamp when channel becomes free (when P(channel) < PD threshold)
+		double *timestamp_last_idle_period_start;	///> Start of the idle period that ended when the channel last became busy (-1 if none)
 		double time_to_trigger;						///> Auxiliar time to trigger an specific trigger (used for almost every .Set() function)
 		int num_channels_tx;						///> Number of channels used for transmission
 		int flag_apply_new_configuration;			///> Flag to determine if there is any new configuration to be applied when doing "RestartNode()"
 		int channel_aggregation_cca_model;			///> Flag to determine the type of CCA per bandwidth applied
 		int last_transmission_successful;			///> Flag to indicate whether the last transmission was successful or not
+
+		// Retransmissions (node_params.max_retries, see IX_MAX_RETRIES)
+		int current_retry_count;		///> Retry attempts already used for the frame currently at the head of the buffer; reset to 0 on success
+		int mac_retry_pending;			///> Set by AckTimeout/CtsTimeout when a failed attempt still has retries left; read (and cleared) by PrepareNewTransmission's buffer-deletion step so the same packets are kept queued for resend instead of being dropped
 
 		// Burst traffic
 		double burst_rate;				///> Average time between two packet generation bursts [bursts/s]
@@ -714,8 +739,14 @@ void Node :: InitializeVariables() {
 	mapc_current_peer_idx   = 0;
 	mapc_selected_peer_id   = NODE_ID_NONE;
 	mapc_peer_has_data      = TRUE;          // conservative: assume peer has data until told otherwise
+	mapc_peer_traffic_type  = node_params.traffic_type; // neutral default until told otherwise via ICR
+	mapc_peer_icr_timed_out = FALSE;
+	mapc_peer_rank_gap_exceeded = FALSE;
+	mapc_nav_slot_holder_id = NODE_ID_NONE;
+	mapc_time_sharing_round = FALSE;
 	mapc_txop_data_budget            = 0.0;
 	mapc_txop_per_ap_data_duration   = 0.0;
+	mapc_txop_peer_data_duration     = 0.0;
 	mapc_icr_requested_duration      = 0.0;
 	coordinator_ap_id       = NODE_ID_NONE;
 	mapc_peer_position      = 0;
@@ -730,6 +761,10 @@ void Node :: InitializeVariables() {
 	node_stats.num_icr_tx = 0;
 	node_stats.num_tf_rx  = 0;
 	node_stats.num_mu_rts_rx = 0;
+	node_stats.num_mapc_slots_denied_no_data      = 0;
+	node_stats.num_mapc_slots_denied_ac_priority  = 0;
+	node_stats.num_mapc_slots_denied_icr_timeout  = 0;
+	node_stats.num_mapc_slots_granted_proportional = 0;
 	node_stats.total_mapc_data_duration_own       = 0.0;
 	node_stats.total_mapc_data_duration_shared    = 0.0;
 	node_stats.total_mapc_data_duration_allocated = 0.0;
@@ -776,8 +811,16 @@ void Node :: InitializeVariables() {
 	node_stats.last_total_time_lost_per_channel = new double[NUM_CHANNELS_KOMONDOR];
 	node_stats.total_time_channel_busy_per_channel = new double[NUM_CHANNELS_KOMONDOR];
 	timestamp_channel_becomes_free = new double[NUM_CHANNELS_KOMONDOR];
+	timestamp_last_idle_period_start = new double[NUM_CHANNELS_KOMONDOR];
+	rts_secondary_idle_pifs = new int[NUM_CHANNELS_KOMONDOR];
+	rts_snapshot_channel_power = new double[NUM_CHANNELS_KOMONDOR];
+	rts_snapshot_source_id = NODE_ID_NONE;
+	rts_planned_data_duration = 0;
 	node_stats.num_trials_tx_per_num_channels = new int[NUM_CHANNELS_KOMONDOR];
 	for(int i = 0; i < NUM_CHANNELS_KOMONDOR; ++i){
+		timestamp_last_idle_period_start[i] = -1;
+		rts_secondary_idle_pifs[i] = FALSE;
+		rts_snapshot_channel_power[i] = 0;
 		channel_power[i] = 0;
 		node_stats.total_time_transmitting_per_channel[i] = 0;
 		node_stats.last_total_time_transmitting_per_channel[i] = 0;
@@ -835,6 +878,8 @@ void Node :: InitializeVariables() {
 	ca_state.remaining_backoff = 0;
 	node_stats.num_new_backoff_computations = 0;
 	last_transmission_successful = 0;
+	current_retry_count = 0;
+	mac_retry_pending = 0;
 
 	node_stats.data_packets_acked = 0;
 	node_stats.data_frames_acked = 0;
@@ -989,6 +1034,8 @@ void Node :: InitializeVariables() {
 	node_stats.throughput = 0;
 	node_stats.throughput_loss = 0;
 	node_stats.data_packets_lost = 0;
+	node_stats.data_packets_retried = 0;
+	node_stats.num_bo_collisions = 0;
 	node_stats.rts_cts_lost = 0;
 	node_stats.num_tx_init_not_possible = 0;
 	node_stats.num_tx_init_tried = 0;

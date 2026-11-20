@@ -60,7 +60,6 @@
 #include "./tokenized_backoff_methods.h"
 #include "./deterministic_backoff_methods.h"
 #include "./eca_methods.h"
-#include "./ml_access_methods.h"
 
 // Exponential redefinition for convenience
 double	Random2( double v=1.0)	{ return v*drand48();}
@@ -118,11 +117,6 @@ double ComputeBackoff(int current_cw_min, int current_cw_max, int backoff_type,
 		// SYNCHRONIZED BACKOFF
 		case BACKOFF_SYNCHRONIZED:
 			backoff_time = base_backoff_deterministic * SLOT_TIME;
-			break;
-
-		// ML-learned channel access (placeholder � actual query happens via MlAccessState in node.h)
-		case BACKOFF_ML_ACCESS:
-			backoff_time = ML_ACCESS_DEFAULT_WAIT_SLOTS * SLOT_TIME;
 			break;
 
 		default:
@@ -225,10 +219,6 @@ void HandleContentionWindow(int cw_adaptation, int increase_or_reset, int *deter
 
 		// SYNCHRONIZED: no CW adaptation
 		case BACKOFF_SYNCHRONIZED:
-			break;
-
-		// ML-learned access: no CW adaptation (ML server controls wait time)
-		case BACKOFF_ML_ACCESS:
 			break;
 
 		// Token-based: CW set by position in token ring

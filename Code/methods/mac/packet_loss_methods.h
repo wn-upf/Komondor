@@ -70,22 +70,32 @@
 */
 void HandlePacketLoss(int type, double *total_time_lost_in_num_channels, double *total_time_lost_per_channel,
 		int &packets_lost, int &rts_cts_lost, int **packets_lost_per_sta, int **rts_cts_lost_per_sta,
-		int current_right_channel, int current_left_channel, double current_tx_duration, int node_id, int destination_id){
+		int current_right_channel, int current_left_channel, double current_tx_duration, int node_id, int destination_id,
+		int count_as_permanent_loss = TRUE){
 
 //	printf("destination_id = %d\n", destination_id);
 //	printf("node_id = %d\n", node_id);
 //	printf("rts_cts_lost_per_sta = %d\n", (*rts_cts_lost_per_sta)[destination_id-node_id-1]);
 
+	// count_as_permanent_loss = FALSE (node_params.max_retries > 0 and a retry attempt
+	// is still available, see AckTimeout/CtsTimeout): the airtime was genuinely wasted
+	// either way, so that accounting always happens, but the packet isn't counted as a
+	// final loss yet -- it's kept queued for a retry instead (node_packet_methods.h's
+	// buffer-deletion step, guarded by mac_retry_pending).
 	if(type == PACKET_TYPE_DATA) {
 		for(int c = current_left_channel; c <= current_right_channel; c++){
 			total_time_lost_per_channel[c] += current_tx_duration;
 		}
 		total_time_lost_in_num_channels[(int)log2(current_right_channel - current_left_channel + 1)] += current_tx_duration;
-		++packets_lost;
-		++(*packets_lost_per_sta)[destination_id-node_id-1];
+		if (count_as_permanent_loss) {
+			++packets_lost;
+			++(*packets_lost_per_sta)[destination_id-node_id-1];
+		}
 	} else if(type == PACKET_TYPE_CTS){
-		++rts_cts_lost;
-		++(*rts_cts_lost_per_sta)[destination_id-node_id-1];
+		if (count_as_permanent_loss) {
+			++rts_cts_lost;
+			++(*rts_cts_lost_per_sta)[destination_id-node_id-1];
+		}
 	}
 
 }

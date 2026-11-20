@@ -71,7 +71,7 @@ struct TxInfo
 	double pd;						///> PD threshold in [pW]
 	double bits_ofdm_sym; 			///> Bits per OFDM symbol
 	double data_rate; 				///> Rate at which data is transmitted
-	int modulation_schemes[4];		///> Modulation scheme used
+	int modulation_schemes[NUM_OPTIONS_CHANNEL_LENGTH];		///> Modulation scheme used (1, 2, 4, 8, 16 channels)
 	double x;						///> X position of source node
 	double y;						///> Y position of source node
 	double z;						///> Z position of source node
@@ -110,6 +110,10 @@ struct TxInfo
 	//   --> 1 = sender is the MAPC coordinator (send ACK TF after SIFS)
 	//   --> 0 = sender is the coordinated AP (wait SIFS+ACK-TF+SIFS+ACK)
 	int mapc_is_coordinator_tx;
+
+	// Co-SR fallback: 1 if the frame belongs to a Co-SR TXOP that fell back to time
+	// sharing (infeasible simultaneous TX), i.e., it follows the Co-TDMA DATA/ACK rules
+	int mapc_time_sharing;
 
 	/**
 	 * Function to print the transmission information
@@ -176,6 +180,7 @@ struct Notification
 	int mapc_group_id;			///> MAPC group ID (0 = standard frame; >0 = group-addressed MAPC)
 	int mapc_target_ap_id;		///> For ICF: node_id of the ONE coordinated AP that should respond with ICR (-1 = all)
 	int mapc_has_data;			///> ICR: TRUE if coordinated AP has data to send in this TXOP
+	int mapc_traffic_type;		///> Sender's EDCA AC (AC_VO/VI/BE/BK); ICR: used to gate TXOP sharing against the coordinator's AC
 	TxInfo tx_info; 			///> Specific transmission info (may not be checked by the others nodes)
 
 	/**

@@ -211,6 +211,8 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 	mapc_input_filename = mapc_input_filename_console;
 	agents_input_filename = agents_input_filename_console;
 	seed = seed_console;
+	Seed = seed_console;
+	srand(seed_console);
 	agents_enabled = agents_enabled_console;
 	mapc_enabled = mapc_enabled_console;
 	total_wlans_number = 0;
@@ -328,6 +330,32 @@ void Komondor :: Setup(double sim_time_console, int save_node_logs_console,
 		}
 	}
 
+	// Co-BF needs an antenna array to steer nulls: an AP in a Co-BF group whose nodes file
+	// has no bf_* columns gets a default ULA (DEFAULT_COBF_N_ELEMENTS, DEFAULT_BEAM_D_SPACING).
+	// Explicit bf_* columns always win, but warn if they leave the AP unable to null.
+	for (int n = 0; n < total_nodes_number; ++n) {
+		if (node_container[n].node_params.node_type != NODE_TYPE_AP
+				|| !node_container[n].wlan.mapc_enabled) continue;
+		int in_cobf_group = 0;
+		for (int g = 0; g < node_container[n].wlan.num_mapc_groups; ++g) {
+			if (node_container[n].wlan.mapc_method_ids[g] == CO_BF) in_cobf_group = 1;
+		}
+		if (!in_cobf_group) continue;
+		if (!node_container[n].node_params.beam_params_from_input) {
+			node_container[n].node_params.beamforming_enabled = BEAMFORMING_ENABLED;
+			node_container[n].node_params.beam_N_elements     = DEFAULT_COBF_N_ELEMENTS;
+			node_container[n].node_params.beam_d_spacing      = DEFAULT_BEAM_D_SPACING;
+			if (print_system_logs) printf("%s Co-BF: %s has no bf_* columns; using a default %d-element ULA (d = %.2f)\n",
+				LOG_LVL3, node_container[n].node_params.node_code.c_str(),
+				DEFAULT_COBF_N_ELEMENTS, DEFAULT_BEAM_D_SPACING);
+		} else if (!node_container[n].node_params.beamforming_enabled
+				|| node_container[n].node_params.beam_N_elements <= 1) {
+			printf("%s WARNING: Co-BF AP %s has beamforming disabled or a 1-element array in its bf_* columns;"
+				" its DATA will be omnidirectional (no nulls)\n",
+				LOG_LVL3, node_container[n].node_params.node_code.c_str());
+		}
+	}
+
 	// Generate agents (if enabled)
 	central_controller_flag = 0;
 	if (agents_enabled) { GenerateAgents(agents_input_filename, simulation_code_console); }
@@ -423,6 +451,28 @@ void Komondor :: Stop(){
 	for (int i = 0; i < total_nodes_number; ++i) {
 		performance_per_node[i] = node_container[i].simulation_performance;
 		configuration_per_node[i] = node_container[i].configuration;
+	}
+
+	// Print summary statistics to stdout
+	{
+		double total_tput = 0;
+		int total_sent = 0;
+		int total_lost = 0;
+		double total_delay = 0;
+		int n_aps = 0;
+		for (int i = 0; i < total_nodes_number; ++i) {
+			if (configuration_per_node[i].capabilities.node_type == NODE_TYPE_AP) {
+				total_tput += performance_per_node[i].throughput;
+				total_sent += performance_per_node[i].data_packets_sent;
+				total_lost += performance_per_node[i].data_packets_lost;
+				total_delay += performance_per_node[i].average_delay;
+				++n_aps;
+			}
+		}
+		double loss_pct = (total_sent > 0) ? (100.0 * total_lost / total_sent) : 0;
+		double avg_delay_ms = (n_aps > 0) ? (total_delay * 1e3 / n_aps) : 0;
+		printf("\n\nSUMMARY: total_throughput_mbps=%.2f packets_sent=%d packets_lost=%d loss_pct=%.2f avg_delay_ms=%.2f num_aps=%d\n",
+			total_tput * 1e-6, total_sent, total_lost, loss_pct, avg_delay_ms, n_aps);
 	}
 
 	// Generate the output for scripts

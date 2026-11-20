@@ -297,6 +297,8 @@
 #define TRAFFIC_POISSON							1	///> Traffic is generated randomly according to a Poisson distribution
 #define TRAFFIC_DETERMINISTIC					2	///> Traffic is generated at fixed intervals
 #define TRAFFIC_POISSON_BURST					3	///> Traffic is generated in bursts following a Poisson distribution
+#define TRAFFIC_LLM_TOKENS						4	///> LLM token-generation traffic: inter-arrival bounded-uniform in [LLM_TRAFFIC_IAT_MIN_S, LLM_TRAFFIC_IAT_MAX_S] (see traffic_generator.h); frame size set via the standard packet_length column
+#define TRAFFIC_LLM_TOKENS_BURSTY_REALISTIC	    5	///> LLM token-generation traffic: burst duration kept at its real length (10-60s, NOT divided by N), grounded in real LLM streaming-session figures; only per-token IAT and idle gap divided by N (see traffic_generator.h)
 #define TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION	99	///> Transmitters always have the same packet pending to be transmitted
 
 // Traffic types for QoS
@@ -304,10 +306,12 @@
 #define AC_VI		1		///> Traffic type (Access Category) = Video (VI)
 #define AC_BE		2		///> Traffic type (Access Category) = Best effort (BE)
 #define AC_BK		3		///> Traffic type (Access Category) = Background (BK)
+// New AC_AI added (not an 802.11 standard AC)
+#define AC_AI		4		///> Traffic type (Access Category) = AI/LLM traffic (SIMULATION-ONLY, see above)
 
 // Channel access
 // - https://howiwifi.com/2020/06/30/wireless-contention-mechanisms/
-#define CW_MIN_AC_VO  8		///> Minimum CW for AC = VO (voice)
+#define CW_MIN_AC_VO  4		///> Minimum CW for AC = VO (voice)
 #define CW_MAX_AC_VO  16		///> Maximum CW for AC = VO (voice)
 #define CW_MIN_AC_VI  16		///> Minimum CW for AC = VI (video)
 #define CW_MAX_AC_VI  32		///> Maximum CW for AC = VI (video)
@@ -315,12 +319,15 @@
 #define CW_MAX_AC_BE  1024		///> Maximum CW for AC = BE (best-effort)
 #define CW_MIN_AC_BK  32		///> Minimum CW for AC = BK (background)
 #define CW_MAX_AC_BK  1024		///> Maximum CW for AC = BK (background)
+#define CW_MIN_AC_AI  8		    ///> Minimum CW for AC = AI (LLM traffic)
+#define CW_MAX_AC_AI  64		///> Maximum CW for AC = AI (LLM traffic)
 
 // AIFSN[AC]: number of slots added to SIFS to form AIFS[AC] = SIFS + AIFSN[AC]*SLOT_TIME
 #define AIFSN_VO 2		///> AIFSN for AC = VO (voice)
-#define AIFSN_VI 3		///> AIFSN for AC = VI (video)
+#define AIFSN_VI 2		///> AIFSN for AC = VI (video)
 #define AIFSN_BE 5		///> AIFSN for AC = BE (best-effort)
 #define AIFSN_BK 7		///> AIFSN for AC = BK (background)
+#define AIFSN_AI 4		///> AIFSN for AC = AI (SIMULATION-ONLY; between VI's 3 and BE's 5)
 
 // EDCA TXOP limits per AC (IEEE 802.11-2020 Table 9-155, 5 GHz infrastructure BSS).
 // A value of 0 means the AC is restricted to a SINGLE PPDU (or A-MPDU) per channel
@@ -332,9 +339,49 @@
 #define TXOP_LIMIT_AC_VI  (3008 * MICRO_VALUE)  ///> TXOP limit for VI: 3.008 ms
 #define TXOP_LIMIT_AC_BE  0                      ///> TXOP limit for BE: single PPDU per access
 #define TXOP_LIMIT_AC_BK  0                      ///> TXOP limit for BK: single PPDU per access
+#define TXOP_LIMIT_AC_AI  0                      ///> TXOP limit for AI (SIMULATION-ONLY): single PPDU per access -- AI frames are small and light-load, no need for extended TXOPs
 
 // Default access category when not specified in the input CSV
 #define DEFAULT_TRAFFIC_TYPE  AC_BE
+
+// Co-TDMA cross-AC slot sharing eligibility (Phase 2c, see
+// input/ai_traffic_study/). A peer whose AC ranks the same or better than the
+// coordinator's (rank_diff<=0 via GetAcPriorityRank, edca_methods.h) is
+// always eligible. A lower-priority peer is eligible only if
+// rank_diff <= the group's max rank gap; beyond that it's denied outright,
+// zero overhead paid (Phase 0 behavior). This cutoff exists because sharing
+// ANY nonzero amount costs a FIXED exchange overhead (extra ICR+MU-RTS+ACK+
+// SIFS round trip) regardless of grant size, so a peer too far down the
+// priority order isn't worth paying that for.
+//
+// This macro is only the DEFAULT: it's runtime-overridable per Co-TDMA group
+// via the mapc config CSV's ExtraParams "max_rank_gap=<N>" key (see
+// GenerateMapcConfiByReadingInputFile, input_loader.h, and
+// Wlan::mapc_max_rank_gap, structures/wlan.h) -- "easily change with whom a
+// node shares its TXOP" without recompiling. It remains the fallback used
+// when a CO_TDMA group's ExtraParams doesn't set max_rank_gap explicitly.
+//
+// How MUCH an eligible peer gets is decided in ProceedAfterIcr
+// (node_packet_methods.h): the coordinator's own need is protected in full
+// first, then the peer gets the ENTIRE remainder under the ceiling (not a
+// fraction of it -- Phase 2b's fixed/decaying-fraction formula was tried and
+// measured to make things WORSE, not better: capping a busy peer's share to
+// a small slice of the coordinator's own (often light) need still paid the
+// full fixed overhead per grant for a tiny (~13us measured) payoff. See
+// output/ai_traffic_study/rank_gap_ab/ for that A/B result.
+//
+// Gap=0 disables sharing entirely for lower-priority peers (same-or-better
+// priority only, like Phase 0, but without Phase 0's wasted-allocation-on-
+// denial bug). Gap=2 enables VO->AI sharing (rank_diff=2) and, as a side
+// effect, VO->VI sharing too (rank_diff=1 -- the cutoff is a distance
+// threshold, not an AC-pair rule, so it can't open one without the other).
+// Sharing at all is only a plausible win for a coordinator with genuine idle
+// capacity per TXOP (e.g. moderate-load Poisson traffic like VO here, not
+// full-buffer): against a full-buffer legacy topology, gap>0 measured worse
+// (AP_A's Co-TDMA throughput dropped 14.12->5.37 Mbps when sharing was made
+// unconditional) because a chronically-saturated coordinator has no idle
+// time to give away for free, so keep this at 0 for any full-buffer scenario.
+#define COTDMA_PROPORTIONAL_MAX_RANK_GAP 2
 
 // Protocols
 #define INCREASE_CW 	1		///> Command to increase contention window
@@ -473,6 +520,8 @@
 #define IX_NPCA_SWITCHING_DELAY		41		///> Optional: npca_switching_delay_us
 #define IX_NPCA_SWITCH_BACK_DELAY	42		///> Optional: npca_switch_back_delay_us
 #define IX_NPCA_INIT_QSRC		43		///> Optional: npca_init_qsrc
+#define IX_MAX_RETRIES			45		///> Optional node CSV column: max_retries (0 = no retransmissions, legacy/default behavior)
+#define DEFAULT_MAX_RETRIES		0		///> Default when the column is absent: no retransmissions (a lost frame is dropped permanently on first failure, same as before this feature existed)
 
 #define IEEE_AX_MAX_PPDU_DURATION		(5484 * MICRO_VALUE)///> Maximum PPDU duration (limits the A-MPDU operation)
 
@@ -538,8 +587,12 @@
  * * COORDINATED TDMA (Co-TDMA) IEEE 802.11bn *
  * *****************************************
  */
-/* MAPC TXOP split methods */
-#define TXOP_SPLIT_EQUAL    0   ///> Equal-time split of TXOP among active APs
+/* MAPC TXOP split methods -- set per Co-TDMA group via the mapc config CSV's
+ * ExtraParams column (e.g. "txop_split=remainder"); see GenerateMapcConfi-
+ * ByReadingInputFile in input_loader.h. Defaults to TXOP_SPLIT_EQUAL when
+ * unspecified, for backward compatibility with existing scenario CSVs. */
+#define TXOP_SPLIT_EQUAL      0   ///> Literal 50/50 split for a same-or-better-priority peer; any lower-priority peer denied outright, ignoring COTDMA_PROPORTIONAL_MAX_RANK_GAP (simplest policy, historical default)
+#define TXOP_SPLIT_REMAINDER  1   ///> Rank-gap-gated eligibility (COTDMA_PROPORTIONAL_MAX_RANK_GAP) + protect-coordinator's-own-need-then-give-the-entire-remainder sizing (Phase 2c, see input/ai_traffic_study/)
 
 /* *****************************************
  * * BEAMFORMING                           *
@@ -549,6 +602,7 @@
 #define MAX_BEAM_NULLS              4   ///> Maximum simultaneous null directions per TX
 #define DEFAULT_BEAM_N_ELEMENTS     1   ///> Default number of ULA elements (1 = omni fallback)
 #define DEFAULT_BEAM_D_SPACING      0.5 ///> Default element spacing [wavelengths]
+#define DEFAULT_COBF_N_ELEMENTS     8   ///> ULA elements given to a Co-BF AP whose nodes file has no bf_* columns
 
 /* *****************************************
  * * AGENTS OPERATION AND MACHINE LERANING *
@@ -718,7 +772,7 @@
 #define IX_BF_N_ELEMENTS			33	///> Number of ULA antenna elements
 #define IX_BF_D_SPACING				34	///> Element spacing [wavelengths]
 #define IX_BF_AZ_MAIN_DEG			35	///> Main beam azimuth [deg] (initial/static value)
-#define IX_TRAFFIC_TYPE				36	///> EDCA access category (0=VO,1=VI,2=BE,3=BK); optional, defaults to AC_BE
+#define IX_TRAFFIC_TYPE				36	///> EDCA access category (0=VO,1=VI,2=BE,3=BK,4=AI); optional, defaults to AC_BE
 
 // Agents file
 #define IX_AGENT_WLAN_CODE				1

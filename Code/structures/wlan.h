@@ -78,6 +78,7 @@ struct Wlan
 	int mapc_num_peers[MAX_MAPC_GROUPS_PER_WLAN];	///> Peer count per group
 	int *mapc_peer_ap_ids[MAX_MAPC_GROUPS_PER_WLAN];	///> Peer node_ids per group
 	int mapc_txop_splits[MAX_MAPC_GROUPS_PER_WLAN];	///> TXOP split method per group
+	int mapc_max_rank_gap[MAX_MAPC_GROUPS_PER_WLAN];	///> Co-TDMA TXOP_SPLIT_REMAINDER: max AC-priority-rank distance a peer may be below the coordinator and still be eligible for sharing, per group, runtime-selected from the MAPC config CSV (defaults to COTDMA_PROPORTIONAL_MAX_RANK_GAP)
 	double mapc_sr_tx_power_dbm[MAX_MAPC_GROUPS_PER_WLAN];	///> Co-SR TX power limit per group [dBm]
 	int mapc_cosr_policy[MAX_MAPC_GROUPS_PER_WLAN];	///> Co-SR power mechanism per group (COSR_POLICY_*), runtime-selected from the MAPC config CSV
 
