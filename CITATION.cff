@@ -1,10 +1,18 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
+type: software
 authors:
   - family-names: "Wilhelmi"
     given-names: "Francesc"
-title: "Komondor: An IEEE 802.11bn-Oriented Simulator"
-version: "4.0"
-doi: "10.5281/zenodo.20818792"
-date-released: 2026-06-23
+  - family-names: "Barrachina-Muñoz"
+    given-names: "Sergio"
+title: "Kom8ndor: An IEEE 802.11bn Simulator"
+version: "4.2"
+date-released: 2026-11-20
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.1182649"
+    description: "Zenodo concept DOI (resolves to the latest archived version)"
 url: "https://github.com/wn-upf/Komondor"
+repository-code: "https://github.com/wn-upf/Komondor"
+license: GPL-3.0
