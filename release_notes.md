@@ -104,32 +104,49 @@ GroupID;Method;CoordinatedBSSIds;ExtraParams
 |-------|-------------|
 | `GroupID` | Integer group identifier (1-indexed) |
 | `Method` | `CO_TDMA`, `CO_SR`, or `CO_BF` |
-| `CoordinatedBSSIds` | Comma-separated WLAN codes of the **coordinated** APs (not the coordinator). Codes match the `wlan_code` field in the node CSV (e.g., `A,B` or `1,2`). |
-| `ExtraParams` | For Co-SR: TX power in dBm (e.g., `20.0`). Empty for Co-TDMA and Co-BF. |
+| `CoordinatedBSSIds` | Comma-separated WLAN codes of **all** the members of the group (e.g., `A,B` or `1,2`). Codes match the `wlan_code` field in the node CSV. Only the listed WLANs join the group. Any member can act as the coordinator: the AP that wins channel access initiates the TXOP. |
+| `ExtraParams` | Optional comma-separated `key=value` pairs. Each method reads only the keys it understands; values without a key (e.g., a bare `20.0`) are ignored. Leave empty to use the defaults. |
 
-**Example — Co-TDMA with WLANs A and B (A is coordinator):**
+Supported `ExtraParams` keys:
 
-```
-1;CO_TDMA;B;
-```
+| Method | Key | Values | Default |
+|--------|-----|--------|---------|
+| `CO_SR` | `donor_power` | TX power cap P_max [dBm] | `DEFAULT_COSR_TX_POWER_DBM` (20 dBm) |
+| `CO_SR` | `power_mechanism` | `static` (fixed cap, no feasibility check), `selfish` (the coordinator uses P_max and caps the peer to the maximum interference it tolerates), `continuous` (joint proportional-fair allocation), `discrete` (discretized closed form) | `static` |
+| `CO_TDMA` | `txop_split` | `equal`, `remainder` (see the v4.2 notes) | `equal` |
+| `CO_TDMA` | `max_rank_gap` | Maximum AC-priority gap of an eligible lower-priority peer (only with `remainder`) | `COTDMA_PROPORTIONAL_MAX_RANK_GAP` |
 
-**Example — Co-SR with TX power 20 dBm:**
+With the `selfish`, `continuous`, and `discrete` policies, a Co-SR round where no feasible power allocation exists falls back to time sharing (a Co-TDMA round). The `static` policy never falls back.
 
-```
-1;CO_SR;B;20.0
-```
-
-**Example — Co-BF (beamforming must also be enabled in the node CSV for both APs):**
-
-```
-1;CO_BF;B;
-```
-
-**Multi-group example (AP B appears in both groups):**
+**Example — Co-TDMA between WLANs A and B:**
 
 ```
-1;CO_TDMA;B;
-2;CO_TDMA;C;
+1;CO_TDMA;A,B;
+```
+
+**Example — Co-SR with a 20 dBm power cap (static policy):**
+
+```
+1;CO_SR;A,B;donor_power=20
+```
+
+**Example — Co-SR with the selfish power policy:**
+
+```
+1;CO_SR;A,B;donor_power=20,power_mechanism=selfish
+```
+
+**Example — Co-BF (APs without `bf_*` columns in the node CSV get a default 8-element ULA):**
+
+```
+1;CO_BF;A,B;
+```
+
+**Multi-group example (WLAN B belongs to both groups):**
+
+```
+1;CO_TDMA;A,B;
+2;CO_TDMA;B,C;
 ```
 
 Up to `MAX_MAPC_GROUPS_PER_WLAN = 8` groups per WLAN are supported.
@@ -596,7 +613,7 @@ The following bugs were found and corrected. They affect simulation output regar
 | `edca_methods.h` | AIFSN macros had a spurious `=` character; TXOP limit for BE/BK incorrectly treated as unlimited | EDCA AC differentiation broken; BE/BK could aggregate beyond a single PPDU | Renamed macros; TXOP=0 now correctly means single PPDU per TXOP transmission |
 | `node_packet_methods.h` | `InitiateBurstPackets` added ~40 packets before TXOP-cap reduction — stale old-timestamped packets accumulated each TXOP for VO/VI | Artificial 2+ second delays for VO/VI traffic in full-buffer scenarios | Flush the entire buffer at TXOP start for `TRAFFIC_FULL_BUFFER_NO_DIFFERENTIATION` |
 | `node_fsm_methods.h` | In `HandleStartTX_StateRxData` "NOT THE DESTINATION" path, `ComputeMaxInterference` used `channel_power` (raw path-loss, no BF gain) — AP_A's beamforming null toward STA_B1 was invisible to the SINR gate | In Co-BF scenarios where STA_B1 is geometrically closer to AP_A, the full un-nulled AP_A power caused a spurious "Collision by interferences!" and restarted STA_B1, preventing any ACK and collapsing BSS B throughput to 0 | When `notification.tx_info.beamforming_active`, interference is now summed from `power_received_per_node` (BF-corrected) instead of `channel_power`; same fix applied in `HandleStartTX_StateNav` |
-| `node_fsm_methods.h` | No bypass existed in the concurrent-reception SINR gate for Co-BF peer-AP DATA — even with the corrected SINR, edge-case geometry could still trigger `IsPacketLost` | Co-BF DATA from the peer AP treated as a collision despite the coordination handshake having deliberately set the STA's NAV | When both the ongoing reception and the arriving DATA share the same Co-BF MAPC group, `loss_reason` is now forced to `PACKET_NOT_LOST`; `HandleFinishTX_StateRxData` has no final decode gate, so the reception always completes |
+| `node_fsm_methods.h` | Co-BF DATA from the peer AP could be treated as a collision at the STA in edge-case geometries | BSS throughput collapsed although the coordination handshake had deliberately set the STA's NAV | **Superseded in v4.2:** the temporary bypass that forced `loss_reason = PACKET_NOT_LOST` for same-group Co-BF DATA was removed. The STA now always runs a real SINR check, with the interference shaped by the peer's zero-forcing beam (`power_received_per_node`). With the v4.2 ZF fix, a well-placed null yields a high SINR, while a poor one (too few antennas, close or mirrored directions) causes a genuine loss |
 | `node_spatial_reuse_methods.h` | DSO and NPCA DATA states were not excluded from the SR TXOP-detection gate — an AP in `STATE_TX_DATA_DSO`/`_NPCA` could misidentify a peer's secondary-subband DATA as an SR opportunity | In mixed DSO+NPCA scenarios the SR module attempted a concurrent transmission, breaking NPCA ACK reception and triggering cascading timeouts | `STATE_TX_DATA_DSO` and `STATE_TX_DATA_NPCA` added to the guard list that bypasses SR opportunity detection |
 | `node_packet_methods.h` | In a 2-BSS CB_ALWAYS_MAX_LOG2 scenario with RTS/CTS, simultaneous backoff expiry allowed both APs to independently complete their own RTS/CTS exchange and arrive at `SendResponsePacket STATE_TX_DATA` in the same FIFO tick; the FIFO-loser's DATA overlapped the winner's exchange | Winner's STA received a DATA+DATA collision (SINR < 10 dB) → no ACK → ~10% AckTimeout at the winner AP | Added a full CCA re-check across `[current_left_channel, current_right_channel]` before calling `outportSelfStartTX`; the FIFO-loser aborts and calls `RestartNode` if any channel is busy; guard skips MAPC-coordinated APs where concurrent DATA is intentional |
 
